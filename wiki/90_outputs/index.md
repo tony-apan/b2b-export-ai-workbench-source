@@ -15,7 +15,7 @@ related: []
 
 ## Folders
 
-- [drafts/](drafts/)：草稿。
+- `drafts/`：私有草稿目录，公开版默认不发布。
 - [published/](published/)：已发布或已使用版本。
 
 ## 可归档内容
