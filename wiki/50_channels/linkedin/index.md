@@ -1,0 +1,73 @@
+---
+title: "LinkedIn Channel"
+description: "记录 LinkedIn 目标受众、内容主题、账号表现、互动、私信策略、公司页、广告边界和内容支柱。"
+type: "channel"
+status: "Working"
+owner: "AI"
+created: "2026-06-28"
+last_updated: "2026-06-28"
+sources: ["../../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md", "Internal LinkedIn SOP source excluded from public version"]
+related: ["../index.md", "../../30_playbooks/index.md", "../../40_business/index.md", "../../30_playbooks/linkedin-content.md"]
+---
+# LinkedIn Channel
+
+## 目标
+
+通过个人资料、公司页、内容、互动和私信建立信任，触达目标客户。
+
+## Account Safety Red Line
+
+LinkedIn 账号动作必须遵守 [Social Account Safety Red Lines](../../00_meta/social-account-safety.md)。本 channel 可以沉淀策略、草稿、数据和复盘，但不能沉淀或执行 Codex 浏览器自动登录、自动发帖、自动评论、自动点赞、自动加好友、自动私信或批量浏览流程。Chrome 浏览器插件只能在用户明确要求和人工确认下作为辅助。
+
+## Channel Strategy
+
+LinkedIn 渠道当前采用“赛道选择 -> 关键词/人脉调研 -> 用户视角内容 -> 互动/私信衔接 -> 数据闭环 -> 增长迭代”的框架。外贸 B2B SOP 来自内部经验源和公开官方资料；公开版不包含私有课程或原始资料。平台规则层来自 [Social Platform Official Source](../../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md)。
+
+## Required Data
+
+| Data | Status | Notes |
+|---|---|---|
+| Personal profile URL | 待补 | 个人 IP 入口 |
+| Company page URL | 待补 | 公司承接页 |
+| Target audience | 待补 | 职位、行业、地区、公司规模 |
+| ICP keywords | 待补 | 行业词、产品词、痛点词 |
+| Current content pillars | 待补 | 主题和系列 |
+| Best posts | 待补 | 按目标客户互动质量判断 |
+| Worst posts | 待补 | 无关曝光和低质量互动 |
+| DM strategy | 待补 | 谁触达、何时触达、说什么 |
+| LinkedIn Ads status | 待补 | 若投放，转到 SEM/Ads channel |
+| Sales feedback | 待补 | 哪些内容带来有效对话 |
+
+## 内容支柱
+
+- 赛道趋势与市场判断。
+- 用户痛点、用户场景和客户心智。
+- 关键词驱动的产品/解决方案内容。
+- 外贸 SOP、流程、清单和方法论。
+- 产品卖点、团队能力和商业模式。
+- 运营数据复盘与增长迭代。
+- 案例、认证、质检、交付过程等证据内容。
+
+## Operating Loop
+
+| Step | Output | Evidence Needed |
+|---|---|---|
+| 准备资料 | 产品、客户、案例、团队、商业模式素材 | raw/products-offers, raw/clients |
+| 选赛道 | 赛道趋势、集中度、切入点 | market research, competitor notes |
+| 做调研 | 关键词库、人脉清单、客户语言 | LinkedIn search, profiles, comments |
+| 发内容 | 按分类输出 posts，由人发布 | outputs/drafts, published posts |
+| 互动 | 评论、连接、资料访问、私信触发，由人执行 | comments, profile views, connection quality |
+| 看数据 | 曝光、互动、profile views、连接、私信、线索 | analytics |
+| 迭代 | 保留有效主题，砍掉无关内容 | metrics, sales feedback |
+
+## Current Assumptions
+
+- 推断：这份 SOP 更适合外贸 B2B 场景。
+- 待验证：具体产品、目标客户、地区和账号定位还没有资料支撑。
+- 待验证：PDF 中的百分比和数量提示缺少上下文，暂不作为考核目标。
+
+## Related
+
+- [LinkedIn Playbook](../../30_playbooks/linkedin-content.md)
+- [Customer Pain Map](../../40_business/customer-pain-map.md)
+- [Social Platform Official Source](../../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md)

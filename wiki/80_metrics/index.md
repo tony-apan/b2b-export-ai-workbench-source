@@ -1,0 +1,55 @@
+---
+title: "Metrics Index"
+description: "定义指标口径、实验质量规则、归因注意事项和实验日志。"
+type: "metric"
+status: "Working"
+owner: "AI"
+created: "2026-06-28"
+last_updated: "2026-06-28"
+sources: []
+related: []
+---
+# Metrics Index
+
+这里定义指标口径和实验记录，避免不同对话里对同一个指标理解不一致。
+
+## Metric Dictionary
+
+| Metric | Definition | Formula | Source | Window | Owner | Used For | Common Misread |
+|---|---|---|---|---|---|---|---|
+| Website visitor | 访问网站的独立用户或会话，口径待定 | 待补 | GA/Search Console | 待补 | 待补 | 网站/SEO/Ads | 把低意图访问当需求 |
+| Lead | 留下可联系信息的人或公司 | 待补 | CRM/Form | 待补 | 待补 | 渠道转化 | 把垃圾线索当增长 |
+| MQL | 符合基础市场资格的线索 | 待补 | CRM | 待补 | 待补 | 市场质量 | 标准太松导致虚高 |
+| SQL | 销售确认值得推进的线索 | 待补 | CRM/Sales notes | 待补 | 待补 | 销售管道 | 没有销售确认就标 SQL |
+| Discovery call | 已完成诊断通话 | 待补 | Calendar/CRM | 待补 | 待补 | 销售推进 | 预约不等于完成 |
+| Proposal | 已发送正式方案/报价 | 待补 | CRM/Docs | 待补 | 待补 | 商机推进 | 模板报价不等于 proposal |
+| Closed won | 已成交 | 待补 | CRM/Invoice | 待补 | 待补 | 收入 | 口头同意不等于成交 |
+| Closed lost | 已丢单 | 待补 | CRM/Sales notes | 待补 | 待补 | 复盘 | 不记录真实原因 |
+
+## Channel Metrics
+
+- LinkedIn：impressions、profile views、connection rate、reply rate、meeting booked。
+- Email：deliverability、open rate、reply rate、positive reply rate、meeting booked。
+- SEO：impressions、clicks、ranking、organic leads、assisted conversions。
+- GEO：AI mention rate、answer accuracy、citation coverage、entity consistency。
+- Ads：CTR、CPC、CVR、CPA、lead quality、pipeline value、ROAS。
+
+## Experiment Log
+
+| Date | Channel | Hypothesis | Metric | Result | Decision | Source |
+|---|---|---|---|---|---|---|
+| 待补 | 待补 | 待补 | 待补 | 待补 | 待补 | 待补 |
+
+## Experiment Quality Rules
+
+- 每个实验必须使用 [../_templates/experiment-record.md](../_templates/experiment-record.md)。
+- 没有 baseline，不判断 uplift。
+- 没有 guardrail，不放大。
+- 没有销售反馈，不判断 B2B lead quality。
+- 没有明确 decision rule，不允许事后解释结果。
+
+## Attribution Notes
+
+- 每个渠道线索应尽量保留 source / campaign / content / keyword / prompt。
+- Ads 和 SEO 进入销售后，必须回流 lead quality、SQL、proposal、won/lost。
+- GEO 当前主要看 mention accuracy 和 citation coverage，不直接等同收入贡献。
