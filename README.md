@@ -1,4 +1,5 @@
-﻿---
+<!--
+Repository metadata:
 title: "B2B Export AI Workbench"
 description: "AI-ready knowledge base for B2B export growth, covering website, LinkedIn, cold email, SEO, GEO, SEM, Ads, sales, SOPs, and risk controls."
 type: "meta"
@@ -10,7 +11,7 @@ sources: []
 related: ["wiki/index.md", "AGENTS.md", "CLAUDE.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
----
+-->
 # B2B Export AI Workbench
 
 外贸增长 AI 工作台。这个仓库是一个 AI-ready 的 B2B 外贸增长知识库模板，用于让 Claude、Codex 和团队新人快速理解业务、执行 SOP、沉淀经验并持续迭代。

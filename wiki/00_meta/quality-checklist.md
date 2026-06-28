@@ -71,6 +71,7 @@ related: []
 
 - 是否检查 [publishing-and-redaction.md](publishing-and-redaction.md)？
 - 是否确认 `raw/` 不公开上传？
+- 是否确认公开仓库根 `README.md` 在 GitHub 首页不会显示 YAML front matter？
 - 是否删除客户、联系人、电话、邮箱、账号、价格、广告数据？
 - 是否删除或改写版权课程原文和截图？
 - 是否删除本地绝对路径？

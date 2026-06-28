@@ -12,7 +12,9 @@ related: ["definition-of-done.md", "quality-checklist.md", "agent-handoff.md"]
 
 # Markdown Standard
 
-每个 Markdown 都必须有元描述。这里的元描述指页面顶部的 YAML front matter，用来让 Claude、Codex、新人快速判断页面职责、可信度和维护方式。
+每个 Markdown 都必须有元描述。这里的元描述默认指页面顶部的 YAML front matter，用来让 Claude、Codex、新人快速判断页面职责、可信度和维护方式。
+
+例外：公开 GitHub 仓库根目录的 `README.md` 是首页展示页。GitHub 会把 YAML front matter 直接渲染成正文，因此根 `README.md` 不使用可见 YAML front matter；如需保留元信息，写在 HTML 注释里。其他 wiki 页面、raw Markdown、AGENTS.md、CLAUDE.md 仍然使用 YAML front matter。
 
 ## 必填 Front Matter
 
