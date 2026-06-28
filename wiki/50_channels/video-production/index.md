@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: []
 related: ["../../30_playbooks/video-production.md", "../../_templates/video-brief.md", "../../00_meta/module-expansion-sop.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Video Production Channel

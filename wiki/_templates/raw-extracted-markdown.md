@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: []
 related: ["../00_meta/markdown-standard.md", "../00_meta/publishing-and-redaction.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Raw Extracted Markdown Template
@@ -30,12 +31,11 @@ original_path: ""
 extraction_method: "pdf text extraction | OCR | transcript | manual copy"
 source_date: "YYYY-MM-DD"
 ingested_at: "YYYY-MM-DD"
-visibility: "private"
-redaction_status: "not-reviewed"
+visibility: "private # private full repository only"
+redaction_status: "not-reviewed # review before public export"
 ---
 ```
 
 ## 原文转写
 
 按页码、时间戳或章节保留原始结构。
-

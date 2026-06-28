@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: []
 related: ["pricing-quotation.md", "../30_playbooks/rfq-response.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Trade Terms And Logistics

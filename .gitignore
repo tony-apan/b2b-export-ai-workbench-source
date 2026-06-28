@@ -1,7 +1,8 @@
 ﻿raw/*
 !raw/README.md
 !raw/index.md
-wiki/60_clients/
+wiki/60_clients/*
+!wiki/60_clients/index.md
 wiki/90_outputs/drafts/
 *.pdf
 *.docx

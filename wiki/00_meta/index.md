@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["User request"]
 related: ["../index.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Meta Index

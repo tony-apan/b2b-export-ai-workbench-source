@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: []
 related: ["../../30_playbooks/partner-channel.md", "../../00_meta/b2b-export-module-map.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Partner Channel

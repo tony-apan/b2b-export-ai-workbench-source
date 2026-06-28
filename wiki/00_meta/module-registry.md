@@ -14,6 +14,8 @@ related: ["module-expansion-sop.md", "../50_channels/index.md", "../30_playbooks
 
 每个模块都应该有独立索引。索引用来告诉新人和 AI：这个模块解决什么问题、先读哪些文件、资料放哪里、输出放哪里、如何扩展。
 
+公开版说明：下表的 `Raw Folder` 是私有完整库中的资料入口。当前公开仓库不会发布真实 raw，只保留 [../../raw/README.md](../../raw/README.md) 和 [../../raw/index.md](../../raw/index.md) 作为占位说明。
+
 ## Existing Modules
 
 | Module | Index | Raw Folder | Main Playbook | Status | Owner | Notes |

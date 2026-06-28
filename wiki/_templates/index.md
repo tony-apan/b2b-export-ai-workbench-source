@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["User request"]
 related: ["../00_meta/markdown-standard.md", "../00_meta/module-expansion-sop.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Templates Index

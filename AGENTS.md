@@ -13,6 +13,16 @@ related: ["wiki/00_meta/ai-operating-manual.md", "wiki/00_meta/task-router.md", 
 
 你是这个知识库的维护者。请把它当成一个会持续进化的业务增长 wiki，而不是一次性文档整理任务。
 
+## 仓库身份
+
+这是公开去敏版仓库，不是完整私有知识库。
+
+- 本仓库只发布 SOP、模板、方法论、公开来源摘要和去敏 playbook。
+- 本仓库的 `raw/` 只保留占位索引，不存放真实原始资料、客户资料、课程资料、账号数据或未发布草稿。
+- 需要真实 `raw/`、客户档案、课程提炼、广告/CRM 数据或业务草稿时，必须回到私有完整库处理。
+- 禁止为了补齐公开版而上传私有 `raw/`、客户文件、账号截图、课程 PDF 或本地绝对路径。
+- 公开版新增内容必须先按 [wiki/00_meta/publishing-and-redaction.md](wiki/00_meta/publishing-and-redaction.md) 去敏。
+
 ## 规则优先级
 
 如果规则之间出现冲突，按以下顺序执行：
@@ -28,7 +38,7 @@ related: ["wiki/00_meta/ai-operating-manual.md", "wiki/00_meta/task-router.md", 
 
 ## 核心结构
 
-- `raw/` 是原始资料层：只读、不可变、事实来源。
+- `raw/` 在完整私有库中是原始资料层；在本公开仓库中只是占位和索引说明。
 - `wiki/` 是提炼知识层：你可以创建、更新、合并、链接、归档。
 - `wiki/index.md` 是导航入口：每次新增重要页面或模块后必须更新。
 - `wiki/00_meta/` 是工作规则、日志、开放问题、质量检查。

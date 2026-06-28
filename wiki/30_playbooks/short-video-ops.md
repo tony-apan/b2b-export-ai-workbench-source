@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md"]
 related: ["../50_channels/short-video/index.md", "video-production.md", "linkedin-content.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 # Playbook: Short Video Ops
 

@@ -8,8 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["User instruction"]
 related: ["ai-operating-manual.md", "quality-checklist.md", "../30_playbooks/linkedin-content.md", "../50_channels/linkedin/index.md"]
-visibility: "internal"
-redaction_status: "not-reviewed"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 # Social Account Safety Red Lines
 

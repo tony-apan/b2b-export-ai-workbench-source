@@ -19,20 +19,12 @@ related: []
 
 ## raw
 
-- `raw/00_inbox/`：新资料临时入口。
-- `raw/clients/`：客户相关原始资料。
-- `raw/competitors/`：竞品相关原始资料。
-- `raw/market-research/`：市场研究资料。
-- `raw/products-offers/`：产品、服务、报价、交付资料。
-- `raw/website/`：网站与落地页资料。
-- `raw/linkedin/`：LinkedIn 内容、互动、私信资料。
-- `raw/email-outreach/`：开发信资料。
-- `raw/seo/`：SEO 资料。
-- `raw/geo-ai-search/`：GEO / AI 搜索资料。
-- `raw/sem-ads/`：广告资料。
-- `raw/sales-calls/`：销售通话资料。
-- `raw/screenshots/`：截图与图片。
-- `raw/archive/`：历史归档。
+本公开仓库的 `raw/` 只保留占位说明：
+
+- `raw/README.md`：公开版 raw 边界说明。
+- `raw/index.md`：公开版 raw 索引占位。
+
+完整私有库才可以包含真实 `raw/00_inbox/`、`raw/clients/`、`raw/competitors/`、`raw/market-research/`、`raw/products-offers/`、`raw/website/`、`raw/linkedin/`、`raw/email-outreach/`、`raw/seo/`、`raw/geo-ai-search/`、`raw/sem-ads/`、`raw/sales-calls/`、`raw/screenshots/` 和 `raw/archive/`。
 
 ## wiki
 

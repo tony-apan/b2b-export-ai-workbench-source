@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: []
 related: ["../40_business/pricing-quotation.md", "../40_business/product-catalog-specs.md", "sales-call.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Playbook: RFQ Response

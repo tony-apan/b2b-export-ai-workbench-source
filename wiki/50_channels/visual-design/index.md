@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: []
 related: ["../../30_playbooks/visual-design.md", "../../_templates/image-brief.md", "../../00_meta/module-expansion-sop.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Visual Design Channel

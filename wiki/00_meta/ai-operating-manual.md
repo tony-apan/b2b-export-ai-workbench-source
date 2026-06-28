@@ -13,6 +13,16 @@ related: []
 
 这个知识库采用 Karpathy LLM Wiki 的三层模式：原始资料、提炼 wiki、agent 协议。核心思想是：不要每次问问题都从原始资料重新推理，而是让 AI 把资料逐步编译成可链接、可维护、可复用的 Markdown wiki。
 
+## 公开版边界
+
+本仓库是公开去敏版，不是完整私有知识库。这里的 `raw/` 只保留占位说明和公开索引，不包含真实原始资料、客户档案、课程提炼、账号导出、广告截图或未发布草稿。
+
+当任务需要真实来源时：
+
+1. 在本公开仓库中先读 `raw/README.md`、`raw/index.md` 和 `wiki/10_sources/source-registry.md`，确认公开来源边界。
+2. 如果问题依赖私有 raw、客户细节、课程资料或账号数据，标注“需要私有完整库验证”，不要在公开版补造事实。
+3. 不要把私有 raw 上传到本仓库；公开版只能沉淀去敏后的 SOP、模板、方法论和公开来源摘要。
+
 参考来源：
 
 - Andrej Karpathy, LLM Wiki: https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f
@@ -21,12 +31,12 @@ related: []
 
 - 人负责：收集资料、提出问题、判断方向、确认重要决策。
 - AI 负责：摘要、归档、链接、改写、发现矛盾、维护索引、沉淀输出。
-- `raw/` 负责：保存不可变事实。
+- `raw/` 负责：在私有完整库中保存不可变事实；在本公开版中仅保留占位说明。
 - `wiki/` 负责：保存当前最好理解。
 
 ## Raw Markdown 与 Wiki Markdown
 
-- Raw Markdown：放在 `raw/`，是原始资料的转写、OCR、网页提取、字幕或会议转写。它必须有来源，但不做总结和判断。
+- Raw Markdown：在私有完整库中放在 `raw/`，是原始资料的转写、OCR、网页提取、字幕或会议转写。它必须有来源，但不做总结和判断。公开版 `raw/` 不存真实 raw，只保留占位和公开来源说明。
 - Wiki Markdown：放在 `wiki/`，是提炼后的知识、SOP、索引、方法论、输出草稿。它必须引用 raw 或 source registry。
 - 两者都要能追溯到 [../10_sources/source-registry.md](../10_sources/source-registry.md)。
 
@@ -84,7 +94,7 @@ sources: []
 
 适用于用户说“吸收资料”“更新知识库”“把这个放进 wiki”。
 
-1. 读取指定 `raw/` 文件。
+1. 私有完整库：读取指定 `raw/` 文件。公开版：只读取公开占位索引和 source registry；如果需要真实 raw，停止并标注“需要私有完整库验证”。
 2. 提取：事实、结论、客户原话、数字、对象、场景、风险、可行动建议。
 3. 写入或更新：
    - `wiki/10_sources/source-registry.md`

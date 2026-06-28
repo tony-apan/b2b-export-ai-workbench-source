@@ -100,7 +100,7 @@ visibility: "public | internal | private"
 redaction_status: "not-reviewed | redacted | safe-to-publish"
 sensitivity: "public | internal | confidential | restricted"
 copyright_status: "owned | licensed | public | unknown | restricted"
-public_use: "yes | no | needs-approval"
-approval_required: true
+public_use: "yes | needs-approval"
+approval_required: "true | false"
 approved_by: ""
 ```

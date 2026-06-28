@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["../../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md"]
 related: ["../../30_playbooks/short-video-ops.md", "../../_templates/video-brief.md", "../../00_meta/b2b-export-module-map.md", "../linkedin/index.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 # Short Video Channel
 

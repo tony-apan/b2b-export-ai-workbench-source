@@ -8,7 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["Risk review"]
 related: ["../00_meta/release-checklist.md", "../00_meta/publishing-and-redaction.md"]
-visibility: "internal"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Publication Review Template

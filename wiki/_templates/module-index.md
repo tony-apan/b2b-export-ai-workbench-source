@@ -8,6 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["User request"]
 related: ["../00_meta/module-expansion-sop.md", "../00_meta/module-registry.md"]
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Module Index Template
@@ -23,7 +25,7 @@ created: "YYYY-MM-DD"
 last_updated: "YYYY-MM-DD"
 sources: []
 related: []
-visibility: "internal"
+visibility: "public # or internal/private in the private full repository"
 ---
 ```
 
@@ -64,4 +66,3 @@ visibility: "internal"
 ## Open Questions
 
 - 
-

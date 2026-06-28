@@ -8,8 +8,8 @@ created: "2026-06-28"
 last_updated: "2026-06-28"
 sources: ["Risk review"]
 related: ["publishing-and-redaction.md", "sensitive-data-inventory.md", "../10_sources/license-and-consent-register.md"]
-visibility: "internal"
-redaction_status: "not-reviewed"
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # Release Checklist
