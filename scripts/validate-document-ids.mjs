@@ -131,7 +131,7 @@ for (const filePath of files) {
 const { entries: legacyEntries, policies: recordPolicies } = loadAllowlist();
 const legacyByPath = new Map(legacyEntries.map((entry) => [entry.path, entry]));
 const recordPolicyByType = new Map(recordPolicies.map((policy) => [policy.type, policy]));
-const selectedScopes = new Set(fileRecords.values().map((item) => item.scope));
+const selectedScopes = new Set(Array.from(fileRecords.values(), (item) => item.scope));
 for (const entry of legacyEntries) {
   const entryScope = scopeFor(entry.path);
   if (requestedScope !== 'all' && entryScope !== requestedScope) continue;
