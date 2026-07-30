@@ -5,7 +5,7 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-27"
+last_updated: "2026-07-30"
 sources: ["media-operations-contract.redacted.json", "article-image-binding-contract.json", "direct-delete-verification.redacted.md", "Observed signed-in upload and draft-binding runs 2026-07-27", "Local fault tests 2026-07-27"]
 related: ["README.md", "media-metadata-and-ai-vision-sop.md", "article-operations.md", "upload-media-browser.mjs", "article-image-binding.mjs", "article-operations.mjs", "article-operations-contract.json", "upload-media-browser.test.mjs", "article-image-binding.test.mjs", "article-operations.test.mjs", "media-operations-contract.redacted.json", "article-image-binding-contract.json", "../../image-upload-routing.md"]
 confidence: "high-for-observed-upload-contract-medium-for-new-local-recovery-layer"
@@ -373,7 +373,7 @@ python3 -m json.tool media-operations-contract.redacted.json
 python3 -m json.tool article-image-binding-contract.json
 ```
 
-当前 79 项本地测试包括 29 项媒体测试和 50 项文章图片测试，覆盖严格串行、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
+当前 131 项本地测试包括 45 项媒体测试、50 项文章图片测试和 36 项文章生命周期与 taxonomy 测试，覆盖严格串行、授权时效与 TOCTOU 边界、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
 
 ## 当前边界
 

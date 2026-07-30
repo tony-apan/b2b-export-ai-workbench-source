@@ -5,7 +5,7 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-27"
+last_updated: "2026-07-30"
 sources: ["../../SOURCES.md", "Tony requirement 2026-07-27", "Observed signed-in single upload 2026-07-27", "allincms/observed-contract.redacted.json"]
 related: ["README.md", "allincms/README.md", "allincms/article-operations.md", "../README.md", "../_template.md", "../../TEMPLATES/tool-field-map.md", "../../TEMPLATES/failure-diagnosis.md", "../../QA-CHECKLIST.md"]
 confidence: "high"
@@ -359,7 +359,7 @@ status:
 - HTTP `200` 仍只是中间证据。必须继续验证刷新后的媒体记录、媒体 ID、最终 URL、匿名访问、Content-Type 和实际图片解码；
 - 接口结果未知时先按唯一标题查询媒体库，禁止自动重发；
 - 五图语义化 UI 流程可作为 2–5 张临时回退，但不能把它冒充纯接口；
-- 已证明纯接口单图和 10 张单图接口串行调用；这不等于一次请求上传 10 张。源 SHA-256 复用、原子索引、单写者锁、请求阶段记录、跨重启只读恢复、AI `title / alt / caption` 同步，以及上传报错后的延迟对账与有限重试规则已实现并通过 29 项媒体本地测试；正文图片 adapter 已升级为 schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 和整篇单次保存，并通过 50 项本地测试；一张获授权虚拟媒体的字段写入最终三字段持久化，但观察到读后写延迟。当前部署的 A/B/A 正文草稿绑定已验证；任意大批次真实远程长跑、跨部署正文绑定、一次请求多图和覆盖仍未验证。并发上传永久禁止，不作为后续优化目标；媒体记录删除只按卡片与 RSC 记录消失验收。
+- 已证明纯接口单图和 10 张单图接口串行调用；这不等于一次请求上传 10 张。源 SHA-256 复用、原子索引、单写者锁、请求阶段记录、跨重启只读恢复、AI `title / alt / caption` 同步，以及上传报错后的延迟对账与有限重试规则已实现并通过 45 项媒体本地测试；正文图片 adapter 已升级为 schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 和整篇单次保存，并通过 50 项本地测试；一张获授权虚拟媒体的字段写入最终三字段持久化，但观察到读后写延迟。当前部署的 A/B/A 正文草稿绑定已验证；任意大批次真实远程长跑、跨部署正文绑定、一次请求多图和覆盖仍未验证。并发上传永久禁止，不作为后续优化目标；媒体记录删除只按卡片与 RSC 记录消失验收。
 
 
 ### 2026-07-27 图片元数据实查与单样本写入
@@ -506,7 +506,7 @@ content_binding: verified_remote_draft_A_B_A_2026_07_27
 article_binding_entry: cms/allincms/article-image-binding.mjs
 article_operations_local_tests: 36_passed
 article_image_binding_local_tests: 50_passed
-all_adapter_local_tests: 115_passed
+all_adapter_local_tests: 131_passed_2026_07_30
 article_editor_health_gate: editor_present_exact_image_count_decode_caption_and_draft_status
 article_editor_dom_alt: missing_observed_3_of_3
 published_theme_alt_current_run: not_run_not_authorized

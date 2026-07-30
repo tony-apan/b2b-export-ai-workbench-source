@@ -5,7 +5,7 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-29"
+last_updated: "2026-07-30"
 sources: ["../allincms-overview.md", "observed-contract.redacted.json", "direct-serial-10-verification.redacted.md", "direct-serial-11-article-verification.redacted.md", "image-index-e2e-verification.redacted.md", "direct-delete-verification.redacted.md", "Observed signed-in media upload and delete runs 2026-07-27"]
 related: ["AI-START-HERE.md", "media-metadata-and-ai-vision-sop.md", "../allincms-overview.md", "article-operations.md", "article-operations.mjs", "article-operations-contract.json", "article-operations.test.mjs", "upload-media-browser.mjs", "verify-media.mjs", "media-operations-contract.redacted.json", "observed-contract.redacted.json", "direct-delete-verification.redacted.md"]
 confidence: "high"
@@ -360,7 +360,7 @@ content_binding: verified_remote_draft_A_B_A_2026_07_27
 article_binding_entry: article-image-binding.mjs
 article_binding_tests: 50_passed
 article_operations_tests: 36_passed
-article_adapter_local_tests: 115_passed_2026_07_27
+article_adapter_local_tests: 131_passed_2026_07_30
 article_editor_render_gate: verified_remote_2026_07_27
 article_editor_dom_alt: missing_observed_3_of_3_2026_07_27
 published_theme_alt_current_run: not_run_not_authorized
@@ -389,7 +389,7 @@ publication_status: PASS_DRAFT_BINDING_WITH_DOCUMENTED_ALT_PRODUCT_GAP__BLOCK_PU
 | [image-index-e2e-verification.redacted.md](image-index-e2e-verification.redacted.md) | 私有图片索引、断点恢复与去重闭环的去敏证据及适用边界 |
 | `direct-delete-verification.redacted.md` | 零点击媒体记录删除的历史去敏证据；当前完成口径只看卡片与 RSC 记录 |
 | `upload-media-browser.mjs` | 运行预检 + 任意数量永久串行总控 + 报错延迟对账与有限重试 + 单图接口原语 + AI title/alt/caption 同步 + 原子私有索引 + 零点击媒体记录删除 + 1–5 图 UI 回退 |
-| `upload-media-browser.test.mjs` | 29 项媒体本地故障测试；不等同于所有部署的真实远程生产验证 |
+| `upload-media-browser.test.mjs` | 45 项媒体本地故障与授权边界测试；不等同于所有部署的真实远程生产验证 |
 | `article-image-binding-contract.json` | 正文图片的资产、occurrence、Slate、保存、渲染和 Alt 分层合同 |
 | `article-image-binding.mjs` | Markdown 原位解析、映射复核、Slate 构建、草稿保存与编辑器健康闸 |
 | `article-image-binding.test.mjs` | 50 项文章图片本地测试；包含 A/B/A、锚点防漂移、Caption 全数组预检，以及编辑器、图片解码、Caption 和草稿状态健康闸 |
