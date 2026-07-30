@@ -53,8 +53,9 @@ keywords: ["open questions", "blocked", "deferred", "owner", "evidence", "next a
 |---|---|---|---|---|---|---|
 | `OQ-REL-0001` | blocked | Stable 阶段的最终品牌、Logo、官网、邮箱和更新入口未确定。 | Tony | Stable/正式营销发布 | 当前 FluxPedal 仅为明确标注的虚拟案例；Preview 使用仓库名和 Tony 公开联系入口 | Preview 保持虚拟示例声明；Stable 前确认品牌资产与授权。 |
 | `OQ-REL-0002` | blocked | 母库对外发行和子库 Stable 的最终商业/法律边界仍未批准。 | Tony | 母库公开/Stable + 子库 Stable | 子库 Public Preview 已采用 Apache-2.0 并补齐 LICENSE/NOTICE；母库为 restricted private source | Preview 按 Apache-2.0；母库公开或子库 Stable 前另行完成法律/商业审查。 |
-| `OQ-REL-0003` | blocked | GitHub Protected Environment、required reviewers、ruleset、可信 signer 和正式 qualification 尚未建立。 | Tony | 母库公开/Stable + 子库 Stable qualification | 本地 prepare→qualify、archive/checksum/attestation 合同与 53/53 攻击测试已闭合，但无 Stable 服务端 run | Preview 不冒充正式 qualification；Stable 前在服务端逐 scope 配置并演练，保存 exact archive、checksum、attestation 和 run identity。 |
+| `OQ-REL-0003` | blocked | GitHub Protected Environment、required reviewers、ruleset、可信 signer 和正式 qualification 尚未建立。 | Tony | 母库公开/Stable + 子库 Stable qualification | Public Preview prerelease 已发布并从远端重克隆验收；本地 prepare→qualify、archive/checksum/attestation 合同与 53/53 攻击测试已闭合，但仍无 Stable 服务端 run | Preview 不冒充正式 qualification；Stable 前在服务端逐 scope 配置并演练，保存 exact archive、checksum、attestation 和 run identity。 |
 | `OQ-REV-0001` | blocked | 五个历史 reviewer 声明没有 agent ID、scope digest 或不可变原始 verdict。 | Repository owner | 将历史审查视为独立证据 | `REVIEW-RECORDS/` 均为 producer-reported / not_verified | 后续审查使用 reviewer record schema，从任务创建时绑定证据。 |
+| `OQ-REL-0004` | deferred | Public Preview 的普通 clone 验收命令和私有 upstream / 公开 release provenance 字段是否需要进一步拆分？ | Release owner | 新手自验证与公开来源可解释性 | `v0.3.2-preview.1` 的纯 `git archive` artifact、逐文件 SHA-256 和公开 release commit 可验证；clone 根目录含 `.git/` 会被 artifact validator 拒绝，私有母库 source commit 不能由公开用户解析 | 下一 Preview 在 README/INSTALL 补 clone→archive 标准命令，并分字段声明 private upstream、public release commit/tag 和 public resolvability；不移动现有 tag。 |
 
 ## 课程证据
 
