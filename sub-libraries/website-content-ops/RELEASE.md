@@ -16,7 +16,7 @@ release_status: "Preview"
 
 ## 当前边界
 
-当前目录是 **Public Preview 候选**，`preview_publication_status: Ready` 表示可以进入非覆盖建仓与远端验收，不表示已经发布。只有公开仓、最终 commit、`v0.3.2-preview.1` prerelease 和远端重克隆验收全部完成后，才能改为 `Published`。`release_status: Preview` 不等于 Stable；不要把本地检查通过写成跨环境或生产稳定。
+当前目录已经以 **Public Preview** 独立发布，`preview_publication_status: Published` 只表示公开 Preview 仓和对应版本已可获取。`release_status: Preview` 不等于 Stable；不要把本地检查、公开仓或 prerelease 写成跨环境稳定、生产可用或正式 qualification。
 
 ## Preview 发布流程
 

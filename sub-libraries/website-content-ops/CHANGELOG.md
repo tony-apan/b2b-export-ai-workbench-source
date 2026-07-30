@@ -30,7 +30,7 @@ redaction_status: "safe-to-publish"
 - 明确 `START-HERE.md` 主要给可读写文件、使用浏览器或脚本的 AI agent 执行；保留四步执行链，并补充能力声明、无账号分支、本地小样降级路线和 fail-closed 停止条件。
 - 增加真实微信支持二维码；没有 AllinCMS 账号、未开通网站或站点不明确时，引导用户联系 Tony，不让 AI 猜测站点、代注册或绕过登录。
 - 将 README 中底层授权实现细节下沉到 AllinCMS adapter 文档；人类入口保留可理解的安全边界和发布状态，不再要求新手先理解 digest、Buffer 或 TOCTOU。
-- `MANIFEST.md` 已进入 `release_status: Preview`、`license_status: cleared`、`preview_publication_status: Ready`；这只放行公开 Preview 候选，不构成 Stable、production-ready 或真人批准。
+- `MANIFEST.md` 已进入 `release_status: Preview`、`license_status: cleared`、`preview_publication_status: Published`；这只表示 Public Preview 已独立公开，不构成 Stable、production-ready 或真人批准。
 
 ### Security / governance hardening
 

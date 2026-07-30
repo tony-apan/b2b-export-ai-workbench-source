@@ -16,7 +16,7 @@ redaction_status: "safe-to-publish"
 ---
 # Website Content Operations AI Skill
 
-> **当前状态：Public Preview 候选 / 非 Stable。** 本文件是子库内的 AI 适配器，不是一键安装或跨平台稳定的 Skill；公开仓发布前仍以 `MANIFEST.md` 的 `preview_publication_status` 为准。宿主系统、用户项目和平台安全规则始终高于本文件。
+> **当前状态：Public Preview 已发布 / 非 Stable。** 本文件是子库内的 AI 适配器，不是一键安装或跨平台稳定的 Skill；实时状态以 `MANIFEST.md` 的 `preview_publication_status` 为准。宿主系统、用户项目和平台安全规则始终高于本文件。
 
 ## 什么时候使用
 

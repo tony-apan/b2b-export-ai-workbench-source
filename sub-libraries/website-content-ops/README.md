@@ -19,7 +19,7 @@ keywords: ["建站内容运营", "外贸网站", "AllinCMS", "CMS", "图片上�
 
 你不需要先学会 Obsidian、PicGo、接口或代码。**人负责说清目标、提供资料并批准关键操作；AI 按本子库的执行手册完成检查、制作、验证和记录。**
 
-> **当前是 Public Preview 候选，尚未完成 GitHub 发布验收；不是 Stable 或 production-ready。** 发布后可下载并交给 AI 做本地试用和单样本；请先验证一条内容和一张图片，不要未经确认直接批量用于生产。实时状态与许可证见 [MANIFEST.md](MANIFEST.md) 和 [LICENSE](LICENSE)。
+> **当前已发布为 Public Preview；不是 Stable 或 production-ready。** 你可以下载后交给 AI 做本地试用和单样本；请先验证一条内容和一张图片，不要未经确认直接批量用于生产。实时状态与许可证见 [MANIFEST.md](MANIFEST.md) 和 [LICENSE](LICENSE)。
 
 ## 你可以用它做什么
 
@@ -149,4 +149,4 @@ R2、GitHub、腾讯云 COS 和阿里云 OSS 只在需要跨系统公开 URL、�
 
 ## 当前发布结论
 
-**Public Preview 候选：`Ready`；Stable：`BLOCK`。** Apache-2.0 许可证边界已明确，本地结构、模板、虚拟示例、发布治理脚本和 AllinCMS Adapter 已有机械测试与限定环境证据；但远端发布后重验、正式 qualification、真人批准、跨部署稳定性和一键安装 Skill 仍未完成。公开前不得写成已发布；公开后也只能宣称 Preview，不能宣称 Stable 或适用于所有 CMS 部署。
+**Public Preview：`Published`；Stable：`BLOCK`。** Apache-2.0 许可证边界已明确，本地结构、模板、虚拟示例、发布治理脚本和 AllinCMS Adapter 已有机械测试与限定环境证据；但正式 qualification、真人批准、跨部署稳定性和一键安装 Skill 仍未完成。当前只能宣称 Preview，不能宣称 Stable、production-ready 或适用于所有 CMS 部署。

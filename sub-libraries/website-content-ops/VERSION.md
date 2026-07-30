@@ -15,7 +15,7 @@ redaction_status: "safe-to-publish"
 
 - Package ID：`website-content-ops`
 - Version：`0.3.2-preview.1`
-- Publication：Public Preview candidate / not yet published（2026-07-30）
+- Publication：Public Preview / Published（2026-07-30）
 - Changelog：[CHANGELOG.md](CHANGELOG.md)
 - Release guide：[RELEASE.md](RELEASE.md)
 - Update URL：`https://fluxpedal.example/content-lab/updates`（虚拟演示）
@@ -28,7 +28,7 @@ redaction_status: "safe-to-publish"
 - PicGo 图床范围确定为 Cloudflare R2、GitHub、腾讯云 COS 和阿里云 OSS；
 - 课程入口收缩为“工具 → 知识 → 小样 → 验证写回”四步；
 - 新增客户聊天到 SEO/GEO 内容的第一条虚拟闭环；
-- 已有 AllinCMS 限定部署与本地 Adapter 证据；Public Preview 远端发布尚未完成，Stable qualification、跨部署迁移和生产稳定性仍未完成。
+- 已有 AllinCMS 限定部署与本地 Adapter 证据，Public Preview 已独立发布；Stable qualification、跨部署迁移和生产稳定性仍未完成。
 
 ## 0.2.0-draft
 

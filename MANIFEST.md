@@ -11,7 +11,7 @@ related: ["README.md", "CONTEXT.md", "AGENTS.md", "CLAUDE.md", "RELEASE.md", "VE
 visibility: "private"
 redaction_status: "private-source-reviewed"
 repository_status: "private-source"
-repository_sync_status: "Ready"
+repository_sync_status: "Synced"
 release_status: "BLOCK"
 maturity_status: "draft"
 verification_status: "evidence-partial"
@@ -36,7 +36,7 @@ raw_fixture_digests: ["raw/10_conversations/src-20260728-0001-knowledge-base-str
 
 本仓库是私有 canonical monorepo 母库源码，不是客户运行区，也不是把所有子库自动批准后的产品包。母库可以携带注册表中标记为 `source-only` 的公开子库源码快照，但这只表示源码分发，不授予任何子库独立发布资格；真实客户资料、账号、凭据、运行日志和私有 raw 必须在仓库外维护。
 
-`repository_sync_status: Ready` 只允许把当前源码同步到私有 canonical 仓。`release_status: BLOCK` 继续阻止把整个母库当作公开或稳定发行物；结构完整也不代表子库已稳定。
+`repository_sync_status: Synced` 表示当前源码已非覆盖地同步到私有 canonical 仓 `tony-apan/b2b-export-ai-workbench-source`。`release_status: BLOCK` 继续阻止把整个母库当作公开或稳定发行物；私有同步完成也不代表子库已稳定。
 
 ## 母库包包含
 

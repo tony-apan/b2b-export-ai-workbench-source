@@ -5,7 +5,7 @@ type: "adapter-index"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-27"
+last_updated: "2026-07-30"
 sources: ["../MENTAL-MODEL.md", "../PLAYBOOK.md"]
 related: ["_template.md", "image-upload-routing.md", "image-hosts/README.md", "cms/README.md", "cms/allincms/article-operations.md", "../TOOLS.md", "../TEMPLATES/tool-field-map.md", "../QA-CHECKLIST.md"]
 visibility: "public"
@@ -78,4 +78,4 @@ adapter 不是独立按钮教程，必须先引用 [MENTAL-MODEL.md](../MENTAL-M
 
 ## 当前状态
 
-AllinCMS 是当前默认图片实现；站点发现、单图零点击接口直传、10 张严格串行直传、1–5 图语义化浏览器回退、零点击媒体记录删除，以及一张获批虚拟媒体的 `title / alt / caption` 最终持久化已有真实证据。媒体 adapter 已补齐只读对账、原子图片索引、断点恢复、单写者锁、AI 元数据单次写入和停批规则，并通过 29 项媒体测试。当前部署的 Markdown A/B/A 正文草稿已完成 2 个资产、3 个 occurrence 的原位绑定、后台回读、编辑器重载、3/3 解码和 Caption 可见验证；文章图片 adapter 通过 50 项测试，并强制 schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 与整篇单次保存，保存后必须继续验证 Slate 编辑器存在、图片数量精确、全部解码、Caption 顺序一致和草稿标识。其他 AI 必须从 [AI 唯一执行入口](cms/allincms/AI-START-HERE.md) 开始。完整 `description`、notes 和结构化 metadata 只进入客户私有图片索引。PicGo 四种图床保留为外部备选。完整课程仍因任意大批次真实远程长跑、跨部署复杂正文、表格、公开主题 Alt、迁移和回滚证据不足而 `BLOCK`；媒体并发、一次请求多图和物理资产清理不再列为目标或阻断。
+AllinCMS 是当前默认图片实现；站点发现、单图零点击接口直传、10 张严格串行直传、1–5 图语义化浏览器回退、零点击媒体记录删除，以及一张获批虚拟媒体的 `title / alt / caption` 最终持久化已有真实证据。媒体 adapter 已补齐只读对账、原子图片索引、断点恢复、单写者锁、AI 元数据单次写入和停批规则，并通过 45 项媒体测试。当前部署的 Markdown A/B/A 正文草稿已完成 2 个资产、3 个 occurrence 的原位绑定、后台回读、编辑器重载、3/3 解码和 Caption 可见验证；文章图片 adapter 通过 50 项测试，并强制 schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 与整篇单次保存，保存后必须继续验证 Slate 编辑器存在、图片数量精确、全部解码、Caption 顺序一致和草稿标识。其他 AI 必须从 [AI 唯一执行入口](cms/allincms/AI-START-HERE.md) 开始。完整 `description`、notes 和结构化 metadata 只进入客户私有图片索引。PicGo 四种图床保留为外部备选。完整课程仍因任意大批次真实远程长跑、跨部署复杂正文、表格、公开主题 Alt、迁移和回滚证据不足而 `BLOCK`；媒体并发、一次请求多图和物理资产清理不再列为目标或阻断。

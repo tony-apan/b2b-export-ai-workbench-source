@@ -11,7 +11,7 @@ related: ["README.md", "COURSE-MAP.md", "WORKSPACE-TEMPLATE/README.md", "MENTAL-
 visibility: "public"
 redaction_status: "safe-to-publish"
 repository_status: "public-preview"
-preview_publication_status: "Ready"
+preview_publication_status: "Published"
 preview_version: "0.3.2-preview.1"
 preview_tag: "v0.3.2-preview.1"
 release_status: "Preview"
@@ -43,7 +43,7 @@ exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**
 
 ## 当前交付判断
 
-本目录已进入公开 Preview：可以下载、阅读并交给 AI 按 `START-HERE.md` 做本地试用和单样本验证。它仍不是 Stable 或 production-ready；`SKILL.md` 是预览级 AI 适配入口，不得外推为跨平台、跨部署稳定。正式 Stable qualification 仍需从本目录生成经过验收的候选，并排除母库路径、真实运行区、凭据和未授权素材。
+本目录已作为独立公开仓进入 Public Preview：可以下载、阅读并交给 AI 按 `START-HERE.md` 做本地试用和单样本验证。它仍不是 Stable 或 production-ready；`SKILL.md` 是预览级 AI 适配入口，不得外推为跨平台、跨部署稳定。正式 Stable qualification 仍需从本目录生成经过验收的候选，并排除母库路径、真实运行区、凭据和未授权素材。
 
 ## 学习层
 
@@ -108,4 +108,4 @@ exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**
 
 ## 当前发布结论
 
-**Public Preview 候选：`Ready`；Stable：`BLOCK`。** 当前允许在不覆盖既有仓库的前提下创建公开 Preview 仓并进行单样本交付；远端重验前不得写成 `Published`。课程效果、跨部署迁移能力、production-ready 和 Stable qualification 均不得宣称通过。
+**Public Preview：`Published`；Stable：`BLOCK`。** 独立公开仓已经建立，可按 `README.md` 与 `START-HERE.md` 做本地试用和单样本交付；这不证明课程效果、跨部署迁移能力、production-ready 或 Stable qualification。
