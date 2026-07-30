@@ -1,0 +1,719 @@
+name: Formal release qualification gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Exact signed annotated tag: mother/v<current-version> or sub-library/<id>/v<current-version>"
+        required: true
+        type: string
+      approval_sidecar_base64:
+        description: "Base64-encoded non-secret approval intent bound to the exact candidate and tag; validation evidence fields must be null"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: formal-release-qualification-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  isolated-runtime-tests:
+    name: Run candidate runtime tests in an isolated job
+    environment: formal-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      candidate_commit: ${{ steps.candidate_identity.outputs.candidate_commit }}
+      tag_object_sha: ${{ steps.candidate_identity.outputs.tag_object_sha }}
+      signer_fingerprint: ${{ steps.candidate_identity.outputs.signer_fingerprint }}
+      tag_annotation_sha256: ${{ steps.candidate_identity.outputs.tag_annotation_sha256 }}
+      tag_annotation_base64: ${{ steps.candidate_identity.outputs.tag_annotation_base64 }}
+      approval_binding_sha256: ${{ steps.candidate_identity.outputs.approval_binding_sha256 }}
+      runtime_image_digest: ${{ steps.runtime_tests.outputs.runtime_image_digest }}
+      expected_tests: ${{ steps.runtime_tests.outputs.expected_tests }}
+      passed_tests: ${{ steps.runtime_tests.outputs.passed_tests }}
+      failed_tests: ${{ steps.runtime_tests.outputs.failed_tests }}
+      skipped_tests: ${{ steps.runtime_tests.outputs.skipped_tests }}
+      runtime_output_sha256: ${{ steps.runtime_tests.outputs.runtime_output_sha256 }}
+      runtime_output_bytes: ${{ steps.runtime_tests.outputs.runtime_output_bytes }}
+      runtime_output_lines: ${{ steps.runtime_tests.outputs.runtime_output_lines }}
+    steps:
+      - name: Require protected governance anchor before candidate execution
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SELECTED_REF: ${{ github.ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          TRUSTED_WORKFLOW_SHA: ${{ vars.FORMAL_RELEASE_TRUSTED_WORKFLOW_SHA }}
+          ENVIRONMENT_READY: ${{ secrets.FORMAL_RELEASE_ENVIRONMENT_READY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$SELECTED_REF" != "refs/heads/$DEFAULT_BRANCH" ]]; then
+            echo "BLOCK: formal qualification must be dispatched from the repository default branch" >&2
+            exit 1
+          fi
+          if [[ ! "$TRUSTED_WORKFLOW_SHA" =~ ^[a-f0-9]{40}$ || "$WORKFLOW_SHA" != "$TRUSTED_WORKFLOW_SHA" ]]; then
+            echo "BLOCK: runtime-test job is not anchored to the externally pinned governance SHA" >&2
+            exit 1
+          fi
+          if [[ "$ENVIRONMENT_READY" != "release-governance-v1" ]]; then
+            echo "BLOCK: formal-release Environment is not explicitly enabled" >&2
+            exit 1
+          fi
+
+      - name: Checkout trusted governance code for runtime profile
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: governance
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout exact candidate tag for isolated runtime tests
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: refs/tags/${{ inputs.release_tag }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js for isolated runtime tests
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+
+      - name: Resolve runtime-test scope with trusted governance code
+        id: release
+        working-directory: governance
+        env:
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
+        run: node scripts/resolve-release-scope.mjs "$RELEASE_TRIGGER_TAG"
+
+      - name: Verify isolated candidate tag and signer
+        id: candidate_identity
+        working-directory: candidate
+        env:
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          TRUSTED_TAG_SIGNERS: ${{ vars.FORMAL_RELEASE_TRUSTED_TAG_SIGNERS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_ref="refs/tags/${RELEASE_TRIGGER_TAG}"
+          test "$(git cat-file -t "$tag_ref")" = "tag"
+          tag_object_sha="$(git rev-parse --verify "$tag_ref")"
+          candidate_commit="$(git rev-parse --verify "${tag_ref}^{commit}")"
+          test "$(git rev-parse HEAD)" = "$candidate_commit"
+          [[ "$tag_object_sha" =~ ^[a-f0-9]{40}([a-f0-9]{24})?$ ]]
+          [[ "$candidate_commit" =~ ^[a-f0-9]{40}([a-f0-9]{24})?$ ]]
+          verify_log="$RUNNER_TEMP/runtime-tag-verify.log"
+          if ! git verify-tag --raw "$tag_ref" 2>"$verify_log"; then
+            echo "BLOCK: release tag signature verification failed before runtime tests" >&2
+            exit 1
+          fi
+          fingerprint="$(awk '/\[GNUPG:\] VALIDSIG / { print toupper($3); exit }' "$verify_log")"
+          rm -f "$verify_log"
+          if [[ ! "$fingerprint" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
+            echo "BLOCK: release tag did not produce a valid GPG fingerprint" >&2
+            exit 1
+          fi
+          matched=0
+          while IFS= read -r allowed; do
+            [[ -z "$allowed" ]] && continue
+            if [[ ! "$allowed" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
+              echo "BLOCK: trusted signer allowlist contains an invalid fingerprint" >&2
+              exit 1
+            fi
+            [[ "$allowed" == "$fingerprint" ]] && matched=1
+          done < <(printf '%s' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
+          if [[ "$matched" != "1" ]]; then
+            echo "BLOCK: release tag signer fingerprint is not allowlisted" >&2
+            exit 1
+          fi
+          tag_object_file="$RUNNER_TEMP/runtime-tag-object.txt"
+          annotation_outputs="$RUNNER_TEMP/runtime-tag-annotation.outputs"
+          git cat-file tag "$tag_ref" > "$tag_object_file"
+          node - "$tag_object_file" "$annotation_outputs" <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const raw = fs.readFileSync(process.argv[2], 'utf8');
+          const separator = raw.indexOf('\n\n');
+          const marker = '\n-----BEGIN PGP SIGNATURE-----';
+          if (separator < 0) throw new Error('BLOCK: signed tag object is missing its message separator');
+          const body = raw.slice(separator + 2);
+          const signatureIndex = body.indexOf(marker);
+          if (signatureIndex < 0) throw new Error('BLOCK: signed tag object is missing an inline GPG signature');
+          const message = body.slice(0, signatureIndex);
+          if (!message || message.includes('\n') || message.includes('\r')) throw new Error('BLOCK: tag annotation must be one canonical JSON line');
+          const canonical = (value) => value === null || ['boolean', 'string', 'number'].includes(typeof value)
+            ? JSON.stringify(value)
+            : Array.isArray(value)
+              ? `[${value.map(canonical).join(',')}]`
+              : `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
+          const annotation = JSON.parse(message);
+          const keys = Object.keys(annotation).sort();
+          const expectedKeys = ['approval_binding_sha256','approval_id','candidate_content_digest','schema','scope','version'];
+          if (JSON.stringify(keys) !== JSON.stringify(expectedKeys) || !annotation.scope || JSON.stringify(Object.keys(annotation.scope).sort()) !== JSON.stringify(['id','kind'])) throw new Error('BLOCK: tag annotation schema is incomplete or unsupported');
+          if (canonical(annotation) !== message) throw new Error('BLOCK: tag annotation is not canonical JSON');
+          if (annotation.schema !== 'release-tag-annotation/v1' || !/^APR-[A-Z0-9-]+$/.test(annotation.approval_id) || !/^[a-f0-9]{64}$/.test(annotation.approval_binding_sha256) || !/^[a-f0-9]{64}$/.test(annotation.candidate_content_digest)) throw new Error('BLOCK: tag annotation values are invalid');
+          const sha = crypto.createHash('sha256').update(message, 'utf8').digest('hex');
+          fs.writeFileSync(process.argv[3], `tag_annotation_sha256=${sha}\ntag_annotation_base64=${Buffer.from(message, 'utf8').toString('base64')}\napproval_binding_sha256=${annotation.approval_binding_sha256}\n`);
+          NODE
+          cat "$annotation_outputs" >> "$GITHUB_OUTPUT"
+          printf 'candidate_commit=%s\n' "$candidate_commit" >> "$GITHUB_OUTPUT"
+          printf 'tag_object_sha=%s\n' "$tag_object_sha" >> "$GITHUB_OUTPUT"
+          printf 'signer_fingerprint=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+
+      - name: Prove trusted runtime-test profile and materialize isolated subject
+        if: steps.release.outputs.scope == 'sub-library'
+        working-directory: governance
+        env:
+          PACKAGE_ID: ${{ steps.release.outputs.package_id }}
+          PACKAGE_PATH: ${{ steps.release.outputs.path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          diff -qr scripts "${GITHUB_WORKSPACE}/candidate/scripts"
+          diff -q .github/workflows/release-library.yml "${GITHUB_WORKSPACE}/candidate/.github/workflows/release-library.yml"
+          diff -q sub-libraries/registry.json "${GITHUB_WORKSPACE}/candidate/sub-libraries/registry.json"
+          diff -qr "$PACKAGE_PATH/scripts" "${GITHUB_WORKSPACE}/candidate/$PACKAGE_PATH/scripts"
+          node scripts/verify-runtime-test-profile.mjs \
+            --trusted-root "$GITHUB_WORKSPACE/governance" \
+            --candidate-root "$GITHUB_WORKSPACE/candidate" \
+            --package-id "$PACKAGE_ID" \
+            --subject-root "$RUNNER_TEMP/runtime-subject"
+
+      - name: Run selected sub-library tests in a filesystem-isolated container
+        id: runtime_tests
+        if: steps.release.outputs.scope == 'sub-library'
+        working-directory: governance
+        env:
+          PACKAGE_ID: ${{ steps.release.outputs.package_id }}
+          RUNTIME_IMAGE_DIGEST: ${{ vars.FORMAL_RELEASE_NODE20_IMAGE_DIGEST }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$PACKAGE_ID" in
+            website-content-ops)
+              if [[ ! "$RUNTIME_IMAGE_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+                echo "BLOCK: FORMAL_RELEASE_NODE20_IMAGE_DIGEST is missing or invalid" >&2
+                exit 1
+              fi
+              runtime_image="node:20-bookworm-slim@$RUNTIME_IMAGE_DIGEST"
+              subject="$RUNNER_TEMP/runtime-subject"
+              test_log="$RUNNER_TEMP/website-content-ops-node-test.tap"
+              docker pull "$runtime_image"
+              docker run --rm \
+                --network bridge \
+                --cap-drop ALL \
+                --security-opt no-new-privileges \
+                --pids-limit 256 \
+                --memory 1g \
+                --cpus 2 \
+                --mount "type=bind,src=$subject,dst=/subject" \
+                --workdir /subject \
+                --env HOME=/scratch/npm-home \
+                --env CI=true \
+                --tmpfs /tmp:rw,nosuid,nodev,size=256m \
+                --tmpfs /scratch:rw,nosuid,nodev,size=32m \
+                "$runtime_image" \
+                sh -ceu 'mkdir -p "$HOME"; npm ci --ignore-scripts --no-audit --no-fund --userconfig "$HOME/.npmrc"'
+              if ! docker run --rm \
+                --network none \
+                --read-only \
+                --user 65532:65532 \
+                --cap-drop ALL \
+                --security-opt no-new-privileges \
+                --pids-limit 128 \
+                --memory 1g \
+                --cpus 2 \
+                --mount "type=bind,src=$subject,dst=/subject,readonly" \
+                --workdir /subject \
+                --env HOME=/scratch/test-home \
+                --env CI=true \
+                --tmpfs /tmp:rw,noexec,nosuid,nodev,size=256m \
+                --tmpfs /scratch:rw,noexec,nosuid,nodev,size=32m \
+                "$runtime_image" \
+                sh -ceu 'mkdir -p "$HOME"; exec node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs' \
+                > "$test_log" 2>&1; then
+                cat "$test_log"
+                echo "BLOCK: isolated trusted Node test command failed" >&2
+                exit 1
+              fi
+              cat "$test_log"
+              node scripts/verify-node-test-summary.mjs \
+                --log "$test_log" \
+                --expected-tests 131
+              runtime_output_sha256="$(sha256sum "$test_log" | awk '{print $1}')"
+              runtime_output_bytes="$(wc -c < "$test_log" | tr -d '[:space:]')"
+              runtime_output_lines="$(wc -l < "$test_log" | tr -d '[:space:]')"
+              printf 'runtime_image_digest=%s\n' "$RUNTIME_IMAGE_DIGEST" >> "$GITHUB_OUTPUT"
+              printf 'runtime_output_sha256=%s\nruntime_output_bytes=%s\nruntime_output_lines=%s\n' "$runtime_output_sha256" "$runtime_output_bytes" "$runtime_output_lines" >> "$GITHUB_OUTPUT"
+              printf 'expected_tests=131\npassed_tests=131\nfailed_tests=0\nskipped_tests=0\n' >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "BLOCK: no trusted formal qualification test profile exists for sub-library $PACKAGE_ID" >&2
+              exit 1
+              ;;
+          esac
+
+  formal-release-qualification:
+    name: Qualify one approved release scope
+    needs: isolated-runtime-tests
+    environment: formal-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Require protected governance anchor
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SELECTED_REF: ${{ github.ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          TRUSTED_WORKFLOW_SHA: ${{ vars.FORMAL_RELEASE_TRUSTED_WORKFLOW_SHA }}
+          ENVIRONMENT_READY: ${{ secrets.FORMAL_RELEASE_ENVIRONMENT_READY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$SELECTED_REF" != "refs/heads/$DEFAULT_BRANCH" ]]; then
+            echo "BLOCK: formal qualification must be dispatched from the repository default branch" >&2
+            exit 1
+          fi
+          if [[ ! "$TRUSTED_WORKFLOW_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "BLOCK: FORMAL_RELEASE_TRUSTED_WORKFLOW_SHA is missing or invalid" >&2
+            exit 1
+          fi
+          if [[ "$WORKFLOW_SHA" != "$TRUSTED_WORKFLOW_SHA" ]]; then
+            echo "BLOCK: workflow SHA is not the externally pinned governance SHA" >&2
+            exit 1
+          fi
+          if [[ "$ENVIRONMENT_READY" != "release-governance-v1" ]]; then
+            echo "BLOCK: formal-release Environment is not explicitly enabled" >&2
+            exit 1
+          fi
+
+      - name: Checkout trusted governance code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: governance
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout exact candidate tag
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: refs/tags/${{ inputs.release_tag }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+
+      - name: Resolve release scope with trusted governance code
+        id: release
+        working-directory: governance
+        env:
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
+        run: node scripts/resolve-release-scope.mjs "$RELEASE_TRIGGER_TAG"
+
+      - name: Verify candidate tag object, commit, and trusted signer
+        id: candidate_identity
+        working-directory: candidate
+        env:
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          TRUSTED_TAG_SIGNERS: ${{ vars.FORMAL_RELEASE_TRUSTED_TAG_SIGNERS }}
+          TESTED_CANDIDATE_COMMIT: ${{ needs.isolated-runtime-tests.outputs.candidate_commit }}
+          TESTED_TAG_OBJECT_SHA: ${{ needs.isolated-runtime-tests.outputs.tag_object_sha }}
+          TESTED_SIGNER_FINGERPRINT: ${{ needs.isolated-runtime-tests.outputs.signer_fingerprint }}
+          TESTED_TAG_ANNOTATION_SHA256: ${{ needs.isolated-runtime-tests.outputs.tag_annotation_sha256 }}
+          TESTED_APPROVAL_BINDING_SHA256: ${{ needs.isolated-runtime-tests.outputs.approval_binding_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_ref="refs/tags/${RELEASE_TRIGGER_TAG}"
+          test "$(git cat-file -t "$tag_ref")" = "tag"
+          tag_object_sha="$(git rev-parse --verify "$tag_ref")"
+          candidate_commit="$(git rev-parse --verify "${tag_ref}^{commit}")"
+          test "$(git rev-parse HEAD)" = "$candidate_commit"
+          node "$GITHUB_WORKSPACE/governance/scripts/verify-tested-candidate-identity.mjs" \
+            --expected-commit "$TESTED_CANDIDATE_COMMIT" \
+            --expected-tag-object "$TESTED_TAG_OBJECT_SHA" \
+            --actual-commit "$candidate_commit" \
+            --actual-tag-object "$tag_object_sha"
+          verify_log="$RUNNER_TEMP/tag-verify.log"
+          if ! git verify-tag --raw "$tag_ref" 2>"$verify_log"; then
+            echo "BLOCK: release tag signature verification failed" >&2
+            exit 1
+          fi
+          fingerprint="$(awk '/\[GNUPG:\] VALIDSIG / { print toupper($3); exit }' "$verify_log")"
+          rm -f "$verify_log"
+          if [[ ! "$fingerprint" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
+            echo "BLOCK: release tag did not produce a valid GPG fingerprint" >&2
+            exit 1
+          fi
+          matched=0
+          while IFS= read -r allowed; do
+            [[ -z "$allowed" ]] && continue
+            if [[ ! "$allowed" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
+              echo "BLOCK: trusted signer allowlist contains an invalid fingerprint" >&2
+              exit 1
+            fi
+            [[ "$allowed" == "$fingerprint" ]] && matched=1
+          done < <(printf '%s' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
+          if [[ "$matched" != "1" ]]; then
+            echo "BLOCK: release tag signer fingerprint is not allowlisted" >&2
+            exit 1
+          fi
+          tag_object_file="$RUNNER_TEMP/qualification-tag-object.txt"
+          annotation_outputs="$RUNNER_TEMP/qualification-tag-annotation.outputs"
+          git cat-file tag "$tag_ref" > "$tag_object_file"
+          node - "$tag_object_file" "$annotation_outputs" <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const raw = fs.readFileSync(process.argv[2], 'utf8');
+          const separator = raw.indexOf('\n\n');
+          const marker = '\n-----BEGIN PGP SIGNATURE-----';
+          if (separator < 0) throw new Error('BLOCK: signed tag object is missing its message separator');
+          const body = raw.slice(separator + 2);
+          const signatureIndex = body.indexOf(marker);
+          if (signatureIndex < 0) throw new Error('BLOCK: signed tag object is missing an inline GPG signature');
+          const message = body.slice(0, signatureIndex);
+          if (!message || message.includes('\n') || message.includes('\r')) throw new Error('BLOCK: tag annotation must be one canonical JSON line');
+          const canonical = (value) => value === null || ['boolean', 'string', 'number'].includes(typeof value)
+            ? JSON.stringify(value)
+            : Array.isArray(value)
+              ? `[${value.map(canonical).join(',')}]`
+              : `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
+          const annotation = JSON.parse(message);
+          const keys = Object.keys(annotation).sort();
+          const expectedKeys = ['approval_binding_sha256','approval_id','candidate_content_digest','schema','scope','version'];
+          if (JSON.stringify(keys) !== JSON.stringify(expectedKeys) || !annotation.scope || JSON.stringify(Object.keys(annotation.scope).sort()) !== JSON.stringify(['id','kind'])) throw new Error('BLOCK: tag annotation schema is incomplete or unsupported');
+          if (canonical(annotation) !== message) throw new Error('BLOCK: tag annotation is not canonical JSON');
+          if (annotation.schema !== 'release-tag-annotation/v1' || !/^APR-[A-Z0-9-]+$/.test(annotation.approval_id) || !/^[a-f0-9]{64}$/.test(annotation.approval_binding_sha256) || !/^[a-f0-9]{64}$/.test(annotation.candidate_content_digest)) throw new Error('BLOCK: tag annotation values are invalid');
+          const sha = crypto.createHash('sha256').update(message, 'utf8').digest('hex');
+          fs.writeFileSync(process.argv[3], `tag_annotation_sha256=${sha}\ntag_annotation_base64=${Buffer.from(message, 'utf8').toString('base64')}\napproval_binding_sha256=${annotation.approval_binding_sha256}\n`);
+          NODE
+          cat "$annotation_outputs" >> "$GITHUB_OUTPUT"
+          tag_annotation_sha256="$(sed -n 's/^tag_annotation_sha256=//p' "$annotation_outputs")"
+          approval_binding_sha256="$(sed -n 's/^approval_binding_sha256=//p' "$annotation_outputs")"
+          test "$fingerprint" = "$TESTED_SIGNER_FINGERPRINT"
+          test "$tag_annotation_sha256" = "$TESTED_TAG_ANNOTATION_SHA256"
+          test "$approval_binding_sha256" = "$TESTED_APPROVAL_BINDING_SHA256"
+          printf 'candidate_commit=%s\n' "$candidate_commit" >> "$GITHUB_OUTPUT"
+          printf 'tag_object_sha=%s\n' "$tag_object_sha" >> "$GITHUB_OUTPUT"
+          printf 'signer_fingerprint=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+
+      - name: Prove candidate cannot replace the governance gate
+        env:
+          PACKAGE_PATH: ${{ steps.release.outputs.path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          diff -qr governance/scripts candidate/scripts
+          diff -q governance/.github/workflows/release-library.yml candidate/.github/workflows/release-library.yml
+          diff -q governance/sub-libraries/registry.json candidate/sub-libraries/registry.json
+          if [[ "${{ steps.release.outputs.scope }}" == "sub-library" ]]; then
+            diff -qr "governance/$PACKAGE_PATH/scripts" "candidate/$PACKAGE_PATH/scripts"
+          fi
+
+      - name: Decode non-secret approval intent without printing it
+        id: approval_intent
+        env:
+          APPROVAL_SIDECAR_BASE64: ${{ inputs.approval_sidecar_base64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sidecar="$RUNNER_TEMP/RELEASE-APPROVAL-INTENT.json"
+          umask 077
+          if [[ -z "$APPROVAL_SIDECAR_BASE64" ]]; then
+            echo "BLOCK: approval_sidecar_base64 is empty" >&2
+            exit 1
+          fi
+          if ! printf '%s' "$APPROVAL_SIDECAR_BASE64" | base64 --decode > "$sidecar"; then
+            echo "BLOCK: approval_sidecar_base64 is not valid base64" >&2
+            exit 1
+          fi
+          if [[ ! -s "$sidecar" ]]; then
+            echo "BLOCK: decoded approval sidecar is empty" >&2
+            exit 1
+          fi
+          node - "$sidecar" <<'NODE'
+          const approval = JSON.parse(require('node:fs').readFileSync(process.argv[2], 'utf8'));
+          const validation = approval.validation ?? {};
+          if (validation.evidence_bundle !== null || validation.evidence_digest !== null || validation.completed_at !== null) {
+            throw new Error('BLOCK: dispatcher approval intent must not inject final governance evidence fields');
+          }
+          NODE
+          printf 'path=%s\n' "$sidecar" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce mother-library qualification gate
+        id: mother_candidate
+        if: steps.release.outputs.scope == 'mother-library'
+        working-directory: candidate
+        env:
+          SOURCE_DATE_EPOCH: "0"
+          RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
+          RELEASE_REQUIRE_GIT_TAG: "1"
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          RELEASE_ACTUAL_TAG_OBJECT_SHA: ${{ steps.candidate_identity.outputs.tag_object_sha }}
+          RELEASE_ACTUAL_TAG_SIGNER_FINGERPRINT: ${{ steps.candidate_identity.outputs.signer_fingerprint }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_SHA256: ${{ steps.candidate_identity.outputs.tag_annotation_sha256 }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_BASE64: ${{ steps.candidate_identity.outputs.tag_annotation_base64 }}
+          RELEASE_ACTUAL_APPROVAL_BINDING_SHA256: ${{ steps.candidate_identity.outputs.approval_binding_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-governance-tests.mjs --timeout-ms 30000
+          node scripts/validate-indexes.mjs --strict
+          node scripts/validate-links.mjs --release
+          node scripts/validate-document-ids.mjs
+          node scripts/validate-mother-library.mjs --release
+          node scripts/validate-logs.mjs --release
+          node scripts/validate-knowledge-chain.mjs --release
+          prepare_log="$RUNNER_TEMP/mother-prepare.log"
+          node scripts/build-mother-release.mjs --prepare | tee "$prepare_log"
+          candidate_path="$(sed -nE 's/^(PREPARED_UNAPPROVED_CANDIDATE|PREPARED_CANDIDATE_REUSED): //p' "$prepare_log" | tail -1)"
+          [[ -n "$candidate_path" && -d "$candidate_path" ]] || { echo "BLOCK: mother prepare did not return a frozen candidate path" >&2; exit 1; }
+          node scripts/validate-artifact.mjs --prepare "$candidate_path"
+          printf 'candidate_path=%s\n' "$candidate_path" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce selected sub-library qualification gate
+        id: sub_library_candidate
+        if: steps.release.outputs.scope == 'sub-library'
+        working-directory: candidate
+        env:
+          SOURCE_DATE_EPOCH: "0"
+          RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
+          RELEASE_REQUIRE_GIT_TAG: "1"
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          RELEASE_ACTUAL_TAG_OBJECT_SHA: ${{ steps.candidate_identity.outputs.tag_object_sha }}
+          RELEASE_ACTUAL_TAG_SIGNER_FINGERPRINT: ${{ steps.candidate_identity.outputs.signer_fingerprint }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_SHA256: ${{ steps.candidate_identity.outputs.tag_annotation_sha256 }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_BASE64: ${{ steps.candidate_identity.outputs.tag_annotation_base64 }}
+          RELEASE_ACTUAL_APPROVAL_BINDING_SHA256: ${{ steps.candidate_identity.outputs.approval_binding_sha256 }}
+          PACKAGE_PATH: ${{ steps.release.outputs.path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-governance-tests.mjs --timeout-ms 30000
+          node scripts/validate-indexes.mjs --strict
+          node scripts/validate-links.mjs --release
+          node scripts/validate-document-ids.mjs --scope "sub-library:${{ steps.release.outputs.package_id }}"
+          node "$PACKAGE_PATH/scripts/validate-sub-library.mjs" --release
+          prepare_log="$RUNNER_TEMP/sub-library-prepare.log"
+          node "$PACKAGE_PATH/scripts/build-release.mjs" --prepare | tee "$prepare_log"
+          candidate_path="$(sed -nE 's/^(PREPARED_UNAPPROVED_CANDIDATE|PREPARED_CANDIDATE_REUSED): //p' "$prepare_log" | tail -1)"
+          [[ -n "$candidate_path" && -d "$candidate_path" ]] || { echo "BLOCK: sub-library prepare did not return a frozen candidate path" >&2; exit 1; }
+          node "$candidate_path/scripts/validate-artifact.mjs" --prepare "$candidate_path"
+          printf 'candidate_path=%s\n' "$candidate_path" >> "$GITHUB_OUTPUT"
+
+      - name: Generate trusted fixed-profile evidence from actual job outputs
+        id: evidence
+        working-directory: governance
+        env:
+          RELEASE_ACTUAL_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          RELEASE_ACTUAL_RUN_ID: ${{ github.run_id }}
+          RELEASE_ACTUAL_RUN_ATTEMPT: ${{ github.run_attempt }}
+          RELEASE_ACTUAL_JOB_ID: ${{ github.job }}
+          RELEASE_ACTUAL_RUNTIME_JOB_ID: isolated-runtime-tests
+          RELEASE_ACTUAL_CANDIDATE_COMMIT: ${{ steps.candidate_identity.outputs.candidate_commit }}
+          RELEASE_ACTUAL_TAG_NAME: ${{ inputs.release_tag }}
+          RELEASE_ACTUAL_TAG_OBJECT_SHA: ${{ steps.candidate_identity.outputs.tag_object_sha }}
+          RELEASE_ACTUAL_TAG_SIGNER_FINGERPRINT: ${{ steps.candidate_identity.outputs.signer_fingerprint }}
+          RELEASE_ACTUAL_RUNTIME_IMAGE_DIGEST: ${{ needs.isolated-runtime-tests.outputs.runtime_image_digest }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_SHA256: ${{ needs.isolated-runtime-tests.outputs.runtime_output_sha256 }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_BYTES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_bytes }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_LINES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_lines }}
+          RELEASE_ACTUAL_RUNTIME_EXPECTED_TESTS: ${{ needs.isolated-runtime-tests.outputs.expected_tests }}
+          RELEASE_ACTUAL_RUNTIME_PASSED_TESTS: ${{ needs.isolated-runtime-tests.outputs.passed_tests }}
+          RELEASE_ACTUAL_RUNTIME_FAILED_TESTS: ${{ needs.isolated-runtime-tests.outputs.failed_tests }}
+          RELEASE_ACTUAL_RUNTIME_SKIPPED_TESTS: ${{ needs.isolated-runtime-tests.outputs.skipped_tests }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.release.outputs.scope }}" == "mother-library" ]]; then
+            candidate_path="${{ steps.mother_candidate.outputs.candidate_path }}"
+          else
+            candidate_path="${{ steps.sub_library_candidate.outputs.candidate_path }}"
+          fi
+          evidence_root="$RUNNER_TEMP/release-evidence"
+          rm -rf "$evidence_root"
+          export RELEASE_EVIDENCE_COMPLETED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          node scripts/generate-release-evidence.mjs \
+            --scope "${{ steps.release.outputs.scope }}" \
+            --package-id "${{ steps.release.outputs.package_id }}" \
+            --source-root "$GITHUB_WORKSPACE/candidate" \
+            --candidate "$candidate_path" \
+            --approval-intent "${{ steps.approval_intent.outputs.path }}" \
+            --output-root "$evidence_root"
+          printf 'path=%s\n' "$evidence_root/RELEASE-EVIDENCE.json" >> "$GITHUB_OUTPUT"
+          printf 'root=%s\n' "$evidence_root" >> "$GITHUB_OUTPUT"
+
+      - name: Finalize approval sidecar with trusted evidence digest
+        id: approval
+        working-directory: governance
+        shell: bash
+        run: |
+          set -euo pipefail
+          finalized="$RUNNER_TEMP/RELEASE-APPROVAL.json"
+          node scripts/finalize-release-approval.mjs \
+            --approval-intent "${{ steps.approval_intent.outputs.path }}" \
+            --evidence "${{ steps.evidence.outputs.path }}" \
+            --output "$finalized"
+          printf 'path=%s\n' "$finalized" >> "$GITHUB_OUTPUT"
+
+      - name: Validate trusted evidence and finalized approval against the frozen candidate
+        working-directory: governance
+        env:
+          RELEASE_REQUIRE_TRUSTED_EVIDENCE: "1"
+          RELEASE_TRUSTED_GOVERNANCE_ROOT: ${{ github.workspace }}/governance
+          RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
+          RELEASE_REQUIRE_GIT_TAG: "1"
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          RELEASE_ACTUAL_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          RELEASE_ACTUAL_RUN_ID: ${{ github.run_id }}
+          RELEASE_ACTUAL_RUN_ATTEMPT: ${{ github.run_attempt }}
+          RELEASE_ACTUAL_JOB_ID: ${{ github.job }}
+          RELEASE_ACTUAL_RUNTIME_JOB_ID: isolated-runtime-tests
+          RELEASE_ACTUAL_CANDIDATE_COMMIT: ${{ steps.candidate_identity.outputs.candidate_commit }}
+          RELEASE_ACTUAL_TAG_NAME: ${{ inputs.release_tag }}
+          RELEASE_ACTUAL_TAG_OBJECT_SHA: ${{ steps.candidate_identity.outputs.tag_object_sha }}
+          RELEASE_ACTUAL_TAG_SIGNER_FINGERPRINT: ${{ steps.candidate_identity.outputs.signer_fingerprint }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_SHA256: ${{ steps.candidate_identity.outputs.tag_annotation_sha256 }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_BASE64: ${{ steps.candidate_identity.outputs.tag_annotation_base64 }}
+          RELEASE_ACTUAL_APPROVAL_BINDING_SHA256: ${{ steps.candidate_identity.outputs.approval_binding_sha256 }}
+          RELEASE_ACTUAL_RUNTIME_IMAGE_DIGEST: ${{ needs.isolated-runtime-tests.outputs.runtime_image_digest }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_SHA256: ${{ needs.isolated-runtime-tests.outputs.runtime_output_sha256 }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_BYTES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_bytes }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_LINES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_lines }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.release.outputs.scope }}" == "mother-library" ]]; then
+            candidate_path="${{ steps.mother_candidate.outputs.candidate_path }}"
+          else
+            candidate_path="${{ steps.sub_library_candidate.outputs.candidate_path }}"
+          fi
+          node scripts/validate-release-approval.mjs "$candidate_path" "${{ steps.approval.outputs.path }}" "${{ steps.evidence.outputs.path }}"
+
+      - name: Freeze the qualified artifact by content digest
+        id: artifact
+        working-directory: candidate
+        env:
+          RELEASE_SCOPE: ${{ steps.release.outputs.scope }}
+          PACKAGE_ID: ${{ steps.release.outputs.package_id }}
+          PACKAGE_PATH: ${{ steps.release.outputs.path }}
+          VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
+          RELEASE_REQUIRE_GIT_TAG: "1"
+          RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
+          RELEASE_ACTUAL_TAG_OBJECT_SHA: ${{ steps.candidate_identity.outputs.tag_object_sha }}
+          RELEASE_ACTUAL_TAG_SIGNER_FINGERPRINT: ${{ steps.candidate_identity.outputs.signer_fingerprint }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_SHA256: ${{ steps.candidate_identity.outputs.tag_annotation_sha256 }}
+          RELEASE_ACTUAL_TAG_ANNOTATION_BASE64: ${{ steps.candidate_identity.outputs.tag_annotation_base64 }}
+          RELEASE_ACTUAL_APPROVAL_BINDING_SHA256: ${{ steps.candidate_identity.outputs.approval_binding_sha256 }}
+          RELEASE_REQUIRE_TRUSTED_EVIDENCE: "1"
+          RELEASE_TRUSTED_GOVERNANCE_ROOT: ${{ github.workspace }}/governance
+          RELEASE_ACTUAL_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          RELEASE_ACTUAL_RUN_ID: ${{ github.run_id }}
+          RELEASE_ACTUAL_RUN_ATTEMPT: ${{ github.run_attempt }}
+          RELEASE_ACTUAL_JOB_ID: ${{ github.job }}
+          RELEASE_ACTUAL_RUNTIME_JOB_ID: isolated-runtime-tests
+          RELEASE_ACTUAL_CANDIDATE_COMMIT: ${{ steps.candidate_identity.outputs.candidate_commit }}
+          RELEASE_ACTUAL_TAG_NAME: ${{ inputs.release_tag }}
+          RELEASE_ACTUAL_RUNTIME_IMAGE_DIGEST: ${{ needs.isolated-runtime-tests.outputs.runtime_image_digest }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_SHA256: ${{ needs.isolated-runtime-tests.outputs.runtime_output_sha256 }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_BYTES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_bytes }}
+          RELEASE_ACTUAL_RUNTIME_OUTPUT_LINES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_lines }}
+          RELEASE_APPROVAL_PATH: ${{ steps.approval.outputs.path }}
+          RELEASE_EVIDENCE_PATH: ${{ steps.evidence.outputs.path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$RELEASE_SCOPE" == "mother-library" ]]; then
+            artifact_root="${{ steps.mother_candidate.outputs.candidate_path }}"
+          else
+            artifact_root="${{ steps.sub_library_candidate.outputs.candidate_path }}"
+          fi
+          [[ -n "$artifact_root" && -d "$artifact_root" ]] || { echo "BLOCK: frozen candidate path is missing" >&2; exit 1; }
+          content_digest="$(node -e "const fs=require('node:fs'); const m=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!/^[a-f0-9]{64}$/.test(m.content_digest||'')) process.exit(1); process.stdout.write(m.content_digest)" "$artifact_root/MANIFEST.json")"
+          archive_name="${PACKAGE_ID}-${VERSION}-${content_digest}.tar.gz"
+          archive_path="$RUNNER_TEMP/$archive_name"
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -C "$artifact_root" -cf - . | gzip -n > "$archive_path"
+          (cd "$RUNNER_TEMP" && sha256sum "$archive_name" > "$archive_name.sha256")
+          archive_verification_root="$RUNNER_TEMP/archive-verification/prepared/v${VERSION}/${content_digest}"
+          rm -rf "$RUNNER_TEMP/archive-verification"
+          mkdir -p "$archive_verification_root"
+          tar -xzf "$archive_path" -C "$archive_verification_root"
+          node "$GITHUB_WORKSPACE/governance/scripts/validate-release-approval.mjs" "$archive_verification_root" "$RELEASE_APPROVAL_PATH" "$RELEASE_EVIDENCE_PATH"
+          if [[ "$RELEASE_SCOPE" == "mother-library" ]]; then
+            node "$archive_verification_root/scripts/validate-artifact.mjs" --release "$archive_verification_root"
+          else
+            node "$archive_verification_root/scripts/validate-artifact.mjs" --prepare "$archive_verification_root"
+          fi
+          printf 'name=%s\n' "qualification-${PACKAGE_ID}-${content_digest}" >> "$GITHUB_OUTPUT"
+          printf 'path=%s\n' "$archive_path" >> "$GITHUB_OUTPUT"
+          printf 'checksum_path=%s\n' "$archive_path.sha256" >> "$GITHUB_OUTPUT"
+          printf 'content_digest=%s\n' "$content_digest" >> "$GITHUB_OUTPUT"
+          printf 'artifact_root=%s\n' "$artifact_root" >> "$GITHUB_OUTPUT"
+          printf 'verified_tree_root=%s\n' "$archive_verification_root" >> "$GITHUB_OUTPUT"
+
+      - name: Create qualification attestation outside the frozen candidate
+        id: attestation
+        working-directory: governance
+        env:
+          QUALIFICATION_SCOPE: ${{ steps.release.outputs.scope }}
+          QUALIFICATION_PACKAGE_ID: ${{ steps.release.outputs.package_id }}
+          QUALIFICATION_VERSION: ${{ steps.release.outputs.version }}
+          QUALIFICATION_CONTENT_DIGEST: ${{ steps.artifact.outputs.content_digest }}
+          QUALIFICATION_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          QUALIFICATION_RUN_ID: ${{ github.run_id }}
+          QUALIFICATION_RUN_ATTEMPT: ${{ github.run_attempt }}
+          QUALIFICATION_CANDIDATE_COMMIT: ${{ needs.isolated-runtime-tests.outputs.candidate_commit }}
+          QUALIFICATION_TAG_OBJECT_SHA: ${{ steps.candidate_identity.outputs.tag_object_sha }}
+          QUALIFICATION_TAG_NAME: ${{ inputs.release_tag }}
+          QUALIFICATION_SIGNER_FINGERPRINT: ${{ steps.candidate_identity.outputs.signer_fingerprint }}
+          QUALIFICATION_TAG_ANNOTATION_SHA256: ${{ steps.candidate_identity.outputs.tag_annotation_sha256 }}
+          QUALIFICATION_TAG_ANNOTATION_BASE64: ${{ steps.candidate_identity.outputs.tag_annotation_base64 }}
+          QUALIFICATION_APPROVAL_BINDING_SHA256: ${{ steps.candidate_identity.outputs.approval_binding_sha256 }}
+          QUALIFICATION_RUNTIME_STATUS: ${{ steps.release.outputs.scope == 'sub-library' && 'runtime_verified' || 'runtime_not_applicable' }}
+          QUALIFICATION_RUNTIME_REASON: ${{ steps.release.outputs.scope == 'sub-library' && 'trusted-sub-library-runtime-profile' || 'mother-library-machine-contract-declares-none' }}
+          QUALIFICATION_RUNTIME_IMAGE_DIGEST: ${{ needs.isolated-runtime-tests.outputs.runtime_image_digest }}
+          QUALIFICATION_EXPECTED_TESTS: ${{ steps.release.outputs.scope == 'sub-library' && needs.isolated-runtime-tests.outputs.expected_tests || '0' }}
+          QUALIFICATION_PASSED_TESTS: ${{ steps.release.outputs.scope == 'sub-library' && needs.isolated-runtime-tests.outputs.passed_tests || '0' }}
+          QUALIFICATION_FAILED_TESTS: ${{ steps.release.outputs.scope == 'sub-library' && needs.isolated-runtime-tests.outputs.failed_tests || '0' }}
+          QUALIFICATION_SKIPPED_TESTS: ${{ steps.release.outputs.scope == 'sub-library' && needs.isolated-runtime-tests.outputs.skipped_tests || '0' }}
+          QUALIFICATION_TEST_PLAN_JSON: ${{ steps.release.outputs.scope == 'sub-library' && '["upload-media-browser.test.mjs","article-image-binding.test.mjs","article-operations.test.mjs"]' || '[]' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          attestation="$RUNNER_TEMP/QUALIFICATION-ATTESTATION.json"
+          export QUALIFICATION_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          node scripts/create-qualification-attestation.mjs \
+            --candidate "${{ steps.artifact.outputs.artifact_root }}" \
+            --verified-tree "${{ steps.artifact.outputs.verified_tree_root }}" \
+            --archive "${{ steps.artifact.outputs.path }}" \
+            --checksum "${{ steps.artifact.outputs.checksum_path }}" \
+            --approval "${{ steps.approval.outputs.path }}" \
+            --evidence "${{ steps.evidence.outputs.path }}" \
+            --output "$attestation"
+          printf 'path=%s\n' "$attestation" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the exact qualified artifact and attestation
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: |
+            ${{ steps.artifact.outputs.path }}
+            ${{ steps.artifact.outputs.checksum_path }}
+            ${{ steps.attestation.outputs.path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

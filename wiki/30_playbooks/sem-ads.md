@@ -5,9 +5,11 @@ type: "playbook"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["../10_sources/SRC-20260628-GOOGLE-ADS-MEASUREMENT.md"]
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md", "../50_channels/sem-ads/index.md"]
+when_to_read: "准备启动或调整 SEM、Google Ads、LinkedIn Ads、预算和转化追踪时读本页；没有账号授权、基线和止损线不得执行投放。"
+keywords: ["SEM","Google Ads","LinkedIn Ads","转化追踪","预算止损","搜索词复盘"]
 ---
 # Playbook: SEM / Ads
 
@@ -111,7 +113,7 @@ SEM/Ads 不是先花钱买点击，而是先把转化追踪、落地页、预算
 ## 产出前读取
 
 - [../10_sources/SRC-20260628-GOOGLE-ADS-MEASUREMENT.md](../10_sources/SRC-20260628-GOOGLE-ADS-MEASUREMENT.md)
-- [../20_concepts/creative-testing.md](../20_concepts/creative-testing.md)
+- [Creative Testing](../20_concepts/id-0006-creative-testing.md)
 - [../50_channels/sem-ads/index.md](../50_channels/sem-ads/index.md)
 - [../80_metrics/index.md](../80_metrics/index.md)
 - [../_templates/experiment-record.md](../_templates/experiment-record.md)

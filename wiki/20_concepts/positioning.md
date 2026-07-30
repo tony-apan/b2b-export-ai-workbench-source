@@ -1,33 +1,21 @@
 ---
-title: "Positioning"
-description: "定义定位概念和定位句模板。"
-type: "concept"
-status: "Seed"
+title: "Positioning — Moved"
+description: "兼容旧链接的迁移指针；Positioning 正文已经迁移到带有稳定 ID 的新路径，本页不再承载第二份知识内容。"
+type: "redirect"
+status: "Archived"
 owner: "AI"
-created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["index.md", "../40_business/index.md"]
+created: "2026-07-29"
+last_updated: "2026-07-29"
+sources: ["id-0009-positioning.md"]
+related: ["id-0009-positioning.md"]
+when_to_read: "旧链接仍指向 positioning.md 时读本页完成迁移；新的知识引用必须改用 ID-0009 canonical 页面。"
+keywords: ["Positioning", "redirect", "ID-0009", "旧链接", "兼容迁移"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+redirect_to: "id-0009-positioning.md"
 ---
-# Positioning
+# Positioning — Moved
 
-定位用于回答：在客户心里，你到底是什么选择，和替代方案相比为什么更值得。
+> 本页是旧路径兼容指针，不是第二份知识源。请改读 [Positioning（ID-0009）](id-0009-positioning.md)。
 
-## 定位句模板
-
-我们帮助 `[目标客户]` 在 `[关键场景]` 中解决 `[高价值问题]`，通过 `[方法/机制]` 达成 `[可验证结果]`，不同于 `[替代方案]`，我们的优势是 `[差异化证据]`。
-
-## 待补信息
-
-- 目标客户：
-- 关键场景：
-- 高价值问题：
-- 可验证结果：
-- 替代方案：
-- 差异化证据：
-
-## Related
-
-- [Messaging House](../40_business/messaging-house.md)
-- [Offer](offer.md)
-
+迁移日期：2026-07-29。

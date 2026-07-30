@@ -1,24 +1,21 @@
 ---
-title: "Customer Pain Map"
-description: "记录客户痛点、客户原话、触发事件、不行动成本和来源。"
-type: "business"
-status: "Seed"
+title: "Customer Pain Map — Moved"
+description: "兼容旧链接的迁移指针；Customer Pain Map 正文已经迁移到带有稳定 ID 的新路径，本页不再承载第二份知识内容。"
+type: "redirect"
+status: "Archived"
 owner: "AI"
-created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["index.md", "../30_playbooks/index.md"]
+created: "2026-07-29"
+last_updated: "2026-07-29"
+sources: ["id-0012-customer-pain-map.md"]
+related: ["id-0012-customer-pain-map.md"]
+when_to_read: "旧链接仍指向 customer-pain-map.md 时读本页完成迁移；新的知识引用必须改用 ID-0012 canonical 页面。"
+keywords: ["Customer Pain Map", "redirect", "ID-0012", "旧链接", "兼容迁移"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+redirect_to: "id-0012-customer-pain-map.md"
 ---
-# Customer Pain Map
+# Customer Pain Map — Moved
 
-## Pain Map
+> 本页是旧路径兼容指针，不是第二份知识源。请改读 [Customer Pain Map（ID-0012）](id-0012-customer-pain-map.md)。
 
-| Pain | Customer Words | Trigger | Cost of Inaction | Source |
-|---|---|---|---|---|
-| 待补 | 待补 | 待补 | 待补 | 待补 |
-
-## Related
-
-- [ICP](icp.md)
-- [Sales Call Playbook](../30_playbooks/sales-call.md)
-
+迁移日期：2026-07-29。

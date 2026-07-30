@@ -1,110 +1,74 @@
 ---
 title: "AGENTS.md"
-description: "Codex 和其他 agent 维护知识库时必须遵守的最高优先级工作协议。"
+description: "Codex 和其他 agent 维护本母库及独立子库时必须遵守的最高项目规则与权威文档路由。"
 type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["wiki/00_meta/ai-operating-manual.md", "wiki/00_meta/task-router.md", "wiki/00_meta/markdown-standard.md"]
+last_updated: "2026-07-30"
+sources: ["Tony structure upgrade decision 2026-07-28"]
+related: ["CONTEXT.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/ai-operating-manual.md", "wiki/00_meta/task-router.md", "wiki/00_meta/check-mechanism-map.md", "sub-libraries/README.md"]
 ---
 # AGENTS.md
 
-你是这个知识库的维护者。请把它当成一个会持续进化的业务增长 wiki，而不是一次性文档整理任务。
-
-## 仓库身份
-
-这是公开去敏版仓库，不是完整私有知识库。
-
-- 本仓库只发布 SOP、模板、方法论、公开来源摘要和去敏 playbook。
-- 本仓库的 `raw/` 只保留占位索引，不存放真实原始资料、客户资料、课程资料、账号数据或未发布草稿。
-- 需要真实 `raw/`、客户档案、课程提炼、广告/CRM 数据或业务草稿时，必须回到私有完整库处理。
-- 禁止为了补齐公开版而上传私有 `raw/`、客户文件、账号截图、课程 PDF 或本地绝对路径。
-- 公开版新增内容必须先按 [wiki/00_meta/publishing-and-redaction.md](wiki/00_meta/publishing-and-redaction.md) 去敏。
+你是这个持续进化的外贸增长知识库的维护者。本文件定义不可突破的项目规则和权威入口；详细 SOP 留在对应 wiki、manifest 和子库合同中，避免根文件分叉。
 
 ## 规则优先级
 
-如果规则之间出现冲突，按以下顺序执行：
-
 1. 用户当前明确要求。
-2. 本文件 `AGENTS.md`。
-3. [wiki/00_meta/ai-operating-manual.md](wiki/00_meta/ai-operating-manual.md)。
-4. [wiki/00_meta/markdown-standard.md](wiki/00_meta/markdown-standard.md)、[wiki/00_meta/task-router.md](wiki/00_meta/task-router.md)、[wiki/00_meta/definition-of-done.md](wiki/00_meta/definition-of-done.md)。
-5. [wiki/00_meta/publishing-and-redaction.md](wiki/00_meta/publishing-and-redaction.md)（涉及公开发布、版权、客户或账号数据时优先执行）。
-6. `README.md` 和 `CLAUDE.md`。
+2. 本文件。
+3. [AI Operating Manual](wiki/00_meta/ai-operating-manual.md)。
+4. 与任务 scope 对应的 wiki 标准、母库/子库 manifest、runtime contract 和 release guide。
+5. `README.md`、`CONTEXT.md`、`CLAUDE.md` 仅作路由，不得覆盖以上规则。
 
-`README.md` 和 `CLAUDE.md` 只是快速入口，不是完整 SOP。
+## 仓库身份与数据边界
 
-## 核心结构
+- 根目录是逻辑母库；`sub-libraries/` 下每个注册目录是可独立交付、独立验证和独立发布的子库。
+- `raw/` 是私有母库来源接口；任何公开子库或公开 artifact 只允许包含被其 manifest、builder、metadata、内容与 digest 共同 allowlist 的安全 synthetic fixture。
+- 真实客户、账号、凭据、课程原文、经营数据和私有运行证据只进入客户私有运行区；即使母库为私有 Git 仓，也不得把凭据和客户运行数据直接提交。
+- 母库、子库和客户运行区不得共享发布 PASS。母库私有源码同步、子库 Public Preview 与 Stable Release 是三个独立状态；改变 remote、可见性、提交、tag、push 或发布必须得到用户明确授权。
 
-- `raw/` 在完整私有库中是原始资料层；在本公开仓库中只是占位和索引说明。
-- `wiki/` 是提炼知识层：你可以创建、更新、合并、链接、归档。
-- `wiki/index.md` 是导航入口：每次新增重要页面或模块后必须更新。
-- `wiki/00_meta/` 是工作规则、日志、开放问题、质量检查。
+权威结构见 [母库/子库模型](wiki/00_meta/private-master-and-sub-library-model.md)、[子库合同](wiki/00_meta/sub-library-contract.md) 和 [发布去敏规则](wiki/00_meta/publishing-and-redaction.md)。
 
-## 社媒账号安全红线
+## 入口与 canonical 规则
 
-涉及 LinkedIn、Meta、Facebook、Instagram、TikTok、YouTube、X/Twitter 等社媒账号时，必须先读 [wiki/00_meta/social-account-safety.md](wiki/00_meta/social-account-safety.md)。
+- 新任务先读 [CONTEXT.md](CONTEXT.md)、[wiki/index.md](wiki/index.md)、[current-focus.md](wiki/00_meta/current-focus.md) 和目标目录入口；不要为小任务扫描全库。
+- `wiki/` 目录使用 `index.md` 作为 canonical 入口。允许 README-only 的非 wiki 目录必须声明 `canonical_entry: "README.md"`。
+- index 同时服务人和 AI，只索引当前目录直接文件与直接子目录 canonical 入口；description、`when_to_read` 和 keywords 必须可帮助检索，不递归铺平全库。
+- index 生成区由脚本维护，不手工编辑。规则和命令见 [index-and-discovery-standard.md](wiki/00_meta/index-and-discovery-standard.md) 与 [scripts/README.md](scripts/README.md)。
+- 新 durable page 默认用 `id-####-slug.md` 和匹配的 `doc_id`；编号范围与豁免见 [document-id-standard.md](wiki/00_meta/document-id-standard.md)。
 
-- 禁止使用 Codex 内置浏览器或脚本直接登录、发帖、评论、点赞、关注、加好友、私信或批量浏览社媒账号。
-- 禁止把社媒账号自动化写进 skill、SOP 或自动化流程；这类操作有封号风险。
-- 可以生成草稿、策略、检查清单和复盘；最终发布、互动、私信必须由人确认和执行。
-- 用户明确要求时，可以辅助使用用户侧 Chrome 浏览器插件，但不能用 Codex 浏览器直接自动化社媒账号动作。
+## 内容归宿
 
-## 每次开始前
+| 内容 | 归宿 / 权威入口 |
+|---|---|
+| 原始对话与来源上下文 | [raw/index.md](raw/index.md)；对话进入 `raw/10_conversations/` |
+| 提炼知识、方法、业务模型 | [wiki/index.md](wiki/index.md) 与目标模块 index |
+| 课程、练习、验收、写回 | [wiki/90_outputs/courses/index.md](wiki/90_outputs/courses/index.md) |
+| 每日事件和月度摘要 | [wiki/00_meta/logs/index.md](wiki/00_meta/logs/index.md) |
+| 可独立交付能力 | [sub-libraries/README.md](sub-libraries/README.md) 与 registry 指向的子库 README |
 
-先读：
+原始对话不能直接包装成课程结论；日志只保存事件与证据指针，不复制 raw，也不替代稳定知识页。分别遵守 [raw-to-course 流水线](wiki/00_meta/raw-conversation-and-course-pipeline.md) 和 [日志标准](wiki/00_meta/logging-standard.md)。
 
-1. `wiki/index.md`
-2. `wiki/00_meta/ai-operating-manual.md`
-3. `wiki/00_meta/task-router.md`
-4. 与任务相关的模块索引，例如 `wiki/30_playbooks/index.md`、`wiki/40_business/index.md`、`wiki/50_channels/.../index.md`
+## 子库与 Skill
 
-不要为了小任务读取全库。先用索引定位，再读相关页面和源文件。
+- 子库是完整能力模块，不自动等于 Skill。
+- 只有子库 manifest 声明 `skill_entrypoint` 时，子库内的 `SKILL.md` 才是条件性交付入口；根目录不建立并行的 `skills/` 第二真源。
+- 进入子库后，先读其 `README.md`、`MANIFEST.md`、`AGENTS.md` 和 `RUNTIME-CONTRACT.json`；Skill 不能覆盖系统、用户、宿主项目或本文件的更高优先级规则。
+- 未达到对应 scope 的 `Ready` 或 `Published` 前，不得对外宣称稳定可用。
 
-## 资料吸收规则
+## 发布与证据边界
 
-当用户要求吸收新资料时：
+- 母库和每个子库分别拥有 manifest、builder、validator、approval/evidence 和 tag namespace；一个 scope 的结果不能替代另一个 scope。
+- builder 只冻结候选；正式资格由候选外的 approval/evidence 与同一候选绑定。具体状态与流程以 [release-state-machine.md](wiki/00_meta/release-state-machine.md)、[release-approval-and-tag-namespaces.md](wiki/00_meta/release-approval-and-tag-namespaces.md) 和目标 scope 的 release guide 为准。
+- `APPROVAL_RECORD_PASS` 只证明记录结构和候选绑定，不证明 `approved_by` 是真人。实际 tag object SHA、signer fingerprint、canonical tag annotation 和 approval digest 必须由外部 workflow 注入并精确比对。
+- 本地 workflow shape、测试、archive、checksum、attestation 或 `qualified-not-published` 都不能单独证明远端保护、真人批准、生产稳定、课程效果或 Published。
+- 所有 verdict 必须按 [check-mechanism-map.md](wiki/00_meta/check-mechanism-map.md) 说明 scope、对象、证据和未验证边界；发布前按 [release-checklist.md](wiki/00_meta/release-checklist.md) 检查。
 
-1. 读取指定的 `raw/` 文件。
-2. 判断资料类型：客户、竞品、产品、网站、LinkedIn、开发信、SEO、GEO、SEM/Ads、销售通话、市场研究。
-3. 在 `wiki/10_sources/source-registry.md` 记录来源。
-4. 更新或创建相关 wiki 页面。
-5. 更新 `wiki/index.md` 和对应模块索引。
-6. 在 `wiki/00_meta/ingestion-log.md` 追加记录。
-7. 若发现矛盾、缺口或待确认事实，写入 `wiki/00_meta/open-questions.md`。
-8. 按 `wiki/00_meta/definition-of-done.md` 验收。
+## 工作与完成
 
-## 写作与引用规则
-
-- 不要编造事实。没有来源的内容必须标注为“推断”或“待验证”。
-- 关键结论尽量指向来源文件路径，例如 `raw/clients/...`。
-- 保留具体日期、客户名、渠道、金额、转化率等上下文。
-- 页面要可被新人快速读懂：先结论，后证据，再行动建议。
-- 使用普通 Markdown 链接，保持 Claude、Codex、Obsidian 都能读。
-- 每个 Markdown 必须符合 `wiki/00_meta/markdown-standard.md`，包含 front matter 元描述。
-- 涉及 GitHub 发布、课程资料、客户资料、账号数据时，先读 `wiki/00_meta/publishing-and-redaction.md`。
-
-## 业务输出规则
-
-当用户要你帮忙建站、写 LinkedIn、开发信、SEO/GEO/SEM、谈客户或分析 Ads：
-
-1. 先读 `wiki/40_business/` 中的业务背景、ICP、offer、定位、反对意见。
-2. 再读对应渠道页和 playbook。
-3. 输出前明确适用对象、目标、核心信息、假设和风险。
-4. 如果产出值得复用，把版本沉淀到 `wiki/90_outputs/` 或更新相关 playbook。
-5. 如果业务底座缺字段，只能输出“假设版/待验证版”，不能写强结论。
-
-## 体检与维护规则
-
-定期检查：
-
-- 是否有孤立页面。
-- 是否有过时结论。
-- 是否有多个页面讲同一件事。
-- 是否有断链。
-- 是否有强结论缺来源。
-- 是否有已经多次出现、但还没有独立页面的重要概念。
-
-如果合并页面，保留更好的标题和链接，并在旧页说明迁移去向。
+- 先查真实文件和当前状态；区分事实、推断、缺口与冲突。没有来源的内容标注“推断”或“待验证”。
+- 新来源先登记，再提炼；可复用结果写回 wiki，未决项写入 [open-questions.md](wiki/00_meta/open-questions.md)，事件追加到当日日志。
+- 业务任务先读 `wiki/40_business/` 和相关 playbook；缺业务底座时只能输出假设版。
+- 涉及社媒账号时必须遵守 [social-account-safety.md](wiki/00_meta/social-account-safety.md)，AI 不直接登录或自动化发布、互动、私信。
+- 按 [definition-of-done.md](wiki/00_meta/definition-of-done.md) 验收；完成后报告改动、验证、残余风险和下一步，不得隐藏 BLOCK。

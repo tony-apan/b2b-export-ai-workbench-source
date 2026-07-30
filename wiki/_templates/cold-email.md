@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "准备撰写或评审一组开发信及跟进邮件，需要明确受众和个性化依据时。"
+keywords: ["开发信", "cold email", "跟进邮件", "目标受众", "个性化"]
+template_usage: "manual-copy"
 sources: []
 related: ["../00_meta/markdown-standard.md"]
 ---

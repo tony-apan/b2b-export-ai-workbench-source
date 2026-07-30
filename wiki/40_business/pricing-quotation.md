@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["offers.md", "../30_playbooks/rfq-response.md"]
+when_to_read: "需要了解公开版报价字段或确认哪些价格、MOQ、折扣和利润数据必须留在私有库时读本页；不得据此生成正式报价。"
+keywords: ["报价系统","MOQ","付款条件","折扣利润","私有价格","报价边界"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

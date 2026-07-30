@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "启动或复盘渠道与销售实验，需要绑定假设、基线、指标、决策规则和学习时。"
+keywords: ["实验记录", "实验假设", "基线", "决策规则", "复盘"]
+template_usage: "manual-copy"
 sources: ["Subagent adversarial review"]
 related: ["../80_metrics/index.md", "../00_meta/definition-of-done.md"]
 ---

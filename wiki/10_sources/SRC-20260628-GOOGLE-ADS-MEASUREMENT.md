@@ -5,9 +5,11 @@ type: "source"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["https://support.google.com/google-ads/answer/1722022", "https://support.google.com/google-ads/answer/7478529", "https://support.google.com/google-ads/answer/2453972", "https://support.google.com/analytics/answer/9322688", "https://support.google.com/tagmanager/answer/6105160"]
 related: ["../30_playbooks/sem-ads.md", "../50_channels/sem-ads/index.md", "../80_metrics/index.md"]
+when_to_read: "准备设计或审查 Google Ads、GA4、GTM、预算止损和归因方案前读本页；官方配置原则不能替代账号现状、授权或效果验证。"
+keywords: ["Google Ads","GA4","GTM","转化追踪","预算止损","广告归因"]
 confidence: "high"
 review_after: "2026-09-28"
 ---

@@ -5,9 +5,11 @@ type: "source"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["https://business.linkedin.com/marketing-solutions/content-marketing", "https://www.linkedin.com/help/lms", "https://www.facebook.com/business/help", "https://support.google.com/youtube", "https://ads.tiktok.com/business/creativecenter"]
 related: ["../30_playbooks/linkedin-content.md", "../50_channels/linkedin/index.md", "../30_playbooks/short-video-ops.md", "../50_channels/short-video/index.md"]
+when_to_read: "准备制定 LinkedIn、Meta、YouTube 或 TikTok 内容与发布边界前读本页；平台规则和账号状态必须在执行前重新核对。"
+keywords: ["LinkedIn","Meta","YouTube","TikTok","社媒规则","账号安全"]
 confidence: "medium"
 review_after: "2026-09-28"
 ---

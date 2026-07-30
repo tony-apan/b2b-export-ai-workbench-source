@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
+when_to_read: "准备销售诊断通话、资格评分、异议处理或会后推进时读本页；不得替客户下结论或做未经授权的价格和交付承诺。"
+keywords: ["销售通话","需求诊断","资格评分","异议处理","下一步推进","承诺边界"]
 ---
 # Playbook: Sales Call
 
@@ -54,7 +56,7 @@ related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
 
 ## 产出前读取
 
-- [../40_business/customer-pain-map.md](../40_business/customer-pain-map.md)
-- [../40_business/objections.md](../40_business/objections.md)
+- [Customer Pain Map](../40_business/id-0012-customer-pain-map.md)
+- [Business Objections](../40_business/id-0014-objections.md)
 - [../40_business/offers.md](../40_business/offers.md)
 - [../40_business/offer-fit-matrix.md](../40_business/offer-fit-matrix.md)

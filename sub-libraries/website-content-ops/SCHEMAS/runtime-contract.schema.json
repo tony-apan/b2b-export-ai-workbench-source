@@ -1,0 +1,504 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.fluxpedal.example/website-content-ops/runtime-contract.schema.json",
+  "title": "Website Content Operations Runtime Contract",
+  "description": "Fail-closed machine contract for the standalone website-content-ops sub-library.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_ref",
+    "contract_version",
+    "package_id",
+    "inputs",
+    "outputs",
+    "required_permissions",
+    "network_access",
+    "external_side_effects",
+    "human_approval_points",
+    "rollback_strategy",
+    "writeback_scope",
+    "private_runtime_required",
+    "unsupported_claims"
+  ],
+  "properties": {
+    "schema_ref": {
+      "const": "SCHEMAS/runtime-contract.schema.json"
+    },
+    "contract_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "package_id": {
+      "type": "string",
+      "const": "website-content-ops"
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "type",
+          "required",
+          "sensitivity"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "type": {
+            "type": "string",
+            "minLength": 3
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "sensitivity": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "mixed"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "name",
+              "required",
+              "sensitivity"
+            ],
+            "properties": {
+              "name": {
+                "const": "private_runtime_workspace"
+              },
+              "required": {
+                "const": true
+              },
+              "sensitivity": {
+                "const": "private"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "name",
+              "required"
+            ],
+            "properties": {
+              "name": {
+                "const": "approved_source_material"
+              },
+              "required": {
+                "const": true
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "name",
+              "type",
+              "required",
+              "sensitivity"
+            ],
+            "properties": {
+              "name": {
+                "const": "media_upload_authorization_context"
+              },
+              "type": {
+                "const": "json-object"
+              },
+              "required": {
+                "const": true
+              },
+              "sensitivity": {
+                "const": "private"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "name",
+              "type",
+              "required",
+              "sensitivity"
+            ],
+            "properties": {
+              "name": {
+                "const": "content_mutation_authorization_context"
+              },
+              "type": {
+                "const": "json-object"
+              },
+              "required": {
+                "const": true
+              },
+              "sensitivity": {
+                "const": "private"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "type",
+          "required"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "type": {
+            "type": "string",
+            "minLength": 3
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "name",
+              "required"
+            ],
+            "properties": {
+              "name": {
+                "const": "verification_record"
+              },
+              "required": {
+                "const": true
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "name",
+              "required"
+            ],
+            "properties": {
+              "name": {
+                "const": "writeback_record"
+              },
+              "required": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "required_permissions": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "permission",
+          "default"
+        ],
+        "properties": {
+          "permission": {
+            "type": "string",
+            "minLength": 3
+          },
+          "default": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "deny"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "permission",
+              "default"
+            ],
+            "properties": {
+              "permission": {
+                "const": "cms_draft_write"
+              },
+              "default": {
+                "const": "ask"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "permission",
+              "default"
+            ],
+            "properties": {
+              "permission": {
+                "const": "publish_or_delete"
+              },
+              "default": {
+                "const": "deny"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "network_access": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "purpose",
+          "approval"
+        ],
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "minLength": 3
+          },
+          "approval": {
+            "type": "string",
+            "enum": [
+              "required",
+              "prohibited"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "purpose",
+              "approval"
+            ],
+            "properties": {
+              "purpose": {
+                "const": "social-account-actions"
+              },
+              "approval": {
+                "const": "prohibited"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "external_side_effects": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "approval",
+          "verification"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "minLength": 3
+          },
+          "approval": {
+            "type": "string",
+            "enum": [
+              "required",
+              "explicit-human-only"
+            ]
+          },
+          "verification": {
+            "type": "string",
+            "minLength": 12
+          }
+        }
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "action",
+              "approval"
+            ],
+            "properties": {
+              "action": {
+                "const": "create_or_update_cms_draft"
+              },
+              "approval": {
+                "const": "required"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "action",
+              "approval"
+            ],
+            "properties": {
+              "action": {
+                "const": "publish_delete_batch_or_global_change"
+              },
+              "approval": {
+                "const": "explicit-human-only"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "action",
+              "approval",
+              "verification"
+            ],
+            "properties": {
+              "action": {
+                "const": "allincms_media_upload"
+              },
+              "approval": {
+                "const": "explicit-human-only"
+              },
+              "verification": {
+                "const": "before every direct, serial, batch, or single upload request, authorization context must exactly bind the AllinCMS site, operation, ordered file-list digest, asserted approval actor, approval time, and bounded expiry; the adapter fails closed before browser or CMS access when the binding is absent or mismatched"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "human_approval_points": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "real_external_write"
+          }
+        },
+        {
+          "contains": {
+            "const": "publish"
+          }
+        },
+        {
+          "contains": {
+            "const": "delete"
+          }
+        },
+        {
+          "contains": {
+            "const": "batch_or_global_change"
+          }
+        },
+        {
+          "contains": {
+            "const": "credential_or_account_scope"
+          }
+        },
+        {
+          "contains": {
+            "const": "allincms_media_upload_exact_file_list"
+          }
+        }
+      ]
+    },
+    "rollback_strategy": {
+      "type": "string",
+      "minLength": 80
+    },
+    "writeback_scope": {
+      "type": "string",
+      "minLength": 80
+    },
+    "private_runtime_required": {
+      "type": "boolean",
+      "const": true
+    },
+    "unsupported_claims": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 12
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "cross-deployment AllinCMS stability"
+          }
+        },
+        {
+          "contains": {
+            "const": "official API availability for observed internal endpoints"
+          }
+        },
+        {
+          "contains": {
+            "const": "automatic social-account actions"
+          }
+        },
+        {
+          "contains": {
+            "const": "stable installable Skill before release gate"
+          }
+        },
+        {
+          "contains": {
+            "const": "human identity verification from local approval or authorization records"
+          }
+        }
+      ]
+    }
+  }
+}

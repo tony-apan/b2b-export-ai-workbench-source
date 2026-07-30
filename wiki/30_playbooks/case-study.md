@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
+when_to_read: "准备把已验证的客户结果整理成案例页、帖子或销售材料时读本页；先确认来源、客户授权和结果口径，再生成对外版本。"
+keywords: ["客户案例","case study","结果证据","客户授权","案例结构","跨渠道复用"]
 ---
 # Playbook: Case Study
 

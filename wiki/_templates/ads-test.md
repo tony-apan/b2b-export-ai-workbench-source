@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "准备记录一次广告假设、受众、素材、追踪配置与决策规则，供执行和复盘时。"
+keywords: ["广告测试", "受众", "素材", "追踪 QA", "决策规则"]
+template_usage: "manual-copy"
 sources: []
 related: ["../00_meta/markdown-standard.md"]
 ---

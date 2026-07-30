@@ -1,29 +1,21 @@
 ---
-title: "Conversion Funnel"
-description: "定义从认知到成交和交付的通用转化漏斗。"
-type: "concept"
-status: "Seed"
+title: "Conversion Funnel — Moved"
+description: "兼容旧链接的迁移指针；Conversion Funnel 正文已经迁移到带有稳定 ID 的新路径，本页不再承载第二份知识内容。"
+type: "redirect"
+status: "Archived"
 owner: "AI"
-created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["index.md", "../40_business/index.md"]
+created: "2026-07-29"
+last_updated: "2026-07-29"
+sources: ["id-0005-conversion-funnel.md"]
+related: ["id-0005-conversion-funnel.md"]
+when_to_read: "旧链接仍指向 conversion-funnel.md 时读本页完成迁移；新的知识引用必须改用 ID-0005 canonical 页面。"
+keywords: ["Conversion Funnel", "redirect", "ID-0005", "旧链接", "兼容迁移"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+redirect_to: "id-0005-conversion-funnel.md"
 ---
-# Conversion Funnel
+# Conversion Funnel — Moved
 
-转化漏斗用于定位客户从看见你到成交之间的每一步阻力。
+> 本页是旧路径兼容指针，不是第二份知识源。请改读 [Conversion Funnel（ID-0005）](id-0005-conversion-funnel.md)。
 
-## 通用漏斗
-
-1. Awareness：知道你。
-2. Interest：理解你解决什么问题。
-3. Trust：相信你能解决。
-4. Intent：愿意联系或试用。
-5. Sales：完成诊断、报价、谈判。
-6. Delivery：交付成功并形成案例。
-
-## Related
-
-- [Website Playbook](../30_playbooks/website-build.md)
-- [SEM Ads Playbook](../30_playbooks/sem-ads.md)
-
+迁移日期：2026-07-29。

@@ -1,0 +1,33 @@
+{
+  "name": "allincms-media-adapter",
+  "version": "0.3.2-preview.1",
+  "private": true,
+  "description": "Fail-closed AllinCMS media, article-draft, and taxonomy adapter used by website-content-ops.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "files": [
+    "AI-START-HERE.md",
+    "README.md",
+    "article-image-binding-contract.json",
+    "article-image-binding.mjs",
+    "article-operations-contract.json",
+    "article-operations.md",
+    "article-operations.mjs",
+    "mutation-authorization.mjs",
+    "upload-media-browser.mjs",
+    "verify-media.mjs"
+  ],
+  "scripts": {
+    "test": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs",
+    "test:media": "node --test upload-media-browser.test.mjs",
+    "test:article-images": "node --test article-image-binding.test.mjs",
+    "test:articles": "node --test article-operations.test.mjs article-image-binding.test.mjs",
+    "test:all": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.35.3"
+  }
+}

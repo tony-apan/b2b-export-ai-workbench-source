@@ -5,9 +5,9 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: []
+last_updated: "2026-07-29"
+sources: ["../10_sources/SRC-20260726-KARPATHY-LLM-WIKI.md"]
+related: ["knowledge-compounding-system.md", "../10_sources/SRC-20260726-KARPATHY-LLM-WIKI.md"]
 ---
 # AI Operating Manual
 
@@ -19,13 +19,13 @@ related: []
 
 当任务需要真实来源时：
 
-1. 在本公开仓库中先读 `raw/README.md`、`raw/index.md` 和 `wiki/10_sources/source-registry.md`，确认公开来源边界。
+1. 在本公开仓库中先读 `raw/index.md` 和 `wiki/10_sources/source-registry.md`，确认公开来源边界。
 2. 如果问题依赖私有 raw、客户细节、课程资料或账号数据，标注“需要私有完整库验证”，不要在公开版补造事实。
 3. 不要把私有 raw 上传到本仓库；公开版只能沉淀去敏后的 SOP、模板、方法论和公开来源摘要。
 
 参考来源：
 
-- Andrej Karpathy, LLM Wiki: https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f
+- [Karpathy LLM Wiki Source Note](../10_sources/SRC-20260726-KARPATHY-LLM-WIKI.md)
 
 ## 角色分工
 
@@ -33,6 +33,15 @@ related: []
 - AI 负责：摘要、归档、链接、改写、发现矛盾、维护索引、沉淀输出。
 - `raw/` 负责：在私有完整库中保存不可变事实；在本公开版中仅保留占位说明。
 - `wiki/` 负责：保存当前最好理解。
+
+## Raw、Wiki、课程和日志的分工
+
+- `raw/` 保存原始事实输入；原始对话进入 `raw/10_conversations/`，不在 raw 内添加 AI 总结。
+- `wiki/10_sources/` 登记 Source ID 和授权/证据状态；`wiki/20_concepts/`、`wiki/30_playbooks/` 保存提炼后的稳定知识。
+- `wiki/90_outputs/courses/` 只接收已经有来源、适用边界、练习和验收标准的教学模块。
+- `wiki/00_meta/logs/` 记录短事件卡和证据指针；日志是审计层，不是需要每次从头阅读的知识层。
+
+原始对话 → 来源登记 → 事实/冲突提取 → concept/playbook → 课程模块 → 练习验证 → writeback 是固定闭环。一次对话中的建议必须标注为推断或待验证，不能直接写成课程事实。
 
 ## Raw Markdown 与 Wiki Markdown
 
@@ -42,6 +51,7 @@ related: []
 
 ## 必读 SOP
 
+- 知识复利总则：[knowledge-compounding-system.md](knowledge-compounding-system.md)
 - 术语统一：[glossary.md](glossary.md)
 - 方法论总纲：[methodology.md](methodology.md)
 - Markdown 元描述规范：[markdown-standard.md](markdown-standard.md)
@@ -50,7 +60,11 @@ related: []
 - 资料类型判定：[source-taxonomy.md](source-taxonomy.md)
 - 完成定义：[definition-of-done.md](definition-of-done.md)
 - 多 agent 交接：[agent-handoff.md](agent-handoff.md)
-- 对话记录：[conversation-log.md](conversation-log.md)
+- 运行日志入口：[logs/index.md](logs/index.md)
+- 文档 ID 规则：[document-id-standard.md](document-id-standard.md)
+- 课程模块入口：[../90_outputs/courses/index.md](../90_outputs/courses/index.md)
+- 历史对话记录：[conversation-log.md](conversation-log.md)
+- 当前焦点：[current-focus.md](current-focus.md)
 - 模块登记：[module-registry.md](module-registry.md)
 - 模块扩展：[module-expansion-sop.md](module-expansion-sop.md)
 - 多人维护：[collaboration-model.md](collaboration-model.md)
@@ -105,7 +119,8 @@ sources: []
    - `wiki/00_meta/ingestion-log.md`
 4. 如果新资料挑战旧结论，在相关页面新增“冲突/变化”段落。
 5. 如果资料不足，在 `wiki/00_meta/open-questions.md` 追加问题。
-6. 按 [definition-of-done.md](definition-of-done.md) 验收。
+6. 把输出后的数据、反馈、失败和新问题回写到 `wiki/80_metrics/`、相关业务页、渠道页或 `open-questions.md`。
+7. 按 [definition-of-done.md](definition-of-done.md) 验收。
 
 ## 冲突处理流程
 
@@ -128,7 +143,7 @@ sources: []
 
 适用于用户要建站、写开发信、写 LinkedIn、做 SEO/GEO/SEM、谈客户、分析 Ads。
 
-1. 先读 `wiki/index.md`。
+1. 先读 `wiki/index.md` 和 `wiki/00_meta/current-focus.md`。
 2. 读业务底座：ICP、offer、messaging、pain map、objections。
 3. 读对应渠道或 playbook。
 4. 必要时回看来源文件。
@@ -157,7 +172,7 @@ sources: []
 
 ## 链接规则
 
-- 使用相对 Markdown 链接，例如 `[ICP](../40_business/icp.md)`。
+- 使用相对 Markdown 链接，例如 `[ICP](../40_business/id-0013-icp.md)`。
 - 新建页面后更新对应 index。
 - 页面末尾可以加“Related”段落列出相关页面。
 
@@ -175,4 +190,4 @@ sources: []
 - 每次形成可复用输出：归档到 `90_outputs/`。
 - 每次发现策略变化：记录到 `00_meta/decision-log.md`。
 - 每次形成长期需求或关键对话：记录到 `00_meta/conversation-log.md`。
-- 每次新增模块：按 `00_meta/module-expansion-sop.md` 更新 raw、wiki、playbook、模板和索引。
+- 每次提出新模块：先过 `00_meta/current-focus.md` 和 `00_meta/module-expansion-sop.md` 的焦点闸；公开版不创建真实 raw。

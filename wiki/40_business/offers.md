@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../30_playbooks/index.md"]
+when_to_read: "准备定义、比较或更新当前产品与服务包的交付物、周期、价格和成功标准时读本页；空字段和示例不构成真实报价。"
+keywords: ["业务 offer","服务包","交付物","服务周期","成功标准","报价边界"]
 ---
 # Offers
 
@@ -36,5 +38,5 @@ related: ["index.md", "../30_playbooks/index.md"]
 ## Related
 
 - [Messaging House](messaging-house.md)
-- [Objections](objections.md)
+- [Objections](id-0014-objections.md)
 

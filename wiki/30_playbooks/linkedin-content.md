@@ -5,9 +5,11 @@ type: "playbook"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md", "Internal LinkedIn SOP source excluded from public version"]
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md", "../50_channels/linkedin/index.md", "short-video-ops.md"]
+when_to_read: "准备 LinkedIn 个人资料、公司页内容、帖子结构或互动草稿时读本页；账号登录、发布、互动和私信必须由人执行或确认。"
+keywords: ["LinkedIn 内容","个人 IP","公司页","帖子结构","互动草稿","账号安全"]
 ---
 # Playbook: LinkedIn Content
 
@@ -144,7 +146,7 @@ LinkedIn 内容运营先不是“今天发什么”，而是先确定赛道、�
 ## 产出前读取
 
 - [../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md](../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md)
-- [../40_business/icp.md](../40_business/icp.md)
-- [../40_business/customer-pain-map.md](../40_business/customer-pain-map.md)
+- [Current Business ICP](../40_business/id-0013-icp.md)
+- [Customer Pain Map](../40_business/id-0012-customer-pain-map.md)
 - [../40_business/messaging-house.md](../40_business/messaging-house.md)
 - [../50_channels/linkedin/index.md](../50_channels/linkedin/index.md)

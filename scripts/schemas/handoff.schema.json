@@ -1,0 +1,324 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:701-kecheng:handoff:v1",
+  "title": "701_kecheng canonical handoff record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "handoff_id",
+    "scope",
+    "producer",
+    "reviewer",
+    "reviewer_provenance",
+    "identity_status",
+    "independence_status",
+    "scope_binding",
+    "original_verdict",
+    "attestations",
+    "verdict",
+    "blocks_next_step",
+    "evidence_refs",
+    "evidence_bundle_digest",
+    "not_verified",
+    "return_to",
+    "approval_required"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "handoff_id": {
+      "type": "string",
+      "pattern": "^HND-[0-9]{8}-[A-Z0-9-]+-[0-9]{4}$"
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer": {
+      "$ref": "#/$defs/party"
+    },
+    "reviewer": {
+      "$ref": "#/$defs/party"
+    },
+    "reviewer_provenance": {
+      "enum": [
+        "producer-reported",
+        "reviewer-authored",
+        "externally-attested"
+      ]
+    },
+    "identity_status": {
+      "enum": [
+        "verified",
+        "not_verified"
+      ]
+    },
+    "independence_status": {
+      "enum": [
+        "verified",
+        "not_verified"
+      ]
+    },
+    "scope_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope_manifest",
+        "source_commit",
+        "source_commit_binding",
+        "content_digest"
+      ],
+      "properties": {
+        "scope_manifest": {
+          "$ref": "#/$defs/evidenceRef"
+        },
+        "source_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "source_commit_binding": {
+          "enum": [
+            "content-bound",
+            "context-only",
+            "not-recorded"
+          ]
+        },
+        "content_digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "original_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "immutable",
+        "ref",
+        "binding"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "immutable": {
+          "type": "boolean"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/evidenceRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/claimBinding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "attestations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "independence",
+        "reviewer_authorship"
+      ],
+      "properties": {
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/attestation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "independence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/attestation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewer_authorship": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/attestation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "warn",
+        "block",
+        "needs_tony"
+      ]
+    },
+    "blocks_next_step": {
+      "type": "boolean"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/evidenceRef"
+      }
+    },
+    "evidence_bundle_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "not_verified": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "return_to": {
+      "type": "string",
+      "minLength": 1
+    },
+    "approval_required": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "party": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "agent_id"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "locator",
+        "sha256"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "repository-relative",
+            "immutable-https"
+          ]
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "claimBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handoff_id",
+        "scope",
+        "reviewer_agent_id",
+        "source_commit",
+        "content_digest",
+        "verdict"
+      ],
+      "properties": {
+        "handoff_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewer_agent_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "content_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "verdict": {
+          "enum": [
+            "pass",
+            "warn",
+            "block",
+            "needs_tony"
+          ]
+        }
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "binding"
+      ],
+      "properties": {
+        "ref": {
+          "$ref": "#/$defs/evidenceRef"
+        },
+        "binding": {
+          "$ref": "#/$defs/claimBinding"
+        }
+      }
+    }
+  }
+}

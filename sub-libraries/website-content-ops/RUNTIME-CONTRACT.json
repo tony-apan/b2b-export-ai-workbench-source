@@ -1,0 +1,126 @@
+{
+  "schema_ref": "SCHEMAS/runtime-contract.schema.json",
+  "contract_version": 1,
+  "package_id": "website-content-ops",
+  "inputs": [
+    {
+      "name": "private_runtime_workspace",
+      "type": "directory",
+      "required": true,
+      "sensitivity": "private"
+    },
+    {
+      "name": "approved_source_material",
+      "type": "files-or-urls",
+      "required": true,
+      "sensitivity": "mixed"
+    },
+    {
+      "name": "media_upload_authorization_context",
+      "type": "json-object",
+      "required": true,
+      "sensitivity": "private"
+    },
+    {
+      "name": "content_mutation_authorization_context",
+      "type": "json-object",
+      "required": true,
+      "sensitivity": "private"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "content_draft",
+      "type": "markdown-or-html",
+      "required": false
+    },
+    {
+      "name": "image_manifest",
+      "type": "json-or-markdown",
+      "required": false
+    },
+    {
+      "name": "verification_record",
+      "type": "markdown",
+      "required": true
+    },
+    {
+      "name": "writeback_record",
+      "type": "markdown",
+      "required": true
+    }
+  ],
+  "required_permissions": [
+    {
+      "permission": "read_local_files",
+      "default": "ask"
+    },
+    {
+      "permission": "network_access",
+      "default": "ask"
+    },
+    {
+      "permission": "cms_draft_write",
+      "default": "ask"
+    },
+    {
+      "permission": "publish_or_delete",
+      "default": "deny"
+    }
+  ],
+  "network_access": [
+    {
+      "purpose": "official-source-reading",
+      "approval": "required"
+    },
+    {
+      "purpose": "image-host-or-cms-adapter",
+      "approval": "required"
+    },
+    {
+      "purpose": "social-account-actions",
+      "approval": "prohibited"
+    }
+  ],
+  "external_side_effects": [
+    {
+      "action": "create_or_update_cms_draft",
+      "approval": "required",
+      "verification": "backend-refresh-and-frontend-check"
+    },
+    {
+      "action": "allincms_media_upload",
+      "approval": "explicit-human-only",
+      "verification": "before every direct, serial, batch, or single upload request, authorization context must exactly bind the AllinCMS site, operation, ordered file-list digest, asserted approval actor, approval time, and bounded expiry; the adapter fails closed before browser or CMS access when the binding is absent or mismatched"
+    },
+    {
+      "action": "allincms_article_or_taxonomy_mutation",
+      "approval": "explicit-human-only",
+      "verification": "before every article, taxonomy, or article-image draft mutation request, a structured authorization context must exactly bind the AllinCMS site, operation, target digest, asserted approval actor, approval time, and expiry of no more than 30 minutes; the adapter revalidates immediately before the request and fails closed on absent, boolean, expired, or mismatched authorization"
+    },
+    {
+      "action": "publish_delete_batch_or_global_change",
+      "approval": "explicit-human-only",
+      "verification": "not-automated-by-this-package"
+    }
+  ],
+  "human_approval_points": [
+    "real_external_write",
+    "allincms_media_upload_exact_file_list",
+    "allincms_article_taxonomy_or_image_mutation_exact_target",
+    "publish",
+    "delete",
+    "batch_or_global_change",
+    "credential_or_account_scope"
+  ],
+  "rollback_strategy": "stop at the last verified artifact; restore from the writeback record and adapter-specific rollback instructions; never infer rollback success from a toast alone.",
+  "writeback_scope": "general methods and anonymized failure patterns may return to the public mother library; customer facts and runtime evidence remain in the customer private runtime.",
+  "private_runtime_required": true,
+  "unsupported_claims": [
+    "cross-deployment AllinCMS stability",
+    "official API availability for observed internal endpoints",
+    "automatic social-account actions",
+    "stable installable Skill before release gate",
+    "human identity verification from local approval or authorization records"
+  ]
+}

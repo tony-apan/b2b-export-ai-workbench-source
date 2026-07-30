@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
+when_to_read: "准备比较竞品定位、页面、渠道、报价、内容或广告时读本页；结论必须绑定公开来源、采集日期和可复查快照。"
+keywords: ["竞品研究","定位对比","页面分析","渠道分析","报价对比","证据快照"]
 ---
 # Playbook: Competitor Research
 

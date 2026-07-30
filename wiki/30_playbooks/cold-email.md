@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
+when_to_read: "准备开发信名单分层、首封邮件、跟进序列或回复复盘时读本页；真实联系人、邮箱和发送记录必须留在授权私有运行区。"
+keywords: ["cold email","开发信","名单分层","跟进序列","低摩擦 CTA","回复复盘"]
 ---
 # Playbook: Cold Email
 
@@ -42,8 +44,8 @@ Best,
 
 ## 产出前读取
 
-- [../40_business/icp.md](../40_business/icp.md)
-- [../40_business/customer-pain-map.md](../40_business/customer-pain-map.md)
-- [../40_business/objections.md](../40_business/objections.md)
+- [Current Business ICP](../40_business/id-0013-icp.md)
+- [Customer Pain Map](../40_business/id-0012-customer-pain-map.md)
+- [Business Objections](../40_business/id-0014-objections.md)
 - [../50_channels/email-outreach/index.md](../50_channels/email-outreach/index.md)
 

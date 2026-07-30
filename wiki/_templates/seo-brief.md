@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "准备一个 SEO 页面或内容任务，需要明确关键词、搜索意图、SERP 基线、结构和 CTA 时。"
+keywords: ["SEO brief", "关键词", "搜索意图", "SERP", "CTA"]
+template_usage: "manual-copy"
 sources: []
 related: ["../00_meta/markdown-standard.md"]
 ---

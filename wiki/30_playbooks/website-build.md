@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
+when_to_read: "准备新建网站、改首页、制作落地页或做转化审计时读本页；域名、后台凭据、发布动作和真实客户数据必须在授权范围处理。"
+keywords: ["网站建设","首页改版","落地页","信息架构","转化审计","上线检查"]
 ---
 # Playbook: Website Build
 
@@ -16,7 +18,7 @@ related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
 ## 输入
 
 - 业务定位：[../40_business/business-overview.md](../40_business/business-overview.md)
-- ICP：[../40_business/icp.md](../40_business/icp.md)
+- ICP：[Current Business ICP](../40_business/id-0013-icp.md)
 - Offer：[../40_business/offers.md](../40_business/offers.md)
 - Messaging：[../40_business/messaging-house.md](../40_business/messaging-house.md)
 - Proof：[../20_concepts/proof-assets.md](../20_concepts/proof-assets.md)

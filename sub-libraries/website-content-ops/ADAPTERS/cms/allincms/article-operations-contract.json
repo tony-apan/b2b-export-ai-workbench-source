@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "authority": "<SUB_LIBRARY_ROOT>/ADAPTERS/cms/allincms",
+  "scope": "current-deployment-runtime-template",
+  "runtime": {
+    "mustDiscoverPerRun": [
+      "next-action",
+      "next-router-state-tree",
+      "x-deployment-id",
+      "siteId",
+      "postId",
+      "categoryId",
+      "tagId"
+    ],
+    "mustNotPersistInPublicContract": [
+      "cookie",
+      "token",
+      "account",
+      "realSiteKey",
+      "realObjectId",
+      "fullActionId",
+      "routerState"
+    ]
+  },
+  "article": {
+    "fields": [
+      "title",
+      "slug",
+      "excerpt",
+      "order",
+      "coverImage",
+      "categories",
+      "tags",
+      "content",
+      "siteId",
+      "postId",
+      "mode"
+    ],
+    "updateRoute": "/{site_key}/posts/{post_id}/update",
+    "modes": {
+      "update": "save draft",
+      "publish": "publish with complete payload",
+      "unpublish": "return to draft with complete payload"
+    },
+    "actionName": "postUpdate",
+    "createRoute": "/{site_key}/posts",
+    "createActionName": "postCreate",
+    "deleteRoute": "/{site_key}/posts?tab=list",
+    "deleteActionName": "postDelete",
+    "bodyEncoding": "JSON array containing one payload object",
+    "coverImage": "current media record object; never assume URL-only shape",
+    "content": "Slate node array; never Markdown or HTML string",
+    "createApiStatus": "guarded_requires_live_contract_confirmation_and_before_snapshot"
+  },
+  "taxonomy": {
+    "contentType": "posts",
+    "category": {
+      "route": "/{site_key}/posts?tab=categories",
+      "createActionName": "categoryCreate",
+      "updateActionName": "categoryUpdate",
+      "deleteActionName": "categoryDelete",
+      "createFields": [
+        "siteId",
+        "contentType",
+        "name",
+        "slug",
+        "description?",
+        "cover?",
+        "parent?",
+        "order"
+      ],
+      "deletePayload": [
+        "id",
+        "siteId",
+        "contentType"
+      ],
+      "rootRule": "omit parent",
+      "childRule": "parent is the current parent category ID"
+    },
+    "tag": {
+      "route": "/{site_key}/posts?tab=tags",
+      "createActionName": "tagCreate",
+      "updateActionName": "tagUpdate",
+      "deleteActionName": "tagDelete",
+      "createFields": [
+        "siteId",
+        "contentType",
+        "name",
+        "slug",
+        "description?"
+      ],
+      "updatePayload": [
+        "siteId",
+        "contentType",
+        "name",
+        "slug",
+        "description",
+        "id"
+      ],
+      "deletePayload": [
+        "siteId",
+        "contentType",
+        "id"
+      ],
+      "duplicateSlugRule": "block before request for the same site"
+    }
+  },
+  "recovery": {
+    "afterRequest": [
+      "refresh",
+      "readback",
+      "compare exact fields and state"
+    ],
+    "ambiguousRule": "never blindly resend",
+    "safeRetryRule": "only one controlled retry after an explicit fresh exact-absence confirmation; readback null alone is insufficient",
+    "unresolvedRule": "stop with stopped_manual_intervention",
+    "batchRule": "strict serial; skip completed keys; stop on first unresolved result",
+    "createRule": "postCreate is blocked unless the current deployment create contract is freshly confirmed, beforePostIds snapshot is supplied, and readback yields an exact new postId",
+    "existingArticleRule": "postUpdate and taxonomy mutations never retry merely because a readback is null"
+  },
+  "verification": {
+    "draft": [
+      "complete field readback",
+      "draft state",
+      "Slate editor health",
+      "image decode when images exist"
+    ],
+    "published": [
+      "backend published state",
+      "frontend list",
+      "frontend detail",
+      "visible content and media"
+    ],
+    "deleted": [
+      "backend exact record absence",
+      "frontend 404 or inaccessible detail"
+    ],
+    "taxonomy": [
+      "refresh",
+      "unique ID",
+      "same-site ownership",
+      "parent relationship for children"
+    ],
+    "create": [
+      "fresh postCreate action capture",
+      "beforePostIds snapshot",
+      "complete created-record readback",
+      "exact new postId not present before request",
+      "same-site ownership"
+    ]
+  },
+  "localVerification": {
+    "articleOperationsTests": 36,
+    "articleImageBindingTests": 50,
+    "mediaUploadTests": 45,
+    "totalTests": 131,
+    "lastVerified": "2026-07-29"
+  }
+}

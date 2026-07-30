@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["../50_channels/video-production/index.md", "../_templates/video-brief.md"]
+when_to_read: "准备产品、工厂、案例或广告视频的 brief、拍摄和验收时读本页；品牌素材、肖像、音乐和客户授权必须单独核对。"
+keywords: ["视频制作","产品视频","工厂视频","案例视频","拍摄 brief","素材版权"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

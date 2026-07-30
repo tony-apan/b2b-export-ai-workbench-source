@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "评估一套稳定 SOP 是否应升级为可复用 Skill，并定义输入、边界、测试和交付方式时。"
+keywords: ["Skill 规格", "可复用 SOP", "输入输出", "安全边界", "Skill 测试"]
+template_usage: "manual-copy"
 sources: ["User request"]
 related: ["../00_meta/skill-library.md", "../00_meta/module-expansion-sop.md"]
 visibility: "public"

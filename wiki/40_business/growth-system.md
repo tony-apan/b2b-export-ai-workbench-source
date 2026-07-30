@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
-related: ["business-overview.md", "icp.md", "offers.md", "../80_metrics/index.md"]
+related: ["business-overview.md", "id-0013-icp.md", "offers.md", "../80_metrics/index.md"]
+when_to_read: "制定本周增长优先级、选择主渠道、识别瓶颈或安排实验时读本页；缺少业务数据时只能记录假设和待验证动作。"
+keywords: ["增长系统","北极星指标","增长瓶颈","主渠道","本周实验","优先级"]
 ---
 
 # Growth System

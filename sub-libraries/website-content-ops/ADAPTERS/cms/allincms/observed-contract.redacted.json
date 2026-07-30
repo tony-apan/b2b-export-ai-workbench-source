@@ -1,0 +1,364 @@
+{
+  "contract": "allincms-media-operations",
+  "contract_kind": "observed_internal_contract",
+  "observed_at": "2026-07-27",
+  "public_api": false,
+  "secrets_in_artifact": false,
+  "target": {
+    "workspace_origin": "https://workspace.laicms.com",
+    "media_route_pattern": "/{site_key}/media",
+    "asset_origin": "https://assets.laicms.com",
+    "asset_path_pattern": "/{site_key}/{short_asset_key}.{normalized_extension}"
+  },
+  "capture": {
+    "deployment_fingerprint": "83eddf696484d494d59ae961cb4ded1d61d14b56",
+    "next_action_value_stored": false,
+    "next_action_length": 42,
+    "next_action_sha256": "1ee3e8ca85868f3ded829289847dd8b071e46f75e318c7062efefd8858ef46a5",
+    "capture_surface": "signed_in_browser_plus_cdp",
+    "verified_runs": [
+      "one_file_semantic_browser_upload",
+      "five_file_single_chooser_semantic_browser_upload",
+      "one_file_direct_server_action_replay_zero_click",
+      "ten_file_direct_single_requests_serial_zero_click",
+      "one_media_record_direct_delete_zero_click",
+      "one_media_record_direct_metadata_update_one_write",
+      "one_article_draft_A_B_A_image_binding_update_readback_editor_render"
+    ]
+  },
+  "request": {
+    "method": "POST",
+    "request_type": "next_server_action_multipart",
+    "content_type_pattern": "multipart/form-data; boundary=<dynamic>",
+    "required_header_names": [
+      "Content-Type",
+      "next-action",
+      "next-router-state-tree",
+      "x-deployment-id"
+    ],
+    "auth_mode": "current_browser_session",
+    "body_parts": [
+      {
+        "name": "_1_files",
+        "kind": "binary_file",
+        "multiple_supported_by_ui": true
+      },
+      {
+        "name": "0",
+        "kind": "server_action_arguments",
+        "shape": [
+          "<site_id>",
+          "$K1"
+        ]
+      }
+    ],
+    "observed_batch_shape": {
+      "selected_files": 5,
+      "file_chooser_events": 1,
+      "target_server_action_requests": 1,
+      "media_records_created": 5,
+      "larger_batch_verified": false
+    },
+    "observed_client_normalization": {
+      "inputs": "five PNG images at 1200x800",
+      "stored_mime_type": "image/webp",
+      "stored_dimensions_observed": [
+        "1195x797",
+        "1191x794"
+      ],
+      "warning": "Do not assume the original extension, dimensions, byte size, or hash survives upload, or that equal input dimensions produce equal normalized dimensions."
+    },
+    "observed_direct_single_shape": {
+      "ui_clicks": 0,
+      "file_chooser_events": 0,
+      "target_server_action_requests": 1,
+      "media_records_created": 1,
+      "input_normalization": "node_memory_to_webp",
+      "complete_action_value_stored": false
+    },
+    "observed_direct_serial_ten_shape": {
+      "files": 10,
+      "request_strategy": "ten_serial_single_file_server_actions",
+      "ui_clicks": 0,
+      "file_chooser_events": 0,
+      "verified_target_server_action_requests": 10,
+      "media_records_created": 10,
+      "one_multipart_request_with_ten_files_verified": false,
+      "parallel_requests_verified": false
+    }
+  },
+  "response": {
+    "server_action_status": 200,
+    "server_action_content_type": "text/x-component",
+    "media_record_read_surface": "refreshed Next.js RSC state",
+    "media_record_fields_observed": [
+      "id",
+      "name",
+      "alt",
+      "title",
+      "type",
+      "source",
+      "path",
+      "size",
+      "mimeType",
+      "url",
+      "createdAt",
+      "updatedAt"
+    ],
+    "storage_source_value_observed": "oss",
+    "public_asset_has_signature_query": false
+  },
+  "verification": {
+    "single_upload": {
+      "server_action_200": true,
+      "backend_media_record_present": true,
+      "media_id_present": true,
+      "anonymous_https_get": true,
+      "content_type_matches": true,
+      "image_decodes": true,
+      "backend_reload_persists": true
+    },
+    "five_file_batch": {
+      "one_server_action_for_five_files": true,
+      "media_cards_present": "5/5",
+      "backend_reload_persists": "5/5",
+      "rsc_media_records_present": "5/5",
+      "media_ids_present": "5/5",
+      "anonymous_https_get": "5/5",
+      "content_type_matches": "5/5",
+      "image_decodes": "5/5"
+    },
+    "direct_single": {
+      "ui_clicks": 0,
+      "file_chooser_events": 0,
+      "server_action_requests": 1,
+      "server_action_200": true,
+      "response_content_type": "text/x-component",
+      "backend_media_record_present": true,
+      "media_id_present": true,
+      "anonymous_https_get": true,
+      "content_type_matches": true,
+      "image_decodes": true,
+      "backend_reload_persists": true
+    },
+    "direct_serial_ten": {
+      "uploaded_and_verified": "10/10",
+      "one_direct_interface_request_per_file": "10/10",
+      "server_action_200": "10/10",
+      "backend_media_records_present": "10/10",
+      "media_ids_present": "10/10",
+      "backend_reload_persists": "10/10",
+      "anonymous_https_get": "10/10",
+      "content_type_matches": "10/10",
+      "image_decodes": "10/10",
+      "final_media_cards_exactly_once": "10/10",
+      "ui_clicks": 0,
+      "file_chooser_events": 0,
+      "ambiguous_client_timeout_handling": "stopped_then_reconciled_absent_before_controlled_resume"
+    },
+    "direct_delete": {
+      "ui_clicks": 0,
+      "dialog_opens": 0,
+      "server_action_requests": 1,
+      "server_action_200": true,
+      "media_card_removed": true,
+      "media_record_removed": true,
+      "asset_url_no_longer_public": false,
+      "later_cache_busted_asset_get_status": 200,
+      "contract_verified": true
+    },
+    "direct_metadata_update": {
+      "authorized_virtual_media_records": 1,
+      "server_action_requests": 1,
+      "server_action_200": true,
+      "fields_requested": [
+        "title",
+        "alt",
+        "caption"
+      ],
+      "immediate_read_partial": true,
+      "later_fresh_page_fields_persisted": [
+        "title",
+        "alt",
+        "caption"
+      ],
+      "media_id_unchanged": true,
+      "media_url_unchanged": true,
+      "read_after_write_delay_observed": true
+    },
+    "article_draft_image_binding": {
+      "verified": true,
+      "scope": "one authorized virtual A-B-A draft on the observed deployment",
+      "unique_assets": 2,
+      "image_occurrences": 3,
+      "backend_readback": true,
+      "editor_present_after_reload": true,
+      "editor_image_decode": "3/3",
+      "editor_caption_visibility": "3/3",
+      "backend_alt_persisted": true,
+      "editor_dom_alt": "missing_observed_3_of_3",
+      "published_theme_alt": "not_run_not_authorized",
+      "published": false
+    },
+    "product_binding_verified": false,
+    "published_frontend_content_render_verified_current_run": false
+  },
+  "execution_status": {
+    "semantic_browser_single_upload": "verified",
+    "semantic_browser_batch_upload_5": "verified",
+    "batch_request_shape": "one_server_action_for_five_files",
+    "direct_server_action_replay": "verified_single",
+    "batch_idempotency": "not_verified",
+    "batch_failure_retry": "implemented_local_fault_tested_delay_reconcile_exact_absence_then_limited_retry",
+    "batch_rate_limit": "not_verified",
+    "content_binding": "verified_remote_draft_A_B_A_2026_07_27",
+    "publication_status": "PASS_DRAFT_BINDING_WITH_DOCUMENTED_ALT_PRODUCT_GAP__BLOCK_PUBLISHING_AND_CROSS_DEPLOYMENT",
+    "direct_server_action_replay_single": "verified",
+    "direct_server_action_replay_batch": "not_verified_one_request_batch",
+    "ui_clicks_required_for_direct_single": false,
+    "filechooser_required_for_direct_single": false,
+    "direct_single_requests_serial_batch_10": "verified",
+    "one_multipart_request_with_10_files": "not_default_route_not_a_delivery_blocker",
+    "parallel_direct_batch": "permanently_disallowed_not_a_delivery_target",
+    "media_record_delete_direct": "verified",
+    "physical_asset_cleanup_after_delete": "not_checked_out_of_scope_for_media_record_deletion_completion",
+    "media_metadata_update_direct": "verified_one_authorized_virtual_record_one_write",
+    "media_metadata_cross_deployment_stability": "not_proven",
+    "article_editor_health_gate": "editor_present_exact_image_count_decode_caption_and_draft_status"
+  },
+  "adapter_policy": {
+    "require_absolute_paths": true,
+    "require_unique_filename_stems": true,
+    "reject_existing_same_title_before_mutation": true,
+    "post_confirm_retry": "delay_then_read_only_reconcile_then_retry_current_image_only_on_exact_absence",
+    "partial_failure_result": "return_per_file_results_for_manual_reconciliation",
+    "preferred_single_mode": "direct_next_server_action_replay",
+    "direct_action_discovery": "dynamic_from_current_page_chunks",
+    "direct_runtime": "same_origin_signed_in_page_fetch",
+    "direct_credentials_exported": false,
+    "verified_direct_serial_file_count": 10,
+    "direct_serial_strategy": "unbounded_input_single_file_calls_strict_serial_with_bounded_per_image_retry",
+    "ambiguous_result_recovery": "delay_reconcile_unique_title_stop_if_uncertain_retry_only_on_exact_absence",
+    "verified_semantic_ui_file_count_range": "1-5",
+    "requires_loaded_exact_media_page": true,
+    "required_page_pattern": "https://workspace.laicms.com/{site_key}/media",
+    "frontend_homepage_is_sufficient": false,
+    "foreground_visibility_required": false,
+    "tab_must_remain_open": true,
+    "page_context_roles": [
+      "signed_in_same_origin_runtime_without_credential_export",
+      "target_site_key_binding",
+      "dynamic_action_deployment_site_and_router_discovery",
+      "pre_upload_duplicate_title_check_and_post_upload_reconciliation"
+    ],
+    "preferred_delete_mode": "direct_next_server_action_replay",
+    "delete_requires_exact_identity_fields": [
+      "site_key",
+      "media_id",
+      "title",
+      "url"
+    ],
+    "delete_requires_current_explicit_user_authorization": true,
+    "delete_ambiguous_result": "never_resend_automatically",
+    "parallel_media_requests_allowed": false,
+    "next_image_may_start_only_after_current_image_full_closeout": true,
+    "metadata_update_fields": [
+      "title",
+      "alt",
+      "caption"
+    ],
+    "metadata_field_limits": {
+      "title": 100,
+      "alt": 200,
+      "caption": 500
+    },
+    "private_index_only_fields": [
+      "description",
+      "notes",
+      "structured_metadata",
+      "fact_basis",
+      "uncertain_claims"
+    ],
+    "metadata_write_requests_per_image_max": 1,
+    "metadata_read_only_verification_delays_ms": [
+      0,
+      750,
+      2000
+    ],
+    "metadata_ambiguous_result": "keep_verified_upload_stop_batch_do_not_resend_do_not_reupload",
+    "delete_completion_scope": "exact_media_card_and_exact_rsc_record_absent",
+    "physical_asset_probe_after_delete": false,
+    "serial_controller_file_count_limit": "none",
+    "verified_local_serial_file_count": 12,
+    "upload_max_attempts_per_image_default": 3,
+    "upload_retry_delays_ms_default": [
+      2000,
+      5000
+    ]
+  },
+  "drift_policy": {
+    "stop_on": [
+      "login_redirect_or_401_or_403",
+      "wrong_site_key",
+      "deployment_fingerprint_change_with_action_shape_change",
+      "next_action_fingerprint_change_when_using_direct_replay",
+      "server_action_count_not_one",
+      "server_action_non_200",
+      "media_record_missing_after_200",
+      "rsc_record_url_or_title_mismatch",
+      "asset_url_requires_auth_or_does_not_decode",
+      "delete_identity_fields_do_not_match_exactly",
+      "metadata_fields_not_persisted_after_bounded_read_only_verification",
+      "requested_metadata_title_collision_before_request"
+    ],
+    "recovery": "Upload errors: delay, reconcile the exact media record read-only, accept an existing verified record, retry only the current image after exact absence, and stop when uncertain or attempts are exhausted. Never resend an ambiguous metadata update or delete request. Re-capture a drifted contract only with one new virtual image and explicit user authorization."
+  },
+  "delete_request": {
+    "method": "POST",
+    "route_pattern": "/{site_key}/media",
+    "request_type": "next_server_action_text",
+    "request_content_type": "text/plain;charset=UTF-8",
+    "response_content_type": "text/x-component",
+    "action_export_name": "deleteMediaAction",
+    "body_shape": [
+      {
+        "id": "<media_id>",
+        "siteId": "<site_id>"
+      }
+    ],
+    "dynamic_header_names": [
+      "next-action",
+      "next-router-state-tree",
+      "x-deployment-id"
+    ],
+    "dynamic_values_hardcoded": false
+  },
+  "current_sop_interpretation": {
+    "decided_at": "2026-07-27",
+    "upload_serial_only": true,
+    "parallel_upload_allowed": false,
+    "upload_success_scope": "media_record_plus_access_and_decode_plus_private_index",
+    "delete_success_scope": "exact_media_card_and_exact_rsc_record_removed",
+    "physical_asset_cleanup_after_delete": "not_checked_out_of_scope_and_irrelevant_to_completion",
+    "metadata_editor_fields_observed": [
+      "title",
+      "alt",
+      "caption"
+    ],
+    "metadata_update_direct_contract": "captured_and_verified_one_authorized_virtual_record",
+    "metadata_failure_reupload_allowed": false,
+    "one_request_multi_file_default_route": false,
+    "one_request_multi_file_is_delivery_blocker": false,
+    "metadata_update_request_max_per_image": 1,
+    "metadata_read_only_verification_delays_ms": [
+      0,
+      750,
+      2000
+    ],
+    "metadata_ambiguous_behavior": "keep_verified_upload_stop_batch_do_not_resend_do_not_reupload",
+    "full_description_storage": "customer_private_image_index_only",
+    "serial_controller_file_count_limit": "none",
+    "upload_retry_policy": "delay_reconcile_exact_absence_then_limited_current_image_retry",
+    "upload_max_attempts_per_image_default": 3
+  }
+}

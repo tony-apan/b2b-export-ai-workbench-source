@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["../40_business/pricing-quotation.md", "../40_business/product-catalog-specs.md", "sales-call.md"]
+when_to_read: "收到询盘或 RFQ，需要判断资格、澄清需求、准备报价资料和安排跟进时读本页；价格、交期和合同承诺必须获得授权。"
+keywords: ["RFQ","询盘回复","资格判断","需求澄清","报价跟进","CRM 回流"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

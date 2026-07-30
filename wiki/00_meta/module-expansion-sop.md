@@ -1,97 +1,69 @@
 ---
 title: "Module Expansion SOP"
-description: "定义如何新增视频制作、作图、短视频运营、skill 或其他外贸 B2B 模块，保证扩展时不破坏现有结构。"
+description: "定义候选需求如何通过当前焦点、最小证据和验收闸晋升为新模块，防止一次铺开大量空目录。"
 type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: ["User request"]
-related: ["module-registry.md", "markdown-standard.md", "task-router.md"]
+last_updated: "2026-07-26"
+sources: ["User request", "Adversarial structure review 2026-07-26"]
+related: ["current-focus.md", "module-registry.md", "markdown-standard.md", "task-router.md"]
 ---
-
 # Module Expansion SOP
 
-当要新增一个模块，比如视频制作 SOP、作图 SOP、短视频运营、展会、渠道商、AI skill，不要只新建一个孤立页面。按下面流程扩展。
+## Step 0：先过焦点闸
 
-## Step 1: 判断模块类型
+新增模块前先读 [current-focus.md](current-focus.md)。当前 Active 模块未 `Validated` 时，新需求默认按以下顺序处理：
+
+1. 能否作为当前模块的知识依赖；
+2. 能否作为当前模块的 adapter；
+3. 能否作为当前模块的第二工具或相邻任务迁移练习；
+4. 以上都不适用，才登记到 registry 的 `Backlog Candidates`。
+
+未经人工切换焦点，不创建新的平级课程、子库、品牌或大型目录。
+
+## Step 1：判断知识类型
 
 | 类型 | 放哪里 | 例子 |
 |---|---|---|
-| Channel | `wiki/50_channels/{module}/index.md` | LinkedIn、短视频、展会、Ads |
-| Playbook | `wiki/30_playbooks/{module}.md` | 视频制作 SOP、作图 SOP、客户访谈 SOP |
-| Business System | `wiki/40_business/{module}.md` | 产品内容系统、offer 系统 |
-| Concept | `wiki/20_concepts/{module}.md` | UGC、social proof、buyer intent |
-| Template | `wiki/_templates/{module}.md` | 视频 brief、图片 brief、脚本模板 |
-| Skill | 独立 skill 仓库或 `wiki/30_playbooks/{skill-name}.md` 先定义 | 自动化图片生成、视频脚本生成 |
+| Channel | `wiki/50_channels/{module}/index.md` | LinkedIn、Ads |
+| Playbook | `wiki/30_playbooks/{module}.md` | 视频制作、客户访谈 |
+| Business System | `wiki/40_business/{module}.md` | 产品内容、offer 系统 |
+| Concept | `wiki/20_concepts/{module}.md` | buyer intent、social proof |
+| Template | `wiki/_templates/{module}.md` | brief、记录表 |
+| Adapter | 当前子库的 `ADAPTERS/{tool}.md` | CMS、图床、平台字段差异 |
+| Sub-library | `sub-libraries/{module}/` | 能独立交付的完整任务闭环 |
 
-## Step 2: 新建最小文件集
+先补已有页面，不因一个新名词自动新建 Module。
 
-新增一个正式模块至少创建或更新：
+## Step 2：晋升条件
 
-1. Raw folder：`raw/{module}/`
-2. Module index：`wiki/50_channels/{module}/index.md` 或对应业务目录。
-3. Playbook：`wiki/30_playbooks/{module}.md`
-4. Template：如需要，放 `wiki/_templates/{module}-brief.md`
-5. Registry：更新 [module-registry.md](module-registry.md)
-6. Main index：更新 [../index.md](../index.md)、[../30_playbooks/index.md](../30_playbooks/index.md)、[../50_channels/index.md](../50_channels/index.md)
-7. Source taxonomy：如出现新资料类型，更新 [source-taxonomy.md](source-taxonomy.md)
+候选需求只有同时满足以下条件，才从 `Backlog` 晋升：
 
-## Step 3: Front Matter
+- 有重复出现的真实任务或明确用户决定；
+- 当前模块无法合理承载；
+- 能定义独立业务结果、输入、输出、指标和完成闸；
+- 有至少一个来源或真实样本；
+- 明确 owner 和停止条件；
+- 人工确认新的 Active / Blocked / Dormant 状态。
 
-所有新增 Markdown 必须包含：
+## Step 3：最小文件集
 
-```yaml
----
-title: ""
-description: ""
-type: ""
-status: "Seed"
-owner: "AI"
-created: "YYYY-MM-DD"
-last_updated: "YYYY-MM-DD"
-sources: []
-related: []
----
-```
+正式模块至少需要：module index、主 playbook、必要模板、来源入口、registry 记录和总索引链接。若做可分发子库，还必须遵守 [sub-library-contract.md](sub-library-contract.md)。
 
-## Step 4: 模块 SOP 骨架
+当前公开仓库只创建 raw 占位说明，不创建或提交真实 `raw/{module}/` 数据。真实来源进入私有母库或客户运行区。
 
-每个新增 playbook 必须回答：
+## Step 4：模块 SOP 必答
 
-- 什么时候用？
-- 输入资料是什么？
-- 输出是什么？
-- 步骤是什么？
-- 质量检查是什么？
-- 指标是什么？
-- 和哪些模块联动？
-- 哪些情况不能使用？
+- 解决什么业务结果？
+- 输入来源和权限是什么？
+- 稳定对象、字段和状态是什么？
+- 输出和真实成功证据是什么？
+- 哪些动作必须人工审批？
+- 失败如何诊断和回滚？
+- 指标和写回位置是什么？
+- 什么时候 `BLOCK`，什么时候 `Validated`？
 
-## Step 5: Skill 判断
+## Step 5：何时做 Skill
 
-如果某个 SOP 需要反复调用工具、生成固定格式、读写特定文件、或需要多步自动化，可以考虑做成 skill。
-
-先不要直接做 skill。先沉淀为 playbook，跑 3-5 次稳定后，再抽象成 skill。
-
-## Example: 增加视频制作 SOP
-
-最小变更：
-
-- 新建 `raw/video-production/`
-- 新建 `wiki/50_channels/video-production/index.md`
-- 新建 `wiki/30_playbooks/video-production.md`
-- 新建 `wiki/_templates/video-brief.md`
-- 更新 `module-registry.md`
-- 更新 `wiki/index.md`, `30_playbooks/index.md`, `50_channels/index.md`
-
-## Example: 增加作图 SOP
-
-最小变更：
-
-- 新建 `raw/visual-design/`
-- 新建 `wiki/50_channels/visual-design/index.md`
-- 新建 `wiki/30_playbooks/visual-design.md`
-- 新建 `wiki/_templates/image-brief.md`
-- 定义图片用途：LinkedIn、Ads、网站、产品图、案例图、信息图。
-
+先沉淀 playbook，并在真实任务中重复运行 3–5 次。只有输入输出稳定、权限边界清楚、失败模式可复现时，才考虑抽象为 skill。skill 不能用来掩盖尚未跑通的业务流程。

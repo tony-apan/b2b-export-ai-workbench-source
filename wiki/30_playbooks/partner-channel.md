@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["../50_channels/partners/index.md", "../40_business/offers.md"]
+when_to_read: "准备筛选渠道商、代理商或合作伙伴并设计触达、资格判断和跟进节奏时读本页；真实伙伴资料和商务条件不得写入公开库。"
+keywords: ["渠道商","代理商","合作伙伴","伙伴筛选","渠道触达","商务边界"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

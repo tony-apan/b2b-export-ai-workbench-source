@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../30_playbooks/index.md"]
+when_to_read: "准备为网站、外联、广告或销售材料选择案例、数据、截图和推荐语时读本页；必须先核对来源、授权、时效和适用 claim。"
+keywords: ["证据库","客户案例","数据截图","推荐语","使用授权","claim 证据"]
 ---
 # Proof Library
 

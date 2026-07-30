@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["User request", "../10_sources/SRC-20260628-GOOGLE-SEARCH-OFFICIAL.md", "../10_sources/SRC-20260628-GOOGLE-ADS-MEASUREMENT.md", "../10_sources/SRC-20260628-AI-SEARCH-OFFICIAL.md", "../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md"]
 related: ["methodology.md", "markdown-standard.md", "task-router.md"]
 ---
@@ -40,13 +40,13 @@ related: ["methodology.md", "markdown-standard.md", "task-router.md"]
 
 | 中文 | English | 定义 | 不要误解 | 常用页面 |
 |---|---|---|---|---|
-| 理想客户画像 | ICP | 最适合购买、成功率最高、利润和协作质量最好的客户类型。 | 不是所有潜在客户。 | [ICP](../40_business/icp.md) |
-| 触发事件 | Trigger event | 让客户从“知道问题”变成“现在要解决”的事件。 | 不是普通痛点。 | [Customer Pain Map](../40_business/customer-pain-map.md) |
+| 理想客户画像 | ICP | 最适合购买、成功率最高、利润和协作质量最好的客户类型。 | 不是所有潜在客户。 | [ICP](../40_business/id-0013-icp.md) |
+| 触发事件 | Trigger event | 让客户从“知道问题”变成“现在要解决”的事件。 | 不是普通痛点。 | [Customer Pain Map](../40_business/id-0012-customer-pain-map.md) |
 | Offer | Offer | 客户愿意付钱换取的结果、交付物、确定性和风险降低。 | 不是服务列表。 | [Offers](../40_business/offers.md) |
-| 定位 | Positioning | 客户心中你属于哪个选择、为谁解决什么、为什么优于替代方案。 | 不是 slogan。 | [Positioning](../20_concepts/positioning.md) |
+| 定位 | Positioning | 客户心中你属于哪个选择、为谁解决什么、为什么优于替代方案。 | 不是 slogan。 | [Positioning](../20_concepts/id-0009-positioning.md) |
 | 核心信息屋 | Messaging house | 统一 claim、证据、使用渠道和禁用表达的 messaging 系统。 | 不是广告语集合。 | [Messaging House](../40_business/messaging-house.md) |
 | 证据资产 | Proof asset | 案例、数据、截图、推荐语、第三方引用等能支撑 claim 的材料。 | 没授权的证据不能随便公开使用。 | [Proof Library](../40_business/proof-library.md) |
-| 反对意见 | Objection | 客户购买前表达出的阻力。 | 不一定是真实原因，需要判断潜台词。 | [Objections](../40_business/objections.md) |
+| 反对意见 | Objection | 客户购买前表达出的阻力。 | 不一定是真实原因，需要判断潜台词。 | [Objections](../40_business/id-0014-objections.md) |
 
 ## 渠道术语
 
@@ -55,8 +55,8 @@ related: ["methodology.md", "markdown-standard.md", "task-router.md"]
 | 建站 | Website build | 用网页表达定位、offer、证据和 CTA，使目标客户能理解并转化。 | 不只是视觉设计。 | [Website Playbook](../30_playbooks/website-build.md) |
 | LinkedIn 内容 | LinkedIn content | 用持续内容、互动和私信建立信任与销售机会。 | 不只看点赞，要看目标客户互动质量。 | [LinkedIn Playbook](../30_playbooks/linkedin-content.md) |
 | 开发信 | Cold email | 面向陌生目标客户的精准邮件触达。 | 不是群发广告。 | [Cold Email](../30_playbooks/cold-email.md) |
-| SEO | Search Engine Optimization | 面向传统搜索引擎的自然流量和转化优化。 | 不等于只写文章，也不等于工具分数。 | [SEO Playbook](../30_playbooks/seo-content.md) |
-| GEO | Generative Engine Optimization | 本知识库对 AI 搜索可见性工作的内部简称。 | 是 emerging 领域，不代表官方保证或特殊捷径。 | [GEO Playbook](../30_playbooks/geo-ai-search.md) |
+| SEO | Search Engine Optimization | 面向传统搜索引擎的自然流量和转化优化。 | 不等于只写文章，也不等于工具分数。 | [SEO Playbook](../30_playbooks/id-0011-seo-content.md) |
+| GEO | Generative Engine Optimization | 本知识库对 AI 搜索可见性工作的内部简称。 | 是 emerging 领域，不代表官方保证或特殊捷径。 | [GEO Playbook](../30_playbooks/id-0010-geo-ai-search.md) |
 | SEM / Ads | Paid search and ads | 用付费流量测试和获取目标线索。 | 不是只追求点击率。 | [SEM Ads](../30_playbooks/sem-ads.md) |
 | 落地页 | Landing page | 承接某个流量、受众、offer 或实验的转化页面。 | 不一定等同首页。 | [Website Channel](../50_channels/website/index.md) |
 | 短视频运营 | Short video ops | 用短视频表达产品、场景、证据和客户问题。 | 不是单纯追热点或搬运素材。 | [Short Video Playbook](../30_playbooks/short-video-ops.md) |
@@ -65,12 +65,12 @@ related: ["methodology.md", "markdown-standard.md", "task-router.md"]
 
 | 中文 | English | 定义 | 不要误解 | 常用页面 |
 |---|---|---|---|---|
-| 抓取 | Crawling | 搜索引擎或 crawler 访问 URL 和资源。 | 被抓取不等于被索引或排名。 | [SEO Playbook](../30_playbooks/seo-content.md) |
+| 抓取 | Crawling | 搜索引擎或 crawler 访问 URL 和资源。 | 被抓取不等于被索引或排名。 | [SEO Playbook](../30_playbooks/id-0011-seo-content.md) |
 | 索引 | Indexing | 页面进入搜索引擎索引库，可能参与展示。 | 被索引不等于有排名或流量。 | [SEO Channel](../50_channels/seo/index.md) |
-| 规范化 | Canonicalization | 告诉搜索引擎多个相似 URL 中哪个是首选版本。 | canonical 是信号，不是绝对命令。 | [SEO Playbook](../30_playbooks/seo-content.md) |
-| 结构化数据 | Structured data | 用机器可读格式帮助理解页面实体和属性。 | 不是排名或 AI 引用保证。 | [SEO Playbook](../30_playbooks/seo-content.md) |
+| 规范化 | Canonicalization | 告诉搜索引擎多个相似 URL 中哪个是首选版本。 | canonical 是信号，不是绝对命令。 | [SEO Playbook](../30_playbooks/id-0011-seo-content.md) |
+| 结构化数据 | Structured data | 用机器可读格式帮助理解页面实体和属性。 | 不是排名或 AI 引用保证。 | [SEO Playbook](../30_playbooks/id-0011-seo-content.md) |
 | schema.org | schema.org vocabulary | 通用结构化数据词汇表。 | Google rich result 行为以 Google 官方支持类型为准。 | [AI Search Source](../10_sources/SRC-20260628-AI-SEARCH-OFFICIAL.md) |
-| 可引用页面 | Cite-ready page | 事实结构清楚、证据明确、适合被 AI 或人引用的页面。 | 不能保证被引用。 | [GEO Playbook](../30_playbooks/geo-ai-search.md) |
+| 可引用页面 | Cite-ready page | 事实结构清楚、证据明确、适合被 AI 或人引用的页面。 | 不能保证被引用。 | [GEO Playbook](../30_playbooks/id-0010-geo-ai-search.md) |
 | AI 搜索测试 | AI search test | 按平台、日期、地区、账号和 prompt 记录 AI 回答。 | 单次回答不能代表趋势。 | [GEO Channel](../50_channels/geo-ai-search/index.md) |
 
 ## SEM / Ads 术语

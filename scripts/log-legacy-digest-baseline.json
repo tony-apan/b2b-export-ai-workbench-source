@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "algorithm": "sha256(canonical legacy event card: LF endings, trailing whitespace removed, trailing blank lines removed)",
+  "cutoffs": {
+    "wiki/00_meta/logs/2026/07/2026-07-28.md": "EVT-20260728-0017",
+    "wiki/00_meta/logs/2026/07/2026-07-29.md": "EVT-20260729-0008"
+  },
+  "entries_digest": "sha256:2c8db8d9253933b9ce2ad6bf0655bab027bba51331b244197103f567ed121f11",
+  "entries": [
+    {
+      "event_id": "EVT-20260728-0001",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:76518b85c56de6d8cee6cf16d09c4d10f2ff1d0f0d00d7b731d37eaf0bf1b8e5"
+    },
+    {
+      "event_id": "EVT-20260728-0002",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:bac96bd6e1d02ac6dbbe64f918c801e5d93e6fa0608ca244c2ee3c9fd17e3b08"
+    },
+    {
+      "event_id": "EVT-20260728-0003",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:0877dbe2ca150995cebdd838d70c3faeb5c345255a42c84bfceea5e8fe4b50a2"
+    },
+    {
+      "event_id": "EVT-20260728-0004",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:4ef492ba1b5ae37a6cd4edc02d570f0c747f63b682b8e428c8480d4b114e6bf3"
+    },
+    {
+      "event_id": "EVT-20260728-0005",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:db7b5cc84743cffa1a718d2fb33309008ecfa4beb149a87855ae08afb4cc0c42"
+    },
+    {
+      "event_id": "EVT-20260728-0006",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:86b055813f4f25d72920576536ca15789bf113b46fba32f3b0667d38f78de199"
+    },
+    {
+      "event_id": "EVT-20260728-0007",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:e0b414f683dbe1a4fe30588a2425ddf03ecc918a419bf9d721745a72896690f7"
+    },
+    {
+      "event_id": "EVT-20260728-0008",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:3f467b973c1d9d5bea909dc5683aede3bcfe1cdf0ecfcbc54d03007d302b8313"
+    },
+    {
+      "event_id": "EVT-20260728-0009",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:b5cf5125dad2307bc0a1e6526463f47ee294dd398d7e371c2530609f1abb7e51"
+    },
+    {
+      "event_id": "EVT-20260728-0010",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:c9afa5272c0491c57c452aaf887b3e2afc443c8b80a90a9afc13e8787996f305"
+    },
+    {
+      "event_id": "EVT-20260728-0011",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:356da7501651322f74918eda448889b4ee848bbf47e60585a2c8827eab8cec62"
+    },
+    {
+      "event_id": "EVT-20260728-0012",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:cd6a67a5b9217f6fd4f85f3cd8aa362d9fb04f308b3e58bffd6a8ad5d34f66fd"
+    },
+    {
+      "event_id": "EVT-20260728-0013",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:a6dc997df8439d1bc58a52d5bb451b3030f32bd36ea3eb41e3212cb64180610e"
+    },
+    {
+      "event_id": "EVT-20260728-0014",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:64cc2732b145b69c6ab250a6f35fea998fb639de7beb08861d884f0e24f0bfbc"
+    },
+    {
+      "event_id": "EVT-20260728-0015",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:2d8ea414443476ae56aa758628e3a5bfd546b76594b1f9a8f55b2aad3f8ee585"
+    },
+    {
+      "event_id": "EVT-20260728-0016",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:720bc15a6e8df62f9b2997ca4fb8a8aa6dd8417797fec745f64e5b864afec823"
+    },
+    {
+      "event_id": "EVT-20260728-0017",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-28.md",
+      "sha256": "sha256:2450e7f318aa68edc4bb47c76aca37a248bd61a04c406e06d7909489ca134414"
+    },
+    {
+      "event_id": "EVT-20260729-0001",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:6971b1ae0eebb4b8cac398b8244613c09b1682c5f6d889d5a4029526cf5b660f"
+    },
+    {
+      "event_id": "EVT-20260729-0002",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:c135a28ab9540b5404489be280636543708da13b992f8822c0e38fc613082a7e"
+    },
+    {
+      "event_id": "EVT-20260729-0003",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:5ddbdc0e5b2966a8e8d1d80c45f8a8c0847f954610d590302d1029057bc27259"
+    },
+    {
+      "event_id": "EVT-20260729-0004",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:7d38c67858987bae93fc376b7037991165d0040ce67ab4b24dffec0fac9969d1"
+    },
+    {
+      "event_id": "EVT-20260729-0005",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:48a7af27e24e0632ddb5acb3b46fb1f07462607fd0d95688adecdc7bfbffe5e2"
+    },
+    {
+      "event_id": "EVT-20260729-0006",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:443bb633cbfd2e8d087756746192a7dce9a022c4157e3bbb4a96cade2a64720f"
+    },
+    {
+      "event_id": "EVT-20260729-0007",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:5826b2eb540543de4a9b9f764a23a5fc55b1ac0902d4ea37649c9bc2bf555112"
+    },
+    {
+      "event_id": "EVT-20260729-0008",
+      "path": "wiki/00_meta/logs/2026/07/2026-07-29.md",
+      "sha256": "sha256:201ed718007cff33fe80cd0cf623ef8c7ba8fb7948bea5aeecde8883a6ae4ad6"
+    }
+  ]
+}

@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
-related: ["messaging-house.md", "proof-library.md", "objections.md", "../50_channels/index.md"]
+related: ["messaging-house.md", "proof-library.md", "id-0014-objections.md", "../50_channels/index.md"]
+when_to_read: "准备把产品或服务 claim 用于网站、外联、社媒、广告或销售材料前读本页，核对证据、渠道适用性和禁止表达。"
+keywords: ["claim matrix","渠道主张","证据等级","禁止表达","合规风险","跨渠道一致性"]
 ---
 
 # Channel Claim Matrix

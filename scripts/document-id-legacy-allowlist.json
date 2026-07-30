@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "frozen_on": "2026-07-29",
+  "legacy_entries": [
+    { "path": "wiki/20_concepts/conversion-funnel.md", "type": "redirect" },
+    { "path": "wiki/20_concepts/creative-testing.md", "type": "redirect" },
+    { "path": "wiki/20_concepts/geo-ai-search.md", "type": "concept" },
+    { "path": "wiki/20_concepts/ideal-customer-profile.md", "type": "redirect" },
+    { "path": "wiki/20_concepts/objections.md", "type": "redirect" },
+    { "path": "wiki/20_concepts/offer.md", "type": "concept" },
+    { "path": "wiki/20_concepts/pain-points.md", "type": "concept" },
+    { "path": "wiki/20_concepts/positioning.md", "type": "redirect" },
+    { "path": "wiki/20_concepts/proof-assets.md", "type": "concept" },
+    { "path": "wiki/20_concepts/search-intent.md", "type": "redirect" },
+    { "path": "wiki/30_playbooks/case-study.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/cold-email.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/competitor-research.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/geo-ai-search.md", "type": "redirect" },
+    { "path": "wiki/30_playbooks/linkedin-content.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/partner-channel.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/pitfall-analysis.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/rfq-response.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/sales-call.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/sem-ads.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/seo-content.md", "type": "redirect" },
+    { "path": "wiki/30_playbooks/short-video-ops.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/trade-show.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/video-production.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/visual-design.md", "type": "playbook" },
+    { "path": "wiki/30_playbooks/website-build.md", "type": "playbook" },
+    { "path": "wiki/40_business/business-overview.md", "type": "business" },
+    { "path": "wiki/40_business/buyer-journey-procurement.md", "type": "business" },
+    { "path": "wiki/40_business/channel-claim-matrix.md", "type": "business" },
+    { "path": "wiki/40_business/customer-pain-map.md", "type": "redirect" },
+    { "path": "wiki/40_business/export-market-map.md", "type": "business" },
+    { "path": "wiki/40_business/growth-system.md", "type": "business" },
+    { "path": "wiki/40_business/icp.md", "type": "redirect" },
+    { "path": "wiki/40_business/messaging-house.md", "type": "business" },
+    { "path": "wiki/40_business/objections.md", "type": "redirect" },
+    { "path": "wiki/40_business/offer-fit-matrix.md", "type": "business" },
+    { "path": "wiki/40_business/offers.md", "type": "business" },
+    { "path": "wiki/40_business/pricing-quotation.md", "type": "business" },
+    { "path": "wiki/40_business/product-catalog-specs.md", "type": "business" },
+    { "path": "wiki/40_business/proof-library.md", "type": "business" },
+    { "path": "wiki/40_business/quality-compliance-certifications.md", "type": "business" },
+    { "path": "wiki/40_business/trade-terms-logistics.md", "type": "business" }
+  ],
+  "record_policies": [
+    {
+      "type": "verification-record",
+      "path_pattern": "^wiki/90_outputs/courses/verification/(VER-[0-9]{8}-[a-z0-9][a-z0-9-]*)\\.md$",
+      "id_field": "verification_id"
+    },
+    {
+      "type": "writeback-record",
+      "path_pattern": "^wiki/90_outputs/courses/writeback/(WB-[0-9]{8}-[a-z0-9][a-z0-9-]*)\\.md$",
+      "id_field": "writeback_id"
+    }
+  ]
+}

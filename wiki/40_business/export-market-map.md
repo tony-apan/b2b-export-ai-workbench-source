@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["growth-system.md", "../00_meta/b2b-export-module-map.md"]
+when_to_read: "准备选择出口国家、区域、行业或应用场景并安排进入优先级时读本页；市场需求、竞争和合规判断必须绑定来源。"
+keywords: ["出口市场","国家优先级","行业地图","应用场景","进入策略","市场证据"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

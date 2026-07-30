@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../30_playbooks/index.md"]
+when_to_read: "准备网站文案、开发信、社媒、广告或销售话术时读本页，统一受众、核心信息、证据和禁用表达；未验证 claim 不得对外使用。"
+keywords: ["messaging house","核心信息","渠道文案","claim 证据","禁用表达","信息一致性"]
 ---
 # Messaging House
 

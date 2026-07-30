@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["proof-library.md", "product-catalog-specs.md"]
+when_to_read: "准备产品页、询盘回复或销售信任材料中的质量、认证、合规和检测内容时读本页；证书范围和有效期必须重新核验。"
+keywords: ["质量认证","合规要求","检测报告","证书有效期","询盘回复","信任材料"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

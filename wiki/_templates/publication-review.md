@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "公开发布前需要核对范围、来源、版权、去敏、批准、发布时间和下架条件时。"
+keywords: ["发布审核", "版权", "去敏", "批准记录", "下架条件"]
+template_usage: "manual-copy"
 sources: ["Risk review"]
 related: ["../00_meta/release-checklist.md", "../00_meta/publishing-and-redaction.md"]
 visibility: "public"

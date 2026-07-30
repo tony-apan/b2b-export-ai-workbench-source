@@ -1,26 +1,21 @@
 ---
-title: "Objections"
-description: "记录客户异议、真实含义、回应、所需证据和来源。"
-type: "business"
-status: "Seed"
+title: "Objections — Moved"
+description: "兼容旧链接的迁移指针；Objections 正文已经迁移到带有稳定 ID 的新路径，本页不再承载第二份知识内容。"
+type: "redirect"
+status: "Archived"
 owner: "AI"
-created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["index.md", "../30_playbooks/index.md"]
+created: "2026-07-29"
+last_updated: "2026-07-29"
+sources: ["id-0014-objections.md"]
+related: ["id-0014-objections.md"]
+when_to_read: "旧链接仍指向 objections.md 时读本页完成迁移；新的知识引用必须改用 ID-0014 canonical 页面。"
+keywords: ["Objections", "redirect", "ID-0014", "旧链接", "兼容迁移"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+redirect_to: "id-0014-objections.md"
 ---
-# Objections
+# Objections — Moved
 
-## Objection Bank
+> 本页是旧路径兼容指针，不是第二份知识源。请改读 [Objections（ID-0014）](id-0014-objections.md)。
 
-| Objection | Likely Meaning | Response | Needed Proof | Source |
-|---|---|---|---|---|
-| 太贵了 | 价值或风险没有讲清楚 | 待补 | 案例/ROI/范围说明 | 待补 |
-| 现在不急 | 触发事件不够强 | 待补 | 机会成本/时间线 | 待补 |
-| 我们内部能做 | 外部价值没有讲清楚 | 待补 | 专业机制/速度/结果 | 待补 |
-
-## Related
-
-- [Offers](offers.md)
-- [Proof Library](proof-library.md)
-
+迁移日期：2026-07-29。

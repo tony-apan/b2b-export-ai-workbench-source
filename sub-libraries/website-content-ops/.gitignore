@@ -1,0 +1,19 @@
+# Generated candidates and local dependency trees
+dist/
+**/node_modules/
+
+# Private runtime workspaces and credentials
+workspace/
+credentials/
+.env
+.env.*
+**/.env
+**/.env.*
+*.secret
+**/*.secret
+*.credentials
+**/*.credentials
+*.token
+**/*.token
+*.cookie
+**/*.cookie

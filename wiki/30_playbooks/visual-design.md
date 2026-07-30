@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["../50_channels/visual-design/index.md", "../_templates/image-brief.md"]
+when_to_read: "准备 LinkedIn、广告、网站、产品或案例视觉稿的 brief 和验收时读本页；图片来源、品牌规范和客户授权必须在项目内确认。"
+keywords: ["视觉设计","作图 SOP","广告图","网站配图","信息图","素材授权"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:701-kecheng:reviewer-record:v1",
+  "title": "701_kecheng reviewer evidence record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_schema_version",
+    "review_id",
+    "recorded_at",
+    "reviewer_display_name",
+    "agent_id",
+    "claimed_role",
+    "claimed_verdict",
+    "provenance_status",
+    "identity_status",
+    "independence_status",
+    "scope_manifest",
+    "source_commit",
+    "content_digest",
+    "original_verdict",
+    "producer_report_locators",
+    "limitations"
+  ],
+  "properties": {
+    "record_schema_version": { "const": 1 },
+    "review_id": { "type": "string", "pattern": "^REV-[0-9]{8}-[A-Z0-9-]+-[0-9]{4}$" },
+    "recorded_at": { "type": "string", "format": "date-time" },
+    "reviewer_display_name": { "type": "string", "minLength": 1 },
+    "agent_id": { "type": ["string", "null"], "minLength": 1 },
+    "claimed_role": { "type": "string", "minLength": 1 },
+    "claimed_verdict": { "enum": ["pass", "warn", "block", "needs_tony", "not-recorded"] },
+    "provenance_status": { "enum": ["producer-reported", "reviewer-authored", "externally-attested"] },
+    "identity_status": { "enum": ["not_verified", "verified"] },
+    "independence_status": { "enum": ["not_verified", "verified"] },
+    "scope_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locator", "sha256", "immutable"],
+      "properties": {
+        "locator": { "type": ["string", "null"] },
+        "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "immutable": { "type": "boolean" }
+      }
+    },
+    "source_commit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "binding"],
+      "properties": {
+        "value": { "type": ["string", "null"], "pattern": "^[0-9a-f]{40}$" },
+        "binding": { "enum": ["content-bound", "context-only", "not-recorded"] }
+      }
+    },
+    "content_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "original_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locator", "sha256", "immutable", "available"],
+      "properties": {
+        "locator": { "type": ["string", "null"] },
+        "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "immutable": { "type": "boolean" },
+        "available": { "type": "boolean" }
+      }
+    },
+    "producer_report_locators": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

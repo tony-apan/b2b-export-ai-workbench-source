@@ -1,0 +1,40 @@
+{
+  "schema_version": 2,
+  "description": "Machine-readable canonical registry for independently distributable sub-libraries.",
+  "entries": [
+    {
+      "id": "website-content-ops",
+      "package_id": "website-content-ops",
+      "path": "sub-libraries/website-content-ops",
+      "version": "0.3.2-preview.1",
+      "maturity_status": "validated",
+      "verification_status": "evidence-partial",
+      "release_status": "Preview",
+      "license_status": "cleared",
+      "release_scope": "standalone-sub-library",
+      "runtime_contract": "RUNTIME-CONTRACT.json",
+      "dependency_mode": "self-contained",
+      "source_package_only": true,
+      "package_kind": "standalone-sub-library",
+      "delivery_modes": [
+        "human-playbook",
+        "ai-skill-draft",
+        "toolkit"
+      ],
+      "skill_entrypoint": "SKILL.md",
+      "canonical_entry": "README.md",
+      "included_in_mother": "source-only",
+      "skill_status": "preview-adapter-not-installable",
+      "durable_roots": [
+        "KNOWLEDGE",
+        "PLAYBOOKS",
+        "COURSES",
+        "OUTPUTS"
+      ],
+      "approval_required": true,
+      "approval_status": "pending",
+      "tag_namespace": "sub-library/website-content-ops",
+      "tag_prefix": "sub-library/website-content-ops/v"
+    }
+  ]
+}

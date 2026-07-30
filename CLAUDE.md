@@ -1,66 +1,41 @@
 ---
 title: "CLAUDE.md"
-description: "Claude Code 使用本知识库时的快速入口和规则指引。"
+description: "Claude Code 进入本仓库时使用的薄路由，指向项目规则、当前状态、知识导航、子库合同和验证入口。"
 type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["AGENTS.md", "wiki/00_meta/ai-operating-manual.md"]
+last_updated: "2026-07-29"
+sources: ["AGENTS.md"]
+related: ["CONTEXT.md", "AGENTS.md", "README.md", "wiki/index.md", "wiki/00_meta/current-focus.md", "sub-libraries/README.md", "scripts/README.md"]
 ---
 # CLAUDE.md
 
-这是 Claude Code 使用本知识库的工作协议。本库同时兼容 Codex；更完整的 agent 规则见 [AGENTS.md](AGENTS.md)。
+这是 Claude Code 的**薄入口**，不复制第二套 SOP。
 
-## 规则优先级
+## 启动顺序
 
-这份文件是 Claude 的快速入口，不是完整 SOP。具体执行以：
+1. 读 [CONTEXT.md](CONTEXT.md) 对齐术语。
+2. 读 [AGENTS.md](AGENTS.md) 获取最高项目规则。
+3. 读 [current-focus.md](wiki/00_meta/current-focus.md) 获取当前状态和阻断。
+4. 从 [wiki/index.md](wiki/index.md) 或 [sub-libraries/README.md](sub-libraries/README.md) 进入目标 scope；不要先扫描全库。
 
-1. [AGENTS.md](AGENTS.md)
-2. [wiki/00_meta/ai-operating-manual.md](wiki/00_meta/ai-operating-manual.md)
-3. [wiki/00_meta/task-router.md](wiki/00_meta/task-router.md)
-4. [wiki/00_meta/markdown-standard.md](wiki/00_meta/markdown-standard.md)
+## 按任务路由
 
-为准。
+- 母库知识、业务和输出：读目标目录的 `index.md`、[task-router.md](wiki/00_meta/task-router.md) 与相关页面。
+- 原始资料：从 [raw/index.md](raw/index.md) 进入，再按 [raw-to-course 流水线](wiki/00_meta/raw-conversation-and-course-pipeline.md) 提炼。
+- 课程：从 [课程入口](wiki/90_outputs/courses/index.md) 进入；结构完整不等于真实课程效果。
+- 日志：按 [logging-standard.md](wiki/00_meta/logging-standard.md) 写入每日事件和月度摘要，不复制 raw 原文。
+- 子库：先读其 `README.md`、`MANIFEST.md`、`AGENTS.md` 和 `RUNTIME-CONTRACT.json`；仅在 manifest 声明时再读 `SKILL.md`。
+- 索引与 Markdown：遵守 [index-and-discovery-standard.md](wiki/00_meta/index-and-discovery-standard.md)；不要手改 index 生成区，命令从 [scripts/README.md](scripts/README.md) 读取。
+- 发布或去敏：读当前 scope 的 manifest、[RELEASE.md](RELEASE.md)、[release-checklist.md](wiki/00_meta/release-checklist.md) 和 [check-mechanism-map.md](wiki/00_meta/check-mechanism-map.md)。
 
-## 你的角色
+## 不可越过的边界
 
-你是这个业务增长知识库的维护者和增长参谋。你的工作不是只回答一次问题，而是让知识不断沉淀、变清楚、可复用。
+- 母库与子库独立判定；结构、制品、运行、课程效果、人工批准和 Published 互不替代。
+- `APPROVAL_RECORD_PASS` 不能证明批准者真人身份；tag object SHA、signer fingerprint、canonical annotation 与 approval digest 必须由外部 workflow 的真实值精确绑定，远端保护和最终发布仍需外部证据。
+- 真实客户、账号、凭据、经营数据和未授权原文不得直接提交到母库；公开子库只能包含经过 allowlist 与去敏审查的内容。
+- 发布、登录、发送、删除、批量覆盖、修改 remote 或其他外部副作用必须得到明确授权；命令成功不等于业务验收成功。
+- 涉及社媒账号时遵守 [social-account-safety.md](wiki/00_meta/social-account-safety.md)，AI 不直接自动化账号动作。
 
-## 必读入口
-
-每次开始任务前，先读：
-
-- [wiki/index.md](wiki/index.md)
-- [wiki/00_meta/ai-operating-manual.md](wiki/00_meta/ai-operating-manual.md)
-- 与当前任务相关的模块索引
-- [wiki/00_meta/task-router.md](wiki/00_meta/task-router.md)
-
-## 三层结构
-
-- `raw/`：原始资料，Claude 只读不改。
-- `wiki/`：提炼后的知识，Claude 可以维护。
-- `CLAUDE.md` / `AGENTS.md`：协作规则，约束 Claude、Codex 和后续 agent 的行为。
-
-## 社媒账号安全红线
-
-涉及 LinkedIn、Meta、Facebook、Instagram、TikTok、YouTube、X/Twitter 等社媒账号时，先读 [wiki/00_meta/social-account-safety.md](wiki/00_meta/social-account-safety.md)。Claude/Codex 可以生成草稿、策略、检查清单和复盘，但不能直接自动登录、发帖、评论、点赞、关注、加好友、私信或批量浏览社媒账号。可以在用户明确要求时辅助 Chrome 浏览器插件，但最终账号动作必须由人确认和执行，不能用 Codex 内置浏览器自动化操作。
-
-## 工作方式
-
-- 新资料进来时，先理解来源，再更新 source registry、相关页面、索引和日志。
-- 回答业务问题时，优先基于 `wiki/`，必要时回看 `raw/`。
-- 对不确定内容标注“待验证”或“推断”，不要把猜测写成事实。
-- 有价值的聊天成果要沉淀回 wiki。
-- 更新后简短说明改了哪些文件、下一步建议补什么资料。
-- 每个 Markdown 都要遵守 [wiki/00_meta/markdown-standard.md](wiki/00_meta/markdown-standard.md)。
-
-## 典型任务
-
-- 建站与页面转化优化。
-- LinkedIn 内容和个人 IP。
-- 开发信、跟进信、销售话术。
-- SEO、GEO、SEM 和 Ads 测试。
-- 客户画像、痛点、反对意见、谈判策略。
-- 竞品分析、市场研究、风险与坑点复盘。
+完成后报告：改动文件、运行的验证、未验证边界和下一步；不得把 `BLOCK` 美化为 PASS。

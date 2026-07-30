@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "需要建立去敏客户档案并整理背景、痛点、异议、结果与知识启发时。"
+keywords: ["客户档案", "客户痛点", "客户异议", "结果记录", "去敏"]
+template_usage: "manual-copy"
 sources: []
 related: ["../00_meta/markdown-standard.md"]
 ---

@@ -1,30 +1,21 @@
 ---
-title: "Creative Testing"
-description: "定义广告素材测试的主要维度和判断方式。"
-type: "concept"
-status: "Seed"
+title: "Creative Testing — Moved"
+description: "兼容旧链接的迁移指针；Creative Testing 正文已经迁移到带有稳定 ID 的新路径，本页不再承载第二份知识内容。"
+type: "redirect"
+status: "Archived"
 owner: "AI"
-created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["index.md", "../40_business/index.md"]
+created: "2026-07-29"
+last_updated: "2026-07-29"
+sources: ["id-0006-creative-testing.md"]
+related: ["id-0006-creative-testing.md"]
+when_to_read: "旧链接仍指向 creative-testing.md 时读本页完成迁移；新的知识引用必须改用 ID-0006 canonical 页面。"
+keywords: ["Creative Testing", "redirect", "ID-0006", "旧链接", "兼容迁移"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+redirect_to: "id-0006-creative-testing.md"
 ---
-# Creative Testing
+# Creative Testing — Moved
 
-广告素材测试不是“换图试试”，而是系统测试不同痛点、承诺、证据、受众和行动号召。
+> 本页是旧路径兼容指针，不是第二份知识源。请改读 [Creative Testing（ID-0006）](id-0006-creative-testing.md)。
 
-## 测试维度
-
-- 受众：
-- 痛点：
-- 承诺：
-- 证据：
-- 格式：
-- CTA：
-- 落地页：
-
-## Related
-
-- [SEM Ads Playbook](../30_playbooks/sem-ads.md)
-- [Metrics](../80_metrics/index.md)
-
+迁移日期：2026-07-29。

@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../30_playbooks/index.md"]
+when_to_read: "任何渠道策略、内容、报价或销售输出开始前读本页，确认当前业务、市场、客户、结果和差异化；空字段不得解释为已验证事实。"
+keywords: ["业务概览","核心服务","目标市场","客户结果","差异化","事实底座"]
 ---
 # Business Overview
 
@@ -36,7 +38,7 @@ related: ["index.md", "../30_playbooks/index.md"]
 
 ## Related
 
-- [ICP](icp.md)
+- [ICP](id-0013-icp.md)
 - [Offers](offers.md)
 - [Messaging House](messaging-house.md)
 

@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "新增渠道、业务系统、内容生产或外贸 B2B 模块，需要建立分层入口与边界时。"
+keywords: ["模块索引", "新模块", "分层入口", "B2B 模块", "信息架构"]
+template_usage: "manual-copy"
 sources: ["User request"]
 related: ["../00_meta/module-expansion-sop.md", "../00_meta/module-registry.md"]
 visibility: "public"

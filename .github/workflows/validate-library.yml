@@ -1,0 +1,101 @@
+name: Validate mother and sub-libraries
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  structure-and-artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache-dependency-path: sub-libraries/website-content-ops/ADAPTERS/cms/allincms/package-lock.json
+
+      - name: Run governance negative regression tests
+        run: node scripts/run-governance-tests.mjs --timeout-ms 30000
+
+      - name: Validate generated indexes and Markdown metadata
+        run: node scripts/validate-indexes.mjs --check
+
+      - name: Validate local Markdown links
+        run: node scripts/validate-links.mjs
+
+      - name: Validate stable document IDs
+        run: node scripts/validate-document-ids.mjs
+
+      - name: Validate daily event log schema
+        run: node scripts/validate-logs.mjs
+
+      - name: Validate raw-to-course knowledge chain
+        run: node scripts/validate-knowledge-chain.mjs
+
+      - name: Validate mother library structure
+        run: node scripts/validate-mother-library.mjs
+
+      - name: Validate every registered sub-library
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const cp = require('node:child_process');
+          const registry = JSON.parse(fs.readFileSync('sub-libraries/registry.json', 'utf8'));
+          for (const entry of registry.entries) {
+            cp.execFileSync(process.execPath, [`${entry.path}/scripts/validate-sub-library.mjs`], { stdio: 'inherit' });
+          }
+          NODE
+
+      - name: Build mother candidate with reproducible timestamp
+        env:
+          SOURCE_DATE_EPOCH: 0
+        run: node scripts/build-mother-release.mjs
+
+      - name: Validate mother artifact boundary
+        run: node scripts/validate-artifact.mjs dist/mother/latest
+
+      - name: Build every registered sub-library candidate with reproducible timestamp
+        env:
+          SOURCE_DATE_EPOCH: 0
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const cp = require('node:child_process');
+          const registry = JSON.parse(fs.readFileSync('sub-libraries/registry.json', 'utf8'));
+          for (const entry of registry.entries) {
+            cp.execFileSync(process.execPath, [`${entry.path}/scripts/build-release.mjs`], { stdio: 'inherit', env: { ...process.env, SOURCE_DATE_EPOCH: '0' } });
+          }
+          NODE
+
+      - name: Validate every registered sub-library artifact boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const cp = require('node:child_process');
+          const registry = JSON.parse(fs.readFileSync('sub-libraries/registry.json', 'utf8'));
+          for (const entry of registry.entries) {
+            cp.execFileSync(process.execPath, [`${entry.path}/scripts/validate-artifact.mjs`, `${entry.path}/dist/latest`], { stdio: 'inherit' });
+          }
+          NODE
+
+      - name: Run adapter tests
+        working-directory: sub-libraries/website-content-ops/ADAPTERS/cms/allincms
+        run: |
+          npm ci
+          npm test

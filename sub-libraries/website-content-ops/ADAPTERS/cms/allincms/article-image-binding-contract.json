@@ -1,0 +1,325 @@
+{
+  "schemaVersion": "1.5",
+  "kind": "allincms-article-image-binding-contract",
+  "visibility": "public-redacted-template",
+  "defaultCms": "AllinCMS",
+  "publicationAuthorizedByDefault": false,
+  "exclusiveEntrypoint": {
+    "module": "article-image-binding.mjs",
+    "mediaDependency": "upload-media-browser.mjs",
+    "globalStringReplacementForbidden": true,
+    "handwrittenSlateImageNodesForbidden": true,
+    "automaticUiFallbackForbidden": true,
+    "imageBearingMutation": "bindAndSaveAllinCmsArticleDraftDirect()",
+    "directSaveBoundary": "saveAllinCmsArticleDraftDirect() is only for text-only content or an internal guarded call from the image-bearing operation",
+    "directImageSaveForbidden": true,
+    "rediscoverOrRecaptureForbidden": true
+  },
+  "source": {
+    "format": "markdown",
+    "parser": "conservative-tokenizer",
+    "sourceContentHash": "sha256",
+    "supported": [
+      "inline Markdown image syntax",
+      "local PNG/JPG/JPEG/GIF/WebP asset fingerprinting",
+      "same asset at multiple occurrence positions",
+      "image-only lines for Slate conversion"
+    ],
+    "blocked": [
+      "reference-style images",
+      "HTML img elements",
+      "remote source images without an existing verified mapping",
+      "multiple images on one line",
+      "image mixed with prose on the same line",
+      "stale source hash",
+      "changed image token positions",
+      "changed before or after anchors"
+    ],
+    "staleManifestResult": "stop-and-rebuild-manifest",
+    "manifestSchemaVersion": 2,
+    "schema1Compatibility": "blocked-stop-and-rebuild"
+  },
+  "assetIdentity": {
+    "primaryKey": "source_sha256",
+    "compatibilityHash": "source_md5",
+    "sameBytesReuseAsset": true,
+    "sameFilenameDoesNotImplySameAsset": true,
+    "localBytesRecheckedImmediatelyBeforeSlateBuild": true,
+    "changedLocalBytesResult": "stop-and-rebuild-manifest",
+    "owns": [
+      "source_files",
+      "source_sha256",
+      "source_md5",
+      "media_id",
+      "public_url"
+    ],
+    "sourceFilesMayContainMultipleAbsolutePathsForEqualBytes": true,
+    "everyOccurrencePathRecheckedEvenWhenRemoteAssetIsReused": true
+  },
+  "occurrenceIdentity": {
+    "oneAssetMayHaveManyOccurrences": true,
+    "eachOccurrenceOwnsIndependentMetadata": true,
+    "owns": [
+      "source_reference",
+      "source_file",
+      "source_sha256",
+      "source_md5",
+      "source_position",
+      "source_block",
+      "before_anchor",
+      "after_anchor",
+      "role",
+      "article_context",
+      "alt",
+      "caption"
+    ],
+    "requiredPositionEvidence": [
+      "source_start",
+      "source_end",
+      "source_block_path",
+      "source_block_index",
+      "before_anchor_sha256",
+      "after_anchor_sha256"
+    ],
+    "sameAssetReuseExample": "A-B-A creates two assets and three occurrences",
+    "globalStringReplacementForbidden": true,
+    "sourceFileMustBeAbsolute": true,
+    "sourceFileMustExistInAssetSourceFiles": true,
+    "sourceHashesMustMatchCurrentBytesAndAssetIdentity": true,
+    "duplicateOccurrenceIdResult": "stop-and-rebuild-manifest"
+  },
+  "mediaPreBindingGate": {
+    "exactSignedInPage": "https://workspace.laicms.com/{site_key}/media",
+    "serialOnly": true,
+    "checks": [
+      "unique media record still exists",
+      "media_id matches when previously known",
+      "public URL matches when previously known",
+      "anonymous HTTPS GET succeeds",
+      "Content-Type is image/*",
+      "body has a recognized image signature",
+      "browser image decode succeeds"
+    ],
+    "uncertainResult": "stop-entire-batch",
+    "acceptedMappingStatus": [
+      "verified",
+      "reconciled_existing"
+    ],
+    "requiredVerificationEvidence": [
+      "contractVerified=true",
+      "mediaRecordPresent=true",
+      "anonymousHttpsGet=true",
+      "browserImageDecodes=true"
+    ],
+    "selfDeclaredVerifiedStatusIsInsufficient": true,
+    "mappingMustMatchExactSourceSha256": true,
+    "candidateMustIncludeKnownMediaIdAndUrl": true
+  },
+  "slateImageNode": {
+    "type": "img",
+    "url": "https://assets.example.invalid/{site_key}/image.webp",
+    "alt": "occurrence-specific alt text",
+    "caption": [
+      {
+        "text": "occurrence-specific visible caption"
+      }
+    ],
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "id": "unique-node-id",
+    "preRequestValidation": {
+      "allNodeIdsRequiredAndUnique": true,
+      "childrenArrayRequired": true,
+      "imageUrlMustUseHttps": true,
+      "imageAltMustBeString": true,
+      "nonDecorativeAltMustBeNonEmpty": true,
+      "captionWhenPresentMustBeSlateTextNodeArray": true,
+      "stringCaptionBlockedBeforeRequest": true,
+      "captionEveryEntryMustBeSlateTextNodeObject": true,
+      "mixedCaptionArraysBlockedBeforeRequest": true,
+      "backendReadbackCaptionShapeRevalidated": true
+    },
+    "observedProductBoundary": [
+      "The backend persists occurrence alt and caption fields.",
+      "A string caption can persist but caused the AllinCMS article editor to render a 500 error on 2026-07-27.",
+      "The article editor DOM did not render img alt attributes in the verified A-B-A draft run."
+    ]
+  },
+  "draftSave": {
+    "exactSignedInPage": "https://workspace.laicms.com/{site_key}/posts/{post_id}/update",
+    "route": "/{site_key}/posts/{post_id}/update",
+    "actionExportName": "upsertPostAction",
+    "mode": "update",
+    "publishModeForbidden": true,
+    "dynamicRuntimeFields": [
+      "next-action",
+      "next-router-state-tree",
+      "x-deployment-id",
+      "siteId",
+      "postId"
+    ],
+    "requestCount": 1,
+    "automaticRetryAfterRequest": false,
+    "readbackRequired": true,
+    "postRequestAmbiguityRule": "if the request may have started, never automatically resend; reload and read back only",
+    "imageBearingEntrypoint": "bindAndSaveAllinCmsArticleDraftDirect()",
+    "bindingMode": "bind occurrences serially in memory, then save the complete article exactly once",
+    "perOccurrenceRemoteArticleSaveForbidden": true,
+    "bindingProgressDoesNotMeanRemoteSave": "onProgress reports per-occurrence local verification and binding only",
+    "operationLock": {
+      "scope": "site_key + post_id + absolute manifest path",
+      "defaultPath": "{manifestPath}.{site_key}.{post_id}.operation.lock",
+      "covers": [
+        "exact page preflight",
+        "source verification",
+        "occurrence binding",
+        "bindingProof generation",
+        "pre-save source reverification",
+        "one remote save",
+        "backend readback",
+        "editor health check",
+        "atomic manifest write"
+      ],
+      "secondWriterResult": "stop-before-build-and-request"
+    }
+  },
+  "successGate": {
+    "allRequired": [
+      "one mode=update request",
+      "HTTP 200 response",
+      "complete backend payload readback",
+      "image count matches manifest occurrences",
+      "image URL order matches",
+      "image Slate node positions match",
+      "required alt persists in backend data",
+      "caption text persists by Slate text semantics",
+      "article editor reload does not show a 500 or Oops page",
+      "Slate editor exists after reload",
+      "editor article image count exactly matches saved content",
+      "all article images decode with naturalWidth greater than zero",
+      "visible editor captions exactly match saved captions in order",
+      "draft status badge remains present",
+      "article remains a draft and no publish request occurs"
+    ],
+    "editorRenderFailure": {
+      "status": "article_editor_render_failed",
+      "requestMayHaveSucceeded": true,
+      "readbackVerified": true,
+      "automaticRetryAllowed": false,
+      "published": false
+    },
+    "successResultIncludes": [
+      "editorPage",
+      "editorDomAltMissing",
+      "expectedImageCount",
+      "decodedArticleImageCount",
+      "captionsMatch",
+      "draftLabelPresent"
+    ]
+  },
+  "altVerificationLayers": {
+    "backendData": "persisted-and-read-back-in-verified-draft",
+    "editorDom": "missing-observed-3-of-3-on-2026-07-27",
+    "publishedThemeCurrentRun": "not-run-not-authorized",
+    "allowedClaim": "alt persisted in backend data",
+    "forbiddenClaim": "SEO alt is confirmed on the editor or published theme"
+  },
+  "manifestWrite": {
+    "atomicTempThenRename": true,
+    "singleWriterLock": true,
+    "lockMetadata": [
+      "pid",
+      "acquiredAt",
+      "manifestPath"
+    ],
+    "lockConflictResult": "stop",
+    "automaticLockBypassForbidden": true,
+    "staleLockRecovery": {
+      "automaticRecoveryForbidden": true,
+      "requiredChecks": [
+        "lock age is outside the active run window",
+        "no open file handle",
+        "no active writer process",
+        "temporary file state inspected",
+        "target manifest state inspected",
+        "private recovery evidence written"
+      ]
+    },
+    "afterRemoteSaveFailureStatus": "article_manifest_write_failed_after_save",
+    "afterRemoteSaveRequestMayHaveSucceeded": true,
+    "afterRemoteSaveAutomaticRetryAllowed": false
+  },
+  "stabilityGate": {
+    "mustEqualZero": [
+      "unresolved_image_placeholders",
+      "local_file_paths",
+      "missing_asset_mappings",
+      "missing_occurrence_bindings",
+      "unexpected_extra_images",
+      "image_order_mismatches",
+      "image_position_mismatches",
+      "stale_article_manifest",
+      "broken_public_urls",
+      "image_decode_failures",
+      "missing_required_alt_in_expected_content",
+      "missing_required_alt_in_backend_data",
+      "unreviewed_uncertain_claims"
+    ],
+    "trackedProductGapNotForcedToZero": [
+      "editor_dom_alt_missing"
+    ],
+    "publishedArticle": "not_run_not_authorized",
+    "overallVerifiedScope": "draft-binding-only",
+    "auditEvidenceRules": {
+      "image_position_mismatches": "compare expected Slate node indexes with actual image node indexes, not image count alone",
+      "broken_public_urls": "derive from unique-asset anonymousHttpsGet proof; never hard-code zero",
+      "image_decode_failures": "derive from unique-asset browserImageDecodes proof; never hard-code zero",
+      "missing_required_alt_in_expected_content": "pre-save local manifest and Slate audit",
+      "missing_required_alt_in_backend_data": "post-save backend readback only; never infer from the pre-save audit"
+    }
+  },
+  "occurrenceFreshnessGate": {
+    "serialOnly": true,
+    "checkpoints": [
+      "before Slate build",
+      "again immediately before the one article save request"
+    ],
+    "progressStages": [
+      "occurrence_source_verified",
+      "occurrence_source_reverified_before_save"
+    ],
+    "checks": [
+      "absolute occurrence source file",
+      "asset sourceFiles contains occurrence path",
+      "current SHA-256 matches occurrence assetId, occurrence sourceSha256, and asset sourceSha256",
+      "current MD5 matches occurrence sourceMd5 and asset sourceMd5"
+    ],
+    "failureResult": "stop-before-request-and-rebuild-manifest"
+  },
+  "bindingProof": {
+    "requiredForImageBearingContent": true,
+    "generatedOnlyBy": "buildAllinCmsSlateContent()",
+    "fields": [
+      "kind",
+      "version",
+      "articleId",
+      "sourceContentSha256",
+      "occurrenceIds",
+      "occurrenceSourceFiles",
+      "occurrenceSourceHashes",
+      "assetIds",
+      "mediaIds",
+      "urls",
+      "contentSha256",
+      "audit",
+      "proofSha256",
+      "createdAt"
+    ],
+    "revalidatedAtSaveBoundary": true,
+    "differentAssetsMayNotShareMediaIdOrUrl": true,
+    "handwrittenOrTamperedProofResult": "stop-before-request"
+  }
+}

@@ -5,9 +5,11 @@ type: "concept"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["../10_sources/SRC-20260628-AI-SEARCH-OFFICIAL.md", "../10_sources/SRC-20260628-GOOGLE-SEARCH-OFFICIAL.md"]
-related: ["index.md", "../40_business/index.md", "../30_playbooks/geo-ai-search.md", "../50_channels/geo-ai-search/index.md"]
+related: ["index.md", "../40_business/index.md", "../30_playbooks/id-0010-geo-ai-search.md", "../50_channels/geo-ai-search/index.md"]
+when_to_read: "需要区分 AI crawler 访问、索引、提及、引用和推荐，或设计 GEO 可见性验证口径时读本页；不得据此承诺稳定收录或收入。"
+keywords: ["GEO","AI 搜索","crawler","引用可见性","实体一致性","验证边界"]
 ---
 # GEO / AI Search Visibility
 
@@ -38,6 +40,6 @@ GEO 不是传统 SEO 的改名，也不是 AI 搜索捷径。当前可验证的�
 
 ## Related
 
-- [GEO Playbook](../30_playbooks/geo-ai-search.md)
+- [GEO Playbook](../30_playbooks/id-0010-geo-ai-search.md)
 - [GEO Channel](../50_channels/geo-ai-search/index.md)
 - [AI Search Official Source](../10_sources/SRC-20260628-AI-SEARCH-OFFICIAL.md)

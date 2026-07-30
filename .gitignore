@@ -1,6 +1,24 @@
-﻿raw/*
-!raw/README.md
+# Keep the raw tree private by default, but commit safe navigation and templates.
+raw/*
 !raw/index.md
+!raw/00_inbox/
+!raw/00_inbox/index.md
+!raw/10_conversations/
+!raw/10_conversations/index.md
+!raw/10_conversations/src-20260728-0001-knowledge-base-structure-closure.md
+!raw/20_web/
+!raw/20_web/index.md
+!raw/30_documents/
+!raw/30_documents/index.md
+!raw/40_media/
+!raw/40_media/index.md
+!raw/50_exports/
+!raw/50_exports/index.md
+!raw/90_archive/
+!raw/90_archive/index.md
+!raw/_templates/
+!raw/_templates/index.md
+!raw/_templates/conversation-source.md
 wiki/60_clients/*
 !wiki/60_clients/index.md
 wiki/90_outputs/drafts/
@@ -21,3 +39,14 @@ wiki/90_outputs/drafts/
 .env.*
 *.key
 *.pem
+
+# Local Obsidian workspace state; never part of a public release package.
+.obsidian/
+
+# Generated release candidates; build locally and verify, do not commit.
+dist/
+**/dist/
+
+# Installed dependencies; never commit platform binaries or generated package trees.
+node_modules/
+**/node_modules/

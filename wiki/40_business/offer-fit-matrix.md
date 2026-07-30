@@ -5,9 +5,11 @@ type: "business"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
-related: ["icp.md", "offers.md", "objections.md", "../30_playbooks/sales-call.md"]
+related: ["id-0013-icp.md", "offers.md", "id-0014-objections.md", "../30_playbooks/sales-call.md"]
+when_to_read: "需要把不同 ICP segment、触发事件和推荐 offer 对齐，并定义资格、拒绝和成功标准时读本页；映射结果需要成交数据验证。"
+keywords: ["offer fit","ICP segment","触发事件","资格标准","拒绝标准","成功指标"]
 ---
 
 # Offer Fit Matrix

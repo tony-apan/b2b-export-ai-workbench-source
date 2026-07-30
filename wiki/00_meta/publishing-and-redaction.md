@@ -5,14 +5,18 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-26"
 sources: ["User request"]
 related: ["collaboration-model.md", "markdown-standard.md", "../10_sources/source-registry.md"]
 ---
 
 # Publishing and Redaction
 
-默认策略：`raw/` 不上传公开 GitHub，`wiki/` 也必须去敏后才能公开。
+默认策略：`raw/` 不上传公开 GitHub，`wiki/` 也必须去敏后才能公开；只有明确标记 `synthetic: true`、`visibility: public`、`redaction_status: safe-to-publish` 且同时被 MANIFEST 与构建脚本 allowlist 的虚拟 fixture 才可例外。
+
+## 虚拟示例不是免检通行证
+
+若演示公司、产品、客户聊天、指标和案例全部为虚构，可以不做真实资料去敏，但必须显著标注“虚构演示”。虚拟示例仍要检查凭据、本地路径、版权、内部规则和未验证声明，且不得被包装成真实客户案例或效果证明。
 
 发布前必须同时检查：
 

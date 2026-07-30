@@ -1,27 +1,21 @@
 ---
-title: "Search Intent"
-description: "定义搜索意图分类及其在 SEO 内容中的使用方式。"
-type: "concept"
-status: "Seed"
+title: "Search Intent — Moved"
+description: "兼容旧链接的迁移指针；Search Intent 正文已经迁移到带有稳定 ID 的新路径，本页不再承载第二份知识内容。"
+type: "redirect"
+status: "Archived"
 owner: "AI"
-created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["index.md", "../40_business/index.md"]
+created: "2026-07-28"
+last_updated: "2026-07-29"
+sources: ["id-0001-search-intent.md"]
+related: ["id-0001-search-intent.md"]
+when_to_read: "旧链接仍指向 search-intent.md 时读本页完成迁移；新的知识引用必须改用 ID-0001 canonical 页面。"
+keywords: ["Search Intent", "redirect", "ID-0001", "旧链接", "兼容迁移"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+redirect_to: "id-0001-search-intent.md"
 ---
-# Search Intent
+# Search Intent — Moved
 
-搜索意图用于判断用户搜索一个词时真正想完成什么任务。
+> 本页是旧路径兼容指针，不是第二份知识源。请改读 [Search Intent（ID-0001）](id-0001-search-intent.md)。
 
-## 类型
-
-- Informational：学习、理解、比较概念。
-- Commercial：比较供应商、方案、价格。
-- Transactional：准备购买、预约、下载、试用。
-- Navigational：寻找特定品牌或页面。
-
-## Related
-
-- [SEO Playbook](../30_playbooks/seo-content.md)
-- [SEO Channel](../50_channels/seo/index.md)
-
+迁移日期：2026-07-28。

@@ -1,0 +1,8 @@
+*.test.mjs
+fixtures/
+*.redacted.md
+*.redacted.json
+node_modules/
+coverage/
+.env
+.env.*

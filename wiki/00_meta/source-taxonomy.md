@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["Subagent adversarial review"]
 related: ["../10_sources/source-registry.md", "task-router.md", "markdown-standard.md"]
 ---
@@ -39,7 +39,7 @@ related: ["../10_sources/source-registry.md", "task-router.md", "markdown-standa
 - 如果资料会改变业务方向，副类型加 `strategy` 并考虑更新 decision log。
 - 如果一个资料能支持 proof，必须同步 [../40_business/proof-library.md](../40_business/proof-library.md)。
 - 如果资料包含客户原话，必须保留原话和来源路径。
-- 如果资料来自对话，使用 [../_templates/conversation-note.md](../_templates/conversation-note.md)。
+- 如果资料来自对话，原文先使用 [../../raw/_templates/conversation-source.md](../../raw/_templates/conversation-source.md) 归档到 `raw/10_conversations/`；随后用 [../_templates/source-note.md](../_templates/source-note.md) 建立正式 Source ID。只有在需要辅助拆分 facts、quotes、inferences 和 conflicts 时才使用 [../_templates/conversation-note.md](../_templates/conversation-note.md)，它不是 raw 或 source note 的替代品。
 - 如果资料来自课程、PDF 或付费材料，必须登记 [../10_sources/license-and-consent-register.md](../10_sources/license-and-consent-register.md)。
 
 ## Source ID 规则

@@ -1,0 +1,111 @@
+---
+title: "Website Content Operations Manifest"
+description: "建站内容运营子库源码包的包含、排除、占位符、适配器、阻断和发布状态。"
+type: "manifest"
+status: "Working"
+owner: "AI"
+created: "2026-07-26"
+last_updated: "2026-07-29"
+sources: ["Package contract compiled 2026-07-26", "Tony decisions 2026-07-27", "Tony structure upgrade decision 2026-07-28"]
+related: ["README.md", "COURSE-MAP.md", "WORKSPACE-TEMPLATE/README.md", "MENTAL-MODEL.md", "ADAPTERS/cms/allincms-overview.md", "ADAPTERS/cms/allincms/README.md", "QA-CHECKLIST.md", "VERSION.md", "CHANGELOG.md", "RELEASE.md", "INSTALL.md", "REFERENCES/README.md", "scripts/README.md", "SCHEMAS/runtime-contract.schema.json", "BRAND.md", "CONTACT.md"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+repository_status: "public-preview"
+preview_publication_status: "Ready"
+preview_version: "0.3.2-preview.1"
+preview_tag: "v0.3.2-preview.1"
+release_status: "Preview"
+maturity_status: "validated"
+verification_status: "evidence-partial"
+release_scope: "standalone-sub-library"
+package_id: "website-content-ops"
+package_kind: "standalone-sub-library"
+delivery_modes: ["human-playbook", "ai-skill-draft", "toolkit"]
+skill_entrypoint: "SKILL.md"
+skill_status: "preview-adapter-not-installable"
+package_scope: "."
+runtime_contract: "RUNTIME-CONTRACT.json"
+dependency_mode: "self-contained"
+durable_roots: ["KNOWLEDGE", "PLAYBOOKS", "COURSES", "OUTPUTS"]
+external_dependencies: ["Node.js >=20.9.0", "npm", "sharp 0.35.3 (AllinCMS adapter only)"]
+source_package_only: true
+license_status: "cleared"
+approval_required: true
+approval_status: "pending"
+approval_record: "RELEASE-APPROVAL.json (external sidecar)"
+tag_namespace: "sub-library/website-content-ops"
+tag_prefix: "sub-library/website-content-ops/v"
+included_in_mother: "source-only"
+include: ["AGENTS.md", "LICENSE", "NOTICE", "THIRD-PARTY-NOTICES.md", "BRAND.md", "CHANGELOG.md", "CONTACT.md", "COURSE-MAP.md", "INSTALL.md", "INTAKE.md", "LICENSE.md", "MANIFEST.md", "MENTAL-MODEL.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "README.md", "RELEASE.md", "SKILL.md", "SOURCES.md", "START-HERE.md", "TOOLS.md", "VERSION.md", "WRITEBACK.md", ".gitignore", "RUNTIME-CONTRACT.json", "SCHEMAS/**", "REFERENCES/**", "TEMPLATES/**", "EXAMPLES/**", "ADAPTERS/**", "WORKSPACE-TEMPLATE/**", "scripts/**"]
+exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**", "credentials/**", ".env*", "**/.env*", "*.secret", "**/*.secret", "*.credentials", "**/*.credentials", "*.sqlite*", "**/*.sqlite*", "*.db", "**/*.db", "*.p12", "**/*.p12", "*.pfx", "**/*.pfx", "*.crt", "**/*.crt", "*.token", "**/*.token", "*.cookie", "**/*.cookie", "*.key", "**/*.key", "*.pem", "**/*.pem", "*.png", "**/*.png", "*.jpg", "**/*.jpg", "*.jpeg", "**/*.jpeg", "*.webp", "**/*.webp", "*.gif", "**/*.gif", "*.mp4", "**/*.mp4", "*.mov", "**/*.mov", "*.mp3", "**/*.mp3", "*.wav", "**/*.wav"]
+---
+# Package Manifest
+
+## 当前交付判断
+
+本目录已进入公开 Preview：可以下载、阅读并交给 AI 按 `START-HERE.md` 做本地试用和单样本验证。它仍不是 Stable 或 production-ready；`SKILL.md` 是预览级 AI 适配入口，不得外推为跨平台、跨部署稳定。正式 Stable qualification 仍需从本目录生成经过验收的候选，并排除母库路径、真实运行区、凭据和未授权素材。
+
+## 学习层
+
+- Why：[README.md](README.md) 与 [COURSE-MAP.md](COURSE-MAP.md)；
+- Model：[MENTAL-MODEL.md](MENTAL-MODEL.md) 与 `TEMPLATES/`；
+- Reference implementation：[PLAYBOOK.md](PLAYBOOK.md)、[TOOLS.md](TOOLS.md) 与 `ADAPTERS/`；
+- Transfer exercise：[TEMPLATES/transfer-exercise-record.md](TEMPLATES/transfer-exercise-record.md) 与 [QA-CHECKLIST.md](QA-CHECKLIST.md)。
+
+## 源码包包含
+
+- 用户入口、逐课路线和 AI 协议；
+- 可复制但未填数据的 `WORKSPACE-TEMPLATE/`；
+- 公司、产品、客户语言、文章、图片、发布、来源、字段映射、失败和迁移模板；
+- 工具中立 playbook 与 adapter 强制模板；
+- 虚拟示例入口、QA、写回、品牌、联系、版本、变更记录、发布说明和静态检查入口。
+
+## 源码包排除
+
+- 已填入真实数据的客户运行时 `workspace/`；
+- 真实公司、产品、客户、聊天和经营数据；
+- 凭据、PicGo 完整配置、cookie 和 session；
+- Tony 私有母库路径和内部资料；
+- 未授权课程原文和第三方素材；
+- 把单个平台按钮步骤冒充为通用方法的教程。
+
+## 占位符政策
+
+- 虚拟品牌、`.example` 域名和演示邮箱已经注入，不是遗漏占位符；
+- 真实品牌化发布前必须替换并人工验证；
+- [ADAPTERS/_template.md](ADAPTERS/_template.md) 中的 `tool-name` 是模板变量，新建具体 adapter 时必须替换；
+- 对外 release artifact 不允许出现未登记双花括号占位符、凭据或本地绝对路径。
+
+## 检查与发布入口
+
+- 结构与发布前静态检查：`node scripts/validate-sub-library.mjs`；
+- latest-only 候选包：`node scripts/build-release.mjs`；
+- 复制、升级和回滚：[INSTALL.md](INSTALL.md)；
+- 独立来源副本：[REFERENCES/README.md](REFERENCES/README.md)；
+- 当前发布边界和 latest-only 流程：[RELEASE.md](RELEASE.md)；
+- 本版本变更：[CHANGELOG.md](CHANGELOG.md)。
+
+## durable page 与编号范围
+
+本子库不是把所有 Markdown 都编号。根入口、合同、adapter、模板、来源、验证记录和写回记录保留语义路径；需要跨任务复用的长期知识页放入 `KNOWLEDGE/`、`PLAYBOOKS/`、`COURSES/` 或 `OUTPUTS/`，使用 `id-####-slug.md`，并填写匹配的 `doc_id`、`description`、`when_to_read` 和 3-8 个 `keywords`。这些目录是未来扩展点，当前版本不因空目录制造占位噪声。
+
+## 当前适配器
+
+- 图片路由：目标为 AllinCMS 媒体库时优先零点击接口串行上传；[R2 / GitHub / 腾讯云 COS / 阿里云 OSS](ADAPTERS/image-hosts/README.md) 仅为外部图床备选；
+- Virtual business：[FluxPedal Motors](EXAMPLES/fluxpedal-motors/README.md) 公司、产品、ICP、聊天和首条闭环已建立；
+- CMS：首个参考实现为 AllinCMS；真实环境已验证站点发现、单图零点击直传、10 张严格串行直传、一次五图 UI 回退、匿名 URL 验证、零点击媒体记录删除，以及一张获批虚拟媒体的 `title / alt / caption` 最终持久化；本地实现已补只读对账、原子图片索引、断点恢复、源 / 上传 / 远端哈希、单写者锁、AI 元数据单次写入和停批规则，并通过 45 项媒体测试；文章 taxonomy 创建、全字段多轮 update / publish、真实封面与前台列表/详情也已有单样本证据；Markdown 正文图片 A/B/A 草稿绑定、后台回读、编辑器重载和 Caption 可见已有真实限定证据；本地控制器已升级为 manifest schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 和整篇单次保存，文章图片另有 50 项测试；
+- 第二图床 / CMS：计划从四种图床中选择另一个完成迁移；
+- Analytics / Search data：在真实站点阶段接入 Search Console、询盘和销售反馈。
+
+## Preview 已知限制与 Stable 阻断
+
+1. AllinCMS 图片默认路线已固化并通过 45 项媒体测试；正文图片唯一 adapter 已通过 50 项文章图片测试；新恢复层、自定义标题和跨部署元数据读后写稳定性仍需在下一次自然、获批的真实上传中顺带复验；
+2. AllinCMS 文章单样本已完成 taxonomy、多轮保存/发布和前台渲染；A/B/A 正文图片草稿已验证，逐 occurrence 原位替换能力不再暂停。公开主题 Alt、表格等更多复杂节点、跨部署封面/正文稳定性、覆盖和完整回滚仍无完整证据；
+3. 控制器不设图片数量上限，本地已验证 12 张仍严格串行；真实远程证据目前到 10 张。媒体并发永久禁止，一次请求多图不是默认路线；
+4. PicGo + R2 / GitHub / COS / OSS 不再是 AllinCMS 上传前置，只作为外部图床和迁移能力；其真实单图参考实现尚未完成；
+5. 第二工具与相邻业务任务迁移无验证证据；
+6. Apache-2.0 许可证与公开联系入口已明确；正式 Logo、Stable 人工批准、可信签名和 GitHub 服务端 qualification 仍未闭合。机器可读 manifest、latest-only 打包脚本和 checksum 校验不替代这些证据。
+
+## 当前发布结论
+
+**Public Preview 候选：`Ready`；Stable：`BLOCK`。** 当前允许在不覆盖既有仓库的前提下创建公开 Preview 仓并进行单样本交付；远端重验前不得写成 `Published`。课程效果、跨部署迁移能力、production-ready 和 Stable qualification 均不得宣称通过。

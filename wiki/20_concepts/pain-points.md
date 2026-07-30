@@ -5,9 +5,11 @@ type: "concept"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md"]
+when_to_read: "把客户原话整理成触发事件、表面问题、深层损失和待完成任务时读本页；单次对话只能形成待验证假设。"
+keywords: ["客户痛点","触发事件","客户原话","深层损失","job to be done","待验证"]
 ---
 # Pain Points
 
@@ -24,6 +26,6 @@ related: ["index.md", "../40_business/index.md"]
 
 ## Related
 
-- [Customer Pain Map](../40_business/customer-pain-map.md)
+- [Customer Pain Map](../40_business/id-0012-customer-pain-map.md)
 - [Sales Call Playbook](../30_playbooks/sales-call.md)
 

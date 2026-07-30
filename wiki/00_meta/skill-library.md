@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["User request"]
 related: ["module-expansion-sop.md", "../_templates/skill-spec.md"]
 visibility: "public"
@@ -25,7 +25,7 @@ Skill 不等于普通知识页。只有当一个 SOP 反复执行、输入输出
 | Skill | Source Playbook | Status | Why Candidate | Risk |
 |---|---|---|---|---|
 | LinkedIn Post Generator | `linkedin-content.md` | idea | 可根据 brief 生成帖子草稿 | 只能生成草稿，禁止自动发布或互动 |
-| SEO Brief Builder | `seo-content.md` | idea | 输入关键词生成 brief | 需要搜索和竞品验证 |
+| SEO Brief Builder | `wiki/30_playbooks/id-0011-seo-content.md` | idea | 输入关键词生成 brief | 需要搜索和竞品验证 |
 | Cold Email Sequence Builder | `cold-email.md` | idea | 输入 ICP 和观察生成邮件序列 | 需要去敏和反垃圾规则 |
 | Video Script Builder | `video-production.md` | idea | 输入产品/场景生成脚本 | 需要版权和素材边界 |
 | Image Brief Builder | `visual-design.md` | idea | 输入渠道和信息生成作图 brief | 需要品牌规范 |

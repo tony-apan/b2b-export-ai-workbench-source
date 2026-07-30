@@ -1,41 +1,21 @@
 ---
-title: "ICP"
-description: "记录当前业务的理想客户画像、不适合客户、购买信号和丢单信号。"
-type: "business"
-status: "Seed"
+title: "ICP — Moved"
+description: "兼容旧链接的迁移指针；ICP 正文已经迁移到带有稳定 ID 的新路径，本页不再承载第二份知识内容。"
+type: "redirect"
+status: "Archived"
 owner: "AI"
-created: "2026-06-28"
-last_updated: "2026-06-28"
-sources: []
-related: ["index.md", "../30_playbooks/index.md"]
+created: "2026-07-29"
+last_updated: "2026-07-29"
+sources: ["id-0013-icp.md"]
+related: ["id-0013-icp.md"]
+when_to_read: "旧链接仍指向 icp.md 时读本页完成迁移；新的知识引用必须改用 ID-0013 canonical 页面。"
+keywords: ["ICP", "redirect", "ID-0013", "旧链接", "兼容迁移"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+redirect_to: "id-0013-icp.md"
 ---
-# ICP
+# ICP — Moved
 
-## 最适合客户
+> 本页是旧路径兼容指针，不是第二份知识源。请改读 [ICP（ID-0013）](id-0013-icp.md)。
 
-- 行业：
-- 地区：
-- 公司规模：
-- 职位：
-- 预算：
-- 成熟度：
-- 触发事件：
-- 急迫问题：
-
-## 不适合客户
-
-- 待补。
-
-## 购买信号
-
-- 待补。
-
-## 丢单信号
-
-- 待补。
-
-## Related
-
-- [Customer Pain Map](customer-pain-map.md)
-- [Offers](offers.md)
-
+迁移日期：2026-07-29。

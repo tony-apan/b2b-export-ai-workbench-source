@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["../50_channels/trade-shows/index.md", "sales-call.md", "cold-email.md"]
+when_to_read: "准备展前邀约、展中线索记录或展后销售跟进时读本页；真实参展商、联系人、报价和会谈记录必须留在私有运行区。"
+keywords: ["外贸展会","展前邀约","现场获客","展后跟进","线索记录","销售闭环"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

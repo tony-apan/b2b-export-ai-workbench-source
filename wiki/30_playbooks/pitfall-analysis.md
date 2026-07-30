@@ -5,9 +5,11 @@ type: "playbook"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md", "../80_metrics/index.md"]
+when_to_read: "项目、渠道、销售或交付出现失败、返工或高风险信号时读本页，用于定位根因、控制影响并形成预防动作。"
+keywords: ["坑点分析","根因分析","失败复盘","风险控制","纠正措施","预防动作"]
 ---
 # Playbook: Pitfall Analysis
 

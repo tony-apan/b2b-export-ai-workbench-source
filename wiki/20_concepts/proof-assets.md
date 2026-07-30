@@ -5,9 +5,11 @@ type: "concept"
 status: "Seed"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: []
 related: ["index.md", "../40_business/index.md"]
+when_to_read: "判断案例、数据、截图、推荐语或认证能否支持某个 claim 时读本页；没有来源、授权和适用范围的材料不得当作有效证据。"
+keywords: ["proof assets","案例证据","客户授权","截图数据","推荐语","claim 支撑"]
 ---
 # Proof Assets
 

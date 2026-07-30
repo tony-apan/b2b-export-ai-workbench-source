@@ -1,0 +1,36 @@
+{
+  "record_schema_version": 1,
+  "review_id": "REV-20260729-NOETHER-0001",
+  "recorded_at": "2026-07-29T21:39:00+08:00",
+  "reviewer_display_name": "Noether",
+  "agent_id": null,
+  "claimed_role": "producer-reported first-round adversarial reviewer",
+  "claimed_verdict": "block",
+  "provenance_status": "producer-reported",
+  "identity_status": "not_verified",
+  "independence_status": "not_verified",
+  "scope_manifest": {
+    "locator": null,
+    "sha256": null,
+    "immutable": false
+  },
+  "source_commit": {
+    "value": "e54b9f8297bbf9d042543cedc84731111dd3bca6",
+    "binding": "context-only"
+  },
+  "content_digest": null,
+  "original_verdict": {
+    "locator": null,
+    "sha256": null,
+    "immutable": false,
+    "available": false
+  },
+  "producer_report_locators": [
+    "wiki/00_meta/logs/2026/07/2026-07-29.md#evt-20260729-0003--分层索引假绿与正式-release-单-scope-路由闭环"
+  ],
+  "limitations": [
+    "No task, thread, run, or trusted account identifier is preserved in the repository.",
+    "No immutable original reviewer verdict is available.",
+    "The source commit is historical context only and does not bind the dirty working-tree content reviewed."
+  ]
+}

@@ -5,7 +5,10 @@ type: "template"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
+when_to_read: "准备启动跨渠道或单渠道活动，需要统一目标、受众、信息、资产和指标时。"
+keywords: ["campaign brief", "活动目标", "目标受众", "内容资产", "活动指标"]
+template_usage: "manual-copy"
 sources: []
 related: ["../00_meta/markdown-standard.md"]
 ---

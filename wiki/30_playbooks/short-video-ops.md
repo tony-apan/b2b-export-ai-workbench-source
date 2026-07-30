@@ -5,9 +5,11 @@ type: "playbook"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-06-28"
+last_updated: "2026-07-29"
 sources: ["../10_sources/SRC-20260628-SOCIAL-OPS-OFFICIAL.md"]
 related: ["../50_channels/short-video/index.md", "video-production.md", "linkedin-content.md"]
+when_to_read: "准备外贸短视频选题、脚本、拍摄、发布计划和复盘时读本页；素材权利、账号操作和最终发布必须由人核对。"
+keywords: ["短视频运营","视频选题","脚本拍摄","发布计划","平台差异","内容复盘"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

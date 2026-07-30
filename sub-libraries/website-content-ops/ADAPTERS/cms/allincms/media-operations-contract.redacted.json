@@ -1,0 +1,399 @@
+{
+  "contract": "allincms-media-operations-ai-entry",
+  "contract_kind": "observed_internal_contract_plus_local_recovery_layer",
+  "observed_at": "2026-07-27",
+  "local_recovery_layer_tested_at": "2026-07-27",
+  "public_api": false,
+  "canonical_human_entry": "AI-START-HERE.md",
+  "canonical_module": "upload-media-browser.mjs",
+  "default_route_when_target_is_allincms_media": "uploadAllinCmsMediaSerial",
+  "single_upload_primitive": "uploadAllinCmsMediaDirect",
+  "read_only_reconciliation_function": "reconcileAllinCmsMediaDirect",
+  "runtime_preflight_function": "checkAllinCmsMediaRuntime",
+  "preferred_delete_function": "deleteAllinCmsMediaDirect",
+  "external_image_hosts_are_default_prerequisite": false,
+  "external_image_host_fallbacks": [
+    "PicGo + Cloudflare R2",
+    "PicGo + GitHub",
+    "PicGo + Tencent COS",
+    "PicGo + Alibaba OSS"
+  ],
+  "external_image_host_use_only_when": [
+    "user_explicitly_requests_external_host",
+    "asset_url_must_be_decoupled_from_allincms",
+    "asset_must_be_reused_across_multiple_systems",
+    "approved_transfer_exercise"
+  ],
+  "requires_exact_loaded_media_page": true,
+  "required_page_pattern": "https://workspace.laicms.com/{site_key}/media",
+  "requires_signed_in_browser_session": true,
+  "requires_user_confirmed_site_key": true,
+  "credential_export_allowed": false,
+  "ui_clicks_upload": 0,
+  "file_chooser_events_upload": 0,
+  "ui_clicks_delete": 0,
+  "dialog_opens_delete": 0,
+  "upload": {
+    "default_function": "uploadAllinCmsMediaSerial",
+    "verified_remote_primitive": "one_file_per_direct_next_server_action_replay",
+    "verified_remote_serial_file_count": 10,
+    "serial_controller_max_files": null,
+    "parallel_upload_verified": false,
+    "one_multipart_request_with_10_files_verified": false,
+    "batch_success_status": "completed",
+    "single_success_status": "uploaded_and_verified",
+    "required_local_inputs": [
+      "absolute local file paths",
+      "user-confirmed site key",
+      "absolute private-runtime imageIndexPath",
+      "AI-generated title_description_alt_caption_and_structured_metadata_when_enrichment_is_requested",
+      "metadataAuthorizationConfirmed=true when syncRemoteMetadata=true and title_alt_or_caption_is_provided"
+    ],
+    "required_outputs": [
+      "source_sha256",
+      "source_md5",
+      "normalized_upload_sha256",
+      "normalized_upload_md5",
+      "media_id",
+      "title",
+      "url",
+      "remote_sha256",
+      "remote_md5",
+      "verified_at",
+      "status",
+      "local_candidate_metadata_if_provided"
+    ],
+    "reload_after_each_file": true,
+    "next_file_blocked_until_previous_verified_reconciled_and_indexed": true,
+    "per_file_sequence": [
+      "ai_read_image_and_generate_fact_checked_candidates",
+      "validate_title_alt_caption_limits_before_upload_when_remote_sync_is_requested",
+      "write_prepared_state",
+      "write_request_started_state",
+      "one_direct_upload_interface_request",
+      "reload_media_page",
+      "verify_unique_media_card",
+      "verify_rsc_media_record_and_media_id",
+      "verify_anonymous_url_content_type_and_image_decode",
+      "atomically_write_verified_upload_mapping",
+      "when_authorized_and_title_alt_or_caption_is_provided_check_requested_title_collision_then_send_one_metadata_interface_request",
+      "perform_bounded_read_only_reload_verification_without_resending",
+      "atomically_write_metadata_verified_or_metadata_ambiguous_state",
+      "continue_to_next_file_only_after_current_item_is_complete"
+    ],
+    "ambiguous_result": {
+      "status": "upload_result_ambiguous",
+      "requestMayHaveSucceeded": true,
+      "automaticRetryAllowed": false,
+      "reconciliationRequired": true
+    },
+    "serial_only": true,
+    "parallel_upload_allowed": false,
+    "parallel_upload_policy": "permanently_prohibited_do_not_implement_promise_all_worker_pool_multi_tab_or_overlapping_requests",
+    "success_definition": [
+      "one_interface_request_succeeded",
+      "unique_media_card_exists",
+      "rsc_media_record_exists",
+      "media_id_exists",
+      "final_url_anonymous_get_succeeds",
+      "image_decodes",
+      "record_persists_after_reload",
+      "private_index_atomically_records_verified_or_reconciled_existing"
+    ],
+    "metadata_failure_reupload_allowed": false,
+    "remote_metadata_sync_option": "syncRemoteMetadata=true",
+    "remote_metadata_authorization_option": "metadataAuthorizationConfirmed=true",
+    "next_file_blocked_until_previous_upload_index_and_requested_metadata_are_resolved": true,
+    "metadata_ambiguous_stops_batch": true,
+    "metadata_request_automatic_retry_allowed": false,
+    "custom_remote_title_supported": true,
+    "custom_remote_title_collision_policy": "stop_before_metadata_request_when_requested_title_already_exists",
+    "reused_verified_mapping_remote_metadata_sync_supported": true,
+    "reused_verified_mapping_reupload_allowed": false,
+    "file_count_limit": "none",
+    "verified_local_serial_file_count": 12,
+    "direct_serial_strategy": "unbounded_input_strict_single_file_serial",
+    "upload_retry_policy": "delay_then_read_only_reconcile_then_retry_current_image_only_when_exact_absence_confirmed",
+    "max_attempts_per_image_default": 3,
+    "retry_delays_ms_default": [
+      2000,
+      5000
+    ]
+  },
+  "runtime": {
+    "package_manifest": "package.json",
+    "normalization_dependency": "sharp",
+    "webp_at_or_below_1mb_can_run_without_sharp": true,
+    "png_jpg_or_oversized_webp_require_sharp": true,
+    "gif_direct_normalization_verified": false,
+    "missing_dependency_behavior": "block_affected_files_without_ui_fallback"
+  },
+  "reconciliation": {
+    "sends_upload_request": false,
+    "controlled_reload_allowed": true,
+    "statuses": [
+      "reconciled_existing",
+      "not_found_stop",
+      "ambiguous_multiple_matches",
+      "verification_failed"
+    ],
+    "automatic_upload_after_not_found_allowed": false,
+    "serial_controller_may_resume_only_when_index_proves_request_not_started": false,
+    "serial_controller_may_retry_current_image_only_when_exact_absence_confirmed": true
+  },
+  "local_image_index": {
+    "must_be_private_runtime_path": true,
+    "must_not_be_committed_to_public_master": true,
+    "schema_version": 2,
+    "primary_key": "source_sha256",
+    "same_source_hash_renamed_file_behavior": "reuse_verified_mapping",
+    "atomic_write": "temporary_file_then_rename",
+    "single_writer_lock": "{imageIndexPath}.lock",
+    "stages": [
+      "prepared",
+      "prepared_title_collision",
+      "request_started",
+      "verified",
+      "reconciled_existing",
+      "upload_result_ambiguous",
+      "failed_before_request",
+      "metadata_candidate_ready",
+      "metadata_request_started",
+      "metadata_verified",
+      "metadata_update_failed_before_request",
+      "metadata_update_ambiguous"
+    ],
+    "optional_description_fields": [
+      "description",
+      "alt",
+      "caption",
+      "notes",
+      "ai_metadata"
+    ],
+    "lock_cleanup_result_field": "cleanup.imageIndexLockReleased",
+    "lock_cleanup_failure_behavior": "preserve_operation_result_emit_warning_and_block_next_run_until_private_lock_is_inspected",
+    "prepared_state_remote_title_match_behavior": "stop_as_preexisting_title_collision_do_not_adopt_remote_record",
+    "request_started_reconciliation_preserves_normalized_hashes": true,
+    "verified_mapping_metadata_enrichment_without_reupload": true,
+    "metadata_history_stage": "local_metadata_updated",
+    "ai_metadata_recommended_fields": [
+      "asset_type",
+      "product_ref",
+      "product_model",
+      "visible_features",
+      "visible_text",
+      "intended_use",
+      "page_context",
+      "seo_topic",
+      "language",
+      "confidence",
+      "human_review_required",
+      "fact_basis",
+      "uncertain_claims"
+    ],
+    "remote_metadata_status_fields": [
+      "metadata_sync_status",
+      "metadata_verified_at",
+      "metadata_last_error",
+      "metadata_automatic_retry_allowed",
+      "allincms_metadata_observed"
+    ]
+  },
+  "delete": {
+    "risk": "destructive_media_record_mutation",
+    "requires_current_explicit_user_authorization": true,
+    "required_identity_fields": [
+      "expectedSiteKey",
+      "mediaId",
+      "expectedTitle",
+      "expectedUrl",
+      "authorizationConfirmed=true"
+    ],
+    "identity_fields_must_all_match": true,
+    "delete_removes_media_record": true,
+    "delete_removes_public_asset": "not_checked_out_of_scope_and_irrelevant_to_completion",
+    "verified_status": "media_record_deleted_and_verified",
+    "privacy_erasure_proof": "not_part_of_this_operation_contract",
+    "completion_scope": "exact_allincms_media_card_and_rsc_record_only",
+    "physical_asset_probe_default": false,
+    "physical_asset_observation_optional": false,
+    "success_definition": [
+      "exact_site_key_media_id_title_and_url_match_before_request",
+      "one_delete_interface_request_succeeded",
+      "media_card_absent_after_reload",
+      "rsc_media_record_absent_after_reload"
+    ],
+    "physical_asset_observation_forbidden_in_default_sop": true
+  },
+  "dynamic_discovery": {
+    "action_id_hardcoding_allowed": false,
+    "deployment_hardcoding_allowed": false,
+    "site_id_hardcoding_allowed": false,
+    "router_tree_hardcoding_allowed": false,
+    "discover_from_current_page_each_operation": true
+  },
+  "retry": {
+    "automatic_retry_after_request_may_have_started": "only_after_delay_and_exact_read_only_absence_confirmation",
+    "upload_ambiguous_result": "delay_then_read_only_reconcile_stop_if_uncertain",
+    "delete_ambiguous_result": "stop_and_do_not_resend_delete_request",
+    "automatic_ui_fallback": false,
+    "automatic_external_host_fallback": false,
+    "metadata_ambiguous_result": "stop_keep_uploaded_media_do_not_resend_metadata_and_do_not_reupload",
+    "automatic_metadata_retry_after_request_may_have_started": false,
+    "upload_retry_scope": "current_image_only",
+    "upload_retry_requires_status": "not_found_stop",
+    "upload_retry_max_attempts_default": 3,
+    "upload_retry_delays_ms_default": [
+      2000,
+      5000
+    ]
+  },
+  "stop_on": [
+    "login_redirect_or_401_or_403",
+    "wrong_or_unconfirmed_site_key",
+    "page_is_not_exact_media_route",
+    "media_identity_not_exactly_one_match",
+    "action_or_deployment_contract_not_unique",
+    "server_action_count_not_one",
+    "server_action_non_200",
+    "preexisting_title_collision_before_request",
+    "result_ambiguous_after_request",
+    "post_operation_reconciliation_failed",
+    "image_index_lock_exists",
+    "image_index_write_failed",
+    "required_runtime_dependency_missing",
+    "any_attempt_to_upload_in_parallel_or_overlap_requests",
+    "metadata_update_ambiguous_after_bounded_read_only_verification",
+    "metadata_update_failed_before_request_after_upload_verified",
+    "requested_metadata_title_collision_before_metadata_request"
+  ],
+  "public_redaction": {
+    "store_real_site_key": false,
+    "store_site_id": false,
+    "store_media_id": false,
+    "store_asset_url": false,
+    "store_full_action_id": false,
+    "store_private_runtime_path": false
+  },
+  "guided_visibility": {
+    "default_for_beginner_demo_and_supervised_runs": "visible",
+    "background_execution_technically_allowed": true,
+    "progress_callback_supported": true,
+    "progress_signal": "progress_event_plus_one_additional_media_card_after_each_successful_reload",
+    "foreground_focus_guaranteed": false,
+    "scroll_position_preserved_guaranteed": false,
+    "reload_is_adapter_navigation_not_ui_click_simulation": true
+  },
+  "evidence_boundary": {
+    "remote_upload_contract_verified_on": "2026-07-27",
+    "new_index_lock_recovery_layer_remote_retested": false,
+    "new_index_lock_recovery_layer_local_tests": 22,
+    "local_tests_are_not_remote_production_proof": true,
+    "metadata_editor_fields_observed_on": "2026-07-27",
+    "metadata_update_direct_contract_captured": true,
+    "metadata_update_remote_tested": true,
+    "metadata_update_remote_test_scope": "one_explicitly_authorized_virtual_media_record_one_write_request",
+    "metadata_update_first_immediate_read": "alt_visible_caption_not_yet_visible",
+    "metadata_update_later_fresh_page_verification": "title_alt_caption_all_persisted_media_id_and_url_unchanged",
+    "metadata_read_after_write_delay_observed": true,
+    "cross_deployment_stability_proven": false,
+    "custom_title_and_reused_mapping_metadata_local_tests": true
+  },
+  "canonical_metadata_sop": "media-metadata-and-ai-vision-sop.md",
+  "metadata": {
+    "observed_at": "2026-07-27",
+    "upload_dialog_accepts_metadata_fields": false,
+    "upload_dialog_fields": [
+      "file_selection"
+    ],
+    "post_upload_editor_observed": true,
+    "post_upload_editor_fields": [
+      {
+        "label": "标题",
+        "name": "title",
+        "control": "input",
+        "max_length": 100
+      },
+      {
+        "label": "替代文本",
+        "name": "alt",
+        "control": "input",
+        "max_length": 200
+      },
+      {
+        "label": "说明",
+        "name": "caption",
+        "control": "textarea",
+        "max_length": 500
+      }
+    ],
+    "observed_initial_test_record_behavior": "upload_default_title_and_alt_matched_filename_stem_caption_empty_before_metadata_update",
+    "description_is_allincms_media_field": false,
+    "private_index_description_supported": true,
+    "direct_metadata_update_contract": "updateMediaAction_discovered_and_one_authorized_remote_write_verified",
+    "direct_metadata_update_adapter_function": "updateAllinCmsMediaMetadataDirect",
+    "metadata_update_remote_test": "one_write_request_then_bounded_read_only_verification; later_fresh_reload_confirmed_title_alt_caption",
+    "automatic_ai_vision_to_private_index_supported": true,
+    "automatic_ai_vision_to_allincms_fields_supported": true,
+    "metadata_sync_failure_reupload_allowed": false,
+    "content_binding_fields_are_separate_from_media_record_fields": true,
+    "upload_dialog_file_types": [
+      "png",
+      "jpg",
+      "gif",
+      "webp"
+    ],
+    "upload_dialog_max_file_bytes": 5242880,
+    "validation_source": "current_allincms_client_bundle_zod_schema",
+    "description_to_allincms_mapping": "compress_or_rewrite_to_caption_only_when_appropriate",
+    "direct_metadata_update_action_export": "updateMediaAction",
+    "direct_metadata_update_payload_fields": [
+      "id",
+      "siteId",
+      "title",
+      "alt",
+      "caption"
+    ],
+    "automatic_remote_metadata_gate": "requires_current_deployment_discovery_exact_identity_explicit_write_authorization_one_request_and_bounded_read_only_refresh_reverification",
+    "delete_completion_scope": "exact_allincms_media_card_and_rsc_record_removed_only",
+    "physical_asset_deletion_check_required": false,
+    "automatic_ai_vision_to_allincms_fields_conditions": [
+      "fact_checked_candidate_generation",
+      "exact_media_identity_match",
+      "current_deployment_contract_discovery",
+      "explicit_current_batch_write_authorization",
+      "one_metadata_write_request_per_image",
+      "bounded_read_only_reload_verification"
+    ],
+    "metadata_write_automatic_retry_allowed": false,
+    "metadata_verification_delays_ms": [
+      0,
+      750,
+      2000
+    ],
+    "metadata_verification_is_read_only": true,
+    "metadata_ambiguity_behavior": "keep_uploaded_media_stop_batch_do_not_resend_metadata_do_not_reupload",
+    "next_image_allowed_only_after_requested_metadata_verified": true,
+    "description_remote_mapping": "no_direct_field_keep_full_description_private_and_optionally_rewrite_short_public_caption",
+    "serial_input_fields": [
+      "localFile",
+      "title",
+      "description",
+      "alt",
+      "caption",
+      "notes",
+      "metadata"
+    ],
+    "remote_fields_written": [
+      "title",
+      "alt",
+      "caption"
+    ],
+    "private_only_fields": [
+      "description",
+      "notes",
+      "metadata"
+    ],
+    "requested_title_collision_checked_before_write": true
+  }
+}
