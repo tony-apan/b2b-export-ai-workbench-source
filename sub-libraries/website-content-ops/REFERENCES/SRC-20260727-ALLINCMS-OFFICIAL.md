@@ -1,17 +1,21 @@
 ---
 title: "Source Note: AllinCMS Official Docs"
 description: "登记 AllinCMS 建站、图片、Codex 内容上传公开文档，并界定公开 UI 教程与内部接口抓取证据的边界。"
-type: "source"
+type: "source-note"
+source_id: "SRC-20260727-ALLINCMS-OFFICIAL"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-27"
+last_updated: "2026-08-01"
 sources: ["https://www.allincms.com/docs", "https://www.allincms.com/docs/quickstart/create-site", "https://www.allincms.com/docs/content/image-guidelines", "https://www.allincms.com/docs/launch/codex-auto-content-upload", "https://www.allincms.com/sitemap.xml"]
 related: ["../ADAPTERS/cms/allincms-overview.md", "../ADAPTERS/cms/allincms/article-operations.md", "../TOOLS.md"]
 confidence: "high"
 review_after: "2026-10-27"
 visibility: "public"
 redaction_status: "safe-to-publish"
+publication_review_status: "pending"
+publication_status: "BLOCK"
+license_status: "pending"
 ---
 # Source Note: AllinCMS Official Docs
 

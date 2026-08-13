@@ -15,7 +15,9 @@ redaction_status: "safe-to-publish"
 
 ## 写回客户运行区
 
-以下内容默认只留在客户自己的 `workspace/`：
+写入前必须验证 ACTIVE-CONTEXT、CLIENT、TASK 和 Registry 对同一 `client_id + company_id + task_id` 一致；缺少 scope、跨客户或机器真源冲突时停止。
+
+以下内容只留在 `agency-operations` 管理的 `customer-runtime/10_clients/<client_id>/.../30_tasks/<task_id>/` 当前任务 scope：
 
 - 公司、产品、客户、联系人、价格和经营事实；
 - 网站抓取、聊天、询盘、图片和 CMS 数据；

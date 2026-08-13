@@ -10,7 +10,9 @@
       "siteId",
       "postId",
       "categoryId",
-      "tagId"
+      "tagId",
+      "beforePostIds",
+      "afterPostIds"
     ],
     "mustNotPersistInPublicContract": [
       "cookie",
@@ -48,9 +50,81 @@
     "deleteRoute": "/{site_key}/posts?tab=list",
     "deleteActionName": "postDelete",
     "bodyEncoding": "JSON array containing one payload object",
-    "coverImage": "current media record object; never assume URL-only shape",
+    "coverImage": "current media record object; never assume URL-only shape; readback comparison uses the canonical persisted field subset",
     "content": "Slate node array; never Markdown or HTML string",
-    "createApiStatus": "guarded_requires_live_contract_confirmation_and_before_snapshot"
+    "createApiStatus": "guarded_requires_live_contract_confirmation_and_before_snapshot",
+    "coverImagePersistedFields": [
+      "name",
+      "alt",
+      "type",
+      "source",
+      "path",
+      "size",
+      "mimeType"
+    ],
+    "coverImagePayloadRule": "for the current deployment profile, every non-null coverImage payload must own name, alt, type, source, path, size, and mimeType before any request; URL-only and partial objects fail closed; extra media fields may be submitted but are not required in readback",
+    "jsonComparison": "compare normalized JSON value/type semantics only; browser/CDP realm prototypes are not contract fields",
+    "contentFormatProfile": {
+      "verifiedAt": "2026-07-30",
+      "persistedFormat": "Slate JSON node[]",
+      "directHtml": "unsupported",
+      "directMarkdown": "unsupported",
+      "recommendedAuthoringSource": "Markdown converted deterministically before payload construction",
+      "canonicalImplementation": "article-content-formats.mjs",
+      "verifiedCandidates": [
+        "h3",
+        "bold",
+        "italic",
+        "underline",
+        "strikethrough",
+        "inline-code",
+        "link",
+        "bulleted-list",
+        "numbered-list",
+        "blockquote",
+        "divider",
+        "table"
+      ],
+      "baselineAlsoVerified": [
+        "p",
+        "h2",
+        "img"
+      ],
+      "unsupportedCurrentShape": [
+        {
+          "key": "code-block",
+          "observed": "API response and exact backend readback succeeded, but editor reopen failed",
+          "policy": "recover to the previous last-known-good content and do not publish the tested shape"
+        }
+      ],
+      "notTested": [],
+      "markdownRules": {
+        "h1": "reject; article title owns the page H1",
+        "h2": "##",
+        "h3": "###",
+        "bold": "**text**",
+        "italic": "*text*",
+        "underline": "<u>text</u> extension only",
+        "strikethrough": "~~text~~",
+        "inlineCode": "`text`",
+        "link": "[label](absolute-http-or-https-url)",
+        "bulletedList": "- item -> p + indent:1 + listStyleType:disc",
+        "numberedList": "1. item -> p + indent:1 + listStyleType:decimal",
+        "blockquote": "> text",
+        "divider": "---",
+        "table": "simple equal-width GFM table with at least one body row; alignment markers are rejected because the verified Slate shape has no alignment field",
+        "fencedOrIndentedCodeBlock": "reject before request",
+        "markdownImage": "reject and route through article-image-binding.mjs",
+        "rawHtml": "reject except the underline extension"
+      },
+      "verificationGates": [
+        "API response shape",
+        "exact backend Slate readback",
+        "editor reopen health",
+        "frontend semantic rendering",
+        "desktop and mobile overflow check"
+      ]
+    }
   },
   "taxonomy": {
     "contentType": "posts",
@@ -102,8 +176,9 @@
         "contentType",
         "id"
       ],
-      "duplicateSlugRule": "block before request for the same site"
-    }
+      "duplicateSlugRule": "block before request for the same site; every snapshot record must carry an explicit proven siteId, and missing siteId fails closed"
+    },
+    "readbackContentTypeRule": "on the exact /posts taxonomy route, omitted contentType is interpreted as route-scoped posts only after exact site context is proven; any explicit non-posts value fails closed"
   },
   "recovery": {
     "afterRequest": [
@@ -115,8 +190,9 @@
     "safeRetryRule": "only one controlled retry after an explicit fresh exact-absence confirmation; readback null alone is insufficient",
     "unresolvedRule": "stop with stopped_manual_intervention",
     "batchRule": "strict serial; skip completed keys; stop on first unresolved result",
-    "createRule": "postCreate is blocked unless the current deployment create contract is freshly confirmed, beforePostIds snapshot is supplied, and readback yields an exact new postId",
-    "existingArticleRule": "postUpdate and taxonomy mutations never retry merely because a readback is null"
+    "createRule": "postCreate is blocked unless the current deployment create contract is freshly confirmed, beforePostIds and afterPostIds snapshots are supplied, the snapshots have exactly one new ID, and the created-record readback proves that exact ID plus same-site ownership",
+    "existingArticleRule": "postUpdate and taxonomy mutations never retry merely because a readback is null",
+    "callbackRule": "createPostDraft returns the ID normalized during reconciliation and never calls the external ID extractor again while constructing the result"
   },
   "verification": {
     "draft": [
@@ -137,23 +213,37 @@
     ],
     "taxonomy": [
       "refresh",
-      "unique ID",
-      "same-site ownership",
+      "non-empty unique ID",
+      "exact same-site ownership",
+      "all submitted fields persisted exactly",
       "parent relationship for children"
     ],
     "create": [
       "fresh postCreate action capture",
       "beforePostIds snapshot",
+      "afterPostIds snapshot",
+      "exactly one new post ID in the before/after difference",
+      "created-record ID equals the sole new snapshot ID",
       "complete created-record readback",
-      "exact new postId not present before request",
-      "same-site ownership"
+      "exact same-site ownership"
+    ],
+    "publishedThemeWarnings": [
+      "backend Slate image alt persistence does not prove frontend theme img alt propagation",
+      "backend category/tag binding does not prove the theme visibly renders taxonomy",
+      "record theme presentation gaps as WARN without rewriting backend persistence as failure"
     ]
   },
   "localVerification": {
-    "articleOperationsTests": 36,
-    "articleImageBindingTests": 50,
+    "articleOperationsTests": 48,
+    "articleContentFormatsTests": 13,
+    "articleImageBindingTests": 52,
     "mediaUploadTests": 45,
-    "totalTests": 131,
-    "lastVerified": "2026-07-29"
+    "totalTests": 158,
+    "lastVerified": "2026-08-12",
+    "profileScope": "article/media four-file specialized profile",
+    "workspacePreflightTests": 21,
+    "contentRunControllerTests": 58,
+    "interfaceRegistryTests": 11,
+    "adapterTotalTests": 248
   }
 }

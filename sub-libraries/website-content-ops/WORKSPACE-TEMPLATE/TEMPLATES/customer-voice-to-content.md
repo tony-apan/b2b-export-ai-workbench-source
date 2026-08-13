@@ -13,6 +13,9 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要把聊天、询盘或销售异议转成搜索意图假设和内容任务时。"
 keywords: ["customer voice", "search intent", "content task", "objection", "buyer language"]
+generated_from: "../../TEMPLATES/customer-voice-to-content.md"
+generated_source_sha256: "1305cd560a98e25c0ad0b536f254b4c566139e354f7c7fe6af67ea042ef11632"
+generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/customer-voice-to-content.md; do not hand-edit this copy in the source package. -->
 # Customer Voice To Content

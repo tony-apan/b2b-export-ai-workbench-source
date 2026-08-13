@@ -5,13 +5,36 @@ type: "intake"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-26"
+last_updated: "2026-08-12"
 sources: ["AGENTS.md"]
 related: ["TEMPLATES/company-profile.md", "TEMPLATES/product-record.md", "PLAYBOOK.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---
 # Intake：先查，再问
+
+## 资料提取 artifact 门禁
+
+用户提供 PDF、DOCX、XLSX/CSV、网页、图片、brief 或聊天时，不要直接从一次阅读结果拼 CMS payload：
+
+1. 原始资料进入锁定的 `client_id/company_id/task_id` 私有 scope，并登记原文件或网页快照 SHA-256；
+2. 按宿主真实能力复制 [Source Extraction](TEMPLATES/source-extraction.md)，使用对应 Schema/validator 保存 locator、extraction digest、提取器/version、置信度和 warning；
+3. `complete/partial` 的 units 只作为 claim candidates；OCR、动态网页、合并单元格或来源冲突不得静默提升为 confirmed；
+4. 宿主缺少解析能力时标记 `blocked`，依赖该来源的字段停止，不得用示例值或通用默认值补齐；
+5. extraction artifact 含客户原文，只能进入 `customer-runtime/`，不得提交到母库或公开 artifact。
+
+## 资料驱动的新建 / 更新补充
+
+用户提供文件或 URL 后，先形成 source snapshot 和 Source Extraction，而不是直接生成 CMS payload：
+
+- 每份 PDF、DOCX、表格、网页、图片、brief 和聊天都有 `source_id`、原始字节/快照 SHA-256、日期、位置指针、所有权与 publication clearance；
+- 提取结果保留页码、sheet/单元格、段落、图片或 DOM selector；OCR 和 AI 摘要是 derived，不替代原始来源；
+- 逐字段标记 `confirmed / inferred / missing / conflicting / expired`；认证、规格、价格、MOQ、交期、联系人、案例和效果默认不能靠推断进入 mutation；
+- 区分用户要 `create`、`update` 还是 `upsert`。更新时必须收集精确对象 ID 或站点内唯一 slug/external key，并明确哪些字段保持、变更或显式清空；
+- 目标 CMS 的字段、枚举、站点 ID、Action ID 和部署 fingerprint 由运行时只读探索，不从 intake 模板预填。
+
+资料和目标稳定后，进入 [Source-Driven CMS Create and Update SOP](PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md)，生成 [Content Operation Plan](TEMPLATES/content-operation-plan.md)。`confirmed/inferred` claim 必须绑定 Source Extraction 的精确 locator/digest，mutation 字段必须绑定 `claim_refs/derivation`。新建站必须先生成 account-scope Plan A，仅创建站点；回读真实 site identity 后再生成 site-scope Plan B，不得在一个计划中 create site + populate。
+
 
 ## AI 自行检查
 
@@ -26,11 +49,11 @@ redaction_status: "safe-to-publish"
 
 ## 建立事实表
 
-每条信息使用以下格式：
+每条信息使用以下格式。对会随时间变化的认证、规格、MOQ、交期、价格、联系人、能力和政策，必须记录 `review_after` 或 `expires_at`；超过期限而未重新确认时，状态改为 `expired`，不得继续沿用 `confirmed`：
 
 | Fact | Value | Status | Source | Source date | Conflict / note |
 |---|---|---|---|---|---|
-| Company name |  | confirmed / inferred / missing / conflicting | URL or file |  |  |
+| Company name |  | confirmed / inferred / missing / conflicting / expired | URL or file |  |  |
 
 至少覆盖：
 

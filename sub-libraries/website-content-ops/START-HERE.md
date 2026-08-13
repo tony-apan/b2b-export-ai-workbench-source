@@ -5,9 +5,9 @@ type: "guide"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-30"
+last_updated: "2026-08-12"
 sources: ["COURSE-MAP.md", "Tony decisions 2026-07-27", "Tony AI execution entry decision 2026-07-30"]
-related: ["README.md", "CONTACT.md", "COURSE-MAP.md", "AGENTS.md", "EXAMPLES/fluxpedal-motors/README.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md"]
+related: ["README.md", "RUNTIME-INTEGRATION.md", "CONTACT.md", "COURSE-MAP.md", "AGENTS.md", "EXAMPLES/fluxpedal-motors/README.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "AI 第一次接手本子库，需要确认自身工具能力、当前账号和权限，并开始第一个最小样本时。"
@@ -29,6 +29,16 @@ AI 必须先检查并用大白话告诉用户：
 
 没有 AllinCMS 账号、没有开通网站或无法确认站点时，不要代替用户注册、猜测站点或尝试绕过登录。停止远程 CMS 路线，并提醒用户查看 [README 的联系入口](README.md#没有-allincms-账号) 或 [CONTACT.md](CONTACT.md)；如果本地资料足够，可继续完成不产生远程副作用的小样，并把远程步骤标记为 `BLOCK / not executed`。
 
+## 用户资料驱动路线
+
+当用户提供 PDF、DOCX、表格、网站、图片或 brief，并要求新建或更新网站、文章或产品时，先读 [Source-Driven CMS Create and Update SOP](PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md)。不要把示例公司、站点、语言、分类、标签、产品字段、CTA、组件或 Action ID 当默认值。先登记原始来源和 bytes/snapshot digest，再按宿主格式能力生成并校验 [Source Extraction](TEMPLATES/source-extraction.md)；提取 unit 只是 claim candidate，必须保留 locator、extraction digest、提取器/version、置信度和 warning。之后建立事实/冲突账本与平台无关 desired state，只读发现当前 CMS 和目标对象，生成 [Content Operation Plan](TEMPLATES/content-operation-plan.md)；`upsert` 在 mutation 前必须解析为精确 `create/update/noop`。
+
+> 资料证据门禁：`confirmed/inferred` claim 必须绑定 Source Extraction 的精确 locator 与提取 digest；mutation 字段必须绑定 `claim_refs` 和 `derivation`。远程 mutation 只接受未过期的 `live_verified_current_deployment` capability；公开写入由 `publication_effect` 显式标记，所用来源必须为 `approved/not-applicable`。
+
+新建网站必须拆成两份不可混合的计划：Plan A=`site_bootstrap`，以当前登录账号为 target，只创建一个 site resource，且 `site_key/site_id=null`；回读真实 `site_id/site_key/account owner` 后停止。Plan B=`site_operation`，引用 Plan A digest 和私有 readback evidence，重新发现 capability/current state，再处理分类、标签、媒体、文章、产品或主题页。不得用 `<planned-site>` 或测试站 key 占位，也不得共用两阶段授权。
+
+更新已有内容时，未在用户资料中出现的字段默认保持不变；仅按标题或名字模糊匹配、缺 expected-current fingerprint、跨站 fallback、能力仍为 `exploration_only` 却计划发布，都必须停止。接口优先，UI 只负责登录、合同探索或验收，不得静默降级。
+
 ## 按四步执行
 
 ```mermaid
@@ -43,17 +53,20 @@ flowchart LR
 
 AI 执行：
 
-1. 读取 `AGENTS.md`、`MANIFEST.md` 和目标 adapter 入口，不扫描无关目录；
-2. 检查本地 Markdown、客户运行区、Node.js 和所需脚本是否可用；
-3. 如果用户使用 Obsidian，只需确认它能打开目标目录；Obsidian 不是强制依赖；
-4. 若目标是 AllinCMS，让用户完成登录并确认准确的 `https://workspace.laicms.com/{site_key}/media`；
-5. 运行 AllinCMS 只读环境预检，不读取或导出 Cookie、Token 和密钥；
-6. 只有用户明确需要外部图床时，才检查 PicGo 以及 R2、GitHub、腾讯云 COS、阿里云 OSS；
-7. 汇总可执行项、缺失项、风险和下一步，等待必要批准。
+1. 读取 `AGENTS.md`、`MANIFEST.md`、[RUNTIME-INTEGRATION.md](RUNTIME-INTEGRATION.md) 和目标 adapter 入口，不扫描无关目录；
+2. 验证 `agency-operations` 已初始化 `customer-runtime/`，并且 ACTIVE-CONTEXT、Registry、CLIENT、TASK 与 HANDOFF 对同一 `client_id + company_id + task_id` 一致；任何 scope 缺失或冲突都 fail-closed，禁止无 scope 搜索；
+3. 检查本地 Markdown、Node.js 和所需脚本是否可用；
+4. 如果用户使用 Obsidian，只需确认它能打开目标目录；Obsidian 不是强制依赖；
+5. 若目标是 AllinCMS，先用宿主内置 Browser 的当前 session 接口请求 `/sites?_rsc`，获取登录状态、`user.id` 和完整网站列表；只有未登录时才打开并前台展示 `/sign-in`，登录后必须重新 API 检查，再处理 0 / 1 / 多站点和精确 `site_key`。完整状态机只读 [AllinCMS AI 唯一入口第 0 节](ADAPTERS/cms/allincms/AI-START-HERE.md#0-默认启动登录交接与回落路由)；
+6. 运行 AllinCMS 只读环境预检，不读取或导出 Cookie、Token 和密钥；默认走接口，接口异常先判断请求是否可能已发出，再只读对账或打开页面诊断，不自动改走 UI；
+7. 只有用户明确需要外部图床时，才检查 PicGo 以及 R2、GitHub、腾讯云 COS、阿里云 OSS；
+8. 汇总可执行项、缺失项、风险和下一步，等待必要批准。
 
 > **AllinCMS 媒体库默认直接上传。** 使用 [图片上传统一路由](ADAPTERS/image-upload-routing.md) 和 [AllinCMS AI 唯一入口](ADAPTERS/cms/allincms/AI-START-HERE.md)。不需要先配置 PicGo、R2 或 GitHub。外部图床只作为跨系统公开 URL、迁移练习或用户明确指定时的备选。
 
 安装、升级、改配置、创建 bucket、上传和发布都必须先得到用户确认。已获得某次上传授权，不等于获得删除、覆盖或发布授权。
+
+完成只读预检后，把本次 deployment fingerprint 和 `site_key` 写入私有 operation plan；动态 Action ID、Cookie、Token 和完整请求头不写入计划或公开母库。
 
 ## 2. 建四张知识卡
 
@@ -65,11 +78,13 @@ AI 执行：
 
 先完成一条最小闭环：
 
-- 一份客户聊天到搜索意图的 article brief；
+- 一份客户聊天到搜索意图的 article brief；若从空白新写正式买家文章，先读 [B2B SEO Article Standard](PLAYBOOKS/id-0001-b2b-seo-article-standard.md)；若优化现有文章，先读 [B2B Article Optimization SOP](PLAYBOOKS/id-0003-b2b-article-optimization-sop.md)，并继续接受 ID-0001 的全部质量闸；随后使用 `TEMPLATES/article-brief.md`；
 - 一张图片和 image manifest；
 - 若用户已明确批准并具备 AllinCMS 环境，通过 `uploadAllinCmsMediaSerial()` 上传一张图片；
 - 获得一一对应的 media ID、公开 URL、源 / 上传 / 远端哈希和本地私有图片索引；
-- 建立一条 CMS 草稿，不直接发布。
+- 使用 `TEMPLATES/article-draft.md` 建立标题、正文和持久化格式合同；草稿完成后再使用 `TEMPLATES/article-quality-review.md` 做非作者对抗审查，并检查 [Article Page Frontend SEO Contract](PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md)；
+- 只有内容、前端和目标 Adapter 均无 blocker，才建立一条 CMS 草稿；默认不直接发布；
+- 真实写入后用 `TEMPLATES/publish-record.md` 记录后台刷新、编辑器重开、桌面/移动前台、SEO 源码和 sitemap。
 
 如果没有账号或没有获得上传批准，仍可完成本地 brief、image manifest 和模拟 CMS 草稿，但必须把远程上传与真实页面验证标记为 `BLOCK / not executed`，不得伪造 media ID 或 URL。
 
@@ -77,7 +92,7 @@ AI 执行：
 
 ## 4. 验证并写回
 
-验证页面、图片、字段和状态；记录失败、指标和人工判断。客户事实与 `image-index.json` 留在客户私有运行区，通用模板和 adapter 改进审核后写回母库。
+验证页面、图片、字段和状态；正式文章还要验证 lang、canonical、robots、Article/Breadcrumb schema、语义层级、移动端、图片和 sitemap；记录失败、指标和人工判断。客户事实与 `image-index.json` 留在客户私有运行区，通用模板和 adapter 改进审核后写回母库。
 
 只有当前样本通过并获得用户对下一批精确对象的批准后，才能扩大批次或迁移到第二工具。不能把一次样本通过外推为跨站点、跨部署稳定。
 
@@ -91,12 +106,12 @@ AI 执行：
 然后只执行第 1 步“检查工具和权限”，不要安装、升级、改配置、上传或发布。
 
 如果目标是 AllinCMS：
-1. 让用户确认已经登录并打开准确的 /{site_key}/media；
-2. 运行 checkAllinCmsMediaRuntime()；
-3. 告诉用户 WebP 是否可直接传，以及 PNG/JPG 是否缺 sharp；
-4. 准备客户私有 image-index.json 路径；
-5. 列出本次准备上传的精确文件；
-6. 等用户批准后再调用 uploadAllinCmsMediaSerial()。
+1. 默认用宿主内置 Browser 的当前 session 请求 /sites?_rsc；只有接口确认未登录时才打开 /sign-in、保持前台并立即引导；
+2. 登录后重新 API 检查 user.id、分页完整网站列表和 canCreate，再由用户确认准确 site_key；
+3. 打开精确 /{site_key}/media，检查页面健康后运行 checkAllinCmsMediaRuntime()；
+4. 告诉用户 WebP 是否可直接传，以及 PNG/JPG 是否缺 sharp；
+5. 准备客户私有 image-index.json 路径，并向用户列出精确 site_key、操作和有序文件列表；
+6. 用户批准后创建 authorizationContext，再默认调用 uploadAllinCmsMediaSerial()；接口异常先只读对账或页面诊断，不自动 UI 回退。
 
 没有账号、站点不确定或权限不清时停止，提醒用户查看 README.md 的联系入口。
 不要先让用户选择 PicGo 或外部图床；只有用户明确需要外部公开图床时，

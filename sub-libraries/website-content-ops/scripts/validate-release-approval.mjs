@@ -4,10 +4,17 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { isIP } from 'node:net';
 import { basename, dirname, resolve } from 'node:path';
+import { parseMarkdownFrontMatter } from './front-matter.mjs';
 
 const candidateRoot = resolve(process.argv[2] ?? '');
 const approvalPath = resolve(process.argv[3] ?? '');
 const failures = [];
+const sourcePublicationClearanceFields = ['publication_review_status', 'publication_status', 'license_status'];
+const sourceCardPathPattern = /^REFERENCES\/SRC-[A-Za-z0-9][A-Za-z0-9._-]*\.md$/;
+const referenceMarkdownPathPattern = /^REFERENCES\/.+\.md$/i;
+const allowedSourcePublicationReviewStatuses = new Set(['pending', 'approved', 'rejected']);
+const allowedSourcePublicationStatuses = new Set(['BLOCK', 'PASS']);
+const allowedSourceLicenseStatuses = new Set(['pending', 'cleared', 'restricted', 'unknown']);
 function fail(message) { failures.push(message); }
 function sha256(path) { return createHash('sha256').update(readFileSync(path)).digest('hex'); }
 function requiredString(value, field) {
@@ -19,6 +26,33 @@ function hex(value, field, length = 64) {
   if (text && !new RegExp(`^[a-f0-9]{${length}}$`).test(text)) fail(`approval ${field} must be ${length} lowercase hexadecimal characters`);
   return text;
 }
+const safeVersionPattern = /^[0-9A-Za-z][0-9A-Za-z._-]*$/;
+const placeholderCandidateIdentities = new Set(['unassigned', 'unknown', 'pending', 'placeholder', 'tbd', 'todo', 'null', 'none', 'n/a']);
+function manifestString(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+function validateFrozenManifestIdentity(manifest) {
+  const versionSemantics = manifestString(manifest?.version_semantics);
+  const currentCandidateIdentity = manifestString(manifest?.current_candidate_identity);
+  const currentCandidateSnapshot = manifestString(manifest?.current_candidate_snapshot);
+  const currentCandidateVersion = manifestString(manifest?.current_candidate_version);
+  const manifestVersion = manifestString(manifest?.version);
+  const historicalPublishedVersion = manifestString(manifest?.historical_published_version);
+  const historicalPublishedTag = manifestString(manifest?.historical_published_tag);
+
+  if (versionSemantics !== 'current-candidate-only') fail('MANIFEST.json version_semantics must be current-candidate-only');
+  if (!currentCandidateIdentity || placeholderCandidateIdentities.has(currentCandidateIdentity.toLowerCase())) fail('MANIFEST.json current_candidate_identity must be an assigned non-placeholder string');
+  if (!currentCandidateSnapshot || !safeVersionPattern.test(currentCandidateSnapshot) || currentCandidateSnapshot === 'dirty-working-tree') fail('MANIFEST.json current_candidate_snapshot must be a safe non-dirty value');
+  if (!currentCandidateVersion || !safeVersionPattern.test(currentCandidateVersion)) fail('MANIFEST.json current_candidate_version must be a safe non-empty version');
+  if (manifestVersion !== currentCandidateVersion) fail('MANIFEST.json version must equal current_candidate_version');
+  if (!historicalPublishedVersion || !safeVersionPattern.test(historicalPublishedVersion)) fail('MANIFEST.json historical_published_version must be a safe non-empty version');
+  if (historicalPublishedTag !== `v${historicalPublishedVersion}`) fail('MANIFEST.json historical_published_tag must equal v<historical_published_version>');
+  if (currentCandidateVersion && historicalPublishedVersion && currentCandidateVersion === historicalPublishedVersion) fail('MANIFEST.json current_candidate_version must not equal historical_published_version');
+  if (currentCandidateVersion && historicalPublishedTag && `v${currentCandidateVersion}` === historicalPublishedTag) fail('MANIFEST.json current candidate tag must not collide with historical_published_tag');
+
+  return currentCandidateVersion;
+}
+
 function canonicalJson(value, field = 'evidence') {
   if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value);
   if (typeof value === 'number') {
@@ -57,14 +91,14 @@ function approvalBindingProjection(approval) {
     },
   };
 }
-function expectedTagAnnotation(approval, manifest, approvalBindingSha256) {
+function expectedTagAnnotation(approval, manifest, approvalBindingSha256, currentCandidateVersion) {
   return {
     approval_binding_sha256: approvalBindingSha256,
     approval_id: approval?.approval_id ?? null,
     candidate_content_digest: manifest?.content_digest ?? null,
     schema: TAG_ANNOTATION_SCHEMA,
     scope: { kind: approval?.scope?.kind ?? null, id: approval?.scope?.id ?? null },
-    version: manifest?.version ?? null,
+    version: currentCandidateVersion || null,
   };
 }
 function parseCanonicalTagAnnotation(text, field) {
@@ -123,12 +157,47 @@ const REQUIRED_EVIDENCE_CHECKS = {
     'tag-signature',
   ],
 };
+const EXPECTED_GOVERNANCE_TEST_PLAN = ['scripts/release-governance.test.mjs'];
 const EXPECTED_RUNTIME_TEST_PLAN = [
   'upload-media-browser.test.mjs',
   'article-image-binding.test.mjs',
+  'article-content-formats.test.mjs',
   'article-operations.test.mjs',
 ];
-const EXPECTED_RUNTIME_TEST_COUNT = 131;
+const EXPECTED_RUNTIME_TEST_COUNT = 158;
+function currentGovernanceTestPlan(root) {
+  const planScript = resolve(root, EXPECTED_GOVERNANCE_TEST_PLAN[0]);
+  if (!existsSync(planScript) || !statSync(planScript).isFile()) {
+    fail(`approval governance plan source is missing: ${EXPECTED_GOVERNANCE_TEST_PLAN[0]}`);
+    return [];
+  }
+  const result = spawnSync(process.execPath, [planScript, '--list'], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 10_000,
+    killSignal: 'SIGKILL',
+  });
+  if (result.error || result.status !== 0) {
+    fail(`approval governance plan discovery failed for ${EXPECTED_GOVERNANCE_TEST_PLAN[0]}`);
+    return [];
+  }
+  const payload = result.stdout.match(/^GOVERNANCE_TEST_PLAN_JSON:\s*(\[[^\n]+\])$/m)?.[1];
+  if (!payload) {
+    fail('approval governance plan discovery did not return GOVERNANCE_TEST_PLAN_JSON');
+    return [];
+  }
+  try {
+    const plan = JSON.parse(payload);
+    if (!Array.isArray(plan) || plan.length === 0 || plan.some((name) => typeof name !== 'string' || !name.trim()) || new Set(plan).size !== plan.length) {
+      fail('approval governance plan discovery returned an invalid or duplicate test list');
+      return [];
+    }
+    return plan;
+  } catch {
+    fail('approval governance plan discovery returned invalid JSON');
+    return [];
+  }
+}
 function integerAtLeast(value, field, minimum = 0) {
   if (!Number.isInteger(value) || value < minimum) fail(`approval ${field} must be an integer >= ${minimum}`);
   return Number.isInteger(value) ? value : 0;
@@ -150,7 +219,7 @@ function validateStringArray(value, field) {
   if (new Set(items).size !== items.length) fail(`approval ${field} must not contain duplicate entries`);
   return items;
 }
-function validateEvidenceChecks(checks, profile, manifest, sourceCommit, contentDigest, tagName, tagBinding = null) {
+function validateEvidenceChecks(checks, profile, manifest, sourceCommit, contentDigest, tagName, governanceTestPlan, tagBinding = null) {
   const requiredIds = REQUIRED_EVIDENCE_CHECKS[profile] ?? [];
   if (!Array.isArray(checks)) {
     fail('approval evidence checks must be an array');
@@ -206,7 +275,10 @@ function validateEvidenceChecks(checks, profile, manifest, sourceCommit, content
       const failed = integerAtLeast(result.failed_tests, `evidence check ${id}.result.failed_tests`);
       const skipped = integerAtLeast(result.skipped_tests, `evidence check ${id}.result.skipped_tests`);
       if (passed !== expected || failed !== 0 || skipped !== 0) fail(`approval evidence check ${id} must bind exact all-pass counts with no failed or skipped tests`);
-      if (id === 'runtime-tests') {
+      if (id === 'governance-tests') {
+        if (JSON.stringify(plan) !== JSON.stringify(EXPECTED_GOVERNANCE_TEST_PLAN)) fail(`approval evidence governance-tests test_plan must exactly equal ${EXPECTED_GOVERNANCE_TEST_PLAN.join(', ')}`);
+        if (expected !== governanceTestPlan.length) fail(`approval evidence governance-tests expected_tests must match the current registered governance plan (${governanceTestPlan.length})`);
+      } else if (id === 'runtime-tests') {
         if (expected !== EXPECTED_RUNTIME_TEST_COUNT) fail(`approval evidence runtime-tests expected_tests must be ${EXPECTED_RUNTIME_TEST_COUNT}`);
         if (JSON.stringify(plan) !== JSON.stringify(EXPECTED_RUNTIME_TEST_PLAN)) fail(`approval evidence runtime-tests test_plan must exactly equal ${EXPECTED_RUNTIME_TEST_PLAN.join(', ')}`);
       }
@@ -263,6 +335,68 @@ function portableRelativePath(value, field) {
     return '';
   }
   return value;
+}
+function displaySourceClearanceValue(front, field) {
+  return front && Object.hasOwn(front, field) ? JSON.stringify(front[field]) : 'missing';
+}
+function validateCandidateSourceCardField(front, path, field, allowed) {
+  const value = front && Object.hasOwn(front, field) ? front[field] : undefined;
+  if (typeof value !== 'string' || !allowed.has(value)) {
+    fail(`source card ${path} ${field} must be one of ${JSON.stringify([...allowed])}; got ${displaySourceClearanceValue(front, field)}`);
+    return false;
+  }
+  return true;
+}
+function validateCandidateSourcePublicationClearance(manifest, root) {
+  if (!Array.isArray(manifest.files)) return;
+  for (const [index, value] of manifest.files.entries()) {
+    if (typeof value !== 'string' || !value.toLowerCase().endsWith('.md')) continue;
+    const path = portableRelativePath(value, `candidate.files[${index}]`);
+    if (!path) continue;
+    const isReferenceMarkdown = referenceMarkdownPathPattern.test(path);
+    const isReferenceIndex = path === 'REFERENCES/README.md';
+    const isSourceCardPath = sourceCardPathPattern.test(path);
+    const sourcePath = resolve(root, path);
+    if (!existsSync(sourcePath) || !statSync(sourcePath).isFile()) {
+      if (isReferenceMarkdown || isSourceCardPath) fail(`source publication clearance file is missing from frozen candidate: ${path}`);
+      continue;
+    }
+    let front;
+    try {
+      front = parseMarkdownFrontMatter(readFileSync(sourcePath, 'utf8'), { source: path }).attributes;
+    } catch (error) {
+      if (isReferenceMarkdown || isSourceCardPath) fail(`source publication clearance front matter is invalid for ${path}: ${error.message}`);
+      continue;
+    }
+    const hasRelocatedSourceIdentity = front.type === 'source-note'
+      || Object.hasOwn(front, 'publication_review_status');
+
+    if (isReferenceMarkdown && !isReferenceIndex && !isSourceCardPath) {
+      fail(`reference Markdown path must match REFERENCES/SRC-*.md or be REFERENCES/README.md: ${path}`);
+    }
+    if (!isSourceCardPath) {
+      if (!isReferenceMarkdown && hasRelocatedSourceIdentity) {
+        fail(`source card metadata must remain under REFERENCES/SRC-*.md: ${path}`);
+      }
+      continue;
+    }
+
+    let identityValid = true;
+    if (front.type !== 'source-note') {
+      fail(`source card ${path} type must be exactly "source-note"; got ${displaySourceClearanceValue(front, 'type')}`);
+      identityValid = false;
+    }
+    identityValid = validateCandidateSourceCardField(front, path, 'publication_review_status', allowedSourcePublicationReviewStatuses) && identityValid;
+    identityValid = validateCandidateSourceCardField(front, path, 'publication_status', allowedSourcePublicationStatuses) && identityValid;
+    identityValid = validateCandidateSourceCardField(front, path, 'license_status', allowedSourceLicenseStatuses) && identityValid;
+    if (!identityValid) continue;
+
+    const cleared = front.publication_review_status === 'approved'
+      && front.publication_status === 'PASS'
+      && front.license_status === 'cleared';
+    if (cleared) continue;
+    fail(`source publication clearance BLOCK for ${path}: expected publication_review_status="approved", publication_status="PASS", license_status="cleared"; got publication_review_status=${displaySourceClearanceValue(front, 'publication_review_status')}, publication_status=${displaySourceClearanceValue(front, 'publication_status')}, license_status=${displaySourceClearanceValue(front, 'license_status')}; candidate package license_status cannot override source-level clearance`);
+  }
 }
 function validateCommitProvenance(manifest, root, sourceCommit) {
   const scopeLabel = manifest.release_scope === 'standalone-mother-library' ? 'mother-library' : 'sub-library';
@@ -465,6 +599,7 @@ let manifest;
 let approval;
 try { manifest = JSON.parse(readFileSync(resolve(candidateRoot, 'MANIFEST.json'), 'utf8')); } catch { fail('candidate MANIFEST.json is missing or invalid JSON'); manifest = {}; }
 try { approval = JSON.parse(readFileSync(approvalPath, 'utf8')); } catch { fail('approval record is not valid JSON'); approval = {}; }
+const currentCandidateVersion = validateFrozenManifestIdentity(manifest);
 
 if (approval.schema !== 'release-approval/v1') fail(`approval schema must be release-approval/v1, got ${approval.schema ?? 'missing'}`);
 const approvalId = requiredString(approval.approval_id, 'approval_id');
@@ -498,6 +633,7 @@ if (source.dirty !== false) fail('approval source.dirty must be false');
 if (sourceCommit !== manifest.source_commit) fail('approval source.commit does not match candidate MANIFEST.json');
 if (manifest.source_dirty !== false) fail('candidate source_dirty must be false; approval cannot bless a dirty source snapshot');
 const provenanceRecords = validateCommitProvenance(manifest, candidateRoot, sourceCommit);
+validateCandidateSourcePublicationClearance(manifest, candidateRoot);
 
 const candidate = approval.candidate ?? {};
 if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) fail('approval candidate must be an object');
@@ -513,7 +649,7 @@ else {
   if (sumsSha !== sha256(sumsPath)) fail('approval candidate.sha256sums_sha256 does not match candidate SHA256SUMS');
 }
 const locator = requiredString(candidate.immutable_locator, 'candidate.immutable_locator');
-if (locator) validateImmutableLocator(locator, manifest.version, contentDigest);
+if (locator) validateImmutableLocator(locator, currentCandidateVersion, contentDigest);
 
 const validation = approval.validation ?? {};
 if (!validation || typeof validation !== 'object' || Array.isArray(validation)) fail('approval validation must be an object');
@@ -579,7 +715,7 @@ if (strictGitTag && !triggerTag) fail('RELEASE_TRIGGER_TAG is required when stri
 if (triggerTag && triggerTag !== tagName) fail(`RELEASE_TRIGGER_TAG ${triggerTag} does not match approval tag.name ${tagName}`);
 const targetCommit = requiredString(tag.target_commit, 'tag.target_commit');
 if (targetCommit !== sourceCommit) fail('approval tag.target_commit must equal approval source.commit');
-if (namespace && tagName !== `${namespace}/v${manifest.version}`) fail(`approval tag.name must be ${namespace}/v${manifest.version}`);
+if (namespace && tagName !== `${namespace}/v${currentCandidateVersion}`) fail(`approval tag.name must be ${namespace}/v${currentCandidateVersion}`);
 if (manifest.tag_namespace !== namespace) fail(`candidate tag_namespace must be ${namespace}, got ${manifest.tag_namespace ?? 'missing'}`);
 if (manifest.qualification_state !== 'prepared-unapproved') fail(`candidate qualification_state must be prepared-unapproved, got ${manifest.qualification_state ?? 'missing'}`);
 if (manifest.approval_status !== 'pending') fail(`frozen candidate approval_status must remain pending; external approval must not rewrite candidate bytes, got ${manifest.approval_status ?? 'missing'}`);
@@ -609,7 +745,7 @@ if (formalTagBindingRequired) {
   const approvedBindingSha256 = hex(tag.approval_binding_sha256, 'tag.approval_binding_sha256');
   const computedBindingSha256 = canonicalDigest(approvalBindingProjection(approval), 'approval binding projection');
   if (approvedBindingSha256 !== computedBindingSha256) fail('approval tag.approval_binding_sha256 does not match the canonical approval binding projection');
-  const expectedAnnotation = expectedTagAnnotation(approval, manifest, computedBindingSha256);
+  const expectedAnnotation = expectedTagAnnotation(approval, manifest, computedBindingSha256, currentCandidateVersion);
   const expectedAnnotationText = canonicalJson(expectedAnnotation, 'expected tag annotation');
   const expectedAnnotationSha256 = createHash('sha256').update(expectedAnnotationText, 'utf8').digest('hex');
   if (approvedAnnotationSha256 !== expectedAnnotationSha256) fail('approval tag.annotation_sha256 does not match the canonical tag annotation');
@@ -683,13 +819,15 @@ if (strictGitTag) {
   }
 }
 
+const governanceTestPlan = currentGovernanceTestPlan(candidateRoot);
 validateEvidenceChecks(
   evidence.checks,
   expectedProfile,
   manifest,
   sourceCommit,
   contentDigest,
-  `${expectedTagNamespace(manifest)}/v${manifest.version}`,
+  `${expectedTagNamespace(manifest)}/v${currentCandidateVersion}`,
+  governanceTestPlan,
   tagBinding,
 );
 if (evidenceDigest && evidenceDigest !== canonicalEvidenceDigest(evidence)) {
@@ -698,7 +836,7 @@ if (evidenceDigest && evidenceDigest !== canonicalEvidenceDigest(evidence)) {
 
 console.log(`Candidate: ${basename(candidateRoot)}`);
 console.log(`Package: ${manifest.package_id ?? 'unknown'}`);
-console.log(`Version: ${manifest.version ?? 'unknown'}`);
+console.log(`Version: ${currentCandidateVersion || 'unknown'}`);
 for (const item of failures) console.log(`FAIL: ${item}`);
 if (failures.length) {
   console.error(`\nBLOCK: ${failures.length} approval check(s) failed.`);

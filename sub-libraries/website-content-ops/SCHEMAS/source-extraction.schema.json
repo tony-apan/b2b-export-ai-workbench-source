@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/website-content-ops/source-extraction.schema.json",
+  "title": "Private Source Extraction Artifact",
+  "description": "Private-runtime extraction result that binds one original source digest to precise extracted units, locators, warnings and the host capability used.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "extraction_id",
+    "client_id",
+    "company_id",
+    "task_id",
+    "runtime_scope",
+    "source_id",
+    "source_kind",
+    "source_location",
+    "source_digest",
+    "source_owner",
+    "rights_status",
+    "method_use_clearance",
+    "publication_clearance",
+    "source_date",
+    "review_after",
+    "source_scope",
+    "captured_at",
+    "extractor",
+    "status",
+    "units",
+    "warnings",
+    "visibility"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.1"
+    },
+    "extraction_id": {
+      "type": "string",
+      "pattern": "^SX-[A-Za-z0-9._-]+$"
+    },
+    "client_id": {
+      "$ref": "#/$defs/safeSegment"
+    },
+    "company_id": {
+      "$ref": "#/$defs/safeSegment"
+    },
+    "task_id": {
+      "$ref": "#/$defs/safeSegment"
+    },
+    "runtime_scope": {
+      "$ref": "#/$defs/runtimeScope"
+    },
+    "source_id": {
+      "$ref": "#/$defs/nonEmpty"
+    },
+    "source_kind": {
+      "enum": [
+        "pdf",
+        "docx",
+        "spreadsheet",
+        "website",
+        "image",
+        "brief",
+        "chat",
+        "export",
+        "cms_snapshot",
+        "other"
+      ]
+    },
+    "source_location": {
+      "$ref": "#/$defs/runtimePath"
+    },
+    "source_digest": {
+      "$ref": "#/$defs/sha256"
+    },
+    "source_owner": {
+      "$ref": "#/$defs/nonEmpty"
+    },
+    "rights_status": {
+      "enum": [
+        "owned",
+        "authorized",
+        "public",
+        "unknown"
+      ]
+    },
+    "method_use_clearance": {
+      "enum": [
+        "approved",
+        "pending",
+        "blocked",
+        "not-applicable"
+      ]
+    },
+    "publication_clearance": {
+      "enum": [
+        "approved",
+        "pending",
+        "blocked",
+        "not-applicable"
+      ]
+    },
+    "source_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "review_after": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "source_scope": {
+      "$ref": "#/$defs/nonEmpty"
+    },
+    "captured_at": {
+      "$ref": "#/$defs/dateTime"
+    },
+    "extractor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability",
+        "implementation",
+        "version",
+        "mode"
+      ],
+      "properties": {
+        "capability": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "implementation": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "version": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "mode": {
+          "enum": [
+            "native_text",
+            "structured_parse",
+            "ocr",
+            "vision",
+            "browser_snapshot",
+            "manual_text"
+          ]
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "partial",
+        "blocked"
+      ]
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unit"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/nonEmpty"
+      },
+      "uniqueItems": true
+    },
+    "visibility": {
+      "const": "private-runtime"
+    }
+  },
+  "$defs": {
+    "nonEmpty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit_id",
+        "locator",
+        "content_kind",
+        "value",
+        "extraction_digest",
+        "confidence",
+        "warnings"
+      ],
+      "properties": {
+        "unit_id": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "locator": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "content_kind": {
+          "enum": [
+            "text",
+            "table",
+            "image",
+            "metadata",
+            "link",
+            "other"
+          ]
+        },
+        "value": {},
+        "extraction_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "unknown"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmpty"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "safeSegment": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "runtimePath": {
+      "type": "string",
+      "pattern": "^customer-runtime/10_clients/[^/]+/30_tasks/[^/]+/.+$"
+    },
+    "runtimeScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "client_root",
+        "task_root",
+        "scope_digest"
+      ],
+      "properties": {
+        "root": {
+          "const": "customer-runtime"
+        },
+        "client_root": {
+          "type": "string",
+          "pattern": "^customer-runtime/10_clients/[^/]+$"
+        },
+        "task_root": {
+          "type": "string",
+          "pattern": "^customer-runtime/10_clients/[^/]+/30_tasks/[^/]+$"
+        },
+        "scope_digest": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}

@@ -17,3 +17,6 @@ credentials/
 **/*.token
 *.cookie
 **/*.cookie
+customer-runtime/
+secrets/
+browser-profiles/

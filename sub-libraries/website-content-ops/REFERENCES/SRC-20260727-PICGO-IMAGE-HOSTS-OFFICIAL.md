@@ -1,17 +1,21 @@
 ---
 title: "Source Note: PicGo And Image Hosts"
 description: "登记 PicGo、Cloudflare R2、GitHub、腾讯云 COS 和阿里云 OSS 的官方能力、课程适配边界与复查要求。"
-type: "source"
+type: "source-note"
+source_id: "SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-27"
+last_updated: "2026-08-01"
 sources: ["https://picgo.github.io/PicGo-Doc/zh/guide/config.html", "https://github.com/Molunerfinn/PicGo/releases/tag/v3.0.1", "https://developers.cloudflare.com/r2/api/s3/api/", "https://developers.cloudflare.com/r2/buckets/public-buckets/", "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github", "https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits", "https://cloud.tencent.com/document/product/436/36638", "https://help.aliyun.com/zh/oss/user-guide/map-custom-domain-names-5"]
 related: ["../TOOLS.md", "../ADAPTERS/image-hosts/README.md"]
 confidence: "high"
 review_after: "2026-10-27"
 visibility: "public"
 redaction_status: "safe-to-publish"
+publication_review_status: "pending"
+publication_status: "BLOCK"
+license_status: "pending"
 ---
 # Source Note: PicGo And Image Hosts
 

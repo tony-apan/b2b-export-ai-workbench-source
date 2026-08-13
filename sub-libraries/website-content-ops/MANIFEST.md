@@ -5,16 +5,22 @@ type: "manifest"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 sources: ["Package contract compiled 2026-07-26", "Tony decisions 2026-07-27", "Tony structure upgrade decision 2026-07-28"]
 related: ["README.md", "COURSE-MAP.md", "WORKSPACE-TEMPLATE/README.md", "MENTAL-MODEL.md", "ADAPTERS/cms/allincms-overview.md", "ADAPTERS/cms/allincms/README.md", "QA-CHECKLIST.md", "VERSION.md", "CHANGELOG.md", "RELEASE.md", "INSTALL.md", "REFERENCES/README.md", "scripts/README.md", "SCHEMAS/runtime-contract.schema.json", "BRAND.md", "CONTACT.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 repository_status: "public-preview"
-preview_publication_status: "Published"
+preview_publication_status: "BLOCK"
 preview_version: "0.3.2-preview.1"
 preview_tag: "v0.3.2-preview.1"
-release_status: "Preview"
+historical_published_version: "0.3.2-preview.1"
+historical_published_tag: "v0.3.2-preview.1"
+current_candidate_identity: "unassigned"
+current_candidate_snapshot: "dirty-working-tree"
+current_candidate_version: null
+current_candidate_date: "2026-08-01"
+release_status: "BLOCK"
 maturity_status: "validated"
 verification_status: "evidence-partial"
 release_scope: "standalone-sub-library"
@@ -25,25 +31,25 @@ skill_entrypoint: "SKILL.md"
 skill_status: "preview-adapter-not-installable"
 package_scope: "."
 runtime_contract: "RUNTIME-CONTRACT.json"
-dependency_mode: "self-contained"
+dependency_mode: "declared-external-runtime"
 durable_roots: ["KNOWLEDGE", "PLAYBOOKS", "COURSES", "OUTPUTS"]
 external_dependencies: ["Node.js >=20.9.0", "npm", "sharp 0.35.3 (AllinCMS adapter only)"]
 source_package_only: true
-license_status: "cleared"
+license_status: "pending"
 approval_required: true
 approval_status: "pending"
 approval_record: "RELEASE-APPROVAL.json (external sidecar)"
 tag_namespace: "sub-library/website-content-ops"
 tag_prefix: "sub-library/website-content-ops/v"
 included_in_mother: "source-only"
-include: ["AGENTS.md", "LICENSE", "NOTICE", "THIRD-PARTY-NOTICES.md", "BRAND.md", "CHANGELOG.md", "CONTACT.md", "COURSE-MAP.md", "INSTALL.md", "INTAKE.md", "LICENSE.md", "MANIFEST.md", "MENTAL-MODEL.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "README.md", "RELEASE.md", "SKILL.md", "SOURCES.md", "START-HERE.md", "TOOLS.md", "VERSION.md", "WRITEBACK.md", ".gitignore", "RUNTIME-CONTRACT.json", "SCHEMAS/**", "REFERENCES/**", "TEMPLATES/**", "EXAMPLES/**", "ADAPTERS/**", "WORKSPACE-TEMPLATE/**", "scripts/**"]
-exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**", "credentials/**", ".env*", "**/.env*", "*.secret", "**/*.secret", "*.credentials", "**/*.credentials", "*.sqlite*", "**/*.sqlite*", "*.db", "**/*.db", "*.p12", "**/*.p12", "*.pfx", "**/*.pfx", "*.crt", "**/*.crt", "*.token", "**/*.token", "*.cookie", "**/*.cookie", "*.key", "**/*.key", "*.pem", "**/*.pem", "*.png", "**/*.png", "*.jpg", "**/*.jpg", "*.jpeg", "**/*.jpeg", "*.webp", "**/*.webp", "*.gif", "**/*.gif", "*.mp4", "**/*.mp4", "*.mov", "**/*.mov", "*.mp3", "**/*.mp3", "*.wav", "**/*.wav"]
+include: ["AGENTS.md", "LICENSE", "NOTICE", "THIRD-PARTY-NOTICES.md", "BRAND.md", "CHANGELOG.md", "CONTACT.md", "COURSE-MAP.md", "INSTALL.md", "INTAKE.md", "LICENSE.md", "MANIFEST.md", "MENTAL-MODEL.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "README.md", "RELEASE.md", "RUNTIME-INTEGRATION.md", "SKILL.md", "SOURCES.md", "START-HERE.md", "TOOLS.md", "VERSION.md", "WRITEBACK.md", ".gitignore", "RUNTIME-CONTRACT.json", "SCHEMAS/**", "REFERENCES/**", "PLAYBOOKS/**", "TEMPLATES/**", "EXAMPLES/**", "ADAPTERS/**", "WORKSPACE-TEMPLATE/**", "scripts/**"]
+exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**", "customer-runtime/**", "credentials/**", "secrets/**", "browser-profiles/**", ".env*", "**/.env*", "*.secret", "**/*.secret", "*.credentials", "**/*.credentials", "*.sqlite*", "**/*.sqlite*", "*.db", "**/*.db", "*.p12", "**/*.p12", "*.pfx", "**/*.pfx", "*.crt", "**/*.crt", "*.token", "**/*.token", "*.cookie", "**/*.cookie", "*.key", "**/*.key", "*.pem", "**/*.pem", "*.png", "**/*.png", "*.jpg", "**/*.jpg", "*.jpeg", "**/*.jpeg", "*.webp", "**/*.webp", "*.gif", "**/*.gif", "*.mp4", "**/*.mp4", "*.mov", "**/*.mov", "*.mp3", "**/*.mp3", "*.wav", "**/*.wav"]
 ---
 # Package Manifest
 
 ## 当前交付判断
 
-本目录已作为独立公开仓进入 Public Preview：可以下载、阅读并交给 AI 按 `START-HERE.md` 做本地试用和单样本验证。它仍不是 Stable 或 production-ready；`SKILL.md` 是预览级 AI 适配入口，不得外推为跨平台、跨部署稳定。正式 Stable qualification 仍需从本目录生成经过验收的候选，并排除母库路径、真实运行区、凭据和未授权素材。
+既有 `v0.3.2-preview.1` 独立公开仓事实保留，可继续用于其已发布范围内的本地试用和单样本验证；该 version 与 tag 只属于 immutable historical published artifact。当前 dirty working-tree candidate 的机器身份为 `unassigned`、`current_candidate_version: null`；AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 均为 `publication_status: BLOCK` 且 `license_status: pending`，因此当前 `preview_publication_status` 与 `release_status` 均为 `BLOCK`，`license_status` 与 `approval_status` 均为 `pending`。兼容字段 `preview_version` / `preview_tag` 也只投影历史发布身份，不得作为当前候选版本。任何 prepare 或 release build 必须先分配新的 current candidate version，且不得与历史 version/tag 碰撞。这不撤销既有结构测试和限定证据，但在许可审批完成前不得据此重新发布 Public Preview，也不得外推为 Stable、Published、production-ready 或跨平台、跨部署稳定。
 
 ## 学习层
 
@@ -62,7 +68,7 @@ exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**
 
 ## 源码包排除
 
-- 已填入真实数据的客户运行时 `workspace/`；
+- 已填入真实数据的 `customer-runtime/**`；本包只声明对 `agency-operations` 运行合同的外部依赖，不携带客户数据；
 - 真实公司、产品、客户、聊天和经营数据；
 - 凭据、PicGo 完整配置、cookie 和 session；
 - Tony 私有母库路径和内部资料；
@@ -93,19 +99,19 @@ exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**
 
 - 图片路由：目标为 AllinCMS 媒体库时优先零点击接口串行上传；[R2 / GitHub / 腾讯云 COS / 阿里云 OSS](ADAPTERS/image-hosts/README.md) 仅为外部图床备选；
 - Virtual business：[FluxPedal Motors](EXAMPLES/fluxpedal-motors/README.md) 公司、产品、ICP、聊天和首条闭环已建立；
-- CMS：首个参考实现为 AllinCMS；真实环境已验证站点发现、单图零点击直传、10 张严格串行直传、一次五图 UI 回退、匿名 URL 验证、零点击媒体记录删除，以及一张获批虚拟媒体的 `title / alt / caption` 最终持久化；本地实现已补只读对账、原子图片索引、断点恢复、源 / 上传 / 远端哈希、单写者锁、AI 元数据单次写入和停批规则，并通过 45 项媒体测试；文章 taxonomy 创建、全字段多轮 update / publish、真实封面与前台列表/详情也已有单样本证据；Markdown 正文图片 A/B/A 草稿绑定、后台回读、编辑器重载和 Caption 可见已有真实限定证据；本地控制器已升级为 manifest schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 和整篇单次保存，文章图片另有 50 项测试；
+- CMS：首个参考实现为 AllinCMS；真实环境已验证站点发现、单图零点击直传、10 张严格串行直传、一次五图 UI 回退、匿名 URL 验证、零点击媒体记录删除，以及一张获批虚拟媒体的 `title / alt / caption` 最终持久化；本地实现已补只读对账、原子图片索引、断点恢复、源 / 上传 / 远端哈希、单写者锁、AI 元数据单次写入和停批规则，并通过 45 项媒体测试；文章 taxonomy 创建、全字段多轮 update / publish、真实封面与前台列表/详情也已有单样本证据；Markdown 正文图片 A/B/A 草稿绑定、后台回读、编辑器重载和 Caption 可见已有真实限定证据；本地控制器已升级为 manifest schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 和整篇单次保存；当前 trusted runtime profile 固定四文件并通过 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；
 - 第二图床 / CMS：计划从四种图床中选择另一个完成迁移；
 - Analytics / Search data：在真实站点阶段接入 Search Console、询盘和销售反馈。
 
-## Preview 已知限制与 Stable 阻断
+## 既有 Preview 限制与当前发布阻断
 
-1. AllinCMS 图片默认路线已固化并通过 45 项媒体测试；正文图片唯一 adapter 已通过 50 项文章图片测试；新恢复层、自定义标题和跨部署元数据读后写稳定性仍需在下一次自然、获批的真实上传中顺带复验；
+1. AllinCMS 图片默认路线已固化并通过 45 项媒体测试；正文图片唯一 adapter 已通过 52 项文章图片测试；当前四文件 trusted profile 为 158/158，其中正文格式 13、文章生命周期与 taxonomy 48；新恢复层、自定义标题和跨部署元数据读后写稳定性仍需在下一次自然、获批的真实上传中顺带复验；
 2. AllinCMS 文章单样本已完成 taxonomy、多轮保存/发布和前台渲染；A/B/A 正文图片草稿已验证，逐 occurrence 原位替换能力不再暂停。公开主题 Alt、表格等更多复杂节点、跨部署封面/正文稳定性、覆盖和完整回滚仍无完整证据；
 3. 控制器不设图片数量上限，本地已验证 12 张仍严格串行；真实远程证据目前到 10 张。媒体并发永久禁止，一次请求多图不是默认路线；
 4. PicGo + R2 / GitHub / COS / OSS 不再是 AllinCMS 上传前置，只作为外部图床和迁移能力；其真实单图参考实现尚未完成；
 5. 第二工具与相邻业务任务迁移无验证证据；
-6. Apache-2.0 许可证与公开联系入口已明确；正式 Logo、Stable 人工批准、可信签名和 GitHub 服务端 qualification 仍未闭合。机器可读 manifest、latest-only 打包脚本和 checksum 校验不替代这些证据。
+6. Apache-2.0 许可证文本与公开联系入口已存在，但 AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 均未闭合；其中 B2B research reference 只获准用于内部方法研究。正式 Logo、Stable 人工批准、可信签名和 GitHub 服务端 qualification 也未闭合。机器可读 manifest、既有结构测试、latest-only 打包脚本和 checksum 校验不替代这些证据。
 
 ## 当前发布结论
 
-**Public Preview：`Published`；Stable：`BLOCK`。** 独立公开仓已经建立，可按 `README.md` 与 `START-HERE.md` 做本地试用和单样本交付；这不证明课程效果、跨部署迁移能力、production-ready 或 Stable qualification。
+**当前源码候选：Public Preview publication / release `BLOCK`；Stable：`BLOCK`。** 既有 `v0.3.2-preview.1` 独立公开仓事实不被撤销，但 AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 完成前，当前源码候选只能用于内部方法研究和 Working artifact，不得宣称新的 Preview publication、Stable、Published、production-ready、课程效果或跨部署迁移能力。既有结构测试仍只证明其原有结构 scope。

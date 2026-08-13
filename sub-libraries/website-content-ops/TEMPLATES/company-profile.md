@@ -6,7 +6,7 @@ template_usage: "manual-copy"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 sources: []
 related: ["../INTAKE.md", "product-record.md"]
 visibility: "public"
@@ -38,7 +38,7 @@ keywords: ["company profile", "business facts", "proof assets", "claim boundary"
 
 | Field | Value | Status | Source | Source date | Note |
 |---|---|---|---|---|---|
-|  |  | confirmed / inferred / missing / conflicting |  |  |  |
+|  |  | confirmed / inferred / missing / conflicting / expired |  |  |  |
 
 ## Missing Information
 

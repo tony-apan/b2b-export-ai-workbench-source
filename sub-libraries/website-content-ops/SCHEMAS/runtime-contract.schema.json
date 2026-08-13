@@ -1,14 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.fluxpedal.example/website-content-ops/runtime-contract.schema.json",
-  "title": "Website Content Operations Runtime Contract",
-  "description": "Fail-closed machine contract for the standalone website-content-ops sub-library.",
+  "title": "Website Content Operations Runtime Contract with Agency Runtime Dependency",
+  "description": "Fail-closed machine contract for website-content-ops operating only inside a scoped agency-operations customer runtime.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_ref",
     "contract_version",
     "package_id",
+    "b2b_article_fail_closed_projection",
+    "external_runtime_dependency",
     "inputs",
     "outputs",
     "required_permissions",
@@ -26,7 +28,7 @@
     },
     "contract_version": {
       "type": "integer",
-      "const": 1
+      "const": 3
     },
     "package_id": {
       "type": "string",
@@ -34,7 +36,7 @@
     },
     "inputs": {
       "type": "array",
-      "minItems": 4,
+      "minItems": 5,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -142,6 +144,31 @@
             "properties": {
               "name": {
                 "const": "content_mutation_authorization_context"
+              },
+              "type": {
+                "const": "json-object"
+              },
+              "required": {
+                "const": true
+              },
+              "sensitivity": {
+                "const": "private"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "name",
+              "type",
+              "required",
+              "sensitivity"
+            ],
+            "properties": {
+              "name": {
+                "const": "active_runtime_scope"
               },
               "type": {
                 "const": "json-object"
@@ -497,8 +524,587 @@
           "contains": {
             "const": "human identity verification from local approval or authorization records"
           }
+        },
+        {
+          "contains": {
+            "const": "automated enforcement coverage for a declared B2B article gate before matching validator call paths and non-noop regression tests pass"
+          }
+        },
+        {
+          "contains": {
+            "const": "Published lifecycle acceptance from status strings without per-axis authorization, mutation, readback, reopen, anonymous frontend, desktop, mobile, and image evidence references"
+          }
+        },
+        {
+          "contains": {
+            "const": "current search-demand acceptance when observation_end_at exceeds evidence observed_at, snapshot captured_at, or reviewed_at"
+          }
+        },
+        {
+          "contains": {
+            "const": "identity provenance acceptance without freshness, stable actor IDs, artifact time consistency, and an observed_at not later than reviewed_at"
+          }
+        },
+        {
+          "contains": {
+            "const": "CTA data-policy acceptance without a current policy contract ID and version, artifact reference and digest, freshness rule, and reviewed_at ceiling"
+          }
+        },
+        {
+          "contains": {
+            "const": "Stable, Published, production-ready, live SEO acceptance, ranking, inquiry, conversion, or revenue outcomes from a local structural PASS"
+          }
         }
       ]
+    },
+    "b2b_article_fail_closed_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_authorities",
+        "projection_scope",
+        "fail_closed",
+        "failure_verdict",
+        "required_gate_ids",
+        "gate_requirements",
+        "deferred_frontend_seo_blocks",
+        "deferred_blocks_are_pass",
+        "automation_coverage_claimed",
+        "automation_coverage_status",
+        "automation_coverage_evidence_required_for_pass",
+        "local_structural_pass_scope"
+      ],
+      "properties": {
+        "canonical_authorities": {
+          "type": "array",
+          "const": [
+            "PLAYBOOKS/id-0001-b2b-seo-article-standard.md",
+            "PLAYBOOKS/id-0003-b2b-article-optimization-sop.md"
+          ]
+        },
+        "projection_scope": {
+          "const": "runtime-and-qa-routing-only"
+        },
+        "fail_closed": {
+          "const": true
+        },
+        "failure_verdict": {
+          "const": "block"
+        },
+        "required_gate_ids": {
+          "type": "array",
+          "const": [
+            "content-family-exact-singleton",
+            "ordered-six-slot-pain-chain",
+            "buyer-task-internal-link-anchor",
+            "cta-transmission-route-safety",
+            "product-claim-evidence-binding",
+            "stable-actor-identity-separation",
+            "artifact-digest-byte-binding",
+            "production-snapshot-kind-freshness-provenance",
+            "unsupported-outcome-semantic-detection",
+            "fixture-production-proof-boundary",
+            "published-lifecycle-evidence-binding",
+            "search-demand-observation-ceilings",
+            "identity-provenance-freshness-review-ceiling",
+            "cta-data-policy-freshness-version-digest",
+            "local-structural-pass-claim-boundary"
+          ]
+        },
+        "gate_requirements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "content_family_exact_singleton",
+            "ordered_six_slot_pain_chain",
+            "buyer_task_internal_link_anchor",
+            "cta_transmission_route_safety",
+            "product_claim_evidence_binding",
+            "stable_actor_identity_separation",
+            "artifact_digest_byte_binding",
+            "production_snapshot_kind_freshness_provenance",
+            "unsupported_outcome_semantic_detection",
+            "fixture_production_proof_boundary",
+            "published_lifecycle_evidence_binding",
+            "search_demand_observation_ceilings",
+            "identity_provenance_freshness_review_ceiling",
+            "cta_data_policy_freshness_version_digest",
+            "local_structural_pass_claim_boundary"
+          ],
+          "properties": {
+            "content_family_exact_singleton": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "exactly_one_family_required",
+                "zero_or_multiple_matches_block"
+              ],
+              "properties": {
+                "exactly_one_family_required": {
+                  "const": true
+                },
+                "zero_or_multiple_matches_block": {
+                  "const": true
+                }
+              }
+            },
+            "ordered_six_slot_pain_chain": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "canonical_order_required",
+                "unique_slots_required",
+                "adjacent_causality_required"
+              ],
+              "properties": {
+                "canonical_order_required": {
+                  "const": true
+                },
+                "unique_slots_required": {
+                  "const": true
+                },
+                "adjacent_causality_required": {
+                  "const": true
+                }
+              }
+            },
+            "buyer_task_internal_link_anchor": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "anchor_must_express_buyer_task_decision_evidence_or_output",
+                "supplier_centric_promotional_anchor_blocks"
+              ],
+              "properties": {
+                "anchor_must_express_buyer_task_decision_evidence_or_output": {
+                  "const": true
+                },
+                "supplier_centric_promotional_anchor_blocks": {
+                  "const": true
+                }
+              }
+            },
+            "cta_transmission_route_safety": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "open_class_transmission_actions_and_obfuscated_equivalents_in_scope",
+                "packet_transfer_or_control_semantics_in_scope",
+                "imperative_modal_passive_conditional_and_recommendation_forms_in_scope",
+                "unverified_route_instruction_or_link_blocks",
+                "same_clause_local_only_negation_or_gated_after_verification_required_for_exception",
+                "cross_clause_or_trailing_disclaimer_does_not_exempt"
+              ],
+              "properties": {
+                "open_class_transmission_actions_and_obfuscated_equivalents_in_scope": {
+                  "const": true
+                },
+                "packet_transfer_or_control_semantics_in_scope": {
+                  "const": true
+                },
+                "imperative_modal_passive_conditional_and_recommendation_forms_in_scope": {
+                  "const": true
+                },
+                "unverified_route_instruction_or_link_blocks": {
+                  "const": true
+                },
+                "same_clause_local_only_negation_or_gated_after_verification_required_for_exception": {
+                  "const": true
+                },
+                "cross_clause_or_trailing_disclaimer_does_not_exempt": {
+                  "const": true
+                }
+              }
+            },
+            "product_claim_evidence_binding": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "claim_ledger_required",
+                "claim_id_required",
+                "evidence_ref_required",
+                "applicability_boundary_required",
+                "target_page_parity_required"
+              ],
+              "properties": {
+                "claim_ledger_required": {
+                  "const": true
+                },
+                "claim_id_required": {
+                  "const": true
+                },
+                "evidence_ref_required": {
+                  "const": true
+                },
+                "applicability_boundary_required": {
+                  "const": true
+                },
+                "target_page_parity_required": {
+                  "const": true
+                }
+              }
+            },
+            "stable_actor_identity_separation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "stable_producer_id_required",
+                "stable_independent_reviewer_id_required",
+                "producer_reviewer_separation_by_id_required"
+              ],
+              "properties": {
+                "stable_producer_id_required": {
+                  "const": true
+                },
+                "stable_independent_reviewer_id_required": {
+                  "const": true
+                },
+                "producer_reviewer_separation_by_id_required": {
+                  "const": true
+                }
+              }
+            },
+            "artifact_digest_byte_binding": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifact_ref_required_when_digest_present",
+                "digest_must_match_referenced_artifact_bytes"
+              ],
+              "properties": {
+                "artifact_ref_required_when_digest_present": {
+                  "const": true
+                },
+                "digest_must_match_referenced_artifact_bytes": {
+                  "const": true
+                }
+              }
+            },
+            "production_snapshot_kind_freshness_provenance": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind_specific_nonempty_payload_required",
+                "freshness_gate_required",
+                "scope_subject_capture_provenance_required",
+                "stable_producer_and_reviewer_ids_required"
+              ],
+              "properties": {
+                "kind_specific_nonempty_payload_required": {
+                  "const": true
+                },
+                "freshness_gate_required": {
+                  "const": true
+                },
+                "scope_subject_capture_provenance_required": {
+                  "const": true
+                },
+                "stable_producer_and_reviewer_ids_required": {
+                  "const": true
+                }
+              }
+            },
+            "unsupported_outcome_semantic_detection": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "semantic_synonyms_in_scope",
+                "punctuation_and_default_ignorable_obfuscation_in_scope",
+                "structural_acceptance_must_not_imply_ranking_inquiry_conversion_or_revenue_outcomes"
+              ],
+              "properties": {
+                "semantic_synonyms_in_scope": {
+                  "const": true
+                },
+                "punctuation_and_default_ignorable_obfuscation_in_scope": {
+                  "const": true
+                },
+                "structural_acceptance_must_not_imply_ranking_inquiry_conversion_or_revenue_outcomes": {
+                  "const": true
+                }
+              }
+            },
+            "fixture_production_proof_boundary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fixtures_are_production_proof",
+                "production_shaped_fixture_requires_explicit_fixture_label"
+              ],
+              "properties": {
+                "fixtures_are_production_proof": {
+                  "const": false
+                },
+                "production_shaped_fixture_requires_explicit_fixture_label": {
+                  "const": true
+                }
+              }
+            },
+            "published_lifecycle_evidence_binding": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status_only_is_evidence",
+                "required_evidence_axes",
+                "per_axis_structured_evidence_fields",
+                "reviewed_at_ceiling_required",
+                "missing_unbound_or_failed_axis_blocks"
+              ],
+              "properties": {
+                "status_only_is_evidence": {
+                  "const": false
+                },
+                "required_evidence_axes": {
+                  "type": "array",
+                  "const": [
+                    "authorization",
+                    "cms-mutation",
+                    "backend-readback",
+                    "editor-reopen",
+                    "anonymous-frontend",
+                    "desktop-render",
+                    "mobile-render",
+                    "image-fetch-decode"
+                  ]
+                },
+                "per_axis_structured_evidence_fields": {
+                  "type": "array",
+                  "const": [
+                    "evidence_ref",
+                    "artifact_digest",
+                    "site_id",
+                    "record_id_or_url",
+                    "producer_id",
+                    "reviewer_id",
+                    "observed_at"
+                  ]
+                },
+                "reviewed_at_ceiling_required": {
+                  "const": true
+                },
+                "missing_unbound_or_failed_axis_blocks": {
+                  "const": true
+                }
+              }
+            },
+            "search_demand_observation_ceilings": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "observation_start_at_required",
+                "observation_end_at_required",
+                "date_only_window_is_sufficient",
+                "start_must_not_exceed_end",
+                "end_must_not_exceed_evidence_observed_at",
+                "end_must_not_exceed_snapshot_captured_at",
+                "end_must_not_exceed_reviewed_at",
+                "kind_specific_freshness_policy_required"
+              ],
+              "properties": {
+                "observation_start_at_required": {
+                  "const": true
+                },
+                "observation_end_at_required": {
+                  "const": true
+                },
+                "start_must_not_exceed_end": {
+                  "const": true
+                },
+                "end_must_not_exceed_evidence_observed_at": {
+                  "const": true
+                },
+                "end_must_not_exceed_snapshot_captured_at": {
+                  "const": true
+                },
+                "end_must_not_exceed_reviewed_at": {
+                  "const": true
+                },
+                "kind_specific_freshness_policy_required": {
+                  "const": true
+                },
+                "date_only_window_is_sufficient": {
+                  "const": false
+                }
+              }
+            },
+            "identity_provenance_freshness_review_ceiling": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "structured_production_evidence_required",
+                "freshness_gate_required",
+                "observed_at_must_not_exceed_reviewed_at",
+                "record_section_and_artifact_time_consistency_required",
+                "stable_producer_and_reviewer_ids_required",
+                "stale_or_post_review_identity_provenance_blocks"
+              ],
+              "properties": {
+                "structured_production_evidence_required": {
+                  "const": true
+                },
+                "freshness_gate_required": {
+                  "const": true
+                },
+                "observed_at_must_not_exceed_reviewed_at": {
+                  "const": true
+                },
+                "record_section_and_artifact_time_consistency_required": {
+                  "const": true
+                },
+                "stable_producer_and_reviewer_ids_required": {
+                  "const": true
+                },
+                "stale_or_post_review_identity_provenance_blocks": {
+                  "const": true
+                }
+              }
+            },
+            "cta_data_policy_freshness_version_digest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "policy_contract_id_required",
+                "policy_version_required",
+                "policy_artifact_ref_required",
+                "policy_artifact_digest_required",
+                "checked_at_freshness_policy_required",
+                "checked_at_must_not_exceed_reviewed_at",
+                "policy_and_deletion_evidence_latest_allowed_at_required",
+                "stale_post_review_or_version_drift_blocks"
+              ],
+              "properties": {
+                "policy_contract_id_required": {
+                  "const": true
+                },
+                "policy_version_required": {
+                  "const": true
+                },
+                "policy_artifact_ref_required": {
+                  "const": true
+                },
+                "policy_artifact_digest_required": {
+                  "const": true
+                },
+                "checked_at_freshness_policy_required": {
+                  "const": true
+                },
+                "checked_at_must_not_exceed_reviewed_at": {
+                  "const": true
+                },
+                "policy_and_deletion_evidence_latest_allowed_at_required": {
+                  "const": true
+                },
+                "stale_post_review_or_version_drift_blocks": {
+                  "const": true
+                }
+              }
+            },
+            "local_structural_pass_claim_boundary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "local_structural_pass_proves_only_declared_schema_and_structural_checks",
+                "stable_published_production_ready_or_live_seo_inference_blocks",
+                "ranking_inquiry_conversion_or_revenue_inference_blocks",
+                "deferred_blocks_remain_not_pass"
+              ],
+              "properties": {
+                "local_structural_pass_proves_only_declared_schema_and_structural_checks": {
+                  "const": true
+                },
+                "stable_published_production_ready_or_live_seo_inference_blocks": {
+                  "const": true
+                },
+                "ranking_inquiry_conversion_or_revenue_inference_blocks": {
+                  "const": true
+                },
+                "deferred_blocks_remain_not_pass": {
+                  "const": true
+                }
+              }
+            }
+          }
+        },
+        "deferred_frontend_seo_blocks": {
+          "type": "array",
+          "const": [
+            "html-lang",
+            "canonical",
+            "article-json-ld"
+          ]
+        },
+        "deferred_blocks_are_pass": {
+          "const": false
+        },
+        "automation_coverage_claimed": {
+          "const": false
+        },
+        "automation_coverage_status": {
+          "const": "blocked-pending-matching-validator-call-paths-and-non-noop-regressions"
+        },
+        "automation_coverage_evidence_required_for_pass": {
+          "const": true
+        },
+        "local_structural_pass_scope": {
+          "const": "schema-and-declared-contract-shape-only"
+        }
+      }
+    },
+    "external_runtime_dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package_id",
+        "dependency_mode",
+        "minimum_contract_version",
+        "required_runtime_schema_version",
+        "required_scope_keys",
+        "required_machine_truth",
+        "fail_closed_without_active_scope",
+        "runtime_upgrade_must_not_overwrite_existing_data"
+      ],
+      "properties": {
+        "package_id": {
+          "const": "agency-operations"
+        },
+        "dependency_mode": {
+          "const": "required"
+        },
+        "minimum_contract_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "required_runtime_schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "required_scope_keys": {
+          "type": "array",
+          "const": [
+            "client_id",
+            "company_id",
+            "task_id"
+          ]
+        },
+        "required_machine_truth": {
+          "type": "array",
+          "const": [
+            "RUNTIME.json",
+            "00_control/ACTIVE-CONTEXT.json",
+            "00_control/clients-registry.json",
+            "00_control/task-registry.jsonl",
+            "CLIENT.json",
+            "TASK.json",
+            "HANDOFF.md"
+          ]
+        },
+        "fail_closed_without_active_scope": {
+          "const": true
+        },
+        "runtime_upgrade_must_not_overwrite_existing_data": {
+          "const": true
+        }
+      }
     }
   }
 }

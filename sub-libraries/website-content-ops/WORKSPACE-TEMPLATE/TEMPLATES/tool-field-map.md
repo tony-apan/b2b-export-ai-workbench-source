@@ -13,6 +13,9 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "接入新的 CMS 或工具时，用于映射稳定业务对象、平台字段、权限和验收方法。"
 keywords: ["tool field map", "CMS adapter", "object mapping", "permissions", "validation"]
+generated_from: "../../TEMPLATES/tool-field-map.md"
+generated_source_sha256: "91c90e55d0a7421185352f4363aa74f64798e7de03f93dce51f2445fd662d0e4"
+generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/tool-field-map.md; do not hand-edit this copy in the source package. -->
 # Tool Field Map

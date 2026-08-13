@@ -12,7 +12,7 @@ const pathChecks = [
   ['local-path-file-uri', /\bfile:\/\/(?:\/[A-Za-z0-9._~-]+|[A-Za-z]:[\\/])/i],
 ];
 
-const credentialPattern = /(?:api[_ -]?key|access[_ -]?token|secret|password|cookie|authorization|session)\s*[:=]\s*["']?[A-Za-z0-9_./+=-]{12,}/i;
+const credentialPattern = /(?:api[_ -]?key|access[_ -]?token|secret|password|cookie|authorization|session)\s*[:=]\s*["']?([A-Za-z0-9_./+=-]{12,})/i;
 const emailPattern = /\b[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})\b/gi;
 const plusPhonePattern = /(?:^|[^A-Za-z0-9])\+\d[\d ()-]{7,}\d(?:$|[^A-Za-z0-9])/gm;
 const labeledPhonePattern = /(?:phone|mobile|telephone|tel|电话|手机)\s*[:=：]\s*["']?\+?\d[\d ()-]{7,}\d/i;
@@ -37,7 +37,9 @@ export function scanPublishableContent(content) {
   }
 
   const credential = content.match(credentialPattern);
-  if (credential) addIssue(issues, 'possible-credential-assignment', credential[0]);
+  const credentialValue = credential?.[1] ?? '';
+  const credentialLooksLikeCodeExpression = /^[A-Za-z_$][A-Za-z0-9_$]*\.[A-Za-z_$][A-Za-z0-9_$]*$/.test(credentialValue);
+  if (credential && !credentialLooksLikeCodeExpression) addIssue(issues, 'possible-credential-assignment', credential[0]);
 
   for (const match of content.matchAll(emailPattern)) {
     if (!isReservedExampleDomain(match[1])) addIssue(issues, 'possible-non-example-email', match[0]);
@@ -51,8 +53,10 @@ export function scanPublishableContent(content) {
   for (const match of content.matchAll(customerIdentifierPattern)) {
     assignedIdentifierPattern.lastIndex = match.index + match[0].length;
     const assigned = assignedIdentifierPattern.exec(content);
-    if (assigned && !/^(?:example|sample|synthetic|placeholder|missing|redacted)[._-]?/i.test(assigned[1])) {
-      addIssue(issues, 'possible-customer-identifier', `${match[0]}:${assigned[1]}`);
+    const assignedValue = assigned?.[1] ?? '';
+    const assignedLooksLikeCodeExpression = /^[A-Za-z_$][A-Za-z0-9_$]*\.[A-Za-z_$][A-Za-z0-9_$]*$/.test(assignedValue);
+    if (assigned && !assignedLooksLikeCodeExpression && !/^(?:example|sample|synthetic|placeholder|missing|redacted)[._-]?/i.test(assignedValue)) {
+      addIssue(issues, 'possible-customer-identifier', `${match[0]}:${assignedValue}`);
     }
   }
 

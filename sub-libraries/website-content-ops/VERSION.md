@@ -5,23 +5,36 @@ type: "version"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-28"
+last_updated: "2026-08-01"
 sources: []
 related: ["CONTACT.md", "MANIFEST.md", "MENTAL-MODEL.md", "CHANGELOG.md", "RELEASE.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
+state_source: "MANIFEST.md"
+state_projection: ["release_status", "preview_publication_status", "historical_published_version", "historical_published_tag", "current_candidate_identity", "current_candidate_snapshot", "current_candidate_version"]
+release_status: "BLOCK"
+preview_publication_status: "BLOCK"
+historical_published_version: "0.3.2-preview.1"
+historical_published_tag: "v0.3.2-preview.1"
+current_candidate_identity: "unassigned"
+current_candidate_snapshot: "dirty-working-tree"
+current_candidate_version: null
 ---
 # Version
 
 - Package ID：`website-content-ops`
 - Version：`0.3.2-preview.1`
-- Publication：Public Preview / Published（2026-07-30）
+- Version meaning：legacy compatibility 字段，仅指 immutable historical published artifact，不是当前 candidate version。
+- Current candidate identity：`unassigned`；snapshot：`dirty-working-tree`；version：`null`（2026-08-01），不是已发布版本，也未分配下一发布版本。
+- Historical published version：`0.3.2-preview.1`；tag：`v0.3.2-preview.1`；Public Preview / Published（2026-07-30）。
+- Publication：当前候选保持 `release_status: BLOCK`、`preview_publication_status: BLOCK`、`license_status: pending`、`approval_status: pending`；不得继承历史发布身份。
 - Changelog：[CHANGELOG.md](CHANGELOG.md)
 - Release guide：[RELEASE.md](RELEASE.md)
 - Update URL：`https://fluxpedal.example/content-lab/updates`（虚拟演示）
 - Compatibility：本地 Markdown；Obsidian 仅为参考查看器；可读取本地文件的 AI agent；图床与 CMS 通过 adapter 接入。
+- Trusted runtime profile（2026-08-01）：固定四文件 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；这是本地合同证据，不改变当前候选 `BLOCK`、Stable qualification 或跨部署边界。
 
-## 0.3.2-preview.1
+## Historical release: 0.3.2-preview.1
 
 - 当前目录是可独立发布的任务子库；母库只作为可选的治理与来源上游，不是运行时依赖；
 - 注入 FluxPedal Motors 虚拟品牌、电动自行车电机公司与产品示例；

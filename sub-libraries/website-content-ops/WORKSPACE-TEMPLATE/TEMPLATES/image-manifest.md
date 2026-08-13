@@ -13,6 +13,9 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要登记网站图片来源、用途、尺寸、权利状态和发布绑定关系时。"
 keywords: ["image manifest", "image rights", "alt text", "asset binding", "dimensions"]
+generated_from: "../../TEMPLATES/image-manifest.md"
+generated_source_sha256: "c078ffe20ed42be64163a89edff5f052d1f9d32aecf230c1793678629f8741bb"
+generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/image-manifest.md; do not hand-edit this copy in the source package. -->
 # Image Manifest

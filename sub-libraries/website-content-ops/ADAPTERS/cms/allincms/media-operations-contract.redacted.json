@@ -11,6 +11,79 @@
   "read_only_reconciliation_function": "reconcileAllinCmsMediaDirect",
   "runtime_preflight_function": "checkAllinCmsMediaRuntime",
   "preferred_delete_function": "deleteAllinCmsMediaDirect",
+  "startup_and_fallback": {
+    "default_browser": "host_in_app_browser",
+    "initial_url": "https://workspace.laicms.com/sites",
+    "browser_control_recovery_before_auth_failure": true,
+    "browser_control_failure_examples": [
+      "no_controllable_tab",
+      "zero_sized_viewport",
+      "repeated_tab_claim_failure",
+      "route_load_failure"
+    ],
+    "browser_fallback": {
+      "allowed_when": "host_in_app_browser_unavailable_or_uncontrollable_after_recovery",
+      "preferred_fallback": "locally_controllable_chrome_or_host_supported_browser",
+      "must_report_reason_to_user": true,
+      "fallback_proves_mutation_readiness": false,
+      "no_controllable_browser_result": "BLOCK"
+    },
+    "login_handoff": {
+      "login_failure_confirmed_by": [
+        "fresh_sites_route_redirects_to_sign_in",
+        "login_form_visible",
+        "fresh_sites_route_returns_401"
+      ],
+      "required_actions": [
+        "keep_login_page_open",
+        "bring_login_page_to_visible_foreground_when_host_supports_it",
+        "immediately_tell_user_login_is_required",
+        "report_captcha_mfa_account_error_or_redirect_loop_exactly",
+        "after_user_login_reload_sites_route_and_recheck"
+      ],
+      "never_export_credentials_or_session_tokens": true
+    },
+    "site_discovery": {
+      "route": "/sites",
+      "zero_sites": "BLOCK_and_guide_user_to_create_a_site_or_obtain_site_access",
+      "one_site": "show_site_name_and_site_key_then_require_user_confirmation_before_write",
+      "multiple_sites": "list_site_names_and_site_keys_then_require_user_selection",
+      "selection_by_history_sort_or_recent_activity_allowed": false,
+      "specified_site_not_visible": "BLOCK_as_missing_site_or_permission",
+      "automatic_site_creation_allowed": false
+    },
+    "exact_media_page_checks": [
+      "origin_is_workspace_laicms_com",
+      "path_is_exact_site_key_media_route",
+      "login_remains_valid",
+      "target_site_identity_matches",
+      "media_list_finishes_loading",
+      "page_is_not_404_500_blank_or_stuck_loading",
+      "media_list_and_upload_entry_exist",
+      "blocking_console_errors_are_reported"
+    ],
+    "default_mutation_route": "interface_first_uploadAllinCmsMediaSerial",
+    "interface_failure_order": [
+      "determine_whether_request_may_have_started",
+      "when_request_may_have_started_delay_and_run_read_only_reconciliation_without_resend",
+      "when_request_definitely_did_not_start_open_or_keep_exact_media_page_for_login_site_permission_page_and_deployment_diagnosis",
+      "when_page_is_healthy_but_interface_contract_drifted_report_evidence_and_stop",
+      "use_ui_fallback_only_after_separate_explicit_user_approval",
+      "when_page_or_browser_is_unusable_return_BLOCK"
+    ],
+    "ui_fallback": {
+      "automatic": false,
+      "function": "uploadAllinCmsMediaBatch",
+      "verified_file_count_range": "1-5",
+      "requires_separate_explicit_user_approval": true
+    },
+    "required_problem_notice_fields": [
+      "current_problem",
+      "confirmed_evidence",
+      "user_action_needed",
+      "ai_next_action"
+    ]
+  },
   "external_image_hosts_are_default_prerequisite": false,
   "external_image_host_fallbacks": [
     "PicGo + Cloudflare R2",
@@ -46,6 +119,7 @@
       "absolute local file paths",
       "user-confirmed site key",
       "absolute private-runtime imageIndexPath",
+      "structured authorizationContext bound to site operation serial entrypoint exact ordered file-list digest named human-asserted actor approval time and <=30-minute expiry",
       "AI-generated title_description_alt_caption_and_structured_metadata_when_enrichment_is_requested",
       "metadataAuthorizationConfirmed=true when syncRemoteMetadata=true and title_alt_or_caption_is_provided"
     ],
@@ -250,6 +324,11 @@
   },
   "stop_on": [
     "login_redirect_or_401_or_403",
+    "zero_visible_sites",
+    "multiple_visible_sites_without_user_selection",
+    "specified_site_not_visible_or_not_permitted",
+    "sites_or_media_page_404_500_blank_or_stuck_loading",
+    "no_controllable_browser_after_recovery_and_fallback",
     "wrong_or_unconfirmed_site_key",
     "page_is_not_exact_media_route",
     "media_identity_not_exactly_one_match",

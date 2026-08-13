@@ -45,8 +45,18 @@ try {
 } catch (error) {
   fail(error.message);
 }
-const version = readFileSync(join(sourceRoot, 'VERSION.md'), 'utf8').match(/Version：`([^`]+)`/)?.[1] ?? 'unknown';
 const status = typeof manifestFront.release_status === 'string' ? manifestFront.release_status.trim() : 'unknown';
+const historicalPublishedVersion = typeof manifestFront.historical_published_version === 'string' ? manifestFront.historical_published_version.trim() : null;
+const historicalPublishedTag = typeof manifestFront.historical_published_tag === 'string' ? manifestFront.historical_published_tag.trim() : null;
+const currentCandidateIdentity = typeof manifestFront.current_candidate_identity === 'string' ? manifestFront.current_candidate_identity.trim() : null;
+const currentCandidateSnapshot = typeof manifestFront.current_candidate_snapshot === 'string' ? manifestFront.current_candidate_snapshot.trim() : null;
+const currentCandidateVersionDeclared = Object.hasOwn(manifestFront, 'current_candidate_version');
+const currentCandidateVersion = manifestFront.current_candidate_version === null
+  ? null
+  : typeof manifestFront.current_candidate_version === 'string'
+    ? manifestFront.current_candidate_version.trim()
+    : null;
+const version = currentCandidateVersion;
 let includePatterns;
 let excludePatterns;
 let durableRoots;
@@ -63,6 +73,17 @@ function mayContainIncluded(path) { return mayContainManifestInclude(path, inclu
 function sha256(path) { return createHash('sha256').update(readFileSync(path)).digest('hex'); }
 const approvalStatus = typeof manifestFront.approval_status === 'string' ? manifestFront.approval_status.trim() : 'unknown';
 const finalRelease = ['Ready', 'Published'].includes(status) || approvalStatus === 'approved';
+function assertReleaseCandidateIdentity() {
+  const safeVersionPattern = /^[0-9A-Za-z][0-9A-Za-z._-]*$/;
+  if (!currentCandidateVersionDeclared) fail('release build requires MANIFEST.md current_candidate_version to be explicitly declared');
+  if (!currentCandidateIdentity || currentCandidateIdentity === 'unassigned' || !currentCandidateVersion) fail('release build requires an assigned current candidate identity and non-null current_candidate_version');
+  if (!safeVersionPattern.test(currentCandidateVersion)) fail(`release build current_candidate_version is unsafe: ${currentCandidateVersion}`);
+  if (!historicalPublishedVersion || historicalPublishedTag !== `v${historicalPublishedVersion}`) fail('release build requires a valid immutable historical published version/tag identity');
+  if (currentCandidateVersion === historicalPublishedVersion) fail('release build current_candidate_version collides with immutable historical_published_version');
+  if (`v${currentCandidateVersion}` === historicalPublishedTag) fail('release build current candidate tag collides with immutable historical_published_tag');
+  if (!currentCandidateSnapshot || currentCandidateSnapshot === 'dirty-working-tree') fail('release build requires a non-dirty current_candidate_snapshot');
+}
+if (prepareMode || finalRelease) assertReleaseCandidateIdentity();
 function gitResult(args, options = {}) {
   return spawnSync('git', args, { cwd: sourceRoot, ...options });
 }
@@ -241,6 +262,12 @@ const manifest = {
   package_id: 'website-content-ops',
   package_kind: 'sub-library-release-candidate',
   version,
+  version_semantics: 'current-candidate-only',
+  historical_published_version: historicalPublishedVersion,
+  historical_published_tag: historicalPublishedTag,
+  current_candidate_identity: currentCandidateIdentity,
+  current_candidate_snapshot: currentCandidateSnapshot,
+  current_candidate_version: currentCandidateVersion,
   release_status: status,
   maturity_status: typeof manifestFront.maturity_status === 'string' ? manifestFront.maturity_status.trim() : 'unknown',
   verification_status: typeof manifestFront.verification_status === 'string' ? manifestFront.verification_status.trim() : 'unknown',
@@ -318,7 +345,8 @@ try {
 }
 rmSync(backupRoot, { recursive: true, force: true });
 console.log(`${prepareMode ? 'PREPARED_UNAPPROVED_CANDIDATE' : 'RELEASE_CANDIDATE'}: ${outputRoot}`);
-console.log(`VERSION: ${version}`);
+console.log(`HISTORICAL_PUBLISHED_VERSION: ${historicalPublishedVersion ?? 'unknown'}`);
+console.log(`CURRENT_CANDIDATE_VERSION: ${currentCandidateVersion ?? 'unassigned'}`);
 console.log(`STATUS: ${status}`);
 console.log(`FILES: ${files.length + 2}`);
 console.log(`SHA256SUMS: ${checksumCount} entries, bad=0`);

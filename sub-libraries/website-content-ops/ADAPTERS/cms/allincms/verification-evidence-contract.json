@@ -1,0 +1,213 @@
+{
+  "schema_version": "1.0",
+  "title": "AllinCMS authoritative verification evidence contract",
+  "boundary": "A passing check records structured evidence supplied by the live handler and bound to the current client task, site, entity and artifact digest. It does not make HTTP 200, a toast, a screenshot, or an author assertion sufficient by itself, and it does not prove SEO, inquiry or conversion.",
+  "evidence_kinds": [
+    "backend_readback",
+    "concurrency_match",
+    "duplicate_exclusion",
+    "editor_reopen",
+    "anonymous_resource",
+    "anonymous_frontend",
+    "image_fetch_decode"
+  ],
+  "check_definitions": [
+    {
+      "check_id": "read_only.authoritative_exploration_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the authoritative same-site discovery result for the approved explore operation; an unauthenticated page, cached assumption or generic HTTP 200 is insufficient."
+    },
+    {
+      "check_id": "read_only.authoritative_noop_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Without sending a mutation request, read back the authoritative same-site entity and prove the normalized current state requires no change for the approved noop operation."
+    },
+    {
+      "check_id": "taxonomy.precise_id",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back a non-empty precise taxonomy ID from the authoritative same-site backend record."
+    },
+    {
+      "check_id": "taxonomy.exact_slug_and_submitted_fields",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the exact slug and every submitted taxonomy field from the authoritative backend record."
+    },
+    {
+      "check_id": "scope.exact_site_binding",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the exact selected site binding; another site or an unbound record fails."
+    },
+    {
+      "check_id": "taxonomy.same_site_duplicate_slug_excluded",
+      "evidence_kind": "duplicate_exclusion",
+      "acceptance": "Prove the complete same-site taxonomy snapshot contains no second record with the target slug."
+    },
+    {
+      "check_id": "concurrency.expected_current_fingerprint",
+      "evidence_kind": "concurrency_match",
+      "acceptance": "Immediately before mutation, the authoritative current fingerprint exactly matches the approved expected-current fingerprint."
+    },
+    {
+      "check_id": "backend.exact_persisted_fields",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back every submitted field exactly from the authoritative backend record after persistence."
+    },
+    {
+      "check_id": "media.precise_backend_id",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back a non-empty precise media ID from the authoritative same-site media record."
+    },
+    {
+      "check_id": "media.persisted_url",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the persisted absolute HTTPS media URL from the authoritative backend record."
+    },
+    {
+      "check_id": "media.anonymous_https_get",
+      "evidence_kind": "anonymous_resource",
+      "acceptance": "Fetch the persisted HTTPS media URL without authenticated state and observe HTTP 200."
+    },
+    {
+      "check_id": "media.image_decode",
+      "evidence_kind": "image_fetch_decode",
+      "acceptance": "Decode the anonymously fetched response as an image; an image MIME header without decode is insufficient."
+    },
+    {
+      "check_id": "media.metadata_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the exact persisted title, alt, caption and other submitted media metadata."
+    },
+    {
+      "check_id": "article.complete_backend_field_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back all submitted article fields, lifecycle state and exact same-site article ID from the authoritative backend record."
+    },
+    {
+      "check_id": "article.editor_reopen_health",
+      "evidence_kind": "editor_reopen",
+      "acceptance": "Reopen the exact article editor and confirm the editor is healthy and renders the persisted content rather than only returning HTTP 200."
+    },
+    {
+      "check_id": "article.taxonomy_media_binding_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "When present, read back exact category, tag, cover and inline-media bindings from the authoritative article record."
+    },
+    {
+      "check_id": "article.backend_published_state",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the exact article ID in the backend published lifecycle state after the publish transition."
+    },
+    {
+      "check_id": "article.public_url",
+      "evidence_kind": "anonymous_resource",
+      "acceptance": "Resolve the exact absolute HTTPS public article URL anonymously and observe HTTP 200."
+    },
+    {
+      "check_id": "article.anonymous_frontend_detail",
+      "evidence_kind": "anonymous_frontend",
+      "acceptance": "Load the exact detail URL without authenticated state and confirm the expected article detail page, not a login page, fallback or generic 200 shell."
+    },
+    {
+      "check_id": "article.visible_content_and_media",
+      "evidence_kind": "anonymous_frontend",
+      "acceptance": "Confirm the expected buyer-visible article content and required media are present in the anonymous frontend DOM and required images decode."
+    }
+  ],
+  "profiles": [
+    {
+      "capability_id": "allincms.category.create",
+      "required_check_ids": [
+        "taxonomy.precise_id",
+        "taxonomy.exact_slug_and_submitted_fields",
+        "scope.exact_site_binding",
+        "taxonomy.same_site_duplicate_slug_excluded"
+      ]
+    },
+    {
+      "capability_id": "allincms.category.update",
+      "required_check_ids": [
+        "concurrency.expected_current_fingerprint",
+        "taxonomy.precise_id",
+        "backend.exact_persisted_fields",
+        "scope.exact_site_binding"
+      ]
+    },
+    {
+      "capability_id": "allincms.tag.create",
+      "required_check_ids": [
+        "taxonomy.precise_id",
+        "taxonomy.exact_slug_and_submitted_fields",
+        "scope.exact_site_binding",
+        "taxonomy.same_site_duplicate_slug_excluded"
+      ]
+    },
+    {
+      "capability_id": "allincms.tag.update",
+      "required_check_ids": [
+        "concurrency.expected_current_fingerprint",
+        "taxonomy.precise_id",
+        "backend.exact_persisted_fields",
+        "scope.exact_site_binding"
+      ]
+    },
+    {
+      "capability_id": "allincms.media.create",
+      "required_check_ids": [
+        "media.precise_backend_id",
+        "media.persisted_url",
+        "media.anonymous_https_get",
+        "media.image_decode",
+        "media.metadata_readback"
+      ]
+    },
+    {
+      "capability_id": "allincms.article.update",
+      "required_check_ids": [
+        "concurrency.expected_current_fingerprint",
+        "article.complete_backend_field_readback",
+        "article.editor_reopen_health",
+        "article.taxonomy_media_binding_readback"
+      ]
+    },
+    {
+      "capability_id": "allincms.article.publish",
+      "required_check_ids": [
+        "article.backend_published_state",
+        "article.editor_reopen_health",
+        "article.public_url",
+        "article.anonymous_frontend_detail",
+        "article.visible_content_and_media"
+      ]
+    }
+  ],
+  "artifact_contract": {
+    "primary_artifact_media_type": "application/json",
+    "digest_binding": "SHA-256 must match the exact primary JSON artifact bytes read from artifact_ref.",
+    "envelope_binding": "The parsed primary JSON artifact must exactly match the structured check envelope; screenshots may only be supplementary references inside that artifact and never the primary proof.",
+    "subject_binding": "subject_digest must equal the controller-derived digest of the approved operation and desired entity.",
+    "scope_binding": [
+      "client task runtime path",
+      "site_key",
+      "site_id",
+      "entity_ref",
+      "entity_id"
+    ],
+    "time_binding": "captured_at must be within the operation execution window."
+  },
+  "read_only_profiles": [
+    {
+      "intent": "noop",
+      "required_check_ids": [
+        "read_only.authoritative_noop_readback",
+        "scope.exact_site_binding"
+      ]
+    },
+    {
+      "intent": "explore",
+      "required_check_ids": [
+        "read_only.authoritative_exploration_readback",
+        "scope.exact_site_binding"
+      ]
+    }
+  ]
+}

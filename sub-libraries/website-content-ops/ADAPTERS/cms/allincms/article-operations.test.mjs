@@ -1,7 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { runInNewContext } from 'node:vm';
 import {
+  ALLINCMS_ARTICLE_FORMAT_SUPPORT,
   ARTICLE_FIELDS,
+  createCanonicalAllinCmsSlateExamples,
+  extractPublishableArticleMarkdown,
+  markdownToAllinCmsSlate,
+  publishableArticleMarkdownToAllinCmsSlate,
   buildArticlePayload,
   buildCategoryPayload,
   buildTagPayload,
@@ -26,6 +32,16 @@ import {
   createAllinCmsMutationAuthorizationContext,
   deriveAllinCmsMutationBinding,
 } from './mutation-authorization.mjs';
+
+test('article operations entrypoint exposes the verified format matrix and Markdown converter', () => {
+  assert.equal(ALLINCMS_ARTICLE_FORMAT_SUPPORT.verified.length, 12);
+  assert.deepEqual(ALLINCMS_ARTICLE_FORMAT_SUPPORT.unsupportedCurrentShape.map((item) => item.key), ['code-block']);
+  assert.equal(createCanonicalAllinCmsSlateExamples().table.type, 'table');
+  assert.equal(markdownToAllinCmsSlate('### Heading')[0].type, 'h3');
+  const bounded = '<!-- PUBLISHABLE_BODY_START -->\nSafe body\n<!-- PUBLISHABLE_BODY_END -->';
+  assert.equal(extractPublishableArticleMarkdown(bounded), 'Safe body');
+  assert.equal(publishableArticleMarkdownToAllinCmsSlate(bounded)[0].type, 'p');
+});
 
 const runtime = {
   routerTree: 'TREE-current', deploymentId: 'd'.repeat(40),
@@ -84,9 +100,25 @@ test('article payload normalizes IDs and rejects duplicates', () => {
   assert.deepEqual(payload.categories, ['category-1']);
   assert.throws(() => buildArticlePayload({ defaults: base, overrides: { tags: ['tag-1', ' tag-1 '] }, ...ids }), /duplicate IDs/);
 });
-test('article payload blocks invalid Slate and non-integer order before request', () => {
+test('article payload blocks invalid Slate, order, and incomplete canonical cover fields before request', () => {
   assert.throws(() => buildArticlePayload({ defaults: base, overrides: { order: '2' }, ...ids }), /integer/);
-  assert.throws(() => buildArticlePayload({ defaults: base, overrides: { content: '<p>bad</p>' }, ...ids }), /Slate/);
+  assert.throws(() => buildArticlePayload({ defaults: base, overrides: { content: '<p>bad<\/p>' }, ...ids }), /Slate/);
+  for (const field of ['name', 'alt', 'type', 'source', 'path', 'size', 'mimeType']) {
+    const incompleteCover = { ...base.coverImage };
+    delete incompleteCover[field];
+    assert.throws(
+      () => buildArticlePayload({ defaults: base, overrides: { coverImage: incompleteCover }, ...ids }),
+      new RegExp(`missing canonical persisted fields: .*${field}`),
+    );
+  }
+  assert.throws(
+    () => buildArticlePayload({ defaults: base, overrides: { coverImage: { ...base.coverImage, alt: null } }, ...ids }),
+    /coverImage\.alt must be a string/,
+  );
+  assert.throws(
+    () => buildArticlePayload({ defaults: base, overrides: { coverImage: { ...base.coverImage, size: '42' } }, ...ids }),
+    /coverImage\.size must be a non-negative integer/,
+  );
 });
 test('action client uses dynamic runtime headers and one-argument body', async () => {
   let received;
@@ -143,6 +175,8 @@ test('taxonomy slug duplicate is scoped to same site', () => {
   assert.throws(() => assertNoDuplicateSlug([{ siteId: ids.siteId, slug: 'same' }], 'same', ids.siteId, 'tag'), /already exists/);
   assert.doesNotThrow(() => assertNoDuplicateSlug([{ siteId: 'other-site', slug: 'same' }], 'same', ids.siteId, 'tag'));
   assert.throws(() => assertSameSite({ siteId: 'other-site' }, ids.siteId, 'tag'), /different site/);
+  assert.throws(() => assertSameSite({ id: ids.tagId }, ids.siteId, 'tag'), /siteId is required/);
+  assert.throws(() => assertSameSite(null, ids.siteId, 'tag'), /readback record is required/);
 });
 test('taxonomy creation requires a current snapshot and posts content type', () => {
   assert.throws(() => createPostCategory({ client: clientFor(), siteKey: 'demo-site', authorizationContext: taxonomyAuth('category', 'create', { slug: 'category' }), siteId: ids.siteId, name: '分类', slug: 'category', readback: async () => null }), /snapshot is required/);
@@ -176,6 +210,22 @@ test('readback comparison ignores object key order but preserves values', async 
   const result = await publishPost({ client: clientFor(), siteKey: 'demo-site', authorizationContext: articleAuth('publish'), ...ids, defaults: base, readback: async () => ({ ...base, ...ids, coverImage: { mimeType: 'image/webp', path: 'site/cover.webp', source: 'oss', type: 'image', name: 'cover.webp', alt: '封面', size: 42 }, status: 'published' }) });
   assert.equal(result.status, 'mutation_succeeded');
 });
+test('readback comparison ignores browser realm prototypes when JSON values match', async () => {
+  const foreignRecord = runInNewContext(`({
+    title: '接口文章', slug: 'api-article', excerpt: '摘要', order: 2,
+    coverImage: { name: 'cover.webp', alt: '封面', type: 'image', source: 'oss', path: 'site/cover.webp', size: 42, mimeType: 'image/webp' },
+    categories: ['category-1'], tags: ['tag-1'],
+    content: [{ type: 'p', children: [{ text: '正文' }], id: 'node-1' }],
+    siteId: 'site-1', postId: 'post-1', mode: 'publish', status: 'published'
+  })`);
+  assert.notEqual(Object.getPrototypeOf(foreignRecord), Object.prototype);
+  assert.notEqual(Object.getPrototypeOf(foreignRecord.coverImage), Object.prototype);
+  const result = await publishPost({
+    client: clientFor(), siteKey: 'demo-site', authorizationContext: articleAuth('publish'),
+    ...ids, defaults: base, readback: async () => foreignRecord,
+  });
+  assert.equal(result.status, 'mutation_succeeded');
+});
 test('unpublishPost requires and verifies draft readback', async () => {
   let current = articleRecord({ ...base, ...ids, mode: 'publish' }, 'published'); const client = clientFor({ onSend: async ({ payload }) => { current = articleRecord(payload, 'draft'); } });
   const result = await unpublishPost({ client, siteKey: 'demo-site', authorizationContext: articleAuth('unpublish'), ...ids, defaults: base, readback: async () => current });
@@ -205,33 +255,135 @@ test('deletePost treats exact absence as success and uses list route', async () 
   const client = clientFor(); const result = await deletePost({ client, siteKey: 'demo-site', authorizationContext: articleAuth('delete'), siteId: ids.siteId, postId: ids.postId, readback: async () => null });
   assert.equal(result.status, 'mutation_succeeded'); assert.equal(client.calls[0].route, '/demo-site/posts?tab=list'); assert.deepEqual(client.calls[0].payload, { id: ids.postId, siteId: ids.siteId });
 });
-test('createPostDraft requires a live create contract and exact created ID', async () => {
-  let current = null; const client = clientFor({ onSend: async ({ payload }) => { current = { id: ids.postId, siteId: payload.siteId, title: 'Untitled Post' }; } });
-  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), siteId: ids.siteId, payload: { siteId: ids.siteId }, readback: async () => current, match: (record) => record?.id === ids.postId, getCreatedPostId: (record) => record?.id }), /Live post-create contract/);
-  const result = await createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], readback: async () => current, match: (record) => record?.id === ids.postId, getCreatedPostId: (record) => record?.id });
+test('createPostDraft requires a live create contract and exact single created ID', async () => {
+  let current = null;
+  const client = clientFor({ onSend: async ({ payload }) => { current = { id: ids.postId, siteId: payload.siteId, title: 'Untitled Post', postIds: [ids.postId] }; } });
+  const callbacks = {
+    readback: async () => current,
+    match: (record) => record?.id === ids.postId,
+    getCreatedPostId: (record) => record?.id,
+    getCreatedPostSiteId: (record) => record?.siteId,
+    getAfterPostIds: (record) => record?.postIds,
+  };
+  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), siteId: ids.siteId, payload: { siteId: ids.siteId }, ...callbacks }), /Live post-create contract/);
+  const result = await createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], ...callbacks });
   assert.equal(result.status, 'mutation_succeeded'); assert.equal(result.createdPostId, ids.postId); assert.equal(client.calls[0].route, '/demo-site/posts');
+  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: 'other-site' }, beforePostIds: [], ...callbacks }), /payload.siteId must match/);
 });
-test('createPostDraft requires a before snapshot and rejects an existing ID as newly created', async () => {
-  let current = null; const client = clientFor({ onSend: async ({ payload }) => { current = { id: ids.postId, siteId: payload.siteId }; } });
-  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, readback: async () => current, match: () => true, getCreatedPostId: (record) => record?.id }), /beforePostIds snapshot/);
-  const result = await createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [ids.postId], readback: async () => current, match: () => true, getCreatedPostId: (record) => record?.id });
-  assert.equal(result.status, 'stopped_manual_intervention');
-  assert.match(result.mismatches.join('; '), /already existed/);
+test('createPostDraft requires before and after snapshots and rejects existing or ambiguous IDs', async () => {
+  let current = null;
+  const client = clientFor({ onSend: async ({ payload }) => { current = { id: ids.postId, siteId: payload.siteId, postIds: [ids.postId] }; } });
+  const callbacks = {
+    readback: async () => current,
+    match: () => true,
+    getCreatedPostId: (record) => record?.id,
+    getCreatedPostSiteId: (record) => record?.siteId,
+    getAfterPostIds: (record) => record?.postIds,
+  };
+  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, ...callbacks }), /beforePostIds snapshot/);
+  const existing = await createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [ids.postId], ...callbacks });
+  assert.equal(existing.status, 'stopped_manual_intervention');
+  assert.match(existing.mismatches.join('; '), /already existed|exactly one new post ID/);
+  current = { id: ids.postId, siteId: ids.siteId, postIds: [ids.postId, 'post-2'] };
+  const ambiguous = await createPostDraft({ client: clientFor(), siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], ...callbacks });
+  assert.equal(ambiguous.status, 'stopped_manual_intervention');
+  assert.match(ambiguous.mismatches.join('; '), /exactly one new post ID after create, found 2/);
 });
-test('createPostDraft stops when readback has no exact created ID', async () => {
-  let current = null; const client = clientFor({ onSend: async ({ payload }) => { current = { siteId: payload.siteId, title: 'Untitled Post' }; } });
-  const result = await createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], readback: async () => current, match: () => true, getCreatedPostId: (record) => record?.id });
-  assert.equal(result.status, 'stopped_manual_intervention');
-  assert.match(result.mismatches.join('; '), /created post ID is missing/);
-  assert.equal(result.createdPostId, null);
+test('createPostDraft stops when created ID or same-site ownership is not exact', async () => {
+  let current = null;
+  const client = clientFor({ onSend: async ({ payload }) => { current = { siteId: payload.siteId, title: 'Untitled Post', postIds: [] }; } });
+  const common = {
+    client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true,
+    siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], readback: async () => current, match: () => true,
+    getCreatedPostId: (record) => record?.id, getCreatedPostSiteId: (record) => record?.siteId, getAfterPostIds: (record) => record?.postIds,
+  };
+  const missingId = await createPostDraft(common);
+  assert.equal(missingId.status, 'stopped_manual_intervention');
+  assert.match(missingId.mismatches.join('; '), /created post ID is missing/);
+  assert.equal(missingId.createdPostId, null);
+  current = { id: ids.postId, siteId: 'other-site', postIds: [ids.postId] };
+  const wrongSite = await createPostDraft({ ...common, client: clientFor() });
+  assert.equal(wrongSite.status, 'stopped_manual_intervention');
+  assert.match(wrongSite.mismatches.join('; '), /different site/);
+
+  let idReads = 0;
+  current = { id: ids.postId, siteId: ids.siteId, postIds: [ids.postId] };
+  const stableCallback = await createPostDraft({
+    ...common,
+    client: clientFor(),
+    getCreatedPostId: (record) => { idReads += 1; if (idReads > 1) throw new Error('must not be called twice'); return record?.id; },
+  });
+  assert.equal(stableCallback.status, 'mutation_succeeded');
+  assert.equal(stableCallback.createdPostId, ids.postId);
+  assert.equal(idReads, 1);
 });
-test('category create is taxonomy-first and confirms by slug', async () => {
+test('category create verifies every supplied field, exact ID, and site ownership', async () => {
   let current = null; const client = clientFor({ onSend: async ({ payload }) => { current = { ...payload, id: ids.categoryId }; } });
-  const result = await createPostCategory({ client, siteKey: 'demo-site', authorizationContext: taxonomyAuth('category', 'create', { slug: 'root' }), siteId: ids.siteId, name: '根', slug: 'root', existing: [], readback: async () => current });
-  assert.equal(result.status, 'mutation_succeeded'); assert.equal(client.calls[0].route, '/demo-site/posts?tab=categories'); assert.equal(client.calls[0].payload.contentType, 'posts');
+  const cover = { name: 'category-cover.webp', type: 'image', source: 'oss', path: 'site/category-cover.webp' };
+  const options = { client, siteKey: 'demo-site', authorizationContext: taxonomyAuth('category', 'create', { slug: 'child' }), siteId: ids.siteId, name: '子分类', slug: 'child', description: '完整说明', cover, parent: 'parent-1', order: 7, existing: [], readback: async () => current };
+  const result = await createPostCategory(options);
+  assert.equal(result.status, 'mutation_succeeded'); assert.equal(result.readback.id, ids.categoryId); assert.equal(client.calls[0].route, '/demo-site/posts?tab=categories'); assert.deepEqual(client.calls[0].payload, { siteId: ids.siteId, contentType: 'posts', name: '子分类', slug: 'child', order: 7, description: '完整说明', cover, parent: 'parent-1' });
+  current = { ...current, description: '丢失后的说明' };
+  const mismatch = await createPostCategory({ ...options, client: clientFor() });
+  assert.equal(mismatch.status, 'stopped_manual_intervention'); assert.ok(mismatch.mismatches.includes('description'));
+  current = { ...client.calls[0].payload };
+  const missingId = await createPostCategory({ ...options, client: clientFor() });
+  assert.equal(missingId.status, 'stopped_manual_intervention'); assert.match(missingId.mismatches.join('; '), /created category.id is required/);
 });
-test('tag create blocks duplicate slug before request', async () => {
-  const client = clientFor(); assert.throws(() => createPostTag({ client, siteKey: 'demo-site', authorizationContext: taxonomyAuth('tag', 'create', { slug: 'same' }), siteId: ids.siteId, name: '重复', slug: 'same', existing: [{ siteId: ids.siteId, slug: 'same' }], readback: async () => null }), /already exists/); assert.equal(client.calls.length, 0);
+test('taxonomy create accepts route-scoped readback that omits contentType', async () => {
+  let category = null;
+  const categoryClient = clientFor({ onSend: async ({ payload }) => {
+    const { contentType, ...routeScopedRecord } = payload;
+    category = { ...routeScopedRecord, id: ids.categoryId };
+  } });
+  const categoryResult = await createPostCategory({
+    client: categoryClient, siteKey: 'demo-site',
+    authorizationContext: taxonomyAuth('category', 'create', { slug: 'route-scoped-category' }),
+    siteId: ids.siteId, name: '路由限定分类', slug: 'route-scoped-category',
+    existing: [], readback: async () => category,
+  });
+  assert.equal(categoryResult.status, 'mutation_succeeded');
+  assert.equal(Object.hasOwn(categoryResult.readback, 'contentType'), false);
+
+  let tag = null;
+  const tagClient = clientFor({ onSend: async ({ payload }) => {
+    const { contentType, ...routeScopedRecord } = payload;
+    tag = { ...routeScopedRecord, id: ids.tagId };
+  } });
+  const tagResult = await createPostTag({
+    client: tagClient, siteKey: 'demo-site',
+    authorizationContext: taxonomyAuth('tag', 'create', { slug: 'route-scoped-tag' }),
+    siteId: ids.siteId, name: '路由限定标签', slug: 'route-scoped-tag',
+    existing: [], readback: async () => tag,
+  });
+  assert.equal(tagResult.status, 'mutation_succeeded');
+  assert.equal(Object.hasOwn(tagResult.readback, 'contentType'), false);
+});
+
+test('taxonomy create rejects an explicit conflicting contentType', async () => {
+  const client = clientFor({ onSend: async () => {} });
+  const result = await createPostCategory({
+    client, siteKey: 'demo-site',
+    authorizationContext: taxonomyAuth('category', 'create', { slug: 'wrong-scope' }),
+    siteId: ids.siteId, name: '错误范围', slug: 'wrong-scope',
+    existing: [],
+    readback: async () => ({
+      id: ids.categoryId, siteId: ids.siteId, name: '错误范围', slug: 'wrong-scope',
+      cover: null, order: 0, contentType: 'products',
+    }),
+  });
+  assert.equal(result.status, 'stopped_manual_intervention');
+  assert.deepEqual(result.mismatches, ['contentType']);
+  assert.equal(client.calls.length, 1);
+});
+
+test('tag create verifies all fields and blocks duplicate slug before request', async () => {
+  const duplicateClient = clientFor(); assert.throws(() => createPostTag({ client: duplicateClient, siteKey: 'demo-site', authorizationContext: taxonomyAuth('tag', 'create', { slug: 'same' }), siteId: ids.siteId, name: '重复', slug: 'same', existing: [{ siteId: ids.siteId, slug: 'same' }], readback: async () => null }), /already exists/); assert.equal(duplicateClient.calls.length, 0);
+  const unscopedClient = clientFor(); assert.throws(() => createPostTag({ client: unscopedClient, siteKey: 'demo-site', authorizationContext: taxonomyAuth('tag', 'create', { slug: 'same' }), siteId: ids.siteId, name: '重复', slug: 'same', existing: [{ slug: 'same' }], readback: async () => null }), /tag\[0\]\.siteId is required/); assert.equal(unscopedClient.calls.length, 0);
+  const foreignClient = clientFor(); assert.throws(() => createPostTag({ client: foreignClient, siteKey: 'demo-site', authorizationContext: taxonomyAuth('tag', 'create', { slug: 'same' }), siteId: ids.siteId, name: '重复', slug: 'same', existing: [{ siteId: 'other-site', slug: 'other' }, { slug: 'same' }], readback: async () => null }), /tag\[1\]\.siteId is required/); assert.equal(foreignClient.calls.length, 0);
+  let current = null; const client = clientFor({ onSend: async ({ payload }) => { current = { ...payload, id: ids.tagId }; } });
+  const result = await createPostTag({ client, siteKey: 'demo-site', authorizationContext: taxonomyAuth('tag', 'create', { slug: 'full-tag' }), siteId: ids.siteId, name: '完整标签', slug: 'full-tag', description: '标签说明', existing: [], readback: async () => current });
+  assert.equal(result.status, 'mutation_succeeded'); assert.equal(result.readback.id, ids.tagId); assert.equal(result.readback.description, '标签说明');
 });
 test('category update and delete use distinct payloads', async () => {
   let current = null; const updateClient = clientFor({ onSend: async ({ payload }) => { current = { ...payload }; } });
@@ -275,4 +427,106 @@ test('recovery converts compare exceptions into manual intervention', async () =
   assert.equal(result.status, 'stopped_manual_intervention');
   assert.equal(result.error, 'readback shape changed');
   assert.equal(result.automaticRetryAllowed, false);
+});
+
+// Article body format profile and deterministic Markdown conversion regression tests.
+function collectIds(value, ids = []) {
+  if (Array.isArray(value)) {
+    for (const item of value) collectIds(item, ids);
+  } else if (value && typeof value === 'object') {
+    if (typeof value.id === 'string') ids.push(value.id);
+    for (const child of Object.values(value)) collectIds(child, ids);
+  }
+  return ids;
+}
+
+test('format matrix preserves 12 verified, one blocked current shape, and zero untested candidates', () => {
+  assert.equal(ALLINCMS_ARTICLE_FORMAT_SUPPORT.verified.length, 12);
+  assert.deepEqual(ALLINCMS_ARTICLE_FORMAT_SUPPORT.unsupportedCurrentShape.map((item) => item.key), ['code-block']);
+  assert.deepEqual(ALLINCMS_ARTICLE_FORMAT_SUPPORT.notTested, []);
+  assert.match(ALLINCMS_ARTICLE_FORMAT_SUPPORT.unsupportedCurrentShape[0].policy, /Do not publish/);
+});
+
+test('canonical examples cover every verified candidate and use unique Slate IDs', () => {
+  const examples = createCanonicalAllinCmsSlateExamples({ idPrefix: 'test-format' });
+  assert.deepEqual(Object.keys(examples), ALLINCMS_ARTICLE_FORMAT_SUPPORT.verified);
+  const ids = collectIds(examples);
+  assert.equal(ids.length, new Set(ids).size);
+  assert.equal(examples.bold.children[0].bold, true);
+  assert.equal(examples.underline.children[0].underline, true);
+  assert.equal(examples['inline-code'].children[0].code, true);
+  assert.equal(examples['bulleted-list'].listStyleType, 'disc');
+  assert.equal(examples['numbered-list'].listStyleType, 'decimal');
+  assert.equal(examples.table.children[0].children[0].type, 'th');
+  assert.equal(examples.table.children[1].children[0].type, 'td');
+});
+
+test('canonical examples are fresh clones and do not share caller mutations', () => {
+  const first = createCanonicalAllinCmsSlateExamples();
+  const second = createCanonicalAllinCmsSlateExamples();
+  first.bold.children[0].text = 'changed';
+  assert.equal(second.bold.children[0].text, 'Bold text');
+});
+
+test('Markdown converter emits verified block and inline shapes deterministically', () => {
+  const source = [
+    '## Section',
+    '### Subsection',
+    '**Bold** *Italic* <u>Underline</u> ~~Strike~~ `inline` [Reference](https://example.com/docs)',
+    '- Bullet one',
+    '1. Number one',
+    '> Evidence needs readback.',
+    '---',
+    '| Field | Value |',
+    '| --- | --- |',
+    '| Format | Verified |',
+  ].join('\n');
+  const first = markdownToAllinCmsSlate(source, { idPrefix: 'article' });
+  const second = markdownToAllinCmsSlate(source, { idPrefix: 'article' });
+  assert.deepEqual(first, second);
+  assert.deepEqual(first.map((node) => node.type), ['h2', 'h3', 'p', 'p', 'p', 'blockquote', 'hr', 'table']);
+  const inline = first[2].children;
+  assert.equal(inline.find((leaf) => leaf.bold)?.text, 'Bold');
+  assert.equal(inline.find((leaf) => leaf.italic)?.text, 'Italic');
+  assert.equal(inline.find((leaf) => leaf.underline)?.text, 'Underline');
+  assert.equal(inline.find((leaf) => leaf.strikethrough)?.text, 'Strike');
+  assert.equal(inline.find((leaf) => leaf.code)?.text, 'inline');
+  assert.equal(inline.find((child) => child.type === 'a')?.url, 'https://example.com/docs');
+  assert.equal(first[3].listStyleType, 'disc');
+  assert.equal(first[4].listStyleType, 'decimal');
+  assert.equal(first[7].children[0].children[0].type, 'th');
+  assert.equal(first[7].children[1].children[0].type, 'td');
+});
+
+test('Markdown converter joins ordinary paragraph lines with a single space', () => {
+  const nodes = markdownToAllinCmsSlate('First line\nsecond line', { idPrefix: 'paragraph' });
+  assert.equal(nodes.length, 1);
+  assert.deepEqual(nodes[0].children, [{ text: 'First line second line' }]);
+});
+
+test('Markdown converter blocks fenced and indented code blocks before payload construction', () => {
+  assert.throws(() => markdownToAllinCmsSlate('```js\nalert(1)\n```'), /code blocks are unsupported-current-shape/);
+  assert.throws(() => markdownToAllinCmsSlate('    const blocked = true;'), /code blocks are unsupported-current-shape/);
+  assert.throws(() => markdownToAllinCmsSlate('     const stillBlocked = true;'), /code blocks are unsupported-current-shape/);
+  assert.throws(() => markdownToAllinCmsSlate('\tconst tabBlocked = true;'), /code blocks are unsupported-current-shape/);
+});
+
+test('Markdown converter blocks body H1, raw HTML, Markdown images, unsafe links, and unsupported tables', () => {
+  assert.throws(() => markdownToAllinCmsSlate('# Duplicate article title'), /H1 is not allowed/);
+  assert.throws(() => markdownToAllinCmsSlate('<div>raw HTML</div>'), /Raw HTML is unsupported/);
+  assert.throws(() => markdownToAllinCmsSlate('<!-- hidden raw HTML -->'), /Raw HTML is unsupported/);
+  assert.throws(() => markdownToAllinCmsSlate('![Alt](https://example.com/image.webp)'), /article-image-binding\.mjs/);
+  assert.throws(() => markdownToAllinCmsSlate('![Alt][hero]\n\n[hero]: https://example.com/image.webp'), /article-image-binding\.mjs/);
+  assert.throws(() => markdownToAllinCmsSlate('[Reference][source]\n\n[source]: https://example.com/'), /Reference-style Markdown links are unsupported/);
+  assert.throws(() => markdownToAllinCmsSlate('[Unsafe](javascript:alert(1))'), /http\(s\)/);
+  assert.throws(() => markdownToAllinCmsSlate('### Supported\n\n#### Unsupported'), /H4-H6 are unsupported/);
+  assert.throws(() => markdownToAllinCmsSlate('Setext title\n---'), /Setext headings are unsupported/);
+  assert.throws(() => markdownToAllinCmsSlate('| A | B |\n| --- | --- |\n| only one |'), /same number of cells/);
+  assert.throws(() => markdownToAllinCmsSlate('| A | B |\n| --- | --- |'), /at least one body row/);
+  assert.throws(() => markdownToAllinCmsSlate('| A | B |\n| :--- | ---: |\n| 1 | 2 |'), /alignment markers are unsupported/);
+});
+
+test('Markdown converter rejects unsafe ID prefixes', () => {
+  assert.throws(() => markdownToAllinCmsSlate('Paragraph', { idPrefix: '../bad' }), /safe identifier prefix/);
+  assert.throws(() => createCanonicalAllinCmsSlateExamples({ idPrefix: '' }), /safe identifier prefix/);
 });

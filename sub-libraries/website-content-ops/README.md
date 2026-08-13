@@ -5,13 +5,18 @@ type: "sub-library"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-30"
+last_updated: "2026-08-11"
 sources: ["Tony conversation 2026-07-26", "Tony README and AI onboarding decision 2026-07-30"]
-related: ["START-HERE.md", "CONTACT.md", "COURSE-MAP.md", "MENTAL-MODEL.md", "AGENTS.md", "PLAYBOOK.md", "MANIFEST.md", "RUNTIME-CONTRACT.json", "SKILL.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md"]
+related: ["START-HERE.md", "CONTACT.md", "COURSE-MAP.md", "MENTAL-MODEL.md", "AGENTS.md", "PLAYBOOK.md", "MANIFEST.md", "RUNTIME-CONTRACT.json", "RUNTIME-INTEGRATION.md", "SKILL.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md", "ADAPTERS/cms/allincms/INTERFACE-INDEX.md", "ADAPTERS/cms/allincms/interface-registry.json"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
 keywords: ["建站内容运营", "外贸网站", "AllinCMS", "CMS", "图片上传", "内容工作流", "AI 执行", "新手入门"]
+state_source: "MANIFEST.md"
+state_projection: ["release_status", "preview_publication_status", "license_status"]
+release_status: "BLOCK"
+preview_publication_status: "BLOCK"
+license_status: "pending"
 ---
 # AI 建站内容运营
 
@@ -19,7 +24,7 @@ keywords: ["建站内容运营", "外贸网站", "AllinCMS", "CMS", "图片上�
 
 你不需要先学会 Obsidian、PicGo、接口或代码。**人负责说清目标、提供资料并批准关键操作；AI 按本子库的执行手册完成检查、制作、验证和记录。**
 
-> **当前已发布为 Public Preview；不是 Stable 或 production-ready。** 你可以下载后交给 AI 做本地试用和单样本；请先验证一条内容和一张图片，不要未经确认直接批量用于生产。实时状态与许可证见 [MANIFEST.md](MANIFEST.md) 和 [LICENSE](LICENSE)。
+> **既有 `v0.3.2-preview.1` Public Preview 可继续按其已发布范围试用；当前源码候选为 `BLOCK`。** 三张 bundled source card——AllinCMS official、PicGo image-host official、B2B SEO content research——均为 `publication_status: BLOCK` 且 `license_status: pending`；当前工作树因此不得重新发布、不得宣称 Stable 或 production-ready。实时状态与许可证见 [MANIFEST.md](MANIFEST.md) 和 [LICENSE](LICENSE)。
 
 ## 你可以用它做什么
 
@@ -106,6 +111,7 @@ flowchart LR
 - [图片上传统一路由](ADAPTERS/image-upload-routing.md)
 - [AllinCMS AI 唯一入口](ADAPTERS/cms/allincms/AI-START-HERE.md)
 - [AllinCMS adapter README](ADAPTERS/cms/allincms/README.md)
+- [AllinCMS 接口索引（人类/AI）](ADAPTERS/cms/allincms/INTERFACE-INDEX.md)；机器真源为 [interface-registry.json](ADAPTERS/cms/allincms/interface-registry.json)
 
 R2、GitHub、腾讯云 COS 和阿里云 OSS 只在需要跨系统公开 URL、迁移练习或用户明确指定时使用。
 
@@ -114,7 +120,7 @@ R2、GitHub、腾讯云 COS 和阿里云 OSS 只在需要跨系统公开 URL、�
 | 你是谁 | 从哪里开始 | 主要内容 |
 |---|---|---|
 | 业务人员或新手 | 本 README → [START-HERE.md](START-HERE.md) | 把目标交给 AI，由 AI 带着完成第一条小样 |
-| 内容运营或实施人员 | [WORKSPACE-TEMPLATE/README.md](WORKSPACE-TEMPLATE/README.md) | 建客户私有运行区，管理资料、任务、输出、指标和写回 |
+| 内容运营或实施人员 | [RUNTIME-INTEGRATION.md](RUNTIME-INTEGRATION.md) → [WORKSPACE-TEMPLATE/README.md](WORKSPACE-TEMPLATE/README.md) | 先在 agency-operations 建立有 client/company/task 绑定的私有运行区，再加载内容能力投影 |
 | AI 或技术人员 | [AGENTS.md](AGENTS.md) → [SKILL.md](SKILL.md) → [ADAPTERS/README.md](ADAPTERS/README.md) | 读取运行合同、调用 adapter、执行验证和处理失败 |
 
 这不是只给 AI 一条提示词的“技能文件”。它是一整套工作包，包含人类说明、AI 执行入口、模板、示例、客户工作区、工具接入模块和验证工具。[SKILL.md](SKILL.md) 只是其中一个 AI 入口，目前还不能当作已正式发布的一键安装 Skill。
@@ -126,10 +132,13 @@ R2、GitHub、腾讯云 COS 和阿里云 OSS 只在需要跨系统公开 URL、�
 | 让 AI 开始执行 | [START-HERE.md](START-HERE.md) |
 | 没有账号或需要支持 | [CONTACT.md](CONTACT.md) |
 | 跟着虚拟公司演示 | [FluxPedal Motors](EXAMPLES/fluxpedal-motors/README.md) |
-| 建立客户私有工作区 | [WORKSPACE-TEMPLATE/README.md](WORKSPACE-TEMPLATE/README.md) |
+| 建立客户私有工作区 | [RUNTIME-INTEGRATION.md](RUNTIME-INTEGRATION.md) |
 | 收集最少必要资料 | [INTAKE.md](INTAKE.md) |
 | 理解公司、产品、客户和内容的关系 | [MENTAL-MODEL.md](MENTAL-MODEL.md) |
 | 查看完整执行流程 | [PLAYBOOK.md](PLAYBOOK.md) |
+| 从空白规划和审查正式 B2B SEO 文章 | [PLAYBOOKS/README.md](PLAYBOOKS/README.md) → [B2B SEO Article Standard](PLAYBOOKS/id-0001-b2b-seo-article-standard.md) |
+| 优化已有 B2B 文章 | [B2B Article Optimization SOP](PLAYBOOKS/id-0003-b2b-article-optimization-sop.md)；质量闸仍以 ID-0001 为准 |
+| 实现和验收文章页 SEO/样式 | [Article Page Frontend SEO Contract](PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md) |
 | 查看课程路径 | [COURSE-MAP.md](COURSE-MAP.md) |
 | 选择模板 | [TEMPLATES/README.md](TEMPLATES/README.md) |
 | 接入 CMS 或图床 | [ADAPTERS/README.md](ADAPTERS/README.md) |
@@ -144,9 +153,10 @@ R2、GitHub、腾讯云 COS 和阿里云 OSS 只在需要跨系统公开 URL、�
 - 真实客户资料、账号环境、图片索引和经营数据放在客户私有运行区，不提交回公开子库；
 - 密码、Cookie、Token 和 Secret 不写进 Markdown，也不发到公开 Issue；
 - AI 可以检查和准备，但上传、覆盖、删除和发布必须按具体对象重新取得批准；
+- 正式文章必须走 `Brief → Draft → Quality Review → Frontend SEO → CMS Adapter → Publish Record`，总分和 API 成功都不能覆盖一票否决；
 - 先跑一个样本并检查真实结果，不把“命令成功”或 HTTP 200 当成业务完成；
 - 登录失效、站点不确定、权限不清、结果不明确或无法回滚时立即停止。
 
 ## 当前发布结论
 
-**Public Preview：`Published`；Stable：`BLOCK`。** Apache-2.0 许可证边界已明确，本地结构、模板、虚拟示例、发布治理脚本和 AllinCMS Adapter 已有机械测试与限定环境证据；但正式 qualification、真人批准、跨部署稳定性和一键安装 Skill 仍未完成。当前只能宣称 Preview，不能宣称 Stable、production-ready 或适用于所有 CMS 部署。
+**既有 `v0.3.2-preview.1` Public Preview 可用；当前源码候选：`BLOCK`；Stable：`BLOCK`。** 本地结构、模板、虚拟示例、治理脚本和 AllinCMS Adapter 的既有机械测试与限定环境证据仍保留，但 AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 均未闭合。许可审批、正式 qualification、真人批准和跨部署稳定性未闭合前，不得重新发布当前候选，也不得宣称 production-ready 或适用于所有 CMS 部署。

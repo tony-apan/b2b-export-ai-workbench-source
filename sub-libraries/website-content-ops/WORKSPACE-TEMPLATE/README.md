@@ -1,49 +1,58 @@
 ---
 title: "Customer Workspace Template"
-description: "交付给单个使用者后复制使用的私有运行区模板，承载来源、知识、任务、输出、指标和写回。"
+description: "复制到已激活 agency-operations task scope 中的 synthetic 内容模板和只读规范投影；不是独立 runtime，也不维护 machine state。"
 type: "template"
 template_usage: "manual-copy"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 sources: ["TEMPLATES/README.md"]
 related: ["00_intake/index.md", "90_writeback/index.md", "TEMPLATES/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
-when_to_read: "需要从子库复制一个隔离客户工作区并理解目录、隐私和写回边界时。"
+when_to_read: "已在 agency-operations 激活准确 task scope，准备复制 synthetic 内容结构或读取只读规范投影，并确认 machine state 仍由外部 runtime 维护时。"
 keywords: ["workspace template", "client runtime", "privacy boundary", "writeback", "content operations"]
 ---
-# 客户运行区模板
+# 客户内容能力投影模板
 
-本目录是**空模板**，可以公开分发；复制并填入真实公司、产品、聊天、账号环境和结果后，副本默认是客户私有运行区，不应提交回公开子库。
+本目录只包含可复制到**已激活 agency-operations 客户任务 scope** 的 synthetic 内容结构和只读规范投影。它不是独立 runtime，也不能改名为 `workspace/` 使用。
 
-## 初始化
+## 前置机器合同
 
-1. 把整个 `WORKSPACE-TEMPLATE/` 复制到客户自己的受控目录，并改名为 `workspace/`；
-2. 用 Obsidian 把 `workspace/` 作为一个 vault 打开，或作为现有 vault 的子目录；
-3. 先完成 [00_intake/index.md](00_intake/index.md) 和 [10_sources/index.md](10_sources/index.md)；需要填写结构化记录时，从 [TEMPLATES/README.md](TEMPLATES/README.md) 选择最窄模板。
-4. 再让 AI 读取 [20_knowledge/index.md](20_knowledge/index.md) 生成知识卡；
-5. 所有执行任务进入 [30_tasks/index.md](30_tasks/index.md)，结果进入 [40_outputs/index.md](40_outputs/index.md)；
-6. 指标进入 [50_metrics/index.md](50_metrics/index.md)，学习进入 [90_writeback/index.md](90_writeback/index.md)。
+复制任何内容前，宿主必须已通过 `agency-operations` 建立并验证：
 
-## 运行目录
+- `customer-runtime/RUNTIME.json`；
+- `00_control/ACTIVE-CONTEXT.json`；
+- `clients-registry.json` 与 `task-registry.jsonl`；
+- 当前客户 `CLIENT.json`；
+- 当前任务 `TASK.json` 与 `HANDOFF.md`；
+- 精确一致的 `client_id + company_id + task_id`。
+
+缺少 scope、ACTIVE-CONTEXT/TASK 不一致、跨客户路径、symlink、路径穿越、写锁或 Registry 冲突时必须停止。禁止无 scope 搜索整个 `customer-runtime/`。
+
+## 加载内容能力
+
+1. 先在外部 runtime 中激活准确客户与任务；
+2. 只选择当前任务需要的 `00_intake/`、`10_sources/`、`20_knowledge/`、`40_outputs/`、`50_metrics/`、`90_writeback/` 和 `TEMPLATES/` 内容结构；
+3. `30_tasks/*.runtime.md` 是由 core playbook 生成并带 SHA-256 的只读规则投影；
+4. 任务状态、owner、approval、blocker 和完成度只写 `TASK.json`，续接写 `HANDOFF.md`，事件写 runtime 日志；
+5. [30_tasks/index.md](30_tasks/index.md) 只导航能力投影，不能维护并行任务表；
+6. 升级 core 时重新核验 projection digest，但不得覆盖客户的 Registry、ACTIVE-CONTEXT、CLIENT、TASK、HANDOFF、日志、证据或输出。
+
+## 内容目录
 
 ```text
-workspace/
-├── 00_intake/      # 范围、权限、目标、工具和阻断
-├── 10_sources/     # 网站、资料、聊天、导出和来源登记
-├── 20_knowledge/   # 公司、产品、客户需求、内容意图和证据
-├── 30_tasks/       # 待执行任务、字段映射、审批和运行记录
-├── 40_outputs/     # 文章、产品页、图片清单、CMS 草稿和 URL
-├── 50_metrics/     # 抓取、索引、点击、询盘、引用和转化反馈
-└── 90_writeback/   # 客户专属学习与可申请回母库的通用改进
+content-capability-projection/
+├── 00_intake/      # 当前任务需要的范围、授权和阻断材料
+├── 10_sources/     # 当前客户 scope 内的来源登记
+├── 20_knowledge/   # 当前客户 scope 内的公司、产品、ICP 和证据
+├── 30_tasks/       # 只读规范投影和能力导航；不是状态真源
+├── 40_outputs/     # 当前任务草稿、清单和交付物
+├── 50_metrics/     # 当前任务可验证指标
+├── 90_writeback/   # 去标识化前的客户私有学习候选
+└── TEMPLATES/      # 内容记录模板
 ```
 
-## 安全边界
-
-- 可以记录凭据是否存在、权限是否足够，但不要把密码、token、cookie 或 Secret 写进 Markdown；
-- 原始聊天、客户名单、价格和经营数据默认只留在客户运行区；
-- AI 可读不等于可公开；发布前另走脱敏和授权检查；
-- 子库升级时更新方法和模板，不覆盖客户已填写的运行数据。
+客户事实不得复制回 tracked core。可复用方法必须先去标识化并经人工审核，再按 [WRITEBACK.md](../WRITEBACK.md) 回落。

@@ -362,6 +362,16 @@ test('direct draft save forces mode update and verifies readback', async () => {
     },
   }), /structured authorizationContext/);
   assert.equal(sentPayload, undefined);
+  await assert.rejects(() => saveAllinCmsArticleDraftDirect({
+    tab, expectedSiteKey: 'virtualsite', expectedPostId: '222222222222222222222222', authorizationContext: articleImageAuth(),
+    overrides: { coverImage: { name: 'cover.webp', alt: 'Cover alt', type: 'image', source: 'oss', path: 'x/cover.webp', size: 42 } },
+    _internal: {
+      cdp: { send: async () => ({}) },
+      contract,
+      sendReplay: async () => { sentPayload = 'request-started'; },
+    },
+  }), /missing canonical persisted fields: mimeType/);
+  assert.equal(sentPayload, undefined);
   const result = await saveAllinCmsArticleDraftDirect({
     tab, expectedSiteKey: 'virtualsite', expectedPostId: '222222222222222222222222', authorizationContext: articleImageAuth(),
     overrides: { content: nextContent },
@@ -382,6 +392,44 @@ test('direct draft save forces mode update and verifies readback', async () => {
   assert.equal(sentPayload.mode, 'update');
   assert.equal(result.published, false);
   assert.equal(result.status, 'draft_saved_and_readback_verified');
+});
+
+test('draft readback accepts the canonical persisted cover image subset', () => {
+  const fullCover = {
+    id: 'media-1', mediaId: 'media-1', title: 'Extended title', caption: 'Extended caption',
+    url: 'https://assets.laicms.com/x/cover.webp',
+    name: 'cover.webp', alt: 'Cover alt', type: 'image', source: 'oss',
+    path: 'x/cover.webp', size: 42, mimeType: 'image/webp',
+  };
+  const persistedCover = {
+    name: 'cover.webp', alt: 'Cover alt', type: 'image', source: 'oss',
+    path: 'x/cover.webp', size: 42, mimeType: 'image/webp',
+  };
+  const payload = { title: 'T', slug: 't', excerpt: '', order: 0, coverImage: fullCover, categories: [], tags: [], content: [] };
+  const readback = { ...payload, coverImage: persistedCover };
+  assert.deepEqual(bindingInternal.compareReadback(payload, readback), []);
+});
+
+test('draft readback still rejects missing or changed canonical cover fields', () => {
+  const cover = {
+    name: 'cover.webp', alt: 'Cover alt', type: 'image', source: 'oss',
+    path: 'x/cover.webp', size: 42, mimeType: 'image/webp',
+  };
+  const payload = { title: 'T', slug: 't', excerpt: '', order: 0, coverImage: cover, categories: [], tags: [], content: [] };
+  const missingMimeType = { ...payload, coverImage: { ...cover } };
+  delete missingMimeType.coverImage.mimeType;
+  assert.deepEqual(bindingInternal.compareReadback(payload, missingMimeType), ['coverImage']);
+  assert.throws(
+    () => bindingInternal.normalizedDraftPayload(
+      { ...payload, coverImage: missingMimeType.coverImage },
+      {},
+      '1'.repeat(24),
+      '2'.repeat(24),
+    ),
+    /missing canonical persisted fields: mimeType/,
+  );
+  const changedPath = { ...payload, coverImage: { ...cover, path: 'x/other.webp' } };
+  assert.deepEqual(bindingInternal.compareReadback(payload, changedPath), ['coverImage']);
 });
 
 test('readback verifier detects lost alt/caption', () => {

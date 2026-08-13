@@ -1,21 +1,23 @@
 ---
 title: "Website Content Operations License"
-description: "说明 website-content-ops 公开 Preview 的 Apache-2.0 许可范围，以及不包含的商标、外链内容和客户数据。"
+description: "说明既有 website-content-ops Public Preview 的 Apache-2.0 范围，以及当前源码候选因研究来源 publication clearance pending 而保持许可与发布 BLOCK。"
 type: "legal-notice"
 status: "Working"
 owner: "Human"
 created: "2026-07-28"
-last_updated: "2026-07-30"
+last_updated: "2026-07-31"
 sources: ["LICENSE", "NOTICE", "THIRD-PARTY-NOTICES.md", "MANIFEST.md"]
 related: ["MANIFEST.md", "RELEASE.md", "REFERENCES/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
-release_status: "Preview"
-license_status: "cleared"
+state_source: "MANIFEST.md"
+state_projection: ["release_status", "license_status"]
+release_status: "BLOCK"
+license_status: "pending"
 ---
 # License
 
-`website-content-ops` 独立发布 artifact 中的原创代码、Markdown 文档、模板、配置和 synthetic fixtures 采用 **Apache License 2.0**。完整法律文本见 [LICENSE](LICENSE)。
+既有 `v0.3.2-preview.1` 独立发布 artifact 中已获许可的原创代码、Markdown 文档、模板、配置和 synthetic fixtures 采用 **Apache License 2.0**。当前源码候选新增的 B2B research reference 仍在 publication review，因此当前候选 `license_status: pending`、不得重新发布；这不追溯改变既有 artifact 的许可。完整法律文本见 [LICENSE](LICENSE)。
 
 许可证不自动覆盖：
 

@@ -13,6 +13,9 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "执行失败或验证不一致时，用于分层定位输入、权限、映射、接口和业务结果问题。"
 keywords: ["failure diagnosis", "permissions", "field mapping", "retry boundary", "evidence"]
+generated_from: "../../TEMPLATES/failure-diagnosis.md"
+generated_source_sha256: "83829479c6f3936e7c29c3664a9b6d372617b0de1f26588d024a960d4dcc38a2"
+generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/failure-diagnosis.md; do not hand-edit this copy in the source package. -->
 # Failure Diagnosis

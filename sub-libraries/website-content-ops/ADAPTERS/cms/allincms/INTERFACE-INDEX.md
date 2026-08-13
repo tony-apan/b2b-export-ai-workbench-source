@@ -1,0 +1,248 @@
+---
+title: "AllinCMS Interface Index"
+description: "由 interface-registry.json 确定性生成的 AllinCMS 人类与 AI 接口查询索引；只负责接口身份、分层和导航，不替代专项合同与部署证据。"
+type: "tooling"
+status: "Working"
+owner: "AI"
+created: "2026-08-11"
+last_updated: "2026-08-12"
+sources: ["interface-registry.json"]
+related: ["README.md", "AI-START-HERE.md", "interface-registry.schema.json"]
+when_to_read: "需要按接口名、导出名、领域、暴露层级或生命周期查询 AllinCMS Adapter 能力与限制时。"
+keywords: ["AllinCMS", "接口索引", "interface registry", "ESM export", "API lifecycle", "AI routing"]
+visibility: "public"
+redaction_status: "safe-to-publish"
+---
+<!-- GENERATED FILE. DO NOT EDIT. Run: npm run interfaces:index -->
+
+# AllinCMS 接口索引
+
+> 机器真源：`interface-registry.json`。本页完全生成，供人和 AI 快速查找；payload、transport、错误和部署证据仍以专项合同为准。
+
+## 当前边界
+
+- Registry：v2
+- Adapter package：`0.3.2-preview.1`
+- Release scope：`preview-blocked`
+- 固化范围：108 个接口记录（104 个 ESM export binding + 4 个 CLI）
+- 审查：`PASS`，2026-08-12；104 个 ESM export bindings（含 2 个完整源码 checkout Controller binding）加 4 个可操作 CLI 全量登记；每个接口声明运行分发面，并提供 22 条实体 × 动作能力路由。
+- 暴露分层：canonical 19 / supported 44 / compatibility 12 / internal 29 / blocked 4
+
+### 必须保留的限制
+
+- 当前 dirty candidate 不是 Stable 或 Published。
+- content-run-controller.mjs 只在完整子库源码 checkout 可用；它依赖子库 scripts，未进入最小 npm adapter package。
+- 任何远程 mutation 仍要求当前 deployment 的新鲜 live_verified_current_deployment capability；Registry 不提供永久远程能力。
+- 建站只有 request builder；article create 和 media metadata update 仍 BLOCK；产品全部动作均为 exploration_only。
+- delete 与 unpublish 在通用 immutable plan / 薄 Skill 中全部 fail closed；底层导出被登记不等于可作为计划路由执行。
+- npm test 与 test:* 属于验证 harness，不作为 Adapter 业务或查询 CLI 接口登记。
+
+## 查询方法
+
+- 人：按下方 domain 查表；默认业务路径只选 `canonical`，辅助能力选 `supported`。
+- AI：读取 `interface-registry.json`，按 `interface_id`、`display_name`、`bindings[].export_name`、`domain`、`exposure` 或 `keywords` 过滤。
+- 禁止把 `internal`、`compatibility` 或 `blocked` 当成默认入口。
+- 严格只读任务还必须要求 `safety.mutation=false`；`network_access=none` 只表示不联网，不保证没有本地文件写入。
+- CLI 范围只登记 4 个可直接操作的 Adapter 命令；`npm test` 与 `test:*` 是验证 harness，不是业务/查询接口。
+- 引用可用性必须读 `availability`：`packaged` 保证进入最小 npm 包；`source_only` 只在源码 checkout 中提供，最小包不得伪装为已携带。
+- 校验：`npm run interfaces:validate`；重建：`npm run interfaces:index`；漂移检查：`npm run interfaces:index:check`。
+
+## 能力路由
+
+> 路由回答“某个实体动作是否可执行、默认走哪个接口、受什么门禁约束”。它不是永久 capability，也不替代当前 deployment 的新鲜 capability snapshot。
+
+| Capability | 可用性 | 执行门禁 | 执行面 | 默认接口 | 串行 Controller | 验收要求 | 原因与限制 |
+|---|---|---|---|---|---|---|---|
+| `allincms.site.discover` | **canonical** | current_session_read_only | minimal_adapter | `allincms.workspace-preflight.run-allin-cms-workspace-preflight` | — | fresh workspace RSC session readback<br>current user identity<br>complete site pagination<br>exact site selection before any mutation | API-first workspace preflight is the canonical read-only route for login, user and site discovery.<br>Read-only discovery does not authorize site creation or any site-scoped mutation. |
+| `allincms.site.create` | **blocked** | blocked | none | `allincms.workspace-preflight.build-allin-cms-create-site-action-request` | — | before and after complete site lists<br>exactly one new site ID<br>new site owner and generated site key readback<br>ambiguous transport reconciliation | Only a local request builder exists; there is no canonical structured remote sender or complete create reconciliation controller.<br>A discovered create action or canCreate=true does not upgrade this route to remote execution capability. |
+| `allincms.category.create` | **canonical** | fresh_live_verified_current_deployment | full_source_checkout | `allincms.article-operations.create-post-category` | `allincms.content-run-controller.run-allin-cms-content-plan` | taxonomy.precise_id<br>taxonomy.exact_slug_and_submitted_fields<br>scope.exact_site_binding<br>taxonomy.same_site_duplicate_slug_excluded | The canonical category create controller is registered and must run taxonomy-first inside the immutable serial plan.<br>Remote execution still requires a fresh current-deployment capability snapshot and authoritative readback. |
+| `allincms.category.update` | **canonical** | fresh_live_verified_current_deployment | full_source_checkout | `allincms.article-operations.update-post-category` | `allincms.content-run-controller.run-allin-cms-content-plan` | concurrency.expected_current_fingerprint<br>taxonomy.precise_id<br>backend.exact_persisted_fields<br>scope.exact_site_binding | The canonical category update controller is registered and must run only after an authoritative expected-current read.<br>A null or ambiguous readback never permits blind retry. |
+| `allincms.tag.create` | **canonical** | fresh_live_verified_current_deployment | full_source_checkout | `allincms.article-operations.create-post-tag` | `allincms.content-run-controller.run-allin-cms-content-plan` | taxonomy.precise_id<br>taxonomy.exact_slug_and_submitted_fields<br>scope.exact_site_binding<br>taxonomy.same_site_duplicate_slug_excluded | The canonical tag create controller is registered and must run taxonomy-first inside the immutable serial plan.<br>Remote execution still requires a fresh current-deployment capability snapshot and authoritative readback. |
+| `allincms.tag.update` | **canonical** | fresh_live_verified_current_deployment | full_source_checkout | `allincms.article-operations.update-post-tag` | `allincms.content-run-controller.run-allin-cms-content-plan` | concurrency.expected_current_fingerprint<br>taxonomy.precise_id<br>backend.exact_persisted_fields<br>scope.exact_site_binding | The canonical tag update controller is registered and must run only after an authoritative expected-current read.<br>A null or ambiguous readback never permits blind retry. |
+| `allincms.media.create` | **canonical** | fresh_live_verified_current_deployment | full_source_checkout | `allincms.upload-media-browser.upload-allin-cms-media-serial` | `allincms.content-run-controller.run-allin-cms-content-plan` | media.precise_backend_id<br>media.persisted_url<br>media.anonymous_https_get<br>media.image_decode<br>media.metadata_readback | Strictly serial direct media upload is the canonical create route for an approved ordered file list.<br>Browser UI upload remains compatibility fallback and cannot replace the API-first route without separate approval. |
+| `allincms.media.update` | **blocked** | blocked | none | `allincms.upload-media-browser.update-allin-cms-media-metadata-direct` | — | precise media ID<br>exact metadata readback<br>same-site binding<br>ambiguous transport reconciliation | The direct metadata mutation still uses a legacy authorization boundary and is not a generic Skill execution route.<br>Private historical success cannot replace structured current authorization and current-deployment verification. |
+| `allincms.article.create` | **blocked** | blocked | none | `allincms.article-operations.create-post-draft` | — | fresh postCreate contract<br>before and after post ID snapshots<br>exactly one new post ID<br>same-site complete created-record readback<br>editor reopen | Article create remains blocked until current-deployment create discovery and unique before/after reconciliation are supplied.<br>Verified update or publish behavior must not be generalized to postCreate. |
+| `allincms.article.update` | **canonical** | fresh_live_verified_current_deployment | full_source_checkout | `allincms.article-operations.save-post-draft` | `allincms.content-run-controller.run-allin-cms-content-plan` | concurrency.expected_current_fingerprint<br>article.complete_backend_field_readback<br>article.editor_reopen_health<br>article.taxonomy_media_binding_readback | Saving an existing article draft is the canonical update route inside the immutable serial plan.<br>The route applies to an exact existing post ID and does not imply article-create support. |
+| `allincms.article.publish` | **canonical** | fresh_live_verified_current_deployment | full_source_checkout | `allincms.article-operations.publish-post` | `allincms.content-run-controller.run-allin-cms-content-plan` | article.backend_published_state<br>article.editor_reopen_health<br>article.public_url<br>article.anonymous_frontend_detail<br>article.visible_content_and_media | Publishing an exact existing article is canonical only when publish is explicitly present in the approved immutable plan.<br>Backend 200, a toast or a status field alone does not prove public publication. |
+| `allincms.product.discover` | **exploration_only** | exploration_only | none | — | — | fresh product field and action discovery<br>exact site binding<br>authoritative backend product readback | Product discover has private deployment observations but no canonical product module or cross-deployment execution contract.<br>Exploration may gather read-only current-deployment evidence; it must not execute or advertise a generic product mutation. |
+| `allincms.product.create` | **exploration_only** | exploration_only | none | — | — | fresh product field and action discovery<br>exact site binding<br>authoritative backend product readback | Product create has private deployment observations but no canonical product module or cross-deployment execution contract.<br>Exploration may gather read-only current-deployment evidence; it must not execute or advertise a generic product mutation. |
+| `allincms.product.update` | **exploration_only** | exploration_only | none | — | — | fresh product field and action discovery<br>exact site binding<br>authoritative backend product readback | Product update has private deployment observations but no canonical product module or cross-deployment execution contract.<br>Exploration may gather read-only current-deployment evidence; it must not execute or advertise a generic product mutation. |
+| `allincms.product.publish` | **exploration_only** | exploration_only | none | — | — | fresh product field and action discovery<br>exact backend product readback<br>editor reopen<br>public URL<br>anonymous frontend product detail | Product publish has private deployment observations but no canonical product module or cross-deployment execution contract.<br>Exploration may gather read-only current-deployment evidence; it must not execute or advertise a generic product mutation. |
+| `allincms.site.delete` | **blocked** | blocked | none | — | — | explicit separate destructive plan<br>exact site identity<br>complete dependent-resource impact review<br>post-delete account readback | Site deletion is outside the generic content-operation plan and is intentionally not routed.<br>The generic immutable content plan and thin Skill must stop; a lower-level registered export is not an authorized plan route. |
+| `allincms.category.delete` | **blocked** | blocked | none | — | — | explicit separate destructive plan<br>precise category ID and site binding<br>dependent article impact review<br>authoritative absence readback | Category deletion is excluded from the generic immutable plan even though a lower-level Adapter export is registered.<br>The generic immutable content plan and thin Skill must stop; a lower-level registered export is not an authorized plan route. |
+| `allincms.tag.delete` | **blocked** | blocked | none | — | — | explicit separate destructive plan<br>precise tag ID and site binding<br>dependent article impact review<br>authoritative absence readback | Tag deletion is excluded from the generic immutable plan even though a lower-level Adapter export is registered.<br>The generic immutable content plan and thin Skill must stop; a lower-level registered export is not an authorized plan route. |
+| `allincms.media.delete` | **blocked** | blocked | none | `allincms.upload-media-browser.delete-allin-cms-media-direct` | — | explicit separate destructive plan<br>precise media ID and site binding<br>reference impact review<br>authoritative record absence readback | The direct media delete export still has a blocked legacy authorization boundary and deletion is outside the generic immutable plan.<br>Historical deletion evidence does not authorize a new deletion or prove physical CDN object removal. |
+| `allincms.article.unpublish` | **blocked** | blocked | none | — | — | explicit separate publication-reversal plan<br>precise article ID and current published fingerprint<br>backend unpublished state<br>anonymous frontend inaccessibility | Article unpublish is not a supported intent in the generic immutable plan and is intentionally not routed.<br>The generic immutable content plan and thin Skill must stop; a lower-level registered export is not an authorized plan route. |
+| `allincms.article.delete` | **blocked** | blocked | none | — | — | explicit separate destructive plan<br>precise article ID and site binding<br>taxonomy and media impact review<br>backend absence and frontend inaccessibility | Article deletion is outside the generic immutable plan even though a lower-level Adapter export is registered.<br>The generic immutable content plan and thin Skill must stop; a lower-level registered export is not an authorized plan route. |
+| `allincms.product.delete` | **exploration_only** | exploration_only | none | — | — | fresh read-only product contract discovery<br>precise product and site identity<br>dependent content impact model<br>authoritative deletion semantics | Product delete has no canonical product module or execution contract and may only be explored read-only.<br>Exploration must not send a delete request or advertise a generic product deletion capability. |
+
+## 接口目录
+
+### 授权（8）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.mutation-authorization.create-allin-cms-article-image-authorization-context` | `mutation-authorization.mjs#createAllinCmsArticleImageAuthorizationContext` | factory | transform | **supported** | active | packaged | local_tested | 需要 authorization 域的受支持辅助能力时使用，并遵守专项合同。 | `README.md` [packaged] |
+| `allincms.mutation-authorization.create-allin-cms-mutation-authorization-context` | `mutation-authorization.mjs#createAllinCmsMutationAuthorizationContext` | factory | transform | **supported** | active | packaged | local_tested | 需要 authorization 域的受支持辅助能力时使用，并遵守专项合同。 | `README.md` [packaged] |
+| `allincms.mutation-authorization.validate-allin-cms-mutation-authorization-context` | `mutation-authorization.mjs#validateAllinCmsMutationAuthorizationContext` | validator | transform | **supported** | active | packaged | local_tested | 需要 authorization 域的受支持辅助能力时使用，并遵守专项合同。 | `README.md` [packaged] |
+| `allincms.mutation-authorization.allincms-mutation-authorization-ttl-ms` | `mutation-authorization.mjs#ALLINCMS_MUTATION_AUTHORIZATION_TTL_MS` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `README.md` [packaged] |
+| `allincms.mutation-authorization.allincms-mutation-authorization-version` | `mutation-authorization.mjs#ALLINCMS_MUTATION_AUTHORIZATION_VERSION` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `README.md` [packaged] |
+| `allincms.mutation-authorization.article-image-draft-operation` | `mutation-authorization.mjs#ARTICLE_IMAGE_DRAFT_OPERATION` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `README.md` [packaged] |
+| `allincms.mutation-authorization.compute-allin-cms-mutation-target-digest` | `mutation-authorization.mjs#computeAllinCmsMutationTargetDigest` | builder | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `README.md` [packaged] |
+| `allincms.mutation-authorization.derive-allin-cms-mutation-binding` | `mutation-authorization.mjs#deriveAllinCmsMutationBinding` | builder | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `README.md` [packaged] |
+
+### 登录、用户与站点（15）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.workspace-preflight.run-allin-cms-workspace-preflight` | `workspace-preflight.mjs#runAllinCmsWorkspacePreflight` | controller | orchestrate | **canonical** | active | packaged | local_tested | AllinCMS 任务开始时默认调用：在当前浏览器 session 中检查登录、读取用户与完整站点列表，并在确认未登录时执行登录页交接。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.build-allin-cms-login-handoff` | `workspace-preflight.mjs#buildAllinCmsLoginHandoff` | builder | transform | **supported** | active | packaged | local_tested | 需要 workspace 域的受支持辅助能力时使用，并遵守专项合同。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.build-allin-cms-sites-rsc-request` | `workspace-preflight.mjs#buildAllinCmsSitesRscRequest` | builder | transform | **supported** | active | packaged | local_tested | 需要 workspace 域的受支持辅助能力时使用，并遵守专项合同。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.inspect-allin-cms-workspace-session` | `workspace-preflight.mjs#inspectAllinCmsWorkspaceSession` | reader | read | **supported** | active | packaged | local_tested | 需要 workspace 域的受支持辅助能力时使用，并遵守专项合同。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.list-allin-cms-sites` | `workspace-preflight.mjs#listAllinCmsSites` | reader | read | **supported** | active | packaged | local_tested | 需要 workspace 域的受支持辅助能力时使用，并遵守专项合同。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.parse-allin-cms-workspace-rsc` | `workspace-preflight.mjs#parseAllinCmsWorkspaceRsc` | reader | read | **supported** | active | packaged | local_tested | 需要 workspace 域的受支持辅助能力时使用，并遵守专项合同。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.select-exact-allin-cms-site` | `workspace-preflight.mjs#selectExactAllinCmsSite` | reader | read | **supported** | active | packaged | local_tested | 需要 workspace 域的受支持辅助能力时使用，并遵守专项合同。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.validate-allin-cms-create-site-input` | `workspace-preflight.mjs#validateAllinCmsCreateSiteInput` | validator | transform | **supported** | active | packaged | local_tested | 需要 workspace 域的受支持辅助能力时使用，并遵守专项合同。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.allincms-sign-in-path` | `workspace-preflight.mjs#ALLINCMS_SIGN_IN_PATH` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.allincms-sign-in-url` | `workspace-preflight.mjs#ALLINCMS_SIGN_IN_URL` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.allincms-sites-path` | `workspace-preflight.mjs#ALLINCMS_SITES_PATH` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.allincms-workspace-origin` | `workspace-preflight.mjs#ALLINCMS_WORKSPACE_ORIGIN` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.allincms-workspace-preflight-statuses` | `workspace-preflight.mjs#ALLINCMS_WORKSPACE_PREFLIGHT_STATUSES` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.discover-allin-cms-create-site-client-contract` | `workspace-preflight.mjs#discoverAllinCmsCreateSiteClientContract` | controller | orchestrate | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+| `allincms.workspace-preflight.build-allin-cms-create-site-action-request` | `workspace-preflight.mjs#buildAllinCmsCreateSiteActionRequest` | builder | transform | **blocked** | experimental | packaged | local_tested | 仅用于审查或迁移，不得作为默认执行入口。 BLOCK：仅构造当前部署请求；缺结构化授权、发送控制器、before/after 站点 ID 差集、歧义恢复和创建后完整回读。 | `workspace-preflight-contract.json` [packaged]<br>`workspace-preflight.md` [packaged] |
+
+### 媒体（13）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.upload-media-browser.upload-allin-cms-media-serial` | `upload-media-browser.mjs#uploadAllinCmsMediaSerial` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 media 域默认业务路径时使用；先满足专项合同与授权闸。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.check-allin-cms-media-runtime` | `upload-media-browser.mjs#checkAllinCmsMediaRuntime` | reader | read | **supported** | active | packaged | local_tested | 需要 media 域的受支持辅助能力时使用，并遵守专项合同。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.compute-allin-cms-media-upload-file-list-digest` | `upload-media-browser.mjs#computeAllinCmsMediaUploadFileListDigest` | builder | transform | **supported** | active | packaged | local_tested | 需要 media 域的受支持辅助能力时使用，并遵守专项合同。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.create-allin-cms-media-upload-authorization-context` | `upload-media-browser.mjs#createAllinCmsMediaUploadAuthorizationContext` | factory | transform | **supported** | active | packaged | local_tested | 需要 media 域的受支持辅助能力时使用，并遵守专项合同。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.read-allin-cms-image-index` | `upload-media-browser.mjs#readAllinCmsImageIndex` | reader | read | **supported** | active | packaged | local_tested | 需要 media 域的受支持辅助能力时使用，并遵守专项合同。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.reconcile-allin-cms-media-direct` | `upload-media-browser.mjs#reconcileAllinCmsMediaDirect` | reader | read | **supported** | active | packaged | local_tested | 需要 media 域的受支持辅助能力时使用，并遵守专项合同。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.verify-allin-cms-media-url` | `upload-media-browser.mjs#verifyAllinCmsMediaUrl` | validator | transform | **supported** | active | packaged | local_tested | 需要 media 域的受支持辅助能力时使用，并遵守专项合同。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.open-allin-cms-media` | `upload-media-browser.mjs#openAllinCmsMedia` | mutation_controller | write | **compatibility** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.upload-allin-cms-media` | `upload-media-browser.mjs#uploadAllinCmsMedia` | mutation_controller | write | **compatibility** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.upload-allin-cms-media-batch` | `upload-media-browser.mjs#uploadAllinCmsMediaBatch` | mutation_controller | write | **compatibility** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.upload-allin-cms-media-direct` | `upload-media-browser.mjs#uploadAllinCmsMediaDirect` | mutation_primitive | write | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.delete-allin-cms-media-direct` | `upload-media-browser.mjs#deleteAllinCmsMediaDirect` | mutation_primitive | write | **blocked** | experimental | packaged | local_tested | 仅用于审查或迁移，不得作为默认执行入口。 BLOCK：仍使用裸布尔授权；在迁移为与 siteKey、mediaId、标题和 URL 绑定的结构化授权前禁止默认调用。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+| `allincms.upload-media-browser.update-allin-cms-media-metadata-direct` | `upload-media-browser.mjs#updateAllinCmsMediaMetadataDirect` | mutation_primitive | write | **blocked** | experimental | packaged | local_tested | 仅用于审查或迁移，不得作为默认执行入口。 BLOCK：仍使用裸布尔授权，title/alt/caption 未绑定摘要；在结构化授权迁移前禁止默认调用。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged]<br>`observed-contract.redacted.json` [packaged] |
+
+### 文章格式（9）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.article-content-formats.publishable-article-markdown-to-allin-cms-slate` | `article-content-formats.mjs#publishableArticleMarkdownToAllinCmsSlate` | converter | transform | **canonical** | active | packaged | local_tested | 执行 article_format 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.allincms-article-format-support` | `article-content-formats.mjs#ALLINCMS_ARTICLE_FORMAT_SUPPORT` | constant | metadata | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.article-format-profile` | `article-content-formats.mjs#ARTICLE_FORMAT_PROFILE` | constant | metadata | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.article-format-profile-date` | `article-content-formats.mjs#ARTICLE_FORMAT_PROFILE_DATE` | constant | metadata | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.create-canonical-allin-cms-slate-examples` | `article-content-formats.mjs#createCanonicalAllinCmsSlateExamples` | factory | transform | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.extract-publishable-article-markdown` | `article-content-formats.mjs#extractPublishableArticleMarkdown` | builder | transform | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.markdown-to-allin-cms-slate` | `article-content-formats.mjs#markdownToAllinCmsSlate` | converter | transform | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.publishable-body-end-marker` | `article-content-formats.mjs#PUBLISHABLE_BODY_END_MARKER` | constant | metadata | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+| `allincms.article-content-formats.publishable-body-start-marker` | `article-content-formats.mjs#PUBLISHABLE_BODY_START_MARKER` | constant | metadata | **supported** | active | packaged | local_tested | 需要 article_format 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged] |
+
+### 文章正文图片（13）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.article-image-binding.bind-and-save-allin-cms-article-draft-direct` | `article-image-binding.mjs#bindAndSaveAllinCmsArticleDraftDirect` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 article_image 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.audit-article-image-binding` | `article-image-binding.mjs#auditArticleImageBinding` | reader | read | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.build-allin-cms-slate-content` | `article-image-binding.mjs#buildAllinCmsSlateContent` | converter | transform | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.create-article-image-binding-manifest` | `article-image-binding.mjs#createArticleImageBindingManifest` | factory | transform | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.read-allin-cms-article-draft-from-page` | `article-image-binding.mjs#readAllinCmsArticleDraftFromPage` | reader | read | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.replace-markdown-image-occurrences` | `article-image-binding.mjs#replaceMarkdownImageOccurrences` | converter | transform | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.tokenize-markdown-images` | `article-image-binding.mjs#tokenizeMarkdownImages` | builder | transform | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.verify-article-image-readback` | `article-image-binding.mjs#verifyArticleImageReadback` | validator | transform | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.verify-article-media-mappings` | `article-image-binding.mjs#verifyArticleMediaMappings` | validator | transform | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.verify-fresh-article-image-occurrences` | `article-image-binding.mjs#verifyFreshArticleImageOccurrences` | validator | transform | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.write-article-image-binding-manifest` | `article-image-binding.mjs#writeArticleImageBindingManifest` | controller | orchestrate | **supported** | active | packaged | local_tested | 需要 article_image 域的受支持辅助能力时使用，并遵守专项合同。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.internal-internal` | `article-image-binding.mjs#_internal` | internal_bundle | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-image-binding-contract.json` [packaged] |
+| `allincms.article-image-binding.save-allin-cms-article-draft-direct` | `article-image-binding.mjs#saveAllinCmsArticleDraftDirect` | mutation_primitive | write | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-image-binding-contract.json` [packaged] |
+
+### 文章（27）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.article-operations.delete-post` | `article-operations.mjs#deletePost` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 article 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.publish-post` | `article-operations.mjs#publishPost` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 article 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.save-post-draft` | `article-operations.mjs#savePostDraft` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 article 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.unpublish-post` | `article-operations.mjs#unpublishPost` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 article 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.assert-same-site` | `article-operations.mjs#assertSameSite` | validator | transform | **supported** | active | packaged | local_tested | 需要 article 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.build-article-payload` | `article-operations.mjs#buildArticlePayload` | builder | transform | **supported** | active | packaged | local_tested | 需要 article 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.normalize-article-cover-image` | `article-operations.mjs#normalizeArticleCoverImage` | builder | transform | **supported** | active | packaged | local_tested | 需要 article 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.allincms-article-format-support` | `article-operations.mjs#ALLINCMS_ARTICLE_FORMAT_SUPPORT` | constant | metadata | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.article-format-profile` | `article-operations.mjs#ARTICLE_FORMAT_PROFILE` | constant | metadata | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.article-format-profile-date` | `article-operations.mjs#ARTICLE_FORMAT_PROFILE_DATE` | constant | metadata | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.create-canonical-allin-cms-slate-examples` | `article-operations.mjs#createCanonicalAllinCmsSlateExamples` | factory | transform | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.extract-publishable-article-markdown` | `article-operations.mjs#extractPublishableArticleMarkdown` | builder | transform | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.markdown-to-allin-cms-slate` | `article-operations.mjs#markdownToAllinCmsSlate` | converter | transform | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.publishable-body-end-marker` | `article-operations.mjs#PUBLISHABLE_BODY_END_MARKER` | constant | metadata | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.publishable-body-start-marker` | `article-operations.mjs#PUBLISHABLE_BODY_START_MARKER` | constant | metadata | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.publishable-article-markdown-to-allin-cms-slate` | `article-operations.mjs#publishableArticleMarkdownToAllinCmsSlate` | converter | transform | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.internal-internal` | `article-operations.mjs#_internal` | internal_bundle | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.article-fields` | `article-operations.mjs#ARTICLE_FIELDS` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.article-modes` | `article-operations.mjs#ARTICLE_MODES` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.compare-expected-readback` | `article-operations.mjs#compareExpectedReadback` | controller | orchestrate | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.cover-image-persisted-fields` | `article-operations.mjs#COVER_IMAGE_PERSISTED_FIELDS` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.create-allin-cms-action-client` | `article-operations.mjs#createAllinCmsActionClient` | mutation_primitive | write | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.make-probe-identity` | `article-operations.mjs#makeProbeIdentity` | builder | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.reconcile-ambiguous-post-action` | `article-operations.mjs#reconcileAmbiguousPostAction` | reconciler | read | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.run-action-with-recovery` | `article-operations.mjs#runActionWithRecovery` | mutation_primitive | write | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.workspace-origin` | `article-operations.mjs#WORKSPACE_ORIGIN` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.create-post-draft` | `article-operations.mjs#createPostDraft` | mutation_controller | write | **blocked** | experimental | packaged | local_tested | 仅用于审查或迁移，不得作为默认执行入口。 BLOCK：只有在精确站点完成 live postCreate 合同确认及 before/after 唯一新 ID 证明后才可启用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+
+### 分类与标签（10）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.article-operations.create-post-category` | `article-operations.mjs#createPostCategory` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 taxonomy 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.create-post-tag` | `article-operations.mjs#createPostTag` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 taxonomy 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.delete-post-category` | `article-operations.mjs#deletePostCategory` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 taxonomy 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.delete-post-tag` | `article-operations.mjs#deletePostTag` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 taxonomy 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.update-post-category` | `article-operations.mjs#updatePostCategory` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 taxonomy 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.update-post-tag` | `article-operations.mjs#updatePostTag` | mutation_controller | write | **canonical** | active | packaged | local_tested | 执行 taxonomy 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.assert-no-duplicate-slug` | `article-operations.mjs#assertNoDuplicateSlug` | validator | transform | **supported** | active | packaged | local_tested | 需要 taxonomy 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.build-category-payload` | `article-operations.mjs#buildCategoryPayload` | builder | transform | **supported** | active | packaged | local_tested | 需要 taxonomy 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.build-tag-payload` | `article-operations.mjs#buildTagPayload` | builder | transform | **supported** | active | packaged | local_tested | 需要 taxonomy 域的受支持辅助能力时使用，并遵守专项合同。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-operations.taxonomy-types` | `article-operations.mjs#TAXONOMY_TYPES` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+
+### 计划运行与证据（2）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.content-run-controller.run-allin-cms-content-plan` | `content-run-controller.mjs#runAllinCmsContentPlan` | batch_controller | orchestrate | **canonical** | active | source_only | local_tested | 在完整 website-content-ops 源码 checkout 中执行已批准的跨 taxonomy、media、article 或受支持实体计划时使用。 | `README.md` [packaged]<br>`live-run-evidence.schema.json` [source_only]<br>`verification-evidence-contract.json` [packaged] |
+| `allincms.content-run-controller.validate-allin-cms-live-run-evidence` | `content-run-controller.mjs#validateAllinCmsLiveRunEvidence` | validator | read | **supported** | active | source_only | local_tested | 在完整 website-content-ops 源码 checkout 中校验本地运行证据是否满足结构和终态一致性时使用。 | `README.md` [packaged]<br>`live-run-evidence.schema.json` [source_only]<br>`verification-evidence-contract.json` [packaged] |
+
+### 批处理（1）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.article-operations.run-article-batch-serial` | `article-operations.mjs#runArticleBatchSerial` | batch_controller | write | **canonical** | active | packaged | local_tested | 执行 batch 域默认业务路径时使用；先满足专项合同与授权闸。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+
+### 接口 Registry 工具（9）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.registry.build-index-cli` | `npm run interfaces:index` | cli | transform | **canonical** | active | packaged | local_tested | Registry、Schema 或索引呈现规则变化后重建 INTERFACE-INDEX.md。 | `interface-registry.schema.json` [packaged]<br>`INTERFACE-INDEX.md` [packaged] |
+| `allincms.registry.check-index-cli` | `npm run interfaces:index:check` | cli | read | **canonical** | active | packaged | local_tested | CI、审查或提交前检查 INTERFACE-INDEX.md 是否发生生成漂移。 | `interface-registry.schema.json` [packaged]<br>`INTERFACE-INDEX.md` [packaged] |
+| `allincms.registry.validate-cli` | `npm run interfaces:validate` | cli | read | **canonical** | active | packaged | local_tested | 修改任何 Adapter export、CLI、Registry、Schema、合同引用或 package allowlist 后首先执行。 | `interface-registry.schema.json` [packaged]<br>`README.md` [packaged] |
+| `allincms.registry.render-interface-index` | `scripts/build-interface-index.mjs#renderInterfaceIndex` | converter | transform | **supported** | active | packaged | local_tested | 需要从 interface-registry.json 确定性生成或测试人类/AI 查询索引时使用。 | `interface-registry.schema.json` [packaged]<br>`INTERFACE-INDEX.md` [packaged] |
+| `allincms.registry.validate-interface-registry` | `scripts/validate-interface-registry.mjs#validateInterfaceRegistry` | validator | read | **supported** | active | packaged | local_tested | 需要程序化验证接口 Registry 是否覆盖当前源码与可操作 CLI，并检查合同引用和包边界时使用。 | `interface-registry.schema.json` [packaged]<br>`interface-registry.json` [packaged]<br>`README.md` [packaged] |
+| `allincms.registry.adapter-root` | `scripts/validate-interface-registry.mjs#ADAPTER_ROOT` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Registry 校验器、索引生成器和本地测试解析 Adapter 文件；不作为业务接口。 | `interface-registry.schema.json` [packaged] |
+| `allincms.registry.extract-esm-export-bindings` | `scripts/validate-interface-registry.mjs#extractEsmExportBindings` | reader | read | **internal** | active | packaged | local_tested | 仅供 Registry 完整性校验和测试对比源码 export 集合；不执行模块或网络请求。 | `interface-registry.schema.json` [packaged]<br>`interface-registry.json` [packaged] |
+| `allincms.registry.registry-path` | `scripts/validate-interface-registry.mjs#REGISTRY_PATH` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Registry 校验器和本地测试定位 interface-registry.json；不作为业务接口。 | `interface-registry.json` [packaged] |
+| `allincms.registry.schema-path` | `scripts/validate-interface-registry.mjs#SCHEMA_PATH` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Registry 校验器和本地测试定位 interface-registry.schema.json；不作为业务接口。 | `interface-registry.schema.json` [packaged] |
+
+### 命令行（1）
+
+| Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
+|---|---|---|---|---|---|---|---|---|---|
+| `allincms.cli.verify-media` | `node verify-media.mjs` | cli | read | **supported** | active | packaged | unverified | 需要从命令行校验媒体 URL、清单或上传证据时使用。 | `AI-START-HERE.md` [packaged]<br>`media-operations-contract.redacted.json` [packaged] |
+
+## 证据声明
+
+- 本索引只表示接口已被登记和分类，不表示所有接口 public、stable、production-ready 或跨部署兼容。
+- 当前本地测试通过只能支撑 `local_tested`；远程写入仍必须按接口合同完成授权、请求、后台回读及需要时的前台验收。
+- Registry 中的 `source_only` 测试或证据引用是源码 provenance，不属于最小 npm 运行包；`interfaces:validate` 会在源码模式要求其存在，在最小包模式只放行明确标注的缺失。

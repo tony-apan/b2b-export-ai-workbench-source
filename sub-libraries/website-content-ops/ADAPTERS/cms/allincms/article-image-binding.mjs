@@ -23,6 +23,7 @@ import {
   verifyAllinCmsMediaUrl,
 } from './upload-media-browser.mjs';
 import { ARTICLE_IMAGE_DRAFT_OPERATION, validateAllinCmsMutationAuthorizationContext } from './mutation-authorization.mjs';
+import { COVER_IMAGE_PERSISTED_FIELDS, normalizeArticleCoverImage } from './article-operations.mjs';
 
 const WORKSPACE_ORIGIN = 'https://workspace.laicms.com';
 const MANIFEST_SCHEMA_VERSION = 2;
@@ -1036,14 +1037,24 @@ function normalizedDraftPayload(defaults, overrides, siteId, postId) {
   if (!String(payload.title || '').trim()) throw new Error('Article title is required');
   if (!String(payload.slug || '').trim()) throw new Error('Article slug is required');
   validateArticleSlateContent(payload.content);
+  payload.coverImage = normalizeArticleCoverImage(payload.coverImage);
   return payload;
+}
+
+function persistedCoverImageShape(value) {
+  if (value === null || value === undefined) return value ?? null;
+  return Object.fromEntries(COVER_IMAGE_PERSISTED_FIELDS
+    .filter((field) => Object.hasOwn(value, field))
+    .map((field) => [field, value[field]]));
 }
 
 function compareReadback(payload, defaults) {
   const fields = ['title', 'slug', 'excerpt', 'order', 'coverImage', 'categories', 'tags', 'content'];
   const mismatches = [];
   for (const field of fields) {
-    if (JSON.stringify(payload[field]) !== JSON.stringify(defaults[field])) mismatches.push(field);
+    const expected = field === 'coverImage' ? persistedCoverImageShape(payload[field]) : payload[field];
+    const actual = field === 'coverImage' ? persistedCoverImageShape(defaults[field]) : defaults[field];
+    if (JSON.stringify(expected) !== JSON.stringify(actual)) mismatches.push(field);
   }
   return mismatches;
 }

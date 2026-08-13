@@ -6,7 +6,7 @@ template_usage: "manual-copy"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 sources: []
 related: ["../INTAKE.md", "article-brief.md", "image-manifest.md"]
 visibility: "public"
@@ -44,4 +44,4 @@ keywords: ["product record", "product facts", "specifications", "proof", "claim 
 
 | Field | Value | Status | Source | Note |
 |---|---|---|---|---|
-|  |  | confirmed / inferred / missing / conflicting |  |  |
+|  |  | confirmed / inferred / missing / conflicting / expired |  |  |

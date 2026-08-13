@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "inventory_policy": "append-only-protected-source-ids-v1",
+  "generated_from": "canonical source cards plus explicit derived-page backlinks",
+  "protected_source_ids": [
+    "SRC-20260727-ALLINCMS-OFFICIAL",
+    "SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL",
+    "SRC-20260731-B2B-SEO-CONTENT-RESEARCH"
+  ],
+  "entries": [
+    {
+      "source_id": "SRC-20260727-ALLINCMS-OFFICIAL",
+      "status": "active",
+      "card_path": "REFERENCES/SRC-20260727-ALLINCMS-OFFICIAL.md",
+      "card_sha256": "521a07570113fb0fe20d762c062be3c5e1f3e31df4e17b1d7a73896437ce296c",
+      "publication_review_status": "pending",
+      "publication_status": "BLOCK",
+      "license_status": "pending",
+      "derived_pages": [
+        "ADAPTERS/cms/allincms/article-operations.md",
+        "TOOLS.md"
+      ]
+    },
+    {
+      "source_id": "SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL",
+      "status": "active",
+      "card_path": "REFERENCES/SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL.md",
+      "card_sha256": "fd708e0477b949dc7e43b25b78fc468b10565fc2727ed54796701b6d83b2852e",
+      "publication_review_status": "pending",
+      "publication_status": "BLOCK",
+      "license_status": "pending",
+      "derived_pages": [
+        "ADAPTERS/image-hosts/README.md",
+        "ADAPTERS/image-hosts/picgo-cos.md",
+        "ADAPTERS/image-hosts/picgo-github.md",
+        "ADAPTERS/image-hosts/picgo-oss.md",
+        "ADAPTERS/image-hosts/picgo-r2.md",
+        "TOOLS.md"
+      ]
+    },
+    {
+      "source_id": "SRC-20260731-B2B-SEO-CONTENT-RESEARCH",
+      "status": "active",
+      "card_path": "REFERENCES/SRC-20260731-B2B-SEO-CONTENT-RESEARCH.md",
+      "card_sha256": "1e45760b3ba98fb564745a43d96a6a51a3b792fddd6053d9e238793f8b8b83cd",
+      "publication_review_status": "pending",
+      "publication_status": "BLOCK",
+      "license_status": "pending",
+      "derived_pages": [
+        "PLAYBOOKS/id-0001-b2b-seo-article-standard.md",
+        "PLAYBOOKS/id-0003-b2b-article-optimization-sop.md",
+        "PLAYBOOKS/id-0004-b2b-article-stage-patterns.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,553 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/website-content-ops/allincms-live-run-evidence.schema.json",
+  "title": "AllinCMS Strict Serial Live Run Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "client_id",
+    "company_id",
+    "task_id",
+    "runtime_scope",
+    "plan_id",
+    "plan_digest",
+    "target",
+    "started_at",
+    "completed_at",
+    "status",
+    "current_operation_id",
+    "operations",
+    "boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^ACRUN-[A-Za-z0-9._-]+$"
+    },
+    "client_id": {
+      "$ref": "#/$defs/nonEmpty"
+    },
+    "company_id": {
+      "$ref": "#/$defs/nonEmpty"
+    },
+    "task_id": {
+      "$ref": "#/$defs/nonEmpty"
+    },
+    "runtime_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "client_root",
+        "task_root",
+        "scope_digest"
+      ],
+      "properties": {
+        "root": {
+          "const": "customer-runtime"
+        },
+        "client_root": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "task_root": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "scope_digest": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "plan_id": {
+      "$ref": "#/$defs/nonEmpty"
+    },
+    "plan_digest": {
+      "$ref": "#/$defs/sha256"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "key",
+        "id"
+      ],
+      "properties": {
+        "scope": {
+          "enum": [
+            "account",
+            "site"
+          ]
+        },
+        "key": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "started_at": {
+      "$ref": "#/$defs/dateTime"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "running",
+        "completed",
+        "blocked",
+        "failed",
+        "ambiguous"
+      ]
+    },
+    "current_operation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operationEvidence"
+      }
+    },
+    "boundary": {
+      "const": "This evidence proves only controller-local ordering, checks and supplied authoritative readbacks; it does not by itself prove browser login, remote truth, frontend correctness, SEO, inquiry or conversion."
+    }
+  },
+  "$defs": {
+    "nonEmpty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runtimePath": {
+      "type": "string",
+      "pattern": "^customer-runtime/10_clients/[^/]+/30_tasks/[^/]+/.+$"
+    },
+    "operationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id",
+        "entity_ref",
+        "entity_type",
+        "intent",
+        "capability_ref",
+        "request_summary_digest",
+        "preflight",
+        "started_at",
+        "completed_at",
+        "status",
+        "transport",
+        "reconciliation",
+        "readback",
+        "failure_code",
+        "failure_message"
+      ],
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "entity_ref": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "entity_type": {
+          "enum": [
+            "site",
+            "article",
+            "product",
+            "category",
+            "tag",
+            "media",
+            "theme_page"
+          ]
+        },
+        "intent": {
+          "enum": [
+            "create",
+            "update",
+            "noop",
+            "explore",
+            "publish"
+          ]
+        },
+        "capability_ref": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "request_summary_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "preflight": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "checked_at",
+            "plan_digest",
+            "target_scope",
+            "target_key",
+            "deployment_fingerprint",
+            "capability_ref",
+            "authorization_expires_at",
+            "expected_current_fingerprint",
+            "observed_current_fingerprint"
+          ],
+          "properties": {
+            "checked_at": {
+              "$ref": "#/$defs/dateTime"
+            },
+            "plan_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "target_scope": {
+              "enum": [
+                "account",
+                "site"
+              ]
+            },
+            "target_key": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "deployment_fingerprint": {
+              "$ref": "#/$defs/sha256"
+            },
+            "capability_ref": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "authorization_expires_at": {
+              "$ref": "#/$defs/dateTime"
+            },
+            "expected_current_fingerprint": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "observed_current_fingerprint": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            }
+          }
+        },
+        "started_at": {
+          "$ref": "#/$defs/dateTime"
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "status": {
+          "enum": [
+            "preflight_passed",
+            "request_started",
+            "readback_passed",
+            "blocked",
+            "failed",
+            "ambiguous"
+          ]
+        },
+        "transport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "request_started",
+            "status"
+          ],
+          "properties": {
+            "request_started": {
+              "type": "boolean"
+            },
+            "status": {
+              "enum": [
+                "not_started",
+                "completed",
+                "failed",
+                "unknown"
+              ]
+            }
+          }
+        },
+        "reconciliation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "performed",
+            "verdict",
+            "authoritative",
+            "evidence_ref"
+          ],
+          "properties": {
+            "performed": {
+              "type": "boolean"
+            },
+            "verdict": {
+              "enum": [
+                "not_needed",
+                "applied",
+                "not_applied",
+                "unknown"
+              ]
+            },
+            "authoritative": {
+              "type": "boolean"
+            },
+            "evidence_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "readback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "performed",
+            "authoritative",
+            "passed",
+            "requirements",
+            "evidence_ref",
+            "checks"
+          ],
+          "properties": {
+            "performed": {
+              "type": "boolean"
+            },
+            "authoritative": {
+              "type": "boolean"
+            },
+            "passed": {
+              "type": "boolean"
+            },
+            "requirements": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/nonEmpty"
+              },
+              "uniqueItems": true
+            },
+            "evidence_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/verificationCheck"
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "failure_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "failure_message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "verificationObservations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backend_authoritative",
+        "exact_match",
+        "duplicate_count",
+        "current_fingerprint",
+        "http_status",
+        "content_type",
+        "resource_url",
+        "anonymous",
+        "decoded",
+        "editor_healthy",
+        "media_applicable"
+      ],
+      "properties": {
+        "backend_authoritative": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "exact_match": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "duplicate_count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "current_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "http_status": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "content_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "anonymous": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "decoded": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "editor_healthy": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "media_applicable": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "resource_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "verificationCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "evidence_kind",
+        "passed",
+        "artifact_ref",
+        "artifact_digest",
+        "artifact_media_type",
+        "observed_at",
+        "site_key",
+        "site_id",
+        "entity_ref",
+        "entity_id",
+        "subject_digest",
+        "method",
+        "observed_result",
+        "observations"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "evidence_kind": {
+          "enum": [
+            "backend_readback",
+            "concurrency_match",
+            "duplicate_exclusion",
+            "editor_reopen",
+            "anonymous_resource",
+            "anonymous_frontend",
+            "image_fetch_decode"
+          ]
+        },
+        "passed": {
+          "const": true
+        },
+        "artifact_ref": {
+          "$ref": "#/$defs/runtimePath"
+        },
+        "artifact_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "observed_at": {
+          "$ref": "#/$defs/dateTime"
+        },
+        "site_key": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "entity_ref": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "method": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "observed_result": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "observations": {
+          "$ref": "#/$defs/verificationObservations"
+        },
+        "artifact_media_type": {
+          "const": "application/json"
+        },
+        "site_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entity_id": {
+          "$ref": "#/$defs/nonEmpty"
+        }
+      }
+    }
+  }
+}

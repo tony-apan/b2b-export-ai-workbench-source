@@ -1,11 +1,17 @@
 {
   "schema_ref": "SCHEMAS/runtime-contract.schema.json",
-  "contract_version": 1,
+  "contract_version": 3,
   "package_id": "website-content-ops",
   "inputs": [
     {
       "name": "private_runtime_workspace",
       "type": "directory",
+      "required": true,
+      "sensitivity": "private"
+    },
+    {
+      "name": "active_runtime_scope",
+      "type": "json-object",
       "required": true,
       "sensitivity": "private"
     },
@@ -113,14 +119,204 @@
     "batch_or_global_change",
     "credential_or_account_scope"
   ],
-  "rollback_strategy": "stop at the last verified artifact; restore from the writeback record and adapter-specific rollback instructions; never infer rollback success from a toast alone.",
-  "writeback_scope": "general methods and anonymized failure patterns may return to the public mother library; customer facts and runtime evidence remain in the customer private runtime.",
+  "rollback_strategy": "stop at the last verified artifact; restore from the writeback record and adapter-specific rollback instructions; never infer rollback success from a toast alone; never copy WORKSPACE-TEMPLATE over an existing agency-operations customer-runtime or alter its registries, ACTIVE-CONTEXT.json, TASK.json, or HANDOFF.md outside the scoped runtime commands.",
+  "writeback_scope": "general methods and anonymized failure patterns may return to the public mother library; customer facts and runtime evidence remain only inside the agency-operations customer-runtime path bound to client_id, company_id, and task_id, and require de-identification plus human review before reusable writeback.",
   "private_runtime_required": true,
   "unsupported_claims": [
     "cross-deployment AllinCMS stability",
     "official API availability for observed internal endpoints",
     "automatic social-account actions",
     "stable installable Skill before release gate",
-    "human identity verification from local approval or authorization records"
-  ]
+    "human identity verification from local approval or authorization records",
+    "actual search ranking, inquiry volume, qualified inquiry rate, or conversion improvement from structural article-package checks",
+    "publication clearance for SRC-20260731-B2B-SEO-CONTENT-RESEARCH while publication_review_status or license_status is pending",
+    "current candidate release identity or release eligibility from legacy Version, preview_version, preview_tag, or historical published fields while current_candidate_identity is unassigned or current_candidate_version is null",
+    "frontend image accessibility or SEO pass while final DOM article-image alt remains empty despite non-empty CMS payload alt",
+    "CMS publication, production deployment, or live SEO acceptance from ARTICLE_PACKAGE_STRUCTURE_PASS or other local article-package checks",
+    "html lang, canonical, or Article JSON-LD pass while those three frontend SEO checks are explicitly deferred",
+    "reuse of any PASS, reviewer identity, signature, digest, or partial green result from any failed and permanently void immutable review candidate",
+    "B2B content-contract readiness or production readiness before the next immutable candidate passes four fresh reviews by reviewers who participated in neither the previous candidate review nor its remediation",
+    "primary SERP result-type acceptance when a supporting query replaces, is pooled with, or overrides the independently sampled primary query",
+    "buyer instruction to use, send, email, share, submit, upload, contact, or otherwise act on an unverified primary or fallback CTA route, including any directly linked unverified endpoint",
+    "verified CTA or fallback capability from repeated endpoint text without endpoint-specific structured evidence binding evidence kind, check ID, task, owner, process, observed result, capability acceptance, and evidence reference",
+    "mobile or 320px production readiness without executed renderer and readability checks backed by structured evidence",
+    "CMS, release, ranking, inquiry, conversion, source-license clearance, final DOM alt acceptance, or deferred frontend SEO pass from structural B2B article-contract acceptance",
+    "website-content-ops runtime isolation without the declared agency-operations runtime dependency",
+    "automated enforcement coverage for a declared B2B article gate before matching validator call paths and non-noop regression tests pass",
+    "Published lifecycle acceptance from status strings without per-axis authorization, mutation, readback, reopen, anonymous frontend, desktop, mobile, and image evidence references",
+    "current search-demand acceptance when observation_end_at exceeds evidence observed_at, snapshot captured_at, or reviewed_at",
+    "identity provenance acceptance without freshness, stable actor IDs, artifact time consistency, and an observed_at not later than reviewed_at",
+    "CTA data-policy acceptance without a current policy contract ID and version, artifact reference and digest, freshness rule, and reviewed_at ceiling",
+    "Stable, Published, production-ready, live SEO acceptance, ranking, inquiry, conversion, or revenue outcomes from a local structural PASS"
+  ],
+  "b2b_article_fail_closed_projection": {
+    "canonical_authorities": [
+      "PLAYBOOKS/id-0001-b2b-seo-article-standard.md",
+      "PLAYBOOKS/id-0003-b2b-article-optimization-sop.md"
+    ],
+    "projection_scope": "runtime-and-qa-routing-only",
+    "fail_closed": true,
+    "failure_verdict": "block",
+    "required_gate_ids": [
+      "content-family-exact-singleton",
+      "ordered-six-slot-pain-chain",
+      "buyer-task-internal-link-anchor",
+      "cta-transmission-route-safety",
+      "product-claim-evidence-binding",
+      "stable-actor-identity-separation",
+      "artifact-digest-byte-binding",
+      "production-snapshot-kind-freshness-provenance",
+      "unsupported-outcome-semantic-detection",
+      "fixture-production-proof-boundary",
+      "published-lifecycle-evidence-binding",
+      "search-demand-observation-ceilings",
+      "identity-provenance-freshness-review-ceiling",
+      "cta-data-policy-freshness-version-digest",
+      "local-structural-pass-claim-boundary"
+    ],
+    "gate_requirements": {
+      "content_family_exact_singleton": {
+        "exactly_one_family_required": true,
+        "zero_or_multiple_matches_block": true
+      },
+      "ordered_six_slot_pain_chain": {
+        "canonical_order_required": true,
+        "unique_slots_required": true,
+        "adjacent_causality_required": true
+      },
+      "buyer_task_internal_link_anchor": {
+        "anchor_must_express_buyer_task_decision_evidence_or_output": true,
+        "supplier_centric_promotional_anchor_blocks": true
+      },
+      "cta_transmission_route_safety": {
+        "open_class_transmission_actions_and_obfuscated_equivalents_in_scope": true,
+        "packet_transfer_or_control_semantics_in_scope": true,
+        "imperative_modal_passive_conditional_and_recommendation_forms_in_scope": true,
+        "unverified_route_instruction_or_link_blocks": true,
+        "same_clause_local_only_negation_or_gated_after_verification_required_for_exception": true,
+        "cross_clause_or_trailing_disclaimer_does_not_exempt": true
+      },
+      "product_claim_evidence_binding": {
+        "claim_ledger_required": true,
+        "claim_id_required": true,
+        "evidence_ref_required": true,
+        "applicability_boundary_required": true,
+        "target_page_parity_required": true
+      },
+      "stable_actor_identity_separation": {
+        "stable_producer_id_required": true,
+        "stable_independent_reviewer_id_required": true,
+        "producer_reviewer_separation_by_id_required": true
+      },
+      "artifact_digest_byte_binding": {
+        "artifact_ref_required_when_digest_present": true,
+        "digest_must_match_referenced_artifact_bytes": true
+      },
+      "production_snapshot_kind_freshness_provenance": {
+        "kind_specific_nonempty_payload_required": true,
+        "freshness_gate_required": true,
+        "scope_subject_capture_provenance_required": true,
+        "stable_producer_and_reviewer_ids_required": true
+      },
+      "unsupported_outcome_semantic_detection": {
+        "semantic_synonyms_in_scope": true,
+        "punctuation_and_default_ignorable_obfuscation_in_scope": true,
+        "structural_acceptance_must_not_imply_ranking_inquiry_conversion_or_revenue_outcomes": true
+      },
+      "fixture_production_proof_boundary": {
+        "fixtures_are_production_proof": false,
+        "production_shaped_fixture_requires_explicit_fixture_label": true
+      },
+      "published_lifecycle_evidence_binding": {
+        "status_only_is_evidence": false,
+        "required_evidence_axes": [
+          "authorization",
+          "cms-mutation",
+          "backend-readback",
+          "editor-reopen",
+          "anonymous-frontend",
+          "desktop-render",
+          "mobile-render",
+          "image-fetch-decode"
+        ],
+        "per_axis_structured_evidence_fields": [
+          "evidence_ref",
+          "artifact_digest",
+          "site_id",
+          "record_id_or_url",
+          "producer_id",
+          "reviewer_id",
+          "observed_at"
+        ],
+        "reviewed_at_ceiling_required": true,
+        "missing_unbound_or_failed_axis_blocks": true
+      },
+      "search_demand_observation_ceilings": {
+        "observation_start_at_required": true,
+        "observation_end_at_required": true,
+        "date_only_window_is_sufficient": false,
+        "start_must_not_exceed_end": true,
+        "end_must_not_exceed_evidence_observed_at": true,
+        "end_must_not_exceed_snapshot_captured_at": true,
+        "end_must_not_exceed_reviewed_at": true,
+        "kind_specific_freshness_policy_required": true
+      },
+      "identity_provenance_freshness_review_ceiling": {
+        "structured_production_evidence_required": true,
+        "freshness_gate_required": true,
+        "observed_at_must_not_exceed_reviewed_at": true,
+        "record_section_and_artifact_time_consistency_required": true,
+        "stable_producer_and_reviewer_ids_required": true,
+        "stale_or_post_review_identity_provenance_blocks": true
+      },
+      "cta_data_policy_freshness_version_digest": {
+        "policy_contract_id_required": true,
+        "policy_version_required": true,
+        "policy_artifact_ref_required": true,
+        "policy_artifact_digest_required": true,
+        "checked_at_freshness_policy_required": true,
+        "checked_at_must_not_exceed_reviewed_at": true,
+        "policy_and_deletion_evidence_latest_allowed_at_required": true,
+        "stale_post_review_or_version_drift_blocks": true
+      },
+      "local_structural_pass_claim_boundary": {
+        "local_structural_pass_proves_only_declared_schema_and_structural_checks": true,
+        "stable_published_production_ready_or_live_seo_inference_blocks": true,
+        "ranking_inquiry_conversion_or_revenue_inference_blocks": true,
+        "deferred_blocks_remain_not_pass": true
+      }
+    },
+    "deferred_frontend_seo_blocks": [
+      "html-lang",
+      "canonical",
+      "article-json-ld"
+    ],
+    "deferred_blocks_are_pass": false,
+    "automation_coverage_claimed": false,
+    "automation_coverage_status": "blocked-pending-matching-validator-call-paths-and-non-noop-regressions",
+    "automation_coverage_evidence_required_for_pass": true,
+    "local_structural_pass_scope": "schema-and-declared-contract-shape-only"
+  },
+  "external_runtime_dependency": {
+    "package_id": "agency-operations",
+    "dependency_mode": "required",
+    "minimum_contract_version": 1,
+    "required_runtime_schema_version": 1,
+    "required_scope_keys": [
+      "client_id",
+      "company_id",
+      "task_id"
+    ],
+    "required_machine_truth": [
+      "RUNTIME.json",
+      "00_control/ACTIVE-CONTEXT.json",
+      "00_control/clients-registry.json",
+      "00_control/task-registry.jsonl",
+      "CLIENT.json",
+      "TASK.json",
+      "HANDOFF.md"
+    ],
+    "fail_closed_without_active_scope": true,
+    "runtime_upgrade_must_not_overwrite_existing_data": true
+  }
 }

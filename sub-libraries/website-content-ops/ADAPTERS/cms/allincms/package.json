@@ -2,32 +2,56 @@
   "name": "allincms-media-adapter",
   "version": "0.3.2-preview.1",
   "private": true,
-  "description": "Fail-closed AllinCMS media, article-draft, and taxonomy adapter used by website-content-ops.",
-  "license": "Apache-2.0",
+  "description": "Fail-closed AllinCMS workspace preflight, media, article-draft, and taxonomy adapter used by website-content-ops.",
+  "license": "UNLICENSED",
   "type": "module",
   "engines": {
     "node": ">=20.9.0"
   },
   "files": [
     "AI-START-HERE.md",
+    "INTERFACE-INDEX.md",
     "README.md",
+    "article-content-formats.mjs",
     "article-image-binding-contract.json",
     "article-image-binding.mjs",
     "article-operations-contract.json",
     "article-operations.md",
     "article-operations.mjs",
+    "interface-registry.json",
+    "interface-registry.schema.json",
+    "media-metadata-and-ai-vision-sop.md",
+    "media-operations-contract.redacted.json",
     "mutation-authorization.mjs",
+    "observed-contract.redacted.json",
+    "scripts/build-interface-index.mjs",
+    "scripts/validate-interface-registry.mjs",
     "upload-media-browser.mjs",
-    "verify-media.mjs"
+    "verification-evidence-contract.json",
+    "verify-media.mjs",
+    "workspace-preflight-contract.json",
+    "workspace-preflight.md",
+    "workspace-preflight.mjs"
   ],
   "scripts": {
-    "test": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs",
+    "test": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs workspace-preflight.test.mjs content-run-controller.test.mjs interface-registry.test.mjs",
     "test:media": "node --test upload-media-browser.test.mjs",
     "test:article-images": "node --test article-image-binding.test.mjs",
-    "test:articles": "node --test article-operations.test.mjs article-image-binding.test.mjs",
-    "test:all": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs"
+    "test:articles": "node --test article-content-formats.test.mjs article-operations.test.mjs article-image-binding.test.mjs",
+    "test:all": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs workspace-preflight.test.mjs content-run-controller.test.mjs interface-registry.test.mjs",
+    "test:workspace": "node --test workspace-preflight.test.mjs",
+    "interfaces:validate": "node scripts/validate-interface-registry.mjs",
+    "interfaces:index": "node scripts/build-interface-index.mjs",
+    "interfaces:index:check": "node scripts/build-interface-index.mjs --check",
+    "test:interfaces": "node --test interface-registry.test.mjs",
+    "test:controller": "node --test content-run-controller.test.mjs"
   },
   "dependencies": {
+    "acorn": "8.15.0",
+    "ajv": "8.20.0",
     "sharp": "0.35.3"
-  }
+  },
+  "source_only_modules": [
+    "content-run-controller.mjs"
+  ]
 }

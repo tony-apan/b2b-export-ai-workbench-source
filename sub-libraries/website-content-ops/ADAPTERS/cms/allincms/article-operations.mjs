@@ -8,8 +8,19 @@
  * this module is the current site-aware execution contract.
  */
 import { randomUUID } from 'node:crypto';
-import { isDeepStrictEqual } from 'node:util';
 import { deriveAllinCmsMutationBinding, validateAllinCmsMutationAuthorizationContext } from './mutation-authorization.mjs';
+
+export {
+  ALLINCMS_ARTICLE_FORMAT_SUPPORT,
+  ARTICLE_FORMAT_PROFILE,
+  ARTICLE_FORMAT_PROFILE_DATE,
+  PUBLISHABLE_BODY_END_MARKER,
+  PUBLISHABLE_BODY_START_MARKER,
+  createCanonicalAllinCmsSlateExamples,
+  extractPublishableArticleMarkdown,
+  markdownToAllinCmsSlate,
+  publishableArticleMarkdownToAllinCmsSlate,
+} from './article-content-formats.mjs';
 
 export const WORKSPACE_ORIGIN = 'https://workspace.laicms.com';
 export const ARTICLE_MODES = Object.freeze(['update', 'publish', 'unpublish']);
@@ -18,6 +29,9 @@ export const ARTICLE_FIELDS = Object.freeze([
   'categories', 'tags', 'content', 'siteId', 'postId', 'mode',
 ]);
 export const TAXONOMY_TYPES = Object.freeze(['category', 'tag']);
+export const COVER_IMAGE_PERSISTED_FIELDS = Object.freeze([
+  'name', 'alt', 'type', 'source', 'path', 'size', 'mimeType',
+]);
 
 const SUCCESS_STATUSES = new Set([
   'mutation_succeeded',
@@ -70,8 +84,21 @@ function actionRoute(siteKey, suffix) {
   return `/${key}/posts${suffix || ''}`;
 }
 
+function normalizeComparableJson(value) {
+  if (value === undefined) return ['undefined'];
+  if (value === null) return ['null'];
+  if (Array.isArray(value)) return ['array', value.map(normalizeComparableJson)];
+  if (typeof value === 'object') {
+    return ['object', Object.keys(value).sort().map((key) => [key, normalizeComparableJson(value[key])])];
+  }
+  return [typeof value, value];
+}
+
 function sameJson(left, right) {
-  return isDeepStrictEqual(left, right);
+  // CDP/browser readback objects can carry a different realm prototype even
+  // when their persisted JSON values are identical. Compare JSON semantics,
+  // not JavaScript realm identity or prototype provenance.
+  return JSON.stringify(normalizeComparableJson(left)) === JSON.stringify(normalizeComparableJson(right));
 }
 
 function readbackStatus(actual) {
@@ -120,15 +147,24 @@ function validateSlateContent(content) {
   }
 }
 
-function ensureCoverShape(coverImage) {
+export function normalizeArticleCoverImage(coverImage) {
   if (coverImage === null || coverImage === undefined) return coverImage ?? null;
   if (!coverImage || typeof coverImage !== 'object' || Array.isArray(coverImage)) {
     throw new Error('coverImage must be a media object or null');
   }
+  const missing = COVER_IMAGE_PERSISTED_FIELDS.filter((field) => !Object.hasOwn(coverImage, field));
+  if (missing.length) {
+    throw new Error(`coverImage is missing canonical persisted fields: ${missing.join(', ')}`);
+  }
   asNonEmptyString(coverImage.name, 'coverImage.name');
+  if (typeof coverImage.alt !== 'string') throw new Error('coverImage.alt must be a string');
   asNonEmptyString(coverImage.type, 'coverImage.type');
   asNonEmptyString(coverImage.source, 'coverImage.source');
-  if (!coverImage.path && !coverImage.url) throw new Error('coverImage.path or coverImage.url is required');
+  asNonEmptyString(coverImage.path, 'coverImage.path');
+  if (!Number.isInteger(coverImage.size) || coverImage.size < 0) {
+    throw new Error('coverImage.size must be a non-negative integer');
+  }
+  asNonEmptyString(coverImage.mimeType, 'coverImage.mimeType');
   return structuredClone(coverImage);
 }
 
@@ -161,7 +197,7 @@ export function buildArticlePayload({
   payload.categories = normalizeIdArray(payload.categories, 'categories');
   payload.tags = normalizeIdArray(payload.tags, 'tags');
   validateSlateContent(payload.content);
-  payload.coverImage = ensureCoverShape(payload.coverImage);
+  payload.coverImage = normalizeArticleCoverImage(payload.coverImage);
   return payload;
 }
 
@@ -192,15 +228,59 @@ export function buildTagPayload({ siteId, name, slug, description, contentType =
 export function assertNoDuplicateSlug(records, slug, siteId, label = 'taxonomy') {
   const normalizedSlug = asNonEmptyString(slug, `${label} slug`);
   const normalizedSiteId = assertSiteId(siteId);
-  const duplicate = assertRecordsSnapshot(records, label).find((record) => record?.siteId === normalizedSiteId && String(record?.slug || '').trim() === normalizedSlug);
-  if (duplicate) throw new Error(`${label} slug already exists: ${slug}`);
+  const snapshot = assertRecordsSnapshot(records, label);
+  for (const [index, record] of snapshot.entries()) {
+    if (!record || typeof record !== 'object' || Array.isArray(record)) {
+      throw new Error(`${label}[${index}] must be a record object`);
+    }
+    const recordSiteId = asNonEmptyString(record.siteId, `${label}[${index}].siteId`);
+    if (recordSiteId === normalizedSiteId && String(record.slug || '').trim() === normalizedSlug) {
+      throw new Error(`${label} slug already exists: ${slug}`);
+    }
+  }
   return true;
 }
 
 export function assertSameSite(record, siteId, label = 'record') {
-  assertSiteId(siteId);
-  if (record && record.siteId && record.siteId !== siteId) throw new Error(`${label} belongs to a different site`);
+  const expectedSiteId = assertSiteId(siteId);
+  if (!record || typeof record !== 'object' || Array.isArray(record)) {
+    throw new Error(`${label} readback record is required`);
+  }
+  const actualSiteId = asNonEmptyString(record.siteId, `${label}.siteId`);
+  if (actualSiteId !== expectedSiteId) throw new Error(`${label} belongs to a different site`);
   return true;
+}
+
+function compareCreatedTaxonomyReadback(actual, payload, label) {
+  const comparableActual = actual && typeof actual === 'object' && !Array.isArray(actual)
+    ? { ...actual }
+    : actual;
+  // The current posts taxonomy RSC records omit contentType. The exact
+  // /posts taxonomy route and the fixed payload contract already scope the
+  // record to contentType=posts. Preserve an explicit conflicting value as a
+  // mismatch, but do not turn an omitted route-scoped field into a false
+  // mutation failure.
+  if (comparableActual && !Object.hasOwn(comparableActual, 'contentType') && payload.contentType === 'posts') {
+    comparableActual.contentType = 'posts';
+  }
+  const result = compareExpectedReadback(comparableActual, payload, { fields: Object.keys(payload) });
+  if (actual && typeof actual === 'object' && !Array.isArray(actual)) {
+    try {
+      assertSameSite(actual, payload.siteId, label);
+    } catch (error) {
+      result.mismatches.push(error.message);
+    }
+    try {
+      asNonEmptyString(actual.id, `${label}.id`);
+    } catch (error) {
+      result.mismatches.push(error.message);
+    }
+  } else if (!result.mismatches.includes('record is absent')) {
+    result.mismatches.push(`${label} readback record is required`);
+  }
+  result.mismatches = [...new Set(result.mismatches)];
+  result.ok = result.mismatches.length === 0;
+  return result;
 }
 
 export function compareExpectedReadback(actual, expected, { fields = [], mode = 'present' } = {}) {
@@ -460,17 +540,23 @@ export function unpublishPost(options) {
 export async function createPostDraft({
   client, siteKey, runtime, request, authorizationContext = null,
   createContractConfirmed = false, siteId, payload = { siteId }, expected, readback, refresh, match,
-  getCreatedPostId, beforePostIds, confirmExactAbsence, maxControlledRetries = 1,
+  getCreatedPostId, getCreatedPostSiteId, getAfterPostIds, beforePostIds,
+  confirmExactAbsence, maxControlledRetries = 1,
 }) {
-  assertSiteId(siteId);
+  siteId = assertSiteId(siteId);
   if (!createContractConfirmed) throw new Error('Live post-create contract confirmation is required');
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('post create payload must be an object');
+  if (Object.hasOwn(payload, 'siteId') && payload.siteId !== siteId) throw new Error('post create payload.siteId must match siteId');
   if (typeof readback !== 'function') throw new Error('readback callback is required');
   if (typeof getCreatedPostId !== 'function') throw new Error('getCreatedPostId callback is required');
+  if (typeof getCreatedPostSiteId !== 'function') throw new Error('getCreatedPostSiteId callback is required');
+  if (typeof getAfterPostIds !== 'function') throw new Error('getAfterPostIds callback is required');
   if (!Array.isArray(beforePostIds)) throw new Error('beforePostIds snapshot is required');
-  const knownPostIds = new Set(beforePostIds.map((id) => asNonEmptyString(id, 'beforePostIds item')));
+  const normalizedBeforePostIds = normalizeIdArray(beforePostIds, 'beforePostIds');
+  const knownPostIds = new Set(normalizedBeforePostIds);
   const actionClient = await requireClient({ client, siteKey, runtime, request, authorizationContext });
   const matcher = match || ((actual) => Boolean(actual && (!expected || compareExpectedReadback(actual, expected, { fields: Object.keys(expected) }).ok)));
+  let reconciledCreatedPostId = null;
   const result = await runActionWithRecovery({
     client: actionClient,
     route: actionRoute(siteKey, ''),
@@ -484,22 +570,54 @@ export async function createPostDraft({
     retryOnExactAbsence: typeof confirmExactAbsence === 'function',
     confirmExactAbsence,
     compare: (actual) => {
-      const matches = matcher(actual);
-      const createdPostId = matches ? getCreatedPostId(actual) : null;
-      const result = {
-        ok: matches && typeof createdPostId === 'string' && createdPostId.trim().length > 0 && !knownPostIds.has(createdPostId.trim()),
-        exactAbsence: actual === null || actual === undefined,
-        mismatches: [],
+      reconciledCreatedPostId = null;
+      if (actual === null || actual === undefined) {
+        return { ok: false, exactAbsence: true, mismatches: ['created post is absent from readback'] };
+      }
+      const mismatches = [];
+      let matches = false;
+      let createdPostId = null;
+      let createdPostSiteId = null;
+      let afterPostIds = [];
+      try {
+        matches = Boolean(matcher(actual));
+      } catch (error) {
+        mismatches.push(`created post matcher failed: ${error.message}`);
+      }
+      try {
+        createdPostId = asNonEmptyString(getCreatedPostId(actual), 'created post ID');
+        reconciledCreatedPostId = createdPostId;
+      } catch (error) {
+        mismatches.push('created post ID is missing from readback');
+      }
+      try {
+        createdPostSiteId = asNonEmptyString(getCreatedPostSiteId(actual), 'created post siteId');
+      } catch (error) {
+        mismatches.push('created post siteId is missing from readback');
+      }
+      try {
+        afterPostIds = normalizeIdArray(getAfterPostIds(actual), 'afterPostIds');
+      } catch (error) {
+        mismatches.push(error.message);
+      }
+      const newPostIds = afterPostIds.filter((id) => !knownPostIds.has(id));
+      if (!matches) mismatches.push('created post did not match expected readback');
+      if (createdPostSiteId && createdPostSiteId !== siteId) mismatches.push('created post belongs to a different site');
+      if (newPostIds.length !== 1) mismatches.push(`expected exactly one new post ID after create, found ${newPostIds.length}`);
+      if (createdPostId && knownPostIds.has(createdPostId)) mismatches.push('readback ID already existed before create');
+      if (createdPostId && newPostIds.length === 1 && createdPostId !== newPostIds[0]) {
+        mismatches.push('created post ID does not match the sole before/after snapshot difference');
+      }
+      return {
+        ok: mismatches.length === 0,
+        exactAbsence: false,
+        mismatches: [...new Set(mismatches)],
       };
-      if (!matches) result.mismatches.push('created post did not match expected readback');
-      if (!createdPostId) result.mismatches.push('created post ID is missing from readback');
-      if (createdPostId && knownPostIds.has(String(createdPostId).trim())) result.mismatches.push('readback ID already existed before create');
-      return result;
     },
   });
   return {
     ...result,
-    createdPostId: result.readback ? (getCreatedPostId(result.readback) || null) : null,
+    createdPostId: reconciledCreatedPostId,
   };
 }
 
@@ -554,9 +672,9 @@ export function createPostCategory({
   assertNoDuplicateSlug(existing, slug, siteId, 'category');
   const payload = buildCategoryPayload({ siteId, name, slug, description, cover, parent, order });
   return runTaxonomyMutation({
-    type: 'category', action: 'create', payload, expected: { siteId, slug: payload.slug, name: payload.name },
+    type: 'category', action: 'create', payload, expected: payload,
     client, siteKey, runtime, request, authorizationContext, readback, refresh, maxControlledRetries,
-    compare: (actual) => compareExpectedReadback(actual, { siteId, slug: payload.slug, name: payload.name }, { fields: ['siteId', 'slug', 'name'] }),
+    compare: (actual) => compareCreatedTaxonomyReadback(actual, payload, 'created category'),
   });
 }
 
@@ -589,9 +707,9 @@ export function createPostTag({
   assertNoDuplicateSlug(existing, slug, siteId, 'tag');
   const payload = buildTagPayload({ siteId, name, slug, description });
   return runTaxonomyMutation({
-    type: 'tag', action: 'create', payload, expected: { siteId, slug: payload.slug, name: payload.name },
+    type: 'tag', action: 'create', payload, expected: payload,
     client, siteKey, runtime, request, authorizationContext, readback, refresh, maxControlledRetries,
-    compare: (actual) => compareExpectedReadback(actual, { siteId, slug: payload.slug, name: payload.name }, { fields: ['siteId', 'slug', 'name'] }),
+    compare: (actual) => compareCreatedTaxonomyReadback(actual, payload, 'created tag'),
   });
 }
 

@@ -1,33 +1,69 @@
 ---
-title: "FluxPedal Motors Virtual Demo"
-description: "以虚拟电动自行车电机出口商演示公司、产品、ICP、客户聊天、搜索意图和内容发布闭环。"
+title: "FluxPedal Motors Synthetic B2B Content Example"
+description: "English-only synthetic example package showing how a United States validate-stage B2B engineering article connects search intent, buyer pain, product decisions, progressive CTAs, qualification, and evidence boundaries."
 type: "index"
 status: "Draft"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-27"
-sources: ["Tony conversation 2026-07-27"]
-related: ["company.md", "products.md", "icp.md", "customer-voice.md", "first-closed-loop.md"]
+last_updated: "2026-08-11"
+sources: ["Tony conversation 2026-07-27", "Synthetic demo assumptions"]
+related: ["company.md", "products.md", "icp.md", "customer-voice.md", "search-evidence.md", "b2b-seo-article-brief.md", "b2b-seo-article-draft.md", "b2b-seo-article-review.md", "b2b-seo-publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
+package_id: "SYNTH-FLUXPEDAL-CARGO-MOTOR-001"
+brief_id: "BRIEF-FLUXPEDAL-CARGO-MOTOR-001"
+target_market: "United States"
+target_content_language: "en"
+supported_content_languages: ["en"]
+stage: "validate"
+production_readiness: "BLOCK"
 ---
-# FluxPedal Motors 虚拟演示
+# FluxPedal Motors Synthetic B2B Content Example
 
-> `FluxPedal Motors / 驱轮动力`、人物、产品型号、参数、聊天、域名、邮箱和结果全部为虚构数据，只用于教学，不代表真实公司、认证、客户或效果承诺。
+> FluxPedal Motors, its people, product models, parameters, messages, URLs, evidence IDs, and results are fictional. This package demonstrates a content-operations contract. It does not represent a real company, product, customer, search market, ranking, inquiry, or conversion result.
 
-## 最短使用顺序
+## What this package demonstrates
 
-1. 读 [company.md](company.md)：知道公司是谁；
-2. 读 [products.md](products.md)：选择一个产品；
-3. 读 [icp.md](icp.md)：明确内容写给谁；
-4. 读 [customer-voice.md](customer-voice.md)：从聊天提取痛点与搜索意图假设；
-5. 执行 [first-closed-loop.md](first-closed-loop.md)：完成文章、图片、图床、CMS 草稿、验证和写回。
+This package shows how a validate-stage B2B engineering article can connect one search task to a narrow buyer fit, bounded pain chain, single worksheet, solution-family context, named technical ownership, tiered CTA paths, and an explicit first-round versus candidate-decision boundary.
 
-## 本演示的第一个任务
+It is a synthetic structure fixture only. It does not prove search demand, route availability, product suitability, production rendering, ranking, inquiry quality, conversion, revenue, or a successful CMS lifecycle.
 
-围绕 `FP-HC60 Cargo Hub Motor` 回答采购商的真实任务：
+## Canonical four-record authority
 
-> 如何为 20 英寸货运电动自行车选择轮毂电机，而不是只看 250W / 500W / 750W 标称功率？
+The machine-readable truth lives only in the following four records:
 
-聊天只能产生意图假设。发布前仍需使用搜索结果、Search Console、询盘或销售反馈验证客户是否真的这样搜索。
+1. [Article Brief](b2b-seo-article-brief.md) — canonical query, intent, SEO title/H1 projection, audience, decision, evidence, CTA, and lifecycle contracts.
+2. [Article Draft](b2b-seo-article-draft.md) — the same canonical fields plus the unique buyer-visible publishable body.
+3. [Article Quality Review](b2b-seo-article-review.md) — independent structure/evidence findings and fatal-gate verdicts.
+4. [Publish Record](b2b-seo-publish-record.md) — lifecycle evidence axes, release boundary, and publication BLOCK state.
+
+This README intentionally does **not** restate field values, candidate states, route gates, digests, or approval claims. If this summary conflicts with any of the four records, treat the four-record exact projection and its review findings as authoritative.
+
+The SEO title and H1 have separate jobs: the SEO title stays concise around the query family, while the H1 explains the buyer task. Their current exact values are projected in the four records rather than copied here.
+
+## Supporting fixture inputs
+
+Read supporting cards only as synthetic context:
+
+1. [Company card](company.md)
+2. [Product cards](products.md)
+3. [ICP card](icp.md)
+4. [Customer voice](customer-voice.md)
+5. [Search and acceptance evidence](search-evidence.md)
+
+These files can explain where the fixture hypotheses came from, but they cannot upgrade the four records to production proof.
+
+## Review boundary
+
+- The article is `validate`, not `buy`; first-round output is not candidate approval, technical qualification, an RFQ, an order, a supplier award, or sales acceptance.
+- Buyer-visible copy uses six numbered natural-language pain-chain lines; `Actor|...` through `Decision|...` remain machine-control labels only and must not leak into the article body.
+- `conversion_surface_map` uses six slots and binds each primary/soft/fallback surface to the buyer-visible CTA inventory; `cta_measurement_map` binds the same surface, role and owner, with stage-specific technical/commercial events.
+- `cta-measurement-evidence.md` binds each current measurement row by `measurement_row_sha256`; this is a planned synthetic measurement contract, not observed analytics, ranking, inquiry, conversion or revenue evidence.
+- The complete first-round field set, units, formats, and examples appear only in the single worksheet. Decision blocks and CTAs reference that worksheet instead of repeating it.
+- Route or endpoint status is not proven by a reserved URL, HTTP response, toast, or status string.
+- HTML `lang`, canonical, Article JSON-LD, final DOM image-alt behavior, and mobile production rendering remain separate deferred or blocked evidence axes.
+
+## External-action statement
+
+No CMS, remote site, endpoint, product page, worksheet destination, validation guide, or CTA destination was created, changed, published, or tested by this fixture package.

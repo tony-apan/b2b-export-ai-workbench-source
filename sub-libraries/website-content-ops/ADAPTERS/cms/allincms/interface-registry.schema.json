@@ -1,0 +1,681 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/allincms/interface-registry.schema.json",
+  "title": "AllinCMS Adapter Interface Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "registry_version",
+    "adapter",
+    "authority",
+    "review",
+    "source_only_modules",
+    "capability_routes",
+    "interfaces"
+  ],
+  "properties": {
+    "registry_version": {
+      "const": 2
+    },
+    "adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "package_version",
+        "release_scope",
+        "canonical_entry"
+      ],
+      "properties": {
+        "name": {
+          "const": "allincms"
+        },
+        "package_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "release_scope": {
+          "enum": [
+            "preview-blocked",
+            "preview",
+            "stable"
+          ]
+        },
+        "canonical_entry": {
+          "const": "README.md"
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry_owns",
+        "specialized_contracts_own",
+        "index_is_generated"
+      ],
+      "properties": {
+        "registry_owns": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "specialized_contracts_own": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "index_is_generated": {
+          "const": true
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewed_on",
+        "verdict",
+        "scope",
+        "limitations"
+      ],
+      "properties": {
+        "reviewed_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "verdict": {
+          "enum": [
+            "PASS",
+            "WARN",
+            "BLOCK"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "interfaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/interface"
+      }
+    },
+    "source_only_modules": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._/-]+\\.mjs$"
+      }
+    },
+    "capability_routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/capabilityRoute"
+      }
+    }
+  },
+  "$defs": {
+    "pathRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "availability"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.).+"
+        },
+        "availability": {
+          "enum": [
+            "packaged",
+            "source_only"
+          ]
+        },
+        "pointer": {
+          "type": "string",
+          "pattern": "^(/|$)"
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "role"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "esm_export",
+            "cli"
+          ]
+        },
+        "module": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._/-]+\\.mjs$"
+        },
+        "export_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "enum": [
+            "definition",
+            "reexport",
+            "entrypoint"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "esm_export"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "module",
+              "export_name"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "cli"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "command"
+            ]
+          }
+        }
+      ]
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "scheme",
+        "operation",
+        "binding_strength",
+        "status"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "scheme": {
+          "enum": [
+            "none",
+            "structured_context",
+            "legacy_boolean",
+            "delegated"
+          ]
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "binding_strength": {
+          "enum": [
+            "none",
+            "object_target",
+            "full_payload",
+            "ordered_file_list",
+            "delegated"
+          ]
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "partial",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mutation",
+        "network_access",
+        "authorization",
+        "site_binding",
+        "idempotency",
+        "request_may_have_succeeded",
+        "automatic_retry",
+        "ambiguous_result",
+        "readback",
+        "frontend_verification"
+      ],
+      "properties": {
+        "mutation": {
+          "type": "boolean"
+        },
+        "network_access": {
+          "enum": [
+            "none",
+            "read_only",
+            "mutation",
+            "caller_defined"
+          ]
+        },
+        "authorization": {
+          "$ref": "#/$defs/authorization"
+        },
+        "site_binding": {
+          "enum": [
+            "not_applicable",
+            "required",
+            "delegated"
+          ]
+        },
+        "idempotency": {
+          "enum": [
+            "not_applicable",
+            "idempotent",
+            "non_idempotent",
+            "caller_defined"
+          ]
+        },
+        "request_may_have_succeeded": {
+          "enum": [
+            "not_applicable",
+            "false",
+            "true",
+            "caller_defined"
+          ]
+        },
+        "automatic_retry": {
+          "enum": [
+            "none",
+            "exact_absence_only",
+            "caller_defined"
+          ]
+        },
+        "ambiguous_result": {
+          "enum": [
+            "not_applicable",
+            "stop_and_reconcile",
+            "stop_manual",
+            "caller_defined"
+          ]
+        },
+        "readback": {
+          "enum": [
+            "not_applicable",
+            "required",
+            "recommended",
+            "caller_defined"
+          ]
+        },
+        "frontend_verification": {
+          "enum": [
+            "not_applicable",
+            "required",
+            "conditional",
+            "caller_defined"
+          ]
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "refs",
+        "limitations"
+      ],
+      "properties": {
+        "level": {
+          "enum": [
+            "unverified",
+            "local_tested",
+            "deployment_observed",
+            "deployment_verified_limited",
+            "cross_deployment_verified"
+          ]
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pathRef"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "interface_id",
+        "display_name",
+        "summary",
+        "domain",
+        "kind",
+        "access",
+        "exposure",
+        "lifecycle",
+        "runtime_availability",
+        "contract_version",
+        "bindings",
+        "when_to_use",
+        "keywords",
+        "io_contract",
+        "contract_refs",
+        "test_refs",
+        "evidence",
+        "safety"
+      ],
+      "properties": {
+        "interface_id": {
+          "type": "string",
+          "pattern": "^allincms\\.[a-z0-9][a-z0-9.-]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 8
+        },
+        "domain": {
+          "enum": [
+            "authorization",
+            "workspace",
+            "media",
+            "article_format",
+            "article_image",
+            "article",
+            "taxonomy",
+            "batch",
+            "registry",
+            "cli",
+            "run",
+            "product"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "constant",
+            "builder",
+            "validator",
+            "converter",
+            "reader",
+            "reconciler",
+            "controller",
+            "mutation_controller",
+            "mutation_primitive",
+            "factory",
+            "batch_controller",
+            "cli",
+            "internal_bundle"
+          ]
+        },
+        "access": {
+          "enum": [
+            "read",
+            "write",
+            "transform",
+            "metadata",
+            "orchestrate"
+          ]
+        },
+        "exposure": {
+          "enum": [
+            "canonical",
+            "supported",
+            "internal",
+            "compatibility",
+            "blocked"
+          ]
+        },
+        "lifecycle": {
+          "enum": [
+            "experimental",
+            "active",
+            "deprecated",
+            "removed"
+          ]
+        },
+        "contract_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bindings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/binding"
+          }
+        },
+        "when_to_use": {
+          "type": "string",
+          "minLength": 8
+        },
+        "keywords": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "io_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "input",
+            "output"
+          ],
+          "properties": {
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "output": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "contract_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/pathRef"
+          }
+        },
+        "test_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pathRef"
+          }
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence"
+        },
+        "safety": {
+          "$ref": "#/$defs/safety"
+        },
+        "alias_of": {
+          "type": "string",
+          "pattern": "^allincms\\."
+        },
+        "blocked_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deprecated_by": {
+          "type": "string",
+          "pattern": "^allincms\\."
+        },
+        "runtime_availability": {
+          "enum": [
+            "packaged",
+            "source_only"
+          ]
+        }
+      }
+    },
+    "capabilityRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability_id",
+        "entity_type",
+        "action",
+        "availability",
+        "execution_gate",
+        "execution_surface",
+        "default_interface_id",
+        "controller_interface_id",
+        "verification_requirements",
+        "reason",
+        "limitations"
+      ],
+      "properties": {
+        "capability_id": {
+          "type": "string",
+          "pattern": "^allincms\\.(site|category|tag|media|article|product)\\.(discover|create|update|publish|delete|unpublish)$"
+        },
+        "entity_type": {
+          "enum": [
+            "site",
+            "category",
+            "tag",
+            "media",
+            "article",
+            "product"
+          ]
+        },
+        "action": {
+          "enum": [
+            "discover",
+            "create",
+            "update",
+            "publish",
+            "delete",
+            "unpublish"
+          ]
+        },
+        "availability": {
+          "enum": [
+            "canonical",
+            "supported",
+            "exploration_only",
+            "blocked"
+          ]
+        },
+        "execution_gate": {
+          "enum": [
+            "current_session_read_only",
+            "fresh_live_verified_current_deployment",
+            "exploration_only",
+            "blocked"
+          ]
+        },
+        "default_interface_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^allincms\\."
+        },
+        "controller_interface_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^allincms\\."
+        },
+        "verification_requirements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 8
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "execution_surface": {
+          "enum": [
+            "minimal_adapter",
+            "full_source_checkout",
+            "none"
+          ]
+        }
+      }
+    }
+  }
+}

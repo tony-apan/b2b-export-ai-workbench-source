@@ -5,9 +5,9 @@ type: "playbook"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-27"
+last_updated: "2026-08-11"
 sources: ["Live AllinCMS upload and media edit dialogs inspected 2026-07-27", "One authorized direct metadata write and later fresh-page verification 2026-07-27", "Current AllinCMS client bundle inspected 2026-07-27", "media-operations-contract.redacted.json", "Tony decision 2026-07-27"]
-related: ["AI-START-HERE.md", "README.md", "upload-media-browser.mjs", "upload-media-browser.test.mjs", "../../image-upload-routing.md", "../../../TEMPLATES/image-manifest.md"]
+related: ["AI-START-HERE.md", "README.md", "INTERFACE-INDEX.md", "interface-registry.json", "upload-media-browser.mjs", "upload-media-browser.test.mjs", "../../image-upload-routing.md", "../../../TEMPLATES/image-manifest.md"]
 confidence: "high-for-observed-fields-and-one-authorized-metadata-write-medium-for-cross-deployment-stability"
 review_after: "2026-08-27"
 visibility: "public"
@@ -121,44 +121,62 @@ notes: "Virtual demo asset; verify model before public use."
 如果只需要上传和索引，不写远程元数据：
 
 ```js
+const authorizationContext = await adapter.createAllinCmsMediaUploadAuthorizationContext({
+  localFiles,
+  expectedSiteKey,
+  entrypoint: "serial",
+  approvalActor: "当前明确批准这批精确文件的人类用户",
+});
+
 await adapter.uploadAllinCmsMediaSerial({
   tab,
   expectedSiteKey,
   imageIndexPath,
   localFiles,
+  authorizationContext,
 });
 ```
 
 如果每张图片都要把 AI 候选写入 AllinCMS：
 
 ```js
+const localFiles = [
+  {
+    localFile: "/absolute/private-runtime/images/01.webp",
+    title: "rear-hub-motor-side-view",
+    description: "私有完整图片说明",
+    alt: "Rear e-bike hub motor showing the axle and cable lead",
+    caption: "Rear hub motor side view for an electric bicycle application.",
+    metadata: {
+      asset_type: "product_side_view",
+      visible_features: ["motor shell", "axle", "cable lead"],
+      confidence: 0.92,
+      human_review_required: false,
+      fact_basis: ["image_observation", "product_knowledge_base"],
+      uncertain_claims: [],
+    },
+  },
+];
+
+const authorizationContext = await adapter.createAllinCmsMediaUploadAuthorizationContext({
+  localFiles,
+  expectedSiteKey,
+  entrypoint: "serial",
+  approvalActor: "当前明确批准这批精确文件的人类用户",
+});
+
 await adapter.uploadAllinCmsMediaSerial({
   tab,
   expectedSiteKey,
   imageIndexPath,
+  localFiles,
+  authorizationContext,
   syncRemoteMetadata: true,
   metadataAuthorizationConfirmed: true,
-  localFiles: [
-    {
-      localFile: "/absolute/private-runtime/images/01.webp",
-      title: "rear-hub-motor-side-view",
-      description: "私有完整图片说明",
-      alt: "Rear e-bike hub motor showing the axle and cable lead",
-      caption: "Rear hub motor side view for an electric bicycle application.",
-      metadata: {
-        asset_type: "product_side_view",
-        visible_features: ["motor shell", "axle", "cable lead"],
-        confidence: 0.92,
-        human_review_required: false,
-        fact_basis: ["image_observation", "product_knowledge_base"],
-        uncertain_claims: [],
-      },
-    },
-  ],
 });
 ```
 
-`metadataAuthorizationConfirmed: true` 不是永久授权，只表示当前用户已经明确同意这一次批次的远程字段写入。
+`metadataAuthorizationConfirmed: true` 是 legacy/partial 批次批准，只表示当前用户口头/上下文同意本次元数据写入；它**没有**把最终 `title / alt / caption` payload、具名 actor 和 TTL 完整绑定进摘要。`updateAllinCmsMediaMetadataDirect()` 因此在接口 Registry 中保持 `blocked`；上例只记录现有串行兼容路径，不得外推成结构化字段授权已经完成。
 
 如果 `title` 与上传时由文件名生成的当前标题不同，adapter 会在写请求前确认目标标题尚未被其他媒体卡使用；发现撞名时停止当前批次，且不会发出元数据写请求。
 
@@ -222,7 +240,7 @@ prepared
 
 ### 元数据成功
 
-必须同时满足：
+必须逐图片、逐运行满足；历史样本不能替代当前回读。必须同时满足：
 
 - 当前图片只有一个元数据更新请求；
 - 响应成功；
@@ -257,7 +275,8 @@ prepared
 - 当前客户端校验上限为 100 / 200 / 500；
 - `updateMediaAction` 的 payload 字段形状已观察；
 - 一次虚拟图片直接元数据写入只发一个请求；
-- 稍后新鲜页面刷新后 title、alt、caption 全部持久化，media ID / URL 未变；
+- 历史单样本在稍后新鲜页面刷新后 title、alt、caption 全部持久化，media ID / URL 未变；
+- 2026-07-30 的自然真实批次中，3 张图片的 title/alt 已持久化，但 caption 刷新后仍为 `null`；该结果是部署/运行差异 WARN，不能用历史单样本覆盖；
 - adapter 已加入有限只读复核，不会因短暂读延迟自动重发写请求；
 - 串行上传、索引、元数据停止规则已通过本地故障测试。
 

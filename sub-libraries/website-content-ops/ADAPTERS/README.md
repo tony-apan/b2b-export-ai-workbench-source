@@ -5,7 +5,7 @@ type: "adapter-index"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-30"
+last_updated: "2026-08-12"
 sources: ["../MENTAL-MODEL.md", "../PLAYBOOK.md"]
 related: ["_template.md", "image-upload-routing.md", "image-hosts/README.md", "cms/README.md", "cms/allincms/article-operations.md", "../TOOLS.md", "../TEMPLATES/tool-field-map.md", "../QA-CHECKLIST.md"]
 visibility: "public"
@@ -13,6 +13,12 @@ redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
 ---
 # Adapters
+
+## 资料驱动的 Adapter 边界
+
+Adapter 只把稳定业务 desired state 映射到当前平台，不决定客户事实和内容。用户资料先按 [ID-0005](../PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md) 生成私有 [Source Extraction](../TEMPLATES/source-extraction.md)、来源/claim 账本和 operation plan；Adapter 在运行时发现站点、内容类型、字段、枚举、生命周期和当前部署内部接口，并返回有时效的 capability snapshot。测试站值、Action ID、router tree、deployment/build ID、Cookie 和 Token 不得成为通用合同。
+
+每项能力必须标为 `live_verified_current_deployment / local_tested / exploration_only / unsupported`。任何远程 mutation 只接受当前 deployment 的未过期 `live_verified_current_deployment`；未知或漂移字段先探索，不允许 UI 静默降级。新建站必须拆为 account-scope `site_bootstrap` Plan A 和回读真实身份后的 site-scope `site_operation` Plan B；Adapter 不得消费一个同时 create site + populate 的未解析计划。
 
 ## 为什么分离
 
@@ -51,7 +57,7 @@ adapter 不是独立按钮教程，必须先引用 [MENTAL-MODEL.md](../MENTAL-M
 
 ## 图片上传默认合同
 
-- 目标是 AllinCMS 媒体库：默认调用 `uploadAllinCmsMediaSerial()`，不先走 PicGo；
+- 目标是 AllinCMS 媒体库：先按 [AllinCMS AI 唯一入口第 0 节](cms/allincms/AI-START-HERE.md#0-默认启动登录交接与回落路由) 用宿主内置 Browser 处理登录、站点发现和精确媒体页，再默认调用 `uploadAllinCmsMediaSerial()`，不先走 PicGo；
 - 单张接口原语由串行总控调用，其他 AI 不自行复制循环；
 - 每张必须完成 AI 候选校验、单图上传、自动刷新、媒体记录、media ID、URL、匿名访问、解码、原子索引，以及获批后的单次 `title / alt / caption` 写入和有限只读复核；
 - 永久严格串行：当前图片完整闭环后才开始下一张，禁止 `Promise.all`、任务池、多标签和重叠媒体请求；

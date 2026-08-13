@@ -5,8 +5,8 @@ type: "tooling-reference"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-27"
-sources: ["../../../REFERENCES/SRC-20260727-ALLINCMS-OFFICIAL.md", "../allincms-overview.md", "AI-START-HERE.md", "Observed signed-in AllinCMS read-only inspection 2026-07-27", "Observed redacted AllinCMS article write and frontend verification 2026-07-27", "Observed redacted AllinCMS field-complete article publish and frontend media verification 2026-07-27", "Observed redacted AllinCMS complex Slate capture and cleanup verification 2026-07-27", "direct-serial-11-article-verification.redacted.md"]
+last_updated: "2026-07-31"
+sources: ["../../../REFERENCES/SRC-20260727-ALLINCMS-OFFICIAL.md", "../allincms-overview.md", "AI-START-HERE.md", "Observed signed-in AllinCMS read-only inspection 2026-07-27", "Observed redacted AllinCMS article write and frontend verification 2026-07-27", "Observed redacted AllinCMS field-complete article publish and frontend media verification 2026-07-27", "Observed redacted AllinCMS complex Slate capture and cleanup verification 2026-07-27", "direct-serial-11-article-verification.redacted.md", "Authorized redacted two-article API run and idempotent publish verification 2026-07-30", "Authorized redacted existing-article optimization and publish acceptance 2026-07-31"]
 related: ["README.md", "../allincms-overview.md", "AI-START-HERE.md", "article-image-binding.mjs", "article-image-binding-contract.json", "article-image-binding.test.mjs", "article-operations.mjs", "article-operations-contract.json", "article-operations.test.mjs", "../../../TOOLS.md", "../../../TEMPLATES/article-brief.md", "../../../TEMPLATES/image-manifest.md", "../../../TEMPLATES/publish-record.md"]
 confidence: "medium-high"
 review_after: "2026-08-27"
@@ -210,6 +210,8 @@ Slug              placeholder=post-slug
 
 `source: "oss"` + `path` 是本轮当前部署抓包得到的事实；旧的 `source: "url"` + `url` 只能作为历史/其他部署形状，不能继续当作默认合同。`path`、`size`、`mimeType` 的具体值必须从当前媒体库记录动态取得。`coverImage` 也允许在无封面场景为 `null`。
 
+当前后端回读会省略提交对象中的 `mediaId`、`title`、URL、caption 等扩展字段；因此 Adapter 对封面持久化只比较 `name / alt / type / source / path / size / mimeType` 这组 canonical 字段。当前部署 profile 下，任何非 `null` 的封面 payload 必须在请求前完整自有这 7 个字段：`name / type / source / path / mimeType` 必须是非空字符串，`alt` 必须是字符串，`size` 必须是非负整数；URL-only 或提交与回读同时缺同一字段也会在请求前 fail closed。回读中任一 canonical 字段缺失或变化仍失败，不能把“后端省略扩展字段”误报为封面丢失。浏览器/CDP 产生的跨 realm prototype 也不属于 JSON 合同语义；比较时规范化 JSON 类型、字段和值，但不比较原型身份。
+
 封面绑定的验收不是“payload 返回 200”就结束，而是：准确媒体页、媒体记录已存在、文章 update 后后台刷新仍有封面、publish 后前台列表和详情实际渲染图片、匿名 HTTPS、Content-Type 和图片解码均通过。
 
 ### 3.5 正文 Slate 最小形状
@@ -382,7 +384,7 @@ Body: [
 Response: 200 text/x-component
 ```
 
-创建后必须刷新分类树，再从当前 RSC/列表数据读取唯一 `categoryId`。子分类请求的 `parent` 为父分类 ID，刷新后应同时满足：前台/后台树形缩进存在、列表记录的 `parentId` 指向父分类、底层节点数据的 `parent` 指向父分类。没有这三层证据时，不要仅凭名称相似判断父子关系。
+创建后必须刷新分类树，再从当前 RSC/列表数据读取唯一 `categoryId`。精确 `/posts?tab=categories` 或 `/posts?tab=tags` 路由中的回读记录可能省略 `contentType`；只有在 controller 已证明精确站点与精确文章 taxonomy route 时，才可把“缺省”解释为 route-scoped `posts`。若回读显式给出 `contentType` 且不是 `posts`，必须 fail closed。子分类请求的 `parent` 为父分类 ID，刷新后应同时满足：前台/后台树形缩进存在、列表记录的 `parentId` 指向父分类、底层节点数据的 `parent` 指向父分类。没有这三层证据时，不要仅凭名称相似判断父子关系。
 
 ### 8.2 分类编辑、隐藏、排序和删除
 
@@ -442,7 +444,7 @@ Body: [
 ]
 ```
 
-已通过接口编辑、刷新、删除和再次刷新核对。重复 slug 的当前语义是：表单在提交前显示“已存在相同的 slug”，本次重复提交不产生 POST；因此该错误语义属于客户端/表单校验路径，不能只用服务端 HTTP 结果推断。跨站点重复 slug 隔离仍需在另一站点获批后单独验证。
+已通过接口编辑、刷新、删除和再次刷新核对。重复 slug 的当前语义是：表单在提交前显示“已存在相同的 slug”，本次重复提交不产生 POST；因此该错误语义属于客户端/表单校验路径，不能只用服务端 HTTP 结果推断。adapter 的请求前快照还要求每条记录显式携带已证明的 `siteId`：当前站点 RSC 若省略此字段，controller 必须先验证精确站点上下文，再为记录补入当前 `siteId`；缺失时 fail closed，请求数保持 0。跨站点重复 slug 隔离仍需在另一站点获批后单独验证。
 
 ### 8.4 文章全字段保存、发布和重复发布
 
@@ -541,7 +543,7 @@ Given transaction number ... does not match any in-progress transactions
 
 ### 8.8 11 篇文章串行稳定性实测
 
-本轮在当前部署继续做了 11 篇临时文章的真实接口长跑，详见 [11 篇文章纯接口串行验证](direct-serial-11-article-verification.redacted.md)。每篇文章都使用完整字段，包含真实 WebP 封面、结构化 Slate 正文和正文图片；严格按单篇 `update → publish` 完成后台刷新与前台详情验收。
+本轮在当前部署继续做了 11 篇临时文章的真实接口长跑，详见源码 checkout 中的 `direct-serial-11-article-verification.redacted.md`；该去敏证据不随独立 npm adapter 包分发。每篇文章都使用完整字段，包含真实 WebP 封面、结构化 Slate 正文和正文图片；严格按单篇 `update → publish` 完成后台刷新与前台详情验收。
 
 - 11/11 完整 payload 保存成功；
 - 11/11 发布成功，后台刷新均为“已发布”；
@@ -551,6 +553,75 @@ Given transaction number ... does not match any in-progress transactions
 - 中途一次批量 CDP 调用超时，没有重发，先回读后台确认远端状态，再继续只读验收。
 
 这使“超过 10 篇文章仍未验证”改为：**当前部署已完成 11 篇串行真实接口验证；任意更大批次、限流、中断恢复和失败回滚仍开放。**
+
+### 8.9 2026-07-30 授权计划的真实接口闭环与幂等复测
+
+在用户以冻结计划 SHA-256 明确授权后，同一站点严格串行完成 2 个分类、2 个标签、3 张真实图片和 2 篇文章。每个 mutation 都遵循“请求前精确站点/目标/授权复核 → 单次请求 → 刷新 → 唯一对象回读”，没有删除、清理、跨站或并发。两篇文章均以全字段 payload 发布，最终后台文章总数只增加 2；两个目标 slug 各唯一一条。
+
+随后对两篇既有目标文章逐篇进行幂等 publish 复测：每篇重新发现当前部署 action/router/deployment 上下文，`maxControlledRetries: 0`，只发送 1 次 publish；返回 HTTP 200 / `text/x-component`，完整字段回读无 mismatch，文章 ID、slug 和总数均未变化。请求前 `assertNoDuplicateSlug()` 对两个已存在 slug 都正确阻断创建路径，未发送额外 create 请求。
+
+本次 3 张媒体均通过匿名 HTTPS、`image/webp` 和浏览器解码，title/alt 已持久化；但媒体记录的 `caption` 在自然刷新后仍为 `null`，因此媒体 metadata 全字段不能标为跨部署 PASS。文章正文中的 Caption 使用 Slate `[{"text":"..."}]` 并已持久化。
+
+前台验收分层结果为 **WARN**：两篇标题与图片解码通过，但主题未稳定展示分类/全部标签，且部分正文 `<img>` 的 `alt` 为空。后台 Slate alt 与 taxonomy 绑定已保存，所以这是主题渲染/展示边界，不应倒推成接口保存失败；同样也不能把后台 PASS 写成前台无障碍或 taxonomy 展示 PASS。真实对象 ID、URL、Action、deployment 与站点证据只留在私有运行区。
+
+### 8.10 文章格式接口实验：Slate 是持久化格式，Markdown 只作创作源
+
+2026-07-30 在一次独立、冻结计划授权的真实接口实验中，严格串行创建 1 篇草稿，逐个测试 13 个候选，最终最多发布 1 次。实验复用既有分类、标签和真实媒体；没有删除、清理、跨站或修改已有文章。去敏证据保存在源码 checkout 的 `article-format-verification.redacted.md`，不随独立 npm adapter 包分发。
+
+**结论不是“HTML 还是 Markdown 二选一”**：当前文章 `content` 的原生持久化合同是 **Slate JSON `node[]`**。不得把 HTML 字符串或 Markdown 字符串直接塞进 `content`。推荐工作流是：
+
+```text
+Markdown 创作源
+→ markdownToAllinCmsSlate() 确定性转换
+→ createCanonicalAllinCmsSlateExamples() 对照当前已验证形状
+→ buildArticlePayload() 全字段预检
+→ 单次保存/发布
+→ 精确后台回读
+→ 编辑器重开
+→ 前台桌面 + 移动端验收
+```
+
+13 个候选的最终矩阵：
+
+| 格式 | 当前 canonical Slate 关键形状 | 结论 |
+|---|---|---|
+| H3 | `{type:"h3", children:[{text}], id}` | verified |
+| 粗体 | `p > {text,bold:true}` | verified |
+| 斜体 | `p > {text,italic:true}` | verified |
+| 下划线 | `p > {text,underline:true}` | verified |
+| 删除线 | `p > {text,strikethrough:true}` | verified |
+| 行内代码 | `p > {text,code:true}` | verified |
+| 链接 | `p > {type:"a",url,children:[{text}],id}` | verified |
+| 无序列表 | `{type:"p",indent:1,listStyleType:"disc",children:[{text}],id}` | verified |
+| 有序列表 | `{type:"p",indent:1,listStyleType:"decimal",children:[{text}],id}` | verified |
+| 引用 | `{type:"blockquote",children:[{text}],id}` | verified |
+| 分隔线 | `{type:"hr",children:[{text:""}],id}` | verified |
+| 表格 | `table > tr > th/td > p > text`，每层节点均有唯一 ID | verified |
+| 代码块（本次形状） | `pre/code` 候选 | **unsupported-current-shape / BLOCK** |
+
+`p`、`h2` 和 `img` 是实验一直保留并最终发布的 baseline，不计入 13 个候选。12 个 verified 候选的完整、可执行、去站点化示例由 [article-content-formats.mjs](article-content-formats.mjs) 的 `createCanonicalAllinCmsSlateExamples()` 唯一维护，避免文档 JSON 与实现再次分叉。
+
+代码块的失败路径必须保留：本次 API 返回与后台精确 Slate 回读都通过，但编辑器重开失败。因此立即恢复前一个 last-known-good，重新打开编辑器通过后才继续；最终发布内容不含代码块。任何调用者都不得用“HTTP 200”或“后台已存储”覆盖这个 BLOCK。
+
+Markdown 转换只接受当前已验证的保守子集：
+
+| Markdown 创作写法 | 转换结果 / 规则 |
+|---|---|
+| `## 标题` | H2 baseline；正文禁止 `# H1`，页面 H1 由文章标题字段拥有 |
+| `### 标题` | H3 |
+| `**粗体**`、`*斜体*` | Slate text mark |
+| `<u>下划线</u>` | 唯一允许的 HTML-like 扩展；其余 raw HTML fail closed |
+| `~~删除线~~`、`` `行内代码` `` | Slate text mark |
+| `[文字](https://...)` | 只允许绝对 HTTP/HTTPS URL |
+| `- 条目`、`1. 条目` | 当前验证过的 `p + indent + listStyleType` 形状 |
+| `> 引用`、`---` | blockquote / hr |
+| 简单等列 GFM 表格 | `table > tr > th/td > p`；至少一行 body，列数不一致或带 alignment marker 直接拒绝 |
+| Markdown 图片语法 | 本转换器请求前拒绝；正文图片必须交给 `article-image-binding.mjs` 做资产/occurrence 绑定 |
+| fenced / indented code block | 请求前拒绝，直到新的隔离实验通过全部验证闸 |
+
+当前转换器有意不承诺任意嵌套 Markdown、转义 pipe、多行表格单元格或 raw HTML。遇到未声明语法应停止或降级为明确的普通段落，不能猜造 Slate 节点。
+
+验收结果为：12 verified、1 unsupported-current-shape、0 not-tested；最终一次 publish 后，后台状态、完整 Slate、编辑器重开、前台列表/详情、精确 inline 标签、真实 WebP 匿名获取和解码均通过。桌面与 390 × 844 移动视口均无整页横向溢出，表格、图片、列表、引用和行内代码没有越界。真实站点、对象、Action、deployment、URL 与完整证据仍只留在私有运行区。
 
 ## 9. 当前已闭合项与剩余边界
 
@@ -568,16 +639,19 @@ Given transaction number ... does not match any in-progress transactions
 - Slate 链接、正文图片、表格和复杂 marks 的跨部署兼容性；
 - 503、交易号异常、失败重试、回滚和跨请求幂等恢复；
 - 任意更大批次文章的真实远程串行长跑、限流、中断恢复和全量对账；
-- 跨站点 taxonomy 隔离。
+- 跨站点 taxonomy 隔离；
+- 媒体 caption 在本次自然运行中的持久化差异；
+- 分类与标签的主题稳定展示；
+- 正文图片 alt 已在 2026-07-31 的单篇现有文章实测中确认：Slate/CMS payload 保存非空 alt，但当前前端 renderer 输出空 alt；这是独立表现层 BLOCK，不再属于“尚未观察”。
 
-因此当前结论分层记录：**当前部署的字段、taxonomy、文章生命周期和 11 篇串行真实接口闭环已有证据；本地 Adapter 已补齐状态不明恢复、分类/标签 CRUD 和 50 条串行控制器测试；跨部署、失败注入的远程证据、任意大批量远程长跑和主题语义缺口仍保持 BLOCK。**
+因此当前结论分层记录：**当前部署的字段、taxonomy、文章生命周期、11 篇历史串行接口长跑、2 篇真实全字段创建/发布与幂等 publish，以及 1 篇现有文章的单次优化/单次发布已有证据；文章/媒体四文件专项 profile 为 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期/taxonomy 48）；完整源码工作树另有 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11，当前 `npm test` 七文件全量为 248/248。媒体 caption 与 taxonomy 主题展示仍为 WARN；正文图片 alt renderer、正式技术 SEO、跨部署、失败注入的远程证据和任意大批量远程长跑继续 BLOCK。**
 ## 10. Markdown 正文图片原位绑定合同（2026-07-27）
 
 文章正文图片已经形成独立 adapter，不再允许由执行 AI 临时拼 payload：
 
 - [article-image-binding.mjs](article-image-binding.mjs)：唯一实现；
 - [article-image-binding-contract.json](article-image-binding-contract.json)：机器合同；
-- [article-image-binding.test.mjs](article-image-binding.test.mjs)：本地故障测试；
+- `article-image-binding.test.mjs`（仅源码 checkout）：本地故障测试；
 - [AI-START-HERE.md](AI-START-HERE.md)：其他 AI 的唯一执行入口。
 
 ### 10.1 资产与出现位置必须分层
@@ -687,20 +761,39 @@ published_theme_alt_current_run: not_run_not_authorized
 
 
 
-## 11. 对抗审查收口（更新于 2026-07-29）
+## 11. 对抗审查收口（更新于 2026-07-30）
 
 本节区分“代码控制器已通过”与“当前远程部署已证明”，不把本地测试或历史真实运行外推成跨部署承诺。
 
 | 范围 | 当前结论 | 证据 / 缺口 |
 |---|---|---|
-| 当前知识库 Adapter：文章字段、taxonomy、状态机、恢复和串行控制 | **PASS（本地控制器）** | `npm test`：131/131 通过；其中正文图片 50/50、媒体 45/45，文章生命周期与 taxonomy 36/36，覆盖全字段、状态冲突、动态 action、精确创建 ID、taxonomy snapshot、重复 slug、受控重试和人工介入 |
+| 当前知识库 Adapter：文章字段、taxonomy、状态机、恢复和串行控制 | **PASS（本地控制器）** | 固定文章/媒体四文件专项 profile：158/158 通过；其中媒体 45/45、正文图片 52/52、正文格式 13/13、文章生命周期与 taxonomy 48/48；完整源码工作树再加 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11 后，`npm test` 七文件全量为 248/248，覆盖全字段、状态冲突、动态 action、`postCreate` 前后 ID snapshot 唯一差集、创建记录同站点归属、taxonomy route-scoped `contentType` 与显式冲突、跨 realm JSON 语义、封面 canonical 持久化字段、重复 slug、受控重试和人工介入 |
 | 当前部署历史真实文章闭环 | **PASS（限定范围）** | 已有当前登录站点、动态捕获 action、严格串行 11 篇 `update → publish`、后台/前台/图片验收证据 |
-| `postCreate` API | **BLOCK** | 代码已 fail-closed 实现，但本轮没有新的远程 `postCreate` 捕获、精确 `postId` 回读和 replay 证据；必须先重新捕获当前部署合同，才可传 `createContractConfirmed: true` |
+| `postCreate` API | **PASS（当前部署、限定本次授权）** | 2026-07-30 已在同一站点严格串行创建并发布 2 篇全字段文章；每次均重新捕获当前 action/router/deployment，并用创建前后完整 ID snapshot 证明差集恰好一个、创建记录 ID 与该差集一致且属于精确站点。此证据不放行其他站点或未来部署；后续运行仍须重新确认当前合同后才可传 `createContractConfirmed: true` |
 | 503、transaction mismatch、请求可能成功后的文章恢复 | **BLOCK** | 只有本地故障控制测试，没有文章级远程注入证据；状态不明时 adapter 只允许停下，不会盲重发 |
 | 跨部署 / 跨站点 taxonomy 隔离 / 任意大于 11 篇远程长跑 | **BLOCK** | 尚未形成对应的当前会话实测证据 |
-| 主题语义与无障碍表现 | **BLOCK（产品表现层）** | 当前主题的无序列表语义和正文图片 `alt` 透传仍有缺口；不是重复 API 请求能够修复的字段合同问题 |
+| 主题语义与无障碍表现 | **BLOCK（当前主题正式 SEO / 无障碍层）** | 2026-07-31 单篇实测确认正文 Slate 图片在 CMS payload 中保留非空 `alt`，但最终 DOM 输出空 `alt`；同页还观察到文章语言与 `html lang` 冲突、canonical 缺失、Article JSON-LD 缺失。内容与响应式渲染可单独 PASS，但正式 SEO 不得 PASS；重复文章 API 请求不能修复 renderer/template。分类/标签可见性仍作为 WARN 单列 |
 
-本轮不把“敏感问题”作为阻断项；保留的 BLOCK 都是证据、合同、恢复或表现层边界。任何一个 BLOCK 未补证据前，整体不能标记为 PASS。
+本轮不把“敏感问题”作为阻断项；BLOCK 只针对已证实的 renderer/技术 SEO 缺陷，或跨部署、远程失败恢复、任意大批量与正式资格等尚未证明的范围。任何一个 BLOCK 未补证据前，不能把当前限定结果外推为通用 PASS。
+
+### 11.1 现有文章优化、超时 reconciliation 与技术 SEO 分层（2026-07-31）
+
+一次新的冻结计划仅允许更新一篇既存文章 1 次、发布 1 次，并禁止创建、上传、删除、清理和跨站。执行严格串行完成：update 1、publish 1、自动重试 0。update 请求开始后，浏览器 CDP 等待超时，客户端结果不明确；控制器没有重发，而是等待后重新打开编辑器和列表，以只读方式精确比较标题、摘要、taxonomy、59 个 Slate 顶层节点和内容 digest，确认状态已变为 draft 后才执行唯一一次 publish。
+
+恢复准则：
+
+```text
+requestStarted=true + client timeout
+=> 不得自动重发
+=> 只读刷新与精确字段/digest reconciliation
+=> 只有 intended state 得到证明才能继续后续 mutation
+```
+
+该文章的内容层、后台持久化、编辑器重开、桌面与 390×844 移动端均通过；3 张页面图片成功加载/解码，其中 2 张为正文 Slate 图片。长页 CDP 拼接截图出现 sticky header 重复，但普通 viewport 截图和 DOM 几何证明页面本身没有重复内容或横向溢出，因此拼接图不能独立作为验收依据。
+
+正式 SEO 仍为独立 BLOCK：英文正文页面的 `html lang` 不匹配、canonical 缺失、Article JSON-LD 缺失；同时两张正文图片在 CMS payload 中都有非空 alt，前端却输出空 alt。最终 verdict 必须分开写为：内容优化 PASS、后台发布 PASS、响应式内容渲染 PASS、正式技术 SEO BLOCK、正文图片 alt renderer BLOCK。
+
+2026-07-30 代码级对抗复核已修复五类远程前置缺口：旧实现只检查候选文章 ID 不在 `beforePostIds` 中，不能排除并发产生多个新 ID；创建记录的 `siteId` 缺失时可能未被强制阻断；分类/标签创建只比较 `siteId / slug / name`，不能发现 description、cover、parent、order 或 contentType 丢失；taxonomy 快照记录缺少 `siteId` 时会静默跳过同站重复 slug；`createPostDraft` 在形成返回值时会再次调用外部 ID callback，可能把已结构化停止的结果退化为 rejected promise。当前控制器和 48 项文章与 taxonomy 测试已在不增加虚假远程结论的前提下收紧上述闸门；创建结果直接复用 reconciliation 阶段已规范化的 ID，不再二次调用外部 callback。
 
 ## 结构化 mutation authorization
 

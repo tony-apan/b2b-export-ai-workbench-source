@@ -5,9 +5,9 @@ type: "source-policy"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-27"
+last_updated: "2026-07-31"
 sources: ["AGENTS.md"]
-related: ["INTAKE.md", "QA-CHECKLIST.md", "ADAPTERS/cms/allincms-overview.md", "ADAPTERS/image-hosts/README.md"]
+related: ["INTAKE.md", "QA-CHECKLIST.md", "REFERENCES/README.md", "ADAPTERS/cms/allincms-overview.md", "ADAPTERS/image-hosts/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---
@@ -30,6 +30,13 @@ redaction_status: "safe-to-publish"
 - 不复制完整课件结构、大段原文、付费 PDF、未授权截图和受限素材；
 - 每条蒸馏知识保留来源、日期、许可状态和“如何用于业务”；
 - 工具规则优先查官方文档；容易变化的按钮、限制和价格必须注明核验日期。
+
+## B2B SEO 与内容方法来源
+
+- 母库先登记 Source ID、许可、访问日期和派生页面；子库 `REFERENCES/` 只保留 standalone artifact 需要的 public-safe 摘要。
+- [B2B SEO Content Research](REFERENCES/SRC-20260731-B2B-SEO-CONTENT-RESEARCH.md) 只支持搜索意图、客户语言、信息增益、内容层级、内链和 CTA 的方法假设。
+- Google 官方原则优先；Animalz、Ahrefs、CXL 等第三方公开文章只作为编辑和客户研究方法参考。
+- 不复制网页正文，不把第三方案例数字写成本站承诺，也不把方法完整度外推为排名、询盘或转化已提升。
 
 ## 官方工具来源
 

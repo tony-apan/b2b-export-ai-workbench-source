@@ -5,9 +5,9 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-07-30"
+last_updated: "2026-08-11"
 sources: ["../../SOURCES.md", "Tony requirement 2026-07-27", "Observed signed-in single upload 2026-07-27", "allincms/observed-contract.redacted.json"]
-related: ["README.md", "allincms/README.md", "allincms/article-operations.md", "../README.md", "../_template.md", "../../TEMPLATES/tool-field-map.md", "../../TEMPLATES/failure-diagnosis.md", "../../QA-CHECKLIST.md"]
+related: ["README.md", "allincms/README.md", "allincms/AI-START-HERE.md", "allincms/INTERFACE-INDEX.md", "allincms/interface-registry.json", "allincms/article-operations.md", "../README.md", "../_template.md", "../../TEMPLATES/tool-field-map.md", "../../TEMPLATES/failure-diagnosis.md", "../../QA-CHECKLIST.md"]
 confidence: "high"
 review_after: "2026-08-27"
 visibility: "public"
@@ -33,7 +33,7 @@ observed_internal_contract
 
 对小白只显示“选择网站”和“上传图片并取得链接”。站点列表、Server Action、预签名上传、对象存储和媒体登记全部封装在 adapter 内。文章、分类、标签和发布也必须以稳定业务对象呈现，不能把内部 action 当成公开 API。
 
-文章与分类的字段、依赖顺序和当前验证边界见 [AllinCMS 文章与分类操作逻辑](allincms/article-operations.md)。单篇文章的 JSON update/publish 与前台列表/详情文字闭环已于 2026-07-27 去敏实测通过；分类创建、标签、封面和复杂正文仍需单独验证。
+文章与分类的字段、依赖顺序和当前验证边界见 [AllinCMS 文章与分类操作逻辑](allincms/article-operations.md)。接口身份与可调用层级统一从 [人类/AI 接口索引](allincms/INTERFACE-INDEX.md) 查询，机器真源是 [interface-registry.json](allincms/interface-registry.json)；不要从本页的历史说明推断当前接口已放行。
 
 ### AllinCMS 图片路线固定优先级
 
@@ -47,7 +47,7 @@ P5  PicGo + R2 / GitHub / COS / OSS 仅在目标是外部图床或用户明确�
 
 P4、P5 都不是 P1 失败后的自动降级。目标是 AllinCMS 媒体库时，不应先配置 PicGo，也不应重新抓接口或模拟点击；完整选择规则见 [图片上传路由](../image-upload-routing.md)。
 
-## 1. 三个稳定能力，不绑定具体 endpoint
+## 1. 三个业务能力抽象，不绑定具体 endpoint
 
 ```text
 list_sites(current_session) -> SiteSummary[]
@@ -55,7 +55,7 @@ upload_media(current_session, site_key, local_file) -> MediaAsset
 delete_media_record(current_session, exact_media_identity, explicit_authorization) -> DeleteResult
 ```
 
-这三个函数是课程和上层 AI 使用的稳定合同。底层可能是 JSON API、Next.js Server Action、RSC、SSR、DOM 读取或多阶段对象存储上传，但不把当前实现泄漏给用户流程。
+这三个名称是课程和上层 AI 理解业务目标的抽象，不是源码 export，也不自动等于当前可执行接口。实际入口、暴露层级和 BLOCK 以 Registry 为准：当前站点发现与串行上传有 canonical controller；媒体 direct 删除仍因 legacy 裸布尔授权保持 `blocked`。底层可能是 JSON API、Next.js Server Action、RSC、SSR、DOM 读取或多阶段对象存储上传，但不把当前实现泄漏给用户流程。
 
 ## 2. 接口选择优先级
 
@@ -68,7 +68,7 @@ delete_media_record(current_session, exact_media_identity, explicit_authorizatio
 | E | DOM 读取 | 站点发现的安全回退 | 只读、不模拟点击、字段足够 |
 | F | UI 点击 / 文件选择器 | 只用于首次抓取或回退 | 需登录和动作时授权 |
 
-**对抗结论**：避免模拟点击不等于强迫所有动作走“API”。网站列表是只读发现，如果只有 RSC 或 DOM，直接打开 `/sites` 后读取卡片，往往比硬编码内部 Server Action 更稳。图片上传重复成本高，才更值得建立接口回放。
+**对抗结论（2026-08-11 更新）**：网站列表不需要硬编码 Server Action。当前 canonical 路径是在宿主浏览器 session 中只读请求 `/sites?_rsc`，同时得到登录状态、`user.id`、分页站点列表和 `canCreate`；DOM 只作为登录交接与合同漂移诊断。新增网站和图片上传仍是动态 Server Action，action ID 必须从当前部署重新发现。
 
 ## 3. Site Discovery Contract
 
@@ -173,11 +173,11 @@ verification:
 因此当前最稳的实现不是猜测 `/api/sites`，而是：
 
 ```text
-打开或同源 GET /sites
-→ 等待最终 URL 稳定，排除 /sign-in?from=/sites
-→ 优先解析 document 内 SitesClient.props.data
-→ 与页面站点卡片交叉核对
-→ RSC 解析失败时降级读取 DOM 卡片
+当前浏览器 session GET /sites?_rsc
+→ 401/403、最终 /sign-in 或登录内容：打开并前台展示 /sign-in
+→ 已登录：读取 RSC user.id、sites、pagination、canCreate
+→ 拉完全部分页并验证 unique sites == totalDocs
+→ RSC 合同漂移时打开 /sites 做页面诊断，不把 DOM 冒充完整机器真源
 → 写动作前让用户确认目标站点指纹
 ```
 
@@ -185,14 +185,14 @@ verification:
 
 ### 捕获顺序
 
-1. 在已登录的同一浏览器会话中直接打开 `/sites`；
-2. 启用 Network/CDP，保留 document、fetch/XHR、RSC 和 POST；
-3. 刷新一次，只读观察站点卡片来自哪里；
-4. 按 A → E 的优先级归类数据源；
-5. 在**页面同源上下文**重放只读请求，使用浏览器现有 session，不导出 cookie；
-6. 规范化为 `SiteSummary[]`；
-7. 与页面可见卡片逐项核对站点数量、名称、`site_key`、状态和域名；
-8. 保存去敏合同，不保存 token、cookie、完整 header 值或原始响应中的私有数据。
+1. 取得宿主内置 Browser 的当前会话；
+2. 在该 session 中请求 `GET /sites?_rsc={nonce}`，不导出 cookie；
+3. 先判定 401/403、最终 `/sign-in` 和登录内容，再解析 RSC；
+4. 读取 `user.id` 和站点 payload，按 `pagination.totalPages` 拉完全部页；
+5. 规范化为 `SiteSummary[]`，按站点 ID 去重并验证数量等于 `totalDocs`；
+6. 只有合同漂移或页面健康诊断时才打开 `/sites` 与可见卡片交叉核对；
+7. 写动作前重新执行新鲜 API 检查并确认目标站点；
+8. 保存去敏合同，不保存 token、cookie、真实用户 ID、完整 header 值或原始私有响应。
 
 ### 选择规则
 
@@ -456,13 +456,13 @@ status:
 | 固定等待导致选站假失败 | 500 ms 后 URL 尚未切换 | 等待目标 `/{site_key}/...` URL，超时才停止 |
 | 受控环境缺少 `new Image()` | 上传成功但验证器自身报错 | 读取媒体卡已有 `<img>` 的 complete 与 naturalWidth/naturalHeight |
 | 只记录 URL | 内容模型实际要求 media_id | 返回完整 `MediaAsset`，同时保存 ID、URL 和元数据 |
-| 为了“纯 API”解析脆弱 RSC | 比 DOM 读取更难维护 | 只读站点发现允许 DOM 回退，不为接口而接口 |
+| 只看 DOM 卡片判断登录或完整列表 | 旧页面、分页和渲染失败会误判 | API-first 解析当前 RSC；DOM 只做登录交接与合同漂移诊断 |
 
 ## 7. 权限与动作闸
 
 | 动作 | 默认许可 | 是否需要动作时确认 |
 |---|---|---|
-| 打开 `/sites`、观察网络、读取站点列表 | read-only | 登录由用户完成；不导出凭据 |
+| 当前浏览器 session 请求 `/sites?_rsc`，读取登录、用户和完整站点列表 | read-only | 未登录才打开 `/sign-in`；不导出凭据 |
 | 选择目标站点 | read-only decision | 用户确认站点指纹 |
 | 上传一张指定虚拟图片 | mutation | 是，只授权该站点和该文件 |
 | 在同一已授权批次内串行上传后续图片 | batch mutation | 可继续，但必须逐张验收并在首个不明结果处停止 |
