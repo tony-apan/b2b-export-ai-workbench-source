@@ -319,6 +319,51 @@ def cmd_sync_runtime(args):
     return 0
 
 
+def cmd_install(args):
+    """把 dist 安装到目标目录（自用轻量安装；不做公开可安装宣称——source-only 边界）。"""
+    dm = load_json(DIST_MANIFEST)
+    if not dm:
+        print("FAIL: 无 dist PIPELINE-MANIFEST，先 build-dist")
+        return 1
+    target = os.path.abspath(os.path.expanduser(args.target))
+    if os.path.isdir(target) and os.listdir(target) and not args.force:
+        print(f"FAIL: 目标目录非空: {target}（清空后重试，或 --force 覆盖安装）")
+        return 1
+    os.makedirs(target, exist_ok=True)
+    files = dm.get("files", {})
+    # 路径键防护：manifest 是 dist 内自证文件——拒绝越界键（../、绝对路径），防污染 manifest 越目标写
+    bad_keys = [k for k in files if k.startswith("/") or ".." in k.split(os.sep) or ".." in k.split("/")]
+    if bad_keys:
+        print(f"FAIL: PIPELINE-MANIFEST 含越界路径键（dist 可能被污染）: {bad_keys[:5]}")
+        return 1
+    for rel, want in files.items():
+        src = os.path.join(DIST, rel)
+        dst = os.path.join(target, rel)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        try:
+            shutil.copy2(src, dst)
+        except shutil.SameFileError:
+            print(f"FAIL: 目标即 dist 自身（{target}），拒绝自毁式安装")
+            return 1
+        got = hashlib.sha256(open(dst, "rb").read()).hexdigest()
+        if got != want:
+            print(f"FAIL: 安装校验失败 {rel}（sha256 不匹配）")
+            return 1
+    print(f"安装完成: {len(files)} 文件 -> {target}")
+    print(f"来源: dist source={dm['source_commit'][:12]} digest={dm['bundle_digest'][:16]}...（逐文件 sha256 已校验）")
+    print("入口: README.md -> NEW-SITE-ONEPASS.md（13 步建站）；凭据用 export WS_TOKEN=<token>")
+    print("边界: 本安装为自用轻量分发（source-only），不构成 Public Preview/Release 宣称；升级=重跑 install --force")
+    if os.path.isdir(target):
+        import glob as _g
+        _known = set(files)
+        _stale = [f for f in _g.glob(os.path.join(target, "**", "*"), recursive=True)
+                  if os.path.isfile(f) and os.path.relpath(f, target) not in _known
+                  and not any(x in f for x in ("__pycache__", ".DS_Store"))]
+        if _stale:
+            print(f"提示: 目标存在 {len(_stale)} 个 manifest 外旧文件（升级残留，未删除）：", *[os.path.relpath(f, target) for f in _stale[:5]])
+    return 0
+
+
 def cmd_check(args):
     dm = load_json(DIST_MANIFEST)
     problems = []
@@ -387,10 +432,13 @@ def main():
     for name, fn in [("status", cmd_status), ("pull-to-tracked", cmd_pull),
                      ("anchor", cmd_anchor), ("build-dist", cmd_build_dist),
                      ("sync-runtime", cmd_sync_runtime), ("check", cmd_check),
-                     ("selftest", cmd_selftest)]:
+                     ("install", cmd_install), ("selftest", cmd_selftest)]:
         p = sub.add_parser(name)
         if name in ("pull-to-tracked", "sync-runtime"):
             p.add_argument("--confirm", action="store_true")
+        if name == "install":
+            p.add_argument("target")
+            p.add_argument("--force", action="store_true")
         p.set_defaults(fn=fn)
     args = ap.parse_args()
     sys.exit(args.fn(args))

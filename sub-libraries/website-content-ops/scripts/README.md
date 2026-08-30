@@ -24,6 +24,7 @@ python3 scripts/interface-kit-pipeline.py build-dist        # 从 git committed 
 python3 scripts/interface-kit-pipeline.py sync-runtime --confirm      # runtime 消费 dist（前置守卫防覆盖）
 python3 scripts/interface-kit-pipeline.py check             # stale 守卫（落后 >10 commit 或 >7 天告警）
 python3 scripts/interface-kit-pipeline.py selftest          # 四场景自测
+python3 scripts/interface-kit-pipeline.py install <目录> [--force]  # 自用轻量安装（逐文件 sha256 校验；source-only 边界）
 ```
 
 真源方向：runtime 编辑 → 回流 tracked → git commit（SHA 锚）→ build-dist（只读 committed 字节）→ runtime 消费。interface-kit 的 dist 为**本地消费产物**，不入 build-release.mjs 的子库候选；子库 release 重建 `dist/latest/` 后需重跑本管线 `build-dist`。`sync-runtime` 存在未回流改动即中止；`client-ids.local.txt`/`__pycache__` 等本地文件永不同步。

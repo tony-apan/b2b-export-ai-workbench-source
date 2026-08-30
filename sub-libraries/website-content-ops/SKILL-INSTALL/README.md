@@ -17,7 +17,9 @@ canonical_entry: "README.md"
 
 ## 架构与唯一真源
 
-```text
+```
+
+> **双真源警示**：本机 `~/.agents|claude|codex|workbuddy/skills/allincms-bulk-content-upload` 四处软链已指向母库 SKILL-INSTALL（**live 真源**）。dist 安装是 digest 冻结快照——安装目标必须避开 skills 发现路径（如上例 `$HOME/tools/`），同名并存时一律以母库软链为 canonical。text
 website-content-ops 完整 canonical source checkout（如调用方显式提供）
   > 本仓 vendor/website-content-ops-runtime（按 commit 生成、逐文件 SHA-256 校验）
   > allincms-bulk-content-upload 的宿主路由与编排
@@ -75,12 +77,10 @@ Skill 不能直接把示例内容发进 CMS。标准链路是：
 ### 一次安装
 
 ```bash
-git clone （独立安装暂不可用：旧仓已封存，待 id-0073 dist 管线；当前请从母库 SKILL-INSTALL/ 软链安装） "$HOME/skills/allincms-bulk-content-upload"
-cd "$HOME/skills/allincms-bulk-content-upload"
-./install.sh
+# 自用轻量安装（在母库根目录执行；source-only 边界，逐文件 sha256 校验）
+python3 sub-libraries/website-content-ops/scripts/interface-kit-pipeline.py install "$HOME/tools/interface-kit-dist"
 ```
 
-要求本机已有 **Node.js >=20.9.0、npm、Python 3**；首次安装 bundled runtime 时 npm 需要联网下载锁定版本的 `acorn`、`ajv`、`sharp`。执行 `install.sh` 即表示允许安装这些本地运行依赖。
 
 安装器现在会先验证 bundle，再执行 `npm ci`、接口 Registry/索引校验、248 项本地 Adapter 测试和 `sharp` 原生加载检查；**全部通过后才创建 Skill 链接**。任何一步失败均 exit 1，不再出现“Skill 看似安装成功、真正上传时才发现 canonical runtime 缺失”的半安装状态。正常输出应包含 `verified bundled runtime resolved`、`bundled runtime dependencies and self-tests verified`；调用方另外提供完整源包时则显示 `canonical source checkout resolved`。
 
