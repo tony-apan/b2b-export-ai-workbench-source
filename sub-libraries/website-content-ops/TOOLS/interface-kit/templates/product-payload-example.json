@@ -1,0 +1,53 @@
+{
+ "name": "ThermoSteel 500ml Vacuum Insulated Bottle",
+ "slug": "thermosteel-500ml-vacuum-insulated-bottle",
+ "description": "A 500ml double-wall vacuum insulated stainless steel bottle: 12h hot / 24h cold, leakproof flip lid, BPA-free interior. Key specs trace to a representative insulated-bottle listing; brand and copy are synthetic for the qualification run.",
+ "order": 0,
+ "media": {
+  "name": "thermos-photo-demo",
+  "alt": "Red vacuum insulated flask (thermos) on a table",
+  "type": "image",
+  "source": "url",
+  "url": "https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg"
+ },
+ "mediaList": [
+  {
+   "name": "vacuum-flask-vintage-card",
+   "alt": "Vintage vacuum flask advertising card",
+   "type": "image",
+   "source": "url",
+   "url": "https://assets.laicms.com/<demo-site-key>/5y1j8n.jpg"
+  }
+ ],
+ "content": [],
+ "categories": [
+  "6a91f9808333e0ece4a6af3e"
+ ],
+ "tags": [],
+ "specifications": [
+  {
+   "key": "Capacity",
+   "value": "500 ml"
+  },
+  {
+   "key": "Insulation",
+   "value": "12h hot / 24h cold"
+  },
+  {
+   "key": "Material",
+   "value": "304 stainless steel inner + BPA-free lid"
+  },
+  {
+   "key": "Structure",
+   "value": "Double-wall vacuum, leakproof flip lid"
+  },
+  {
+   "key": "Dimensions",
+   "value": "26 cm x 7 cm"
+  },
+  {
+   "key": "Weight",
+   "value": "320 g"
+  }
+ ]
+}

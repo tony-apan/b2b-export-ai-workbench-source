@@ -1,0 +1,50 @@
+{
+  "_comment": "文章 publish 全字段规范样例（2026-08-30 与服务器存储形态对齐：content 原生 Slate 类型 = p|h2|h3|blockquote，'heading'/'paragraph' 是旧词法已禁用）。用法：create_post 先建空壳草稿 -> publish_post 传本结构同 slug 发布；categories/tags 传真实 id 字符串数组（先 read_lists 查）。每个非根元素必须有 id 与 children:[{text}]。",
+  "title": "How to Choose the Right Test Cable for Your Bench",
+  "slug": "how-to-choose-the-right-test-cable",
+  "excerpt": "A practical buyer checklist for RF test cable assemblies: frequency, phase stability, flexibility, durability, and the right connector.",
+  "order": 0,
+  "coverImage": {
+    "name": "example-cover-image",
+    "alt": "RF test cable assembly on a laboratory bench",
+    "type": "image",
+    "source": "oss",
+    "path": "<siteKey>/<file>.webp",
+    "size": 0,
+    "mimeType": "image/webp"
+  },
+  "content": [
+    {
+      "type": "p",
+      "id": "example-001-p",
+      "children": [{"text": "Intro paragraph: state the buyer's question and what this guide answers."}]
+    },
+    {
+      "type": "h2",
+      "id": "example-002-h2",
+      "children": [{"text": "1. Start with Frequency"}]
+    },
+    {
+      "type": "p",
+      "id": "example-003-p",
+      "children": [{"text": "Body paragraph with concrete facts, numbers, and units from the source document only."}]
+    },
+    {
+      "type": "blockquote",
+      "id": "example-004-blockquote",
+      "children": [{"text": "Buyer-perspective pain point quote."}]
+    },
+    {
+      "type": "h2",
+      "id": "example-005-h2",
+      "children": [{"text": "2. Match the Series to the Job"}]
+    },
+    {
+      "type": "p",
+      "id": "example-006-p",
+      "children": [{"text": "Closing paragraph with the next action: what details to send for a quote."}]
+    }
+  ],
+  "categories": ["<post-category-id>"],
+  "tags": ["<tag-id-1>", "<tag-id-2>"]
+}

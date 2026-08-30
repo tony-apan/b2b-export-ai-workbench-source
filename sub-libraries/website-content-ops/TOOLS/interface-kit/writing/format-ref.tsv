@@ -1,0 +1,20 @@
+format	valid	render_semantic	render_style	json_shape	usage	pitfall
+h2	true	h2	slate-h2 text-2xl font-semibold tracking-tight	{"type":"h2","children":[{"text":"HEADING"}],"id":"..."}	章节标题（QUICK ANSWER/01 LENGTH/PHOTO CREDIT）	勿用 type heading
+h3	true	h3	slate-h3	{"type":"h3","children":[{"text":"..."}],"id":"..."}	h2 下子分节	-
+p	true	div	slate-p	{"type":"p","children":[{"text":"..."}],"id":"..."}	正文主段（服务器原生词法；paragraph 仅输入兼容）	每段单一意图
+bold	true	strong	slate-bold	leaf {"text":"...","bold":true}	关键词/数字/段首小标题	单位统一空格
+italic	true	em	data-slate-italic	leaf {"text":"...","italic":true}	强调	-
+underline	true	u	data-slate-underline	leaf {"text":"...","underline":true}	强调	-
+blockquote	true	div	slate-blockquote border-l-2 pl-6 italic	{"children":[{"type":"p","children":[{"text":"..."}]}],"type":"blockquote","id":"..."}	金句/引用	必须包裹 p（扁平无效）
+spacer	true	div	(行高段距)	{"type":"p","children":[{"text":""}],"id":"..."}	逻辑段间分隔	每段后 1 个
+numbered-list	false	span	无	same shape as spec	-	公网平铺（禁用）
+bulleted-list	false	span	无	same shape as spec	-	公网平铺（禁用）
+link	false	span	无	{"type":"link","url":"..."}	-	无 a 标签（禁）
+image	false	span(块丢弃)	-	media 字段	正文图用 media/coverImage	正文 image 块丢弃
+code	unverified	?	?	-	-	未验证勿用
+divider	unverified	?	?	-	-	未验证勿用
+table	unverified	?	?	-	-	未验证勿用（可能炸）
+heading	false	span	无	{"type":"heading","level":2}	-	编辑器不识别（用 h2）
+todo	false	span	无	{"type":"todo","children":[{list-item}]}	-（编辑器有 UI，公网平铺）	未验证禁用
+toggle	false	span	无	{"type":"toggle-list",...}	-（编辑器有 UI，公网平铺）	未验证禁用
+columns	false	? 未验证	? 	{"type":"3-columns",...}	-（编辑器有 UI，公网未验证）	未验证勿用

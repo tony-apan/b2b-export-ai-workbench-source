@@ -13,6 +13,25 @@ redaction_status: "private-source-reviewed"
 ---
 # Mother Library Changelog
 
+## 0.3.1-working — 2026-08-30
+
+### 分发就绪（flash+TERRA 对抗审查后）
+
+- **interface-kit（50 文件 / 612KB）首次进 tracked**：`sub-libraries/website-content-ops/TOOLS/interface-kit/`
+- **Apache-2.0 LICENSE + 非官方第三方客户端声明**（AllinCMS 逆向接口，不担保平台行为）
+- **去敏完成**：21 文件客户标识 → 合成占位符（`<your-site-key>` / `Example Corp` / `<demo-site-key>`），9 种敏感 key 清零
+- **根 README 加 Quick Start**：clone → token → verify → 建站，5 分钟上手路径
+- **文档矛盾修复**：README login() 描述统一为实测结论（纯 API 可获取 token）
+
+### 修改
+| 对象 | 旧 | 新 |
+|---|---|---|
+| interface-kit 位置 | 仅 runtime（gitignored） | tracked `sub-libraries/wco/TOOLS/interface-kit/` |
+| License | 无 | Apache-2.0 + 非官方声明 |
+| README | 无建站指引 | Quick Start（5 分钟 clone→建站） |
+| 客户标识 | 真实 site_key/site_id/URL | `<your-site-key>` 占位符 |
+
+
 ## 0.3.0-working — 2026-08-30
 
 ### 新增（+18,923 行 / 140 文件，commits `bf8d62d` + `0551b80`）

@@ -1,0 +1,35 @@
+type	group	builder_fn	doc_ref	schema_note	frontend_display	status	evidence_ref
+carousel-campaign	Campaigns	carousel(); slide(); service_item()	DOC-003	slides[]+serviceItems[]（icon/desc）	顶通大图轮播+2-3 服务条	verified	EV-005
+category-showcase-grid	Catalog	category_grid(); category_item()	DOC-003	items[]（name/desc/media/target）	N 列图卡（图+名+描述+箭头）	verified	EV-005
+hero-commerce	Heroes	hero()	DOC-003	actions[]/serviceItems[]/campaignPills[] 必须显式（回填坑）	左文右图+规格面板+服务3项+信息药丸	verified	EV-005
+feature-grid-proof	Proof	feature_grid(); feature_row()	DOC-003	proofRows[]（label/title/desc/meta/action）	N 列卡（编号+字+meta+action 链接）	verified	EV-005
+featured-product-list-showcase	Products	product_showcase()	DOC-003	associatedListPage/DetailPage/categorySlug/sortOrder	标题区+CTA+特色产品大卡	verified	EV-005
+full-product-list-filtered	Products	product_list()	DOC-003	pageSize/showToolbar/sortOrder/columnCount	筛选工具栏+产品网格	verified	EV-005
+material-story-split	Story	material_split(); material_note()	DOC-003	notes[]（title/desc）	左图右文+notes 列表+action	verified	EV-005
+social-proof-quotes	Proof	proof_quotes(); review()	DOC-003	reviews[]（quote/name/detail）+ratingLabel	评分星标+N 列评价卡	verified	EV-005
+featured-news-list-editorial	Articles	news_list()	DOC-003	associatedListPage/DetailPage/categorySlug/sortOrder	特色文章大卡+列表卡	verified	EV-005
+faq-accordion	Forms	faq(); faq_item()	DOC-003	items[]（question/answer）+supportNote	问答手风琴	verified	EV-005
+newsletter-inline	Forms	newsletter()	DOC-003	emailPlaceholder/submitLabel/finePrint	订阅行（输入+按钮+细则）	verified	EV-005
+contact-form-split	Forms	contact_split()	DOC-003	email/phone/address/hours + formCard*	左联系卡+右表单卡（客户端渲染）	verified	EV-005
+about-intro-media	Company	about_intro()	DOC-003	eyebrow/title/description/body/media/fit/caption（caption 显式传避免回填）	左文右图+图下 caption 小字	verified	EV-003
+company-story-media	Company	company_story()	DOC-003	sectionLabel/headline/lead/body/media/fit/note/noteLabel	左图右文+note 引述块	verified	EV-003
+company-stats-grid	Company	company_stats(); stat()	DOC-003	stats[]（value/label/description）+columnCount	数字大标题+N 列	verified	EV-003
+company-values-grid	Company	company_values(); value_item()	DOC-003	values[]（title/description）+columnCount	标题卡网格	verified	EV-003
+company-team-grid	Company	company_team(); team_member()	DOC-003	members[]（name/role/bio/photo）+photoFit+columnCount	成员卡（initials 头像+角色+简介）	verified	EV-003
+breadcrumb-inline	Navigation	breadcrumb()	DOC-003	props 空对象	Home / 当前页 面包屑	verified	EV-003
+contact-header-summary	Forms	contact_header(); info_item()	DOC-003	items[]（label/value）	左标题右 key-value 项	verified	EV-003
+contact-info-grid	Forms	contact_info(); contact_info_item()	DOC-003	items[]（type=email|phone|address/label/value/detail）+socialLinks 必须显式（回填坑）	3 卡（图标+值+细节）	verified	EV-003
+location-map-interactive	Forms	location_map(); map_detail()	DOC-003	lat/lng/zoom/mapMode/details[]；tile 依赖外部服务	地图区+地址/细节列表（tile 失败灰块正常）	verified	EV-003
+header-dropdown	Global	header()	DOC-003	navigation[] children 必须递归 dict（回填坑）	顶栏品牌+导航(可下拉)+CTA	verified	EV-003
+footer-columns	Global	footer()	DOC-003	columns[].links[]+socialLinks 显式（默认空）+copyright/systemNote	品牌区+N 列链接+版权细则	verified	EV-003
+contact-dialog-form-modal	Global	contact_dialog()	DOC-003	formSlug 关联 Runtime Form	全站 CTA 弹出表单	verified	EV-003
+social-floating-button	Global	social_float()	DOC-003	brand/url/label/showLabel/position	右下角浮钮	verified	EV-003
+product-detail-gallery	Detail	-	DOC-003	specificationsHeading/fit；正文区渲染记录 content（空则无正文区）	面包屑+图库+规格+正文	verified	EV-007
+product-related-grid	Detail	-	DOC-003	sectionLabel/headline/supportingCopy/pageSize/columnCount；无其它产品时显示"No content is available yet."（空态！）	相关产品卡网格	verified	EV-007
+post-detail-article	Detail	-	DOC-003	fit；正文渲染记录 content（Slate 已被验证渲染，注意 RSC 与 HTML 一致性）	面包屑+文章头+正文	verified	EV-007
+post-related-grid	Detail	-	DOC-003	同 product-related-grid；其它文章不足也空态	相关文章卡网格	verified	EV-007
+page-header-card	Detail	-	DOC-003	eyebrow/title/description/kicker	列表页头（标准标题区）	verified	EV-007
+full-news-list-filtered	Detail	-	DOC-003	pageSize/showToolbar/sortOrder/columnCount/postActionLabel/associatedDetailPage	文章列表（筛选工具栏+网格）	verified	EV-007
+recommended-product-list-grid	Detail	-	DOC-003	sectionLabel/headline/supportingCopy/postActionLabel/associatedDetailPage	文章列表页底部推荐产品卡	verified	EV-007
+recommended-news-list-grid	Detail	-	DOC-003	同上（推荐文章）	产品列表页底部推荐文章卡	verified	EV-007
+

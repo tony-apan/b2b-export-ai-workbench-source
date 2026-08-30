@@ -1,0 +1,31 @@
+{
+  "_comment": "brief.json 字段说明（给 site_pipeline.validate 用；由 AI 从公司/产品介绍文档提炼）",
+  "site": {"name": "站名", "slug": "小写横线slug", "description": "一句话描述（displayDomain 会自动生成）"},
+  "brand": {"title": "品牌名（导航显示）", "tagline": "品牌标语", "cta": "按钮文案如 Get a Quote"},
+  "contact": {
+    "email": "contact@example.com", "phone": "+86 138 0000 0000",
+    "address": "公司地址", "hours": "Mon-Fri 9:00-18:00",
+    "whatsapp": "https://wa.me/86xxxxxxxxxxx"
+  },
+  "categories_posts": [{"name": "文章分类A", "slug": "a"}],
+  "categories_products": [{"name": "产品分类A", "slug": "product-a"}],
+  "tags": [{"name": "标签A", "slug": "tag-a"}],
+  "products": [{
+    "name": "产品名", "slug": "product-slug", "description": "描述",
+    "category": "产品分类slug", "media": "媒体ref名（上传后回填URL）", "priceLabel": "From $xx",
+    "specifications": [{"key": "Capacity", "value": "500 ml"}]
+  }],
+  "posts": [{
+    "title": "文章标题", "slug": "post-slug", "excerpt": "摘要",
+    "category": "文章分类slug",
+    "content": [{"type": "heading", "children": [{"text": "小标题"}]}, {"type": "paragraph", "children": [{"text": "正文"}]}]
+  }],
+  "story": {
+    "intro": {"title": "...", "description": "...", "body": "..."},
+    "story": {"title": "...", "lead": "...", "body": "..."},
+    "stats": [{"value": "24h", "label": "Cold retention", "description": "..."}],
+    "values": [{"title": "...", "description": "..."}],
+    "team": [{"name": "...", "role": "...", "bio": "..."}]
+  },
+  "nav": [["Home", "/", []], ["Products", "/products", [["分类", "/products?category=x", []]]]]
+}

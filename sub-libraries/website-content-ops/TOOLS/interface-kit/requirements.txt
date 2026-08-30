@@ -1,0 +1,27 @@
+# interface-kit 依赖清单（requirements.txt）
+#
+# 分层说明：
+#   [runtime]      建站工具包运行 = 零第三方依赖（Python stdlib：json/os/re/ssl/urllib/csv/struct）
+#                  所有脚本(allincms_api/blocks、site_pipeline、registry_tools、image-check、
+#                  competitor-watch、doc-capability-check)均 stdlib only
+#   [docs-parse]   解析用户资料（PDF/DOCX/PPTX/XLSX）需要 —— 选装，按平台给对应方案
+#   [canonical]    canonical 子库校验（validate-links / validate-sub-library）需要 Node.js —— 选装
+#
+# 安装方式：python3 install-deps.py            （检测+提示）
+#          python3 install-deps.py --yes        （一键安装缺失项）
+#          python3 install-deps.py --verify     （安装后复检）
+#
+# ------------------------------------------------------------------
+# [runtime] 无 —— 零依赖（不要在这增加任何包！）
+# ------------------------------------------------------------------
+
+# [docs-parse] 推荐（跨平台 pip 包）
+# pypdf            # PDF 读取（备选：PyPDF2；或系统 poppler 的 pdftotext）
+# python-docx      # Word .docx
+# python-pptx      # PowerPoint .pptx
+# openpyxl         # Excel .xlsx
+
+# [docs-parse] 备选（系统工具，无需 pip；mac 可用 Homebrew 安装）
+# poppler          # 提供 pdftotext（mac: brew install poppler；ubuntu: apt install poppler-utils）
+
+# [canonical] Node.js >= 18（仅运行 sub-library 校验脚本时）

@@ -1,0 +1,31 @@
+{
+  "_comment": "每站审计基线模板。新站建站时：复制本文件为 70_evidence/<slug>-audit-config.json，全部字段按该站内容计划(COP)实建数填写；audit/gate/contact 三个命令都要带 --config（ISS-063）。未提供的字段 = 沿用 Demo 默认基线（会导致误判）。",
+  "pages": [
+    "",
+    "about-us",
+    "contact-us",
+    "posts",
+    "products",
+    "sitemap.xml",
+    "posts/<article-slug-1>",
+    "products/<product-slug-1>"
+  ],
+  "count": {"products": 0, "posts": 0},
+  "fallback_article": "<article-slug-1>",
+  "primary_article": "<article-slug-1>",
+  "faq_answers": [
+    "<文章1中必须 SSR 的实质事实短语1>",
+    "<短语2>",
+    "<短语3>",
+    "<CTA 短语，如 request a quote>"
+  ],
+  "cta": {
+    "_comment": "两个子串都必须在文章页 HTML 中出现。product_link=真链接目标（本平台正文内联链接不支持，通常是页面级 CTA 块 actionTarget 指向的咨询链或产品深链）；consult_source=归因参数子串",
+    "product_link": "/contact-us?source=<site>-<article>",
+    "consult_source": "source=<site>-<article>"
+  },
+  "units": [],
+  "template_words_extra": [],
+  "demo_contacts_extra": {},
+  "required_h2": 3
+}

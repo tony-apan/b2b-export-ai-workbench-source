@@ -1,0 +1,790 @@
+{
+ "pageDoc": {
+  "root": "page-root",
+  "elements": {
+   "page-root": {
+    "type": "page-root",
+    "props": {
+     "className": null
+    },
+    "children": [
+     "carousel-campaign-1",
+     "categories-1",
+     "hero-commerce-1",
+     "features-1",
+     "products-1",
+     "materials-1",
+     "proof-1",
+     "news-1",
+     "faq-accordion-1",
+     "newsletter-inline-1",
+     "contact-1"
+    ],
+    "anchorId": null
+   },
+   "carousel-campaign-1": {
+    "type": "carousel-campaign",
+    "props": {
+     "slides": [
+      {
+       "eyebrow": "12h hot, 24h cold",
+       "title": "Keep it hot all day. Keep it cold all night.",
+       "description": "The ThermoSteel 500ml is a double-wall vacuum insulated bottle: 304 stainless inner, BPA-free lid, and a leakproof flip top for commute, gym, and travel.",
+       "media": {
+        "type": "image",
+        "value": {
+         "name": "thermos-photo-demo",
+         "type": "image",
+         "source": "url",
+         "url": "https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg"
+        }
+       },
+       "fit": "cover",
+       "showMask": true,
+       "price": "From $29",
+       "product": "ThermoSteel 500ml Vacuum Insulated Bottle",
+       "primaryLabel": "Shop the bottle",
+       "primaryTarget": {
+        "type": "custom",
+        "href": "/products/thermosteel-500ml-vacuum-insulated-bottle"
+       },
+       "secondaryLabel": "How to choose",
+       "secondaryTarget": {
+        "type": "custom",
+        "href": "/posts/how-to-choose-an-insulated-bottle"
+       }
+      },
+      {
+       "eyebrow": "Leakproof design",
+       "title": "Toss it in the bag. It will not leak.",
+       "description": "A secure flip lid and silicone seal keep the vacuum intact and the bag dry, even with carbonated drinks on a full day out.",
+       "media": {
+        "type": "image",
+        "value": {
+         "name": "vacuum-flask-vintage-card",
+         "type": "image",
+         "source": "url",
+         "url": "https://assets.laicms.com/<demo-site-key>/5y1j8n.jpg"
+        }
+       },
+       "fit": "cover",
+       "showMask": true,
+       "price": "BPA-free / food grade",
+       "product": "ThermoSteel 500ml",
+       "primaryLabel": "Shop the bottle",
+       "primaryTarget": {
+        "type": "custom",
+        "href": "/products/thermosteel-500ml-vacuum-insulated-bottle"
+       },
+       "secondaryLabel": "Read the guide",
+       "secondaryTarget": {
+        "type": "custom",
+        "href": "/posts/how-to-choose-an-insulated-bottle"
+       }
+      },
+      {
+       "eyebrow": "B2B catalogue",
+       "title": "Insulated bottles for distributors.",
+       "description": "Wholesale and OEM inquiries for vacuum insulated bottles: 500ml travel sizes, custom colours, and volume pricing for export teams.",
+       "media": {
+        "type": "image",
+        "value": {
+         "name": "thermos-photo-demo",
+         "type": "image",
+         "source": "url",
+         "url": "https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg"
+        }
+       },
+       "fit": "cover",
+       "showMask": true,
+       "price": "Volume pricing",
+       "product": "ThermoFlask series",
+       "primaryLabel": "View catalogue",
+       "primaryTarget": {
+        "type": "custom",
+        "href": "/products"
+       },
+       "secondaryLabel": "Contact",
+       "secondaryTarget": {
+        "type": "custom",
+        "href": "/contact-us"
+       }
+      }
+     ],
+     "serviceItems": [
+      {
+       "icon": "truck",
+       "title": "Export shipments",
+       "description": "Consolidated container loads with tracking on every batch."
+      },
+      {
+       "icon": "shield",
+       "title": "OEM support",
+       "description": "Custom colours, logos, and packaging for distributor brands."
+      }
+     ]
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "categories-1": {
+    "type": "category-showcase-grid",
+    "props": {
+     "sectionLabel": "Shop by category",
+     "headline": "Pick your bottle.",
+     "supportingCopy": "Start with the size and use case that fits your daily routine, then narrow the range from there.",
+     "items": [
+      {
+       "name": "Insulated Bottles",
+       "description": "500ml vacuum insulated bottles for commute, gym, and travel.",
+       "media": {
+        "type": "image",
+        "value": {
+         "name": "thermos-photo-demo",
+         "type": "image",
+         "source": "url",
+         "url": "https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg"
+        }
+       },
+       "fit": "cover",
+       "target": {
+        "type": "custom",
+        "href": "/products?category=product-insulated-bottles"
+       }
+      },
+      {
+       "name": "Buying Guide",
+       "description": "Capacity, insulation hours, and lid type as a quick checklist.",
+       "media": {
+        "type": "image",
+        "value": {
+         "name": "vacuum-flask-vintage-card",
+         "type": "image",
+         "source": "url",
+         "url": "https://assets.laicms.com/<demo-site-key>/5y1j8n.jpg"
+        }
+       },
+       "fit": "cover",
+       "target": {
+        "type": "custom",
+        "href": "/posts/how-to-choose-an-insulated-bottle"
+       }
+      },
+      {
+       "name": "Wholesale & OEM",
+       "description": "Volume pricing, custom branding, and packaging support.",
+       "media": {
+        "type": "image",
+        "value": {
+         "name": "thermos-photo-demo",
+         "type": "image",
+         "source": "url",
+         "url": "https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg"
+        }
+       },
+       "fit": "cover",
+       "target": {
+        "type": "custom",
+        "href": "/contact-us"
+       }
+      }
+     ],
+     "columnCount": 3
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "hero-commerce-1": {
+    "type": "hero-commerce",
+    "props": {
+     "eyebrow": "ThermoFlask flagship",
+     "title": "Insulated bottles for the whole day.",
+     "description": "The ThermoSteel 500ml keeps drinks hot for 12 hours and cold for 24, with a 304 stainless inner wall, BPA-free lid, and a leakproof flip top.",
+     "secondaryNote": "Export quotations in 1-2 business days with volume pricing and custom branding.",
+     "media": {
+      "type": "image",
+      "value": {
+       "name": "thermos-photo-demo",
+       "type": "image",
+       "source": "url",
+       "url": "https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg"
+      }
+     },
+     "fit": "cover",
+     "mediaCaption": "Red vacuum insulated flask (thermos) on a table. CC BY-SA 4.0 Schekinov Alexey Victorovich.",
+     "mediaKicker": "ThermoFlask",
+     "mediaMeta": "Vacuum insulated / 500ml",
+     "productName": "ThermoSteel 500ml Vacuum Insulated Bottle",
+     "productDescription": "500ml double-wall vacuum insulated stainless steel bottle. (Synthetic demo product for the qualification run.)",
+     "productPriceLabel": "From $29",
+     "actions": [
+      {
+       "label": "Shop the bottle",
+       "target": {
+        "type": "custom",
+        "href": "/products/thermosteel-500ml-vacuum-insulated-bottle"
+       },
+       "variant": "solid"
+      },
+      {
+       "label": "Read the buying guide",
+       "target": {
+        "type": "custom",
+        "href": "/posts/how-to-choose-an-insulated-bottle"
+       },
+       "variant": "outline"
+      }
+     ],
+     "serviceItems": [
+      {
+       "label": "Volume pricing",
+       "value": "Wholesale · OEM"
+      },
+      {
+       "label": "Leakproof guarantee",
+       "value": "1-year seal support"
+      },
+      {
+       "label": "Quick dispatch",
+       "value": "In-stock 1-2 business days"
+      }
+     ],
+     "campaignPills": [
+      {
+       "label": "Insulation standard",
+       "value": "12h hot · 24h cold"
+      },
+      {
+       "label": "Everyday carry",
+       "value": "Commute, gym, travel"
+      },
+      {
+       "label": "B2B ready",
+       "value": "OEM branding + packaging"
+      }
+     ]
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "features-1": {
+    "type": "feature-grid-proof",
+    "props": {
+     "eyebrow": "Why it is the daily pick",
+     "heading": "Insulation you can measure, not just claim.",
+     "description": "Every ThermoSteel bottle is cut against one standard: hold heat through a workday, hold cold through a shift, and never leak in a bag.",
+     "proofRows": [
+      {
+       "label": "01 / Insulation",
+       "title": "12h hot, 24h cold",
+       "description": "Double-wall vacuum insulation with copper layer keeps coffee hot and water cold all day.",
+       "meta": "Vacuum / copper layer",
+       "actionLabel": "Shop bottles",
+       "target": {
+        "type": "custom",
+        "href": "/products"
+       }
+      },
+      {
+       "label": "02 / Material",
+       "title": "304 stainless, BPA-free",
+       "description": "Food-grade stainless inner resists taste transfer; BPA-free polypropylene lid is dishwasher-safe top rack.",
+       "meta": "304 steel / BPA-free",
+       "actionLabel": "Read the guide",
+       "target": {
+        "type": "custom",
+        "href": "/posts/how-to-choose-an-insulated-bottle"
+       }
+      },
+      {
+       "label": "03 / Service",
+       "title": "OEM and export support",
+       "description": "Clear lead times, custom branding, and packaging options for distributor orders.",
+       "meta": "OEM / export",
+       "actionLabel": "Ask a question",
+       "target": {
+        "type": "custom",
+        "href": "/contact-us"
+       }
+      }
+     ],
+     "columnCount": 3
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "products-1": {
+    "type": "featured-product-list-showcase",
+    "props": {
+     "sectionLabel": "Shop the edit",
+     "headline": "Best sellers and new arrivals",
+     "supportingCopy": "Start with the bottle that sells first: 500ml, leakproof, 304 stainless — then work through wholesale, OEM, and quantity pricing.",
+     "merchandisingNote": "Fresh stock is highlighted first, with category filters available on the full catalogue page.",
+     "ctaLabel": "View all products",
+     "ctaTarget": {
+      "type": "custom",
+      "href": "/products"
+     },
+     "productActionLabel": "View product",
+     "featuredProductActionLabel": "View featured product",
+     "fit": "cover",
+     "associatedListPage": {
+      "path": "/products",
+      "href": "/products"
+     },
+     "associatedDetailPage": {
+      "path": "/products/{product}",
+      "href": "/products/{product}"
+     },
+     "categorySlug": "",
+     "sortOrder": "newest"
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "materials-1": {
+    "type": "material-story-split",
+    "props": {
+     "sectionLabel": "Materials and care",
+     "headline": "Built to survive years of daily washes.",
+     "supportingCopy": "We spec materials for a working bottle: food-grade stainless, UV-stable finishes, and seals that stay soft and leakproof.",
+     "media": {
+      "type": "image",
+      "value": {
+       "name": "vacuum-flask-vintage-card",
+       "type": "image",
+       "source": "url",
+       "url": "https://assets.laicms.com/<demo-site-key>/5y1j8n.jpg"
+      }
+     },
+     "fit": "cover",
+     "notes": [
+      {
+       "title": "304 stainless inner",
+       "description": "Food-grade wall that resists rust, odour, and taste transfer."
+      },
+      {
+       "title": "BPA-free lid",
+       "description": "Polypropylene top rack dishwasher-safe, with a replaceable silicone seal."
+      },
+      {
+       "title": "Washable, stable finish",
+       "description": "Powder-coat finish that keeps its colour through daily washing and bag wear."
+      }
+     ],
+     "actionLabel": "Read the material guide",
+     "actionTarget": {
+      "type": "custom",
+      "href": "/about-us"
+     }
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "proof-1": {
+    "type": "social-proof-quotes",
+    "props": {
+     "sectionLabel": "Paddler notes",
+     "headline": "Proof from bottles that stay in use.",
+     "ratingLabel": "4.9 average from recent bottle reviews",
+     "reviews": [
+      {
+       "quote": "Coffee is still hot at 3pm. That is exactly what I wanted from this bottle.",
+       "name": "Lin W.",
+       "detail": "Verified customer"
+      },
+      {
+       "quote": "Ordered a sample batch for our distributor line: the leakproof lid sells itself.",
+       "name": "Eli R.",
+       "detail": "Fleet buyer"
+      },
+      {
+       "quote": "Solid build, no plastic taste, and it actually holds cold overnight.",
+       "name": "Jordan L.",
+       "detail": "Verified customer"
+      }
+     ],
+     "columnCount": 3
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "news-1": {
+    "type": "featured-news-list-editorial",
+    "props": {
+     "sectionLabel": "Stories and guides",
+     "headline": "Field notes, buying guides, and updates",
+     "supportingCopy": "Read the latest product stories, buying guides, and company updates from the ThermoFlask team.",
+     "digestLabel": "Latest stories",
+     "featureLabel": "Featured story",
+     "ctaLabel": "View all stories",
+     "ctaTarget": {
+      "type": "custom",
+      "href": "/posts"
+     },
+     "associatedListPage": {
+      "path": "/posts",
+      "href": "/posts"
+     },
+     "associatedDetailPage": {
+      "path": "/posts/{post}",
+      "href": "/posts/{post}"
+     },
+     "categorySlug": "",
+     "sortOrder": "newest",
+     "fit": "cover",
+     "postActionLabel": "Read",
+     "featureActionLabel": "Read story"
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "faq-accordion-1": {
+    "type": "faq-accordion",
+    "props": {
+     "sectionLabel": "Buyer questions",
+     "headline": "Questions buyers ask before they order",
+     "supportingCopy": "Find quick answers about shipping, OEM pricing, wholesale orders, and bottle care.",
+     "supportNote": "Still need help? Send us a note and we will point you in the right direction.",
+     "items": [
+      {
+       "question": "How fast will my order ship?",
+       "answer": "In-stock inventory usually ships within 1-2 business days; container loads follow the agreed production window."
+      },
+      {
+       "question": "Do you support wholesale and OEM orders?",
+       "answer": "Yes. Share the quantity, timeline, and design brief through the contact form for volume pricing."
+      },
+      {
+       "question": "Is the inner wall food grade?",
+       "answer": "304 stainless steel, BPA-free lid and seal: safe for daily hot and cold drinks."
+      }
+     ]
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "newsletter-inline-1": {
+    "type": "newsletter-inline",
+    "props": {
+     "sectionLabel": "New drops and care notes",
+     "headline": "Get the next bottle drop before it sells through.",
+     "supportingCopy": "Monthly product releases, care reminders, and practical buying guides. No loud campaigns.",
+     "emailPlaceholder": "Email address",
+     "submitLabel": "Subscribe",
+     "finePrint": "Product news only. Unsubscribe anytime."
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "contact-1": {
+    "type": "contact-form-split",
+    "props": {
+     "eyebrow": "Contact",
+     "title": "Tell us what you are looking for",
+     "description": "Send a question, wholesale request, or project brief and our team will follow up with next steps.",
+     "responseTitle": "What happens after submission",
+     "responseDescription": "We usually reply within one business day with availability, volume pricing, or the right person to contact.",
+     "emailLabel": "Email",
+     "emailValue": "sales@thermoflask.example",
+     "phoneLabel": "Phone",
+     "phoneValue": "+86 (0) 755 0000 0000",
+     "addressLabel": "Office",
+     "addressValue": "ThermoFlask Export Dept.\\nShenzhen, China",
+     "hoursLabel": "Hours",
+     "hoursValue": "Mon-Fri, 9:00-18:00 (GMT+8)",
+     "formCardEyebrow": "Inquiry intake",
+     "formCardTitle": "Send the details",
+     "formCardDescription": "Share a few details about your request so we can send a useful reply.",
+     "formSlug": ""
+    },
+    "children": [],
+    "anchorId": null
+   }
+  }
+ },
+ "globals": {
+  "root": "page-root",
+  "elements": {
+   "header-dropdown-1": {
+    "type": "header-dropdown",
+    "props": {
+     "siteTitle": "ThermoFlask",
+     "tagline": "Vacuum insulated bottles",
+     "logoMedia": null,
+     "logoFit": "cover",
+     "logoTarget": {
+      "type": "custom",
+      "href": "/"
+     },
+     "navigation": [
+      {
+       "label": "Home",
+       "target": {
+        "type": "custom",
+        "href": "/"
+       },
+       "children": []
+      },
+      {
+       "label": "Products",
+       "target": {
+        "type": "custom",
+        "href": "/products"
+       },
+       "children": [
+        {
+         "label": "Insulated Bottles",
+         "target": {
+          "type": "custom",
+          "href": "/products?category=product-insulated-bottles"
+         },
+         "children": []
+        }
+       ]
+      },
+      {
+       "label": "Guides",
+       "target": {
+        "type": "custom",
+        "href": "/posts/how-to-choose-an-insulated-bottle"
+       },
+       "children": []
+      },
+      {
+       "label": "About",
+       "target": {
+        "type": "custom",
+        "href": "/about-us"
+       },
+       "children": []
+      },
+      {
+       "label": "Contact",
+       "target": {
+        "type": "custom",
+        "href": "/contact-us"
+       },
+       "children": []
+      }
+     ],
+     "ctaLabel": "Get a Quote",
+     "ctaTarget": {
+      "type": "action",
+      "anchorId": "contact-form-dialog"
+     }
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "footer-columns-1": {
+    "type": "footer-columns",
+    "props": {
+     "brand": "ThermoFlask",
+     "kicker": "Vacuum insulated bottles",
+     "description": "Double-wall vacuum insulated stainless steel bottles for commute, travel, and family use.",
+     "columns": [
+      {
+       "title": "Shop",
+       "links": [
+        {
+         "label": "Products",
+         "target": {
+          "type": "custom",
+          "href": "/products"
+         }
+        },
+        {
+         "label": "How to choose",
+         "target": {
+          "type": "custom",
+          "href": "/posts/how-to-choose-an-insulated-bottle"
+         }
+        }
+       ]
+      },
+      {
+       "title": "Company",
+       "links": [
+        {
+         "label": "About us",
+         "target": {
+          "type": "custom",
+          "href": "/about-us"
+         }
+        },
+        {
+         "label": "Contact us",
+         "target": {
+          "type": "custom",
+          "href": "/contact-us"
+         }
+        }
+       ]
+      },
+      {
+       "title": "Content",
+       "links": [
+        {
+         "label": "Journal",
+         "target": {
+          "type": "custom",
+          "href": "/posts"
+         }
+        },
+        {
+         "label": "Buying guide",
+         "target": {
+          "type": "custom",
+          "href": "/posts/how-to-choose-an-insulated-bottle"
+         }
+        }
+       ]
+      }
+     ],
+     "socialLinks": [],
+     "copyright": "© 2026 ThermoFlask. Demo site for qualification run.",
+     "systemNote": "Bottles built for long days, not short seasons."
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "contact-form-dialog": {
+    "type": "contact-dialog-form-modal",
+    "props": {
+     "title": "Ask about sizes, materials, or wholesale.",
+     "description": "Send a question about insulation, capacity, wholesale programs, or order support and we will reply within one business day.",
+     "eyebrow": "Product support",
+     "closeLabel": "Close contact dialog",
+     "formSlug": "contact-inquiry"
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "social-floating-button-1": {
+    "type": "social-floating-button",
+    "props": {
+     "brand": "whatsapp",
+     "url": "https://wa.me/8613800000000",
+     "label": "WhatsApp",
+     "showLabel": false,
+     "position": "bottom-right"
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "page-root": {
+    "type": "page-root",
+    "props": {
+     "className": null
+    },
+    "children": [
+     "header-dropdown-1",
+     "footer-columns-1",
+     "contact-form-dialog",
+     "social-floating-button-1"
+    ],
+    "anchorId": null
+   }
+  }
+ },
+ "themeConfig": {
+  "light": {
+   "background": "oklch(1 0 0)",
+   "foreground": "oklch(0.141 0.005 285.823)",
+   "card": "oklch(1 0 0)",
+   "card-foreground": "oklch(0.141 0.005 285.823)",
+   "popover": "oklch(1 0 0)",
+   "popover-foreground": "oklch(0.141 0.005 285.823)",
+   "primary": "oklch(0.21 0.006 285.885)",
+   "primary-foreground": "oklch(0.985 0 0)",
+   "secondary": "oklch(0.967 0.001 286.375)",
+   "secondary-foreground": "oklch(0.21 0.006 285.885)",
+   "muted": "oklch(0.967 0.001 286.375)",
+   "muted-foreground": "oklch(0.552 0.016 285.938)",
+   "accent": "oklch(0.967 0.001 286.375)",
+   "accent-foreground": "oklch(0.21 0.006 285.885)",
+   "destructive": "oklch(0.577 0.245 27.325)",
+   "destructive-foreground": "oklch(1 0 0)",
+   "border": "oklch(0.92 0.004 286.32)",
+   "input": "oklch(0.92 0.004 286.32)",
+   "ring": "oklch(0.705 0.015 286.067)",
+   "chart-1": "oklch(0.646 0.222 41.116)",
+   "chart-2": "oklch(0.6 0.118 184.704)",
+   "chart-3": "oklch(0.398 0.07 227.392)",
+   "chart-4": "oklch(0.828 0.189 84.429)",
+   "chart-5": "oklch(0.769 0.188 70.08)",
+   "sidebar": "oklch(0.985 0 0)",
+   "sidebar-foreground": "oklch(0.141 0.005 285.823)",
+   "sidebar-primary": "oklch(0.21 0.006 285.885)",
+   "sidebar-primary-foreground": "oklch(0.985 0 0)",
+   "sidebar-accent": "oklch(0.967 0.001 286.375)",
+   "sidebar-accent-foreground": "oklch(0.21 0.006 285.885)",
+   "sidebar-border": "oklch(0.92 0.004 286.32)",
+   "sidebar-ring": "oklch(0.705 0.015 286.067)",
+   "font-sans": "'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+   "font-serif": "\"Geist\", \"Geist Fallback\", ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif",
+   "font-mono": "\"Geist Mono\", \"Geist Mono Fallback\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+   "radius": "0.625rem",
+   "shadow-color": "hsl(0 0% 0%)",
+   "shadow-opacity": "0.1",
+   "shadow-blur": "3px",
+   "shadow-spread": "0px",
+   "shadow-offset-x": "0",
+   "shadow-offset-y": "1px",
+   "letter-spacing": "0em",
+   "spacing": "0.25rem"
+  },
+  "dark": {
+   "background": "oklch(0.141 0.005 285.823)",
+   "foreground": "oklch(0.985 0 0)",
+   "card": "oklch(0.21 0.006 285.885)",
+   "card-foreground": "oklch(0.985 0 0)",
+   "popover": "oklch(0.21 0.006 285.885)",
+   "popover-foreground": "oklch(0.985 0 0)",
+   "primary": "oklch(0.92 0.004 286.32)",
+   "primary-foreground": "oklch(0.21 0.006 285.885)",
+   "secondary": "oklch(0.274 0.006 286.033)",
+   "secondary-foreground": "oklch(0.985 0 0)",
+   "muted": "oklch(0.274 0.006 286.033)",
+   "muted-foreground": "oklch(0.705 0.015 286.067)",
+   "accent": "oklch(0.274 0.006 286.033)",
+   "accent-foreground": "oklch(0.985 0 0)",
+   "destructive": "oklch(0.704 0.191 22.216)",
+   "destructive-foreground": "oklch(0.985 0 0)",
+   "border": "oklch(1 0 0 / 10%)",
+   "input": "oklch(1 0 0 / 15%)",
+   "ring": "oklch(0.552 0.016 285.938)",
+   "chart-1": "oklch(0.488 0.243 264.376)",
+   "chart-2": "oklch(0.696 0.17 162.48)",
+   "chart-3": "oklch(0.769 0.188 70.08)",
+   "chart-4": "oklch(0.627 0.265 303.9)",
+   "chart-5": "oklch(0.645 0.246 16.439)",
+   "sidebar": "oklch(0.21 0.006 285.885)",
+   "sidebar-foreground": "oklch(0.985 0 0)",
+   "sidebar-primary": "oklch(0.488 0.243 264.376)",
+   "sidebar-primary-foreground": "oklch(0.985 0 0)",
+   "sidebar-accent": "oklch(0.274 0.006 286.033)",
+   "sidebar-accent-foreground": "oklch(0.985 0 0)",
+   "sidebar-border": "oklch(1 0 0 / 10%)",
+   "sidebar-ring": "oklch(0.552 0.016 285.938)",
+   "font-sans": "'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+   "font-serif": "\"Geist\", \"Geist Fallback\", ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif",
+   "font-mono": "\"Geist Mono\", \"Geist Mono Fallback\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+   "radius": "0.625rem",
+   "shadow-color": "hsl(0 0% 0%)",
+   "shadow-opacity": "0.1",
+   "shadow-blur": "3px",
+   "shadow-spread": "0px",
+   "shadow-offset-x": "0",
+   "shadow-offset-y": "1px",
+   "letter-spacing": "0em",
+   "spacing": "0.25rem"
+  },
+  "hslAdjustments": {
+   "hueShift": 0,
+   "saturationScale": 1,
+   "lightnessScale": 1
+  }
+ }
+}

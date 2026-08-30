@@ -18,7 +18,7 @@ release_status: "BLOCK"
 # Mother Library Version
 
 - Package ID：`b2b-export-ai-workbench-mother-library`
-- Version：`0.3.0-working`
+- Version：`0.3.1-working`
 - Released：Private source synced（2026-08-30）
 - Compatibility：普通 Git checkout、Markdown 阅读器和可读取本地文件的 AI agent；不要求 Obsidian。
 - Repository sync status：`Synced`

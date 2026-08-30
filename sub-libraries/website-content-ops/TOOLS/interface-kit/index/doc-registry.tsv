@@ -1,0 +1,67 @@
+id	kind	scope	name	path	status	scripts	tags	description	when_to_read
+DOC-001	doc	kit	工具包总览（读写方案+换机指南）	../README.md	current	allincms_api.py;allincms_blocks.py;site_pipeline.py;scan/scan-actions.py	overview;onboarding;cross-platform	零依赖纯接口工具包：写=server action，读=RSC 流；端点矩阵；CLI；换电脑(mac/win)指南；Runtime Forms 章节	上手、换机、对新环境快速导入
+DOC-002	doc	kit	0→1 建站上线 SOP	../ONBOARDING-PIPELINE.md	current	allincms_api.py;site_pipeline.py;allincms_blocks.py	workflow;sop;launch	资料→brief→validate→generate→执行→globals 全站→验收三步；参考 ID；坑清单；换机快速开始	承接公司/产品文档建新站前必读
+DOC-003	doc	kit	单页模块规范（Blocks Library）	../MODULES.md	current	allincms_blocks.py;site_pipeline.py	modules;schema;frontend;backfill	20 种页面模块+4 全局模块 schema/嵌套结构/前端显示映射/服务端回填坑/模板词自检表	设计器组装页面、排查模块字段时
+DOC-004	doc	kit	模板资产使用说明	../templates/README.md	current	-	templates;payload	真实读回产物作字段参照：产品/文章 payload example、页面三件套、brief-schema	照模板填新站字段时
+DOC-005	doc	kit	索引体系说明（本目录）	INDEX.md	current	index/registry_tools.py	index;registry	三张 TSV 主索引+自动生成的阅读页；查询/更新规则见文内	任何"找文档/找问题/找模块"的第一步
+SCRIPT-001	script	kit	AllinCMS 纯接口客户端	../allincms_api.py	current	-	api;rsc;write;read	零依赖客户端：写(站点/分类/标签/媒体/产品/文章/设计器)+读(RSC 9 路+CLI 8 命令)；action id 常量表	所有执行操作
+SCRIPT-002	script	kit	模块构建器	../allincms_blocks.py	current	-	modules;builder;json	hero/carousel/category/feature/product/material/proof/news/faq/newsletter/contact+公司页/联系页 builder+page_document 组装	生成页面 document/globals
+SCRIPT-003	script	kit	建站流水线工具	../site_pipeline.py	current	-	cli;validate;generate;check;diff	validate(含 3/4 数量门)/generate/check(模板词)/diff(readback)/gate(一键门)/contact(demo 联系方式门)/audit(13 项一体对抗审计+JSON 报告：FAQ答案SSR/真实CTA/单位/绝对化/Markdown/lang/canonical/JSON-LD/图片属性)	构建前校验、上线前自检、readback 比对
+SCRIPT-004	script	kit	action id 扫描器	../scan/scan-actions.py	current	-	action-id;deploy	从页面/工作台 chunk 扫 createServerReference 得当前部署 action id	换部署/升级后必跑
+SCRIPT-005	script	kit	索引工具（registry）	registry_tools.py	current	-	index;cli	verify(引用存在/id 唯一/枚举合法)/gen(生成 INDEX.md)/ls/find(关键词查询)/add(安全追加)	维护索引、查询文档
+TPL-001	template	kit	产品 payload 参照	../templates/product-payload-example.json	current	-	payload;product	defaultValues 全字段(name/slug/description/order/media/mediaList/categories/tags/specifications/content)	构建产品 payload
+TPL-002	template	kit	文章 payload 参照	../templates/post-payload-example.json	current	-	payload;post;slate	defaultValues 全字段(title/slug/excerpt/order/coverImage/categories/tags/content Slate)	构建文章 payload
+TPL-003	template	kit	首页三件套参照	../templates/home-page-example.json	current	-	payload;page;document	pageDoc+globals+themeConfig 完整示例（11 模块真实结构）	组装首页/复刻结构
+TPL-004	template	kit	公司页三件套参照	../templates/about-page-example.json	current	-	payload;page;company	about-intro/story/stats/values/team 真实结构	组装 About 页
+TPL-005	template	kit	联系页三件套参照	../templates/contact-page-example.json	current	-	payload;page;contact	header/info/map/form 真实结构	组装 Contact 页
+TPL-006	template	kit	brief 字段骨架	../templates/brief-schema.json	current	-	brief;input	公司/产品资料→brief.json 的字段结构与说明	提炼资料时
+EV-001	evidence	evidence	接口要点全集+踩坑集	../../70_evidence/THERMOS-INTERFACE-REPORT.md	current	-	api;actions;payload;pitfalls	全 action 端点/payload/返回/错误模式；RSC 端点矩阵；对抗要点	排错、查 payload 细节
+EV-002	evidence	evidence	工具包验证报告（对抗记录）	../../70_evidence/KIT-VERIFICATION.md	current	-	verification;adversarial	交付物+实测验证表+RSC 攻破+回填规则+观察项	审查可信度、复述验证步骤
+EV-003	evidence	evidence	站点上线审计报告	../../70_evidence/SITE-LAUNCH-AUDIT-20260829.md	current	-	audit;launch;boundary	全站审计：已解决/平台边界/表单链路待验证+证据指针	复盘站质量、引用边界事实
+EV-004	evidence	evidence	template-residue gate 报告	../../70_evidence/template-residue-gate.json	current	check_template_residue.py (skill)	residue;gate	skill 自带 gate 输出：7 路由/19 术语/0 命中 pass=true	证明模板残留清零
+EV-005	evidence	evidence	首页 document RSC 快照	../../70_evidence/rsc-home-doc-rsc-read.json	current	-	document;snapshot;rsc	设计器接口读回的首页三件套原始快照	对照/复现
+EV-006	evidence	evidence	清空前站点证据	../../70_evidence/sites-before-delete.json	current	-	audit;site	7 站删除前记录（totalDocs 7→0 依据）	重建/追责时
+CAN-001	doc	canonical	上线验收合同（ID-0007）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0007-site-launch-acceptance.md	current	-	launch;acceptance;boundary;forms	三层验收(A 内容/B 前端/C 平台边界)+Runtime Forms 链路+判定门槛	上线前判定、边界事实源
+CAN-002	doc	canonical	实站操作对抗审查（ID-0006）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0006-live-allincms-adversarial-review.md	current	-	adversarial;capability;duality	capability gate/Plan A-B/双审门槛/可分享 Skill 硬条件	评估操作是否可复用可分享
+CAN-003	doc	canonical	来源驱动建站 SOP（ID-0005）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md	current	-	sop;source-driven;authorization	Source Extraction→事实账本→desired state→动态发现→精确 diff→授权→串行执行	按 canonical 流程执行时
+CAN-004	doc	canonical	文章页前端 SEO 合同（ID-0002）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md	current	-	seo;frontend;article	索引资格/文档语言/canonical/结构化数据/OG/语义 HTML/图片合同	文章页 SEO 验收
+IDX-001	index	kit	索引阅读页（自动生成）	INDEX.md	current	index/registry_tools.py	index;generated	由registry_tools.py gen 生成；勿手改	快速导航
+IDX-002	index	kit	文档/脚本/模板 registry	doc-registry.tsv	current	index/registry_tools.py	index;tsv	主索引（本表）：每行一个可复用资产+状态+脚本+用途	查询/维护
+IDX-003	index	kit	问题/教训 registry	issues.tsv	current	index/registry_tools.py	index;tsv;lessons	问题库：现象/根因/修复/规避/文档/脚本/证据+状态(fixed/boundary/pending)	排错与经验复用
+IDX-004	index	kit	模块 registry	modules.tsv	current	index/registry_tools.py	index;tsv;modules	模块库：type/分组/构建函数/文档/前端显示/状态	选模块、查函数
+TPL-007	template	kit	交付清单模板（delivery-manifest）	../templates/delivery-manifest.md	current	-	delivery;manifest;launch	建站验收后生成交付清单（链接+说明+核验表）的模板；含公开链接表/内容清单/核验记录/已知事项	交付前必用
+EV-007	evidence	evidence	皮筏艇站交付清单	../../70_evidence/DELIVERY-KAYAK-20260829.md	current	-	delivery;kayak;example	Demo 站全量交付清单范例（13 链接+核验表+gates）	交付物参考、核对新站清单
+EV-008	evidence	evidence	皮筏艇站清理前证据	../../70_evidence/sites-before-delete-kayak.json	current	-	evidence;audit	清空前站点记录（1 站）+ 删除后 0 站	清空审计
+TPL-008	template	kit	前置资料收集清单	../templates/client-input-checklist.md	current	-	input;brief;client	建站前向用户收集 5 项必填（品牌名/昵称职位/邮箱电话WA/地址/资料文件）+ 解析提炼流程 + 版权合规 + 确认点	承接建站第一步
+TPL-009	template	kit	建站必备内容清单	../templates/site-content-checklist.md	current	-	content;checklist;fields	全站内容=字段级映射（品牌/分类/产品/文章/公司/联系/首页/素材/替换清单/勿漏检），AI 规划与核验对照用	建站规划/检查必看
+EV-009	evidence	evidence	改进清单（对抗分析）	../../70_evidence/IMPROVEMENT-PLAN-20260829.md	current	-	improvement;adversarial;plan	本批修复+模块库补全+后续标准动作+新问题+待办+验收判据建议	复盘/验收判据依据
+TPL-010	template	kit	文章对抗审查清单	../templates/article-adversarial-checklist.md	current	-	adversarial;article;checklist	发布前逐问：目标客群/痛点来源/证据边界/反空洞/SEO/自动化门；非空答才可发	每篇文章发布前
+TPL-011	template	kit	产品/单页对抗审查清单	../templates/page-adversarial-checklist.md	current	-	adversarial;page;checklist	逐区块前向审查（客户喜欢吗/痛在哪/为什么喜欢/能否更强）：首屏3秒/利益化/痛点/差异化/视觉层级/心理	每页构建与发布前
+TPL-012	template	kit	图片对抗审查清单	../templates/image-adversarial-checklist.md	current	-	adversarial;image;checklist	硬性门(分辨率/大小/许可/alt)+审美(主体/构图/一致性/裁切)+心理(场景/证据/情绪匹配)	每张图上站前
+TPL-013	template	kit	SEO 检查清单	../templates/seo-check.md	current	-	seo;checklist	每页 title/desc/H1层级/slug/alt/模板词/空态/og/发布后登记；平台边界标注不误报	每页发布前
+SCRIPT-006	script	kit	图片硬性门检查	../image-check.py	current	-	image;check	分辨率/文件大小/格式/alt/同尺寸重复检测（零依赖 jpg/png 头部解析）	图片上传前批量检查
+SCRIPT-007	script	kit	友商监控工具	../../../../../river-trail/40_competitors/competitor-watch.py	current	-	competitor;sitemap;watch	每友商一目录：add(初始化 sitemap.tsv+snapshots)/scan(对比输出 new/updated/removed)/watch(批量)/report；TSV 主表+md profile	定时扫描友商增量
+SCRIPT-008	script	kit	文档解析能力检查	../doc-capability-check.py	current	-	docs;capability;pdf;docx;pptx;xlsx	环境门：检查 pypdf/python-docx/python-pptx/openpyxl/pdftotext + 安装建议 + self-test；分享 skill 前必跑	环境准备/分享前
+DOC-006	doc	client	友商自动发现流程	../../../../../river-trail/40_competitors/COMPETITOR-DISCOVERY.md	current	competitor-watch.py	competitor;discovery;search	daily 搜索语法+domains.tsv 去重表+探 sitemap+promote/scan 闭环；发现用 web_search 脚本登记	每日友商发现
+TPL-016	template	client	站点登记表（多公司多网站）	../../../../../river-trail/site-registry.tsv	current	-	sites;registry;multi-site	company→sites 映射：每品牌一 AllinCMS 站；sites/<slug>/ 目录层约定	多品多站规划
+EV-010	evidence	evidence	双审记录（SOL+TERRA）	../../../../../river-trail/70_evidence/DUAL-REVIEW-20260829.md	current	-	dual-review;safety;record	双审机制+本轮执行状态+客观门结果（路径/编译/列一致/凭据0/超时/上手）+调优	双审结论查询
+SCRIPT-009	script	kit	依赖安装器	../install-deps.py	current	-	deps;install;setup	检测 runtime/docs-parse/canonical 三层依赖 → --yes 一键 pip 安装 → --verify 复检；跨平台	新环境第一步
+DOC-007	doc	kit	安装与依赖指南	../SETUP.md	current	install-deps.py;doc-capability-check.py	setup;deps;install	依赖全景表（runtime 零依赖/docs-parse 选装 4 包/canonical 选装 Node/截图 Chrome）+ 安装步骤 + mac/win/linux 命令 + 常见问题 + 干活前顺序	新机器安装引导
+TPL-017	template	kit	依赖清单 requirements	../requirements.txt	current	install-deps.py	deps;requirements	分层 requirements（runtime=空，docs-parse 4 包标注，canonical Node 标注）；提示阅读 SETUP.md	依赖参照
+DOC-008	doc	kit	旁观审查机制	../OUTSIDER-REVIEW.md	current	-	outsider;review;writeback	无上下文独立 AI 审查回落质量（接手性/完整性/自证/追溯/矛盾/闭环/可执行）7 维 + 触发时机 + 输出回填	任务收尾/每 3 会话
+TPL-018	template	kit	会话回落模板	../templates/conversation-writeback.md	current	-	writeback;handoff;template	即时回落（新坑→issues）+ 收尾回落（HANDOFF 段格式）+ 回落质量自检	会话结束/新坑
+TPL-019	template	kit	内容数量标准	../templates/CONTENT-MINIMUM.md	current	-	minimum;count;ui;gate	美观基线（产品≥3/文章≥4）+ 命中依据 + 用户话术 + 降级策略；validate 与 gate 已内置	要求用户提供数量/规划内容
+TPL-020	template	kit	文章创作逻辑（软文逻辑总结）	../templates/article-writing-logic.md	current	-	writing;copywriting;hook;structure	六段式骨架(H2起)/7 钩子库/代入感三件套/防空洞自检/子agent完善流程；与 ID-0001/checklist 分工表	写任何文章动笔前
+TPL-021	template	kit	空白子 agent 审稿 prompt	../templates/ghostwriter-review-prompt.md	current	-	ghostwriter;review;subagent	可直接复制给空白 subagent 的评审 prompt（4 维评分/最弱3处/钩子检查/禁加事实）	文章出稿后完善
+TPL-022	template	kit	品牌视觉规则	../templates/visual-design-rules.md	current	-	visual;brand;design;cta	视觉方向/可落地规则表(Quick Answer·参数锚点·callout 标签·真链接 CTA·图片来源·边界声明)/平台边界列表/CTA 文案原则/品牌红线	页面审美与转化路径设计
+DOC-009	doc	kit	写作模块入口（WRITING-INDEX）	../writing/WRITING-INDEX.md	current	writing-module.py	writing;module;index	写文章统一入口：五步调用链（素材→骨架→成稿→评审→发布）+全仓写作资产路由表；写文章先读此文件	任何写文章任务第 0 步
+DOC-010	doc	kit	文章循序渐进规范（PROGRESSION）	../writing/PROGRESSION.md	current	writing-module.py	progression;stage;cohesion	四阶段递进模型（S1认识→S2理解→S3判断→S4决定）+每阶段检查（承上/启下/密度/术语/无跳级/边界一致/CTA时机）+递进词库+反模式+5问自检	成稿与评审时
+SCRIPT-010	script	kit	写作模块调用器	../writing/writing-module.py	current	-	writing;outline;check	outline(brief→六段式骨架+阶段标注+钩子提示)/check(渐进机器检查三档：缺S1/S4=❌,波动/衔接/术语/边界/CTA=⚠️)	生成骨架与渐进检查
+DOC-011	doc	kit	接口模块入口（API-INDEX）	../api/API-INDEX.md	current	allincms_api.py;scan/scan-actions.py	api;interface;index	接口独立模块入口：模块图（写=server action/读=RSC）/端点矩阵/action id 表/快速调用 copy-paste/常见错误速查(ISS 引用)；调接口先读本页	任何调用接口任务第 0 步
+TPL-014	template	kit	接口快查表（api-ref tsv）	../api/api-ref.tsv	current	-	api;ref;tsv;quick	机器可读快查：21 项操作=method/endpoint/action_id/payload 摘要/返回/坑引用/示例——grep 即用；换部署更新 action 列	接口调试/快速调参
+DOC-012	doc	kit	正文格式规范（FORMAT-SPEC）	../writing/FORMAT-SPEC.md	current	writing-module.py block/migrate	format;spec;h2;blockquote	正文格式单一真源：块清单(原生h2/h3/blockquote包裹/leaf)/id规则/范文章节/禁用清单/工具链；凡未列=先 format-lab 再用	写正文/查格式前必读
+TPL-015	template	kit	正文格式快查（format-ref tsv）	../writing/format-ref.tsv	current	-	format;ref;tsv	机器可读块表：format|valid|render_semantic|render_style|json_shape|usage|pitfall 19 行——grep 即用	格式判断/块选择
+DOC-031	doc	current	新站改造清单（166 字段逐项改什么）	../templates/new-site-customization-checklist.md	current	-	new-site;checklist;customization;字段路径	新站建站时逐字段把模板换成客户内容；每条含 demo 值+替换示例+后果	填 checklist 时逐条执行
+DOC-032	doc	current	新站一条龙总入口（13 步 0→上线）	../NEW-SITE-ONEPASS.md	current	-	onepass;新站;13步;一条龙	拿到客户资料后从 0 到上线的一条龙执行链	新站开工第一步读本文
+DOC-033	script	current	demo 种子清理脚本	../delete-demo-content.py	current	-	demo;cleanup;createTheme;种子	createTheme(default) 重种的 3+3 demo 内容清理	createTheme 之后、audit 之前运行
+DOC-034	doc	current	API 摸索流程（平台更新后 7 步重发现）	../API-DISCOVERY.md	current	-	api;discovery;action-id;scan;platform-update;reverse-engineer	部署升级导致 action id/schema/模板变化时，AI 按此流程系统性重新摸索	接口不工作/新 action/新字段/平台升级时读本文

@@ -1,0 +1,413 @@
+{
+ "pageDoc": {
+  "root": "page-root",
+  "elements": {
+   "breadcrumb-inline-1": {
+    "type": "breadcrumb-inline",
+    "props": {},
+    "children": [],
+    "anchorId": null
+   },
+   "contact-header-1": {
+    "type": "contact-header-summary",
+    "props": {
+     "eyebrow": "Contact us",
+     "title": "Questions, samples, or a leak-test story?",
+     "description": "Talk to the ThermoFlask team about product details, sample requests, wholesale programs, or finding the right size for your commute.",
+     "items": [
+      {
+       "label": "Response time",
+       "value": "Within one business day"
+      },
+      {
+       "label": "Best for",
+       "value": "Orders, wholesale, product support"
+      }
+     ]
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "contact-info-1": {
+    "type": "contact-info-grid",
+    "props": {
+     "sectionLabel": "Reach us",
+     "headline": "Use the channel that fits your question.",
+     "description": "Send a message through the site form for the fastest routing, or contact us directly for time-sensitive order questions.",
+     "items": [
+      {
+       "type": "email",
+       "label": "Email",
+       "value": "hello@thermoflask-demo.com",
+       "detail": "For product questions, order help, and wholesale requests."
+      },
+      {
+       "type": "phone",
+       "label": "Phone",
+       "value": "+86 138 0000 0000",
+       "detail": "Monday to Friday, 9:00-18:00 (UTC+8)."
+      },
+      {
+       "type": "address",
+       "label": "Office",
+       "value": "Building 3, No. 28 Xingang Road, Hangzhou, China",
+       "detail": "Product review, sample appointments, and wholesale coordination."
+      }
+     ],
+     "socialLinks": [],
+     "columnCount": 2
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "location-map-1": {
+    "type": "location-map-interactive",
+    "props": {
+     "sectionLabel": "Visit us",
+     "headline": "Our studio is in Hangzhou.",
+     "address": "The studio is used for product review, sample appointments, and wholesale coordination. Please contact us before visiting.",
+     "description": "Building 3, No. 28 Xingang Road, Hangzhou, China",
+     "latitude": 30.25,
+     "longitude": 120.15,
+     "zoom": 13,
+     "mapMode": "m",
+     "url": "",
+     "details": [
+      {
+       "label": "Transit",
+       "value": "Near Xingang Road Metro Station"
+      },
+      {
+       "label": "Visits",
+       "value": "Appointments available Tuesday to Friday"
+      }
+     ]
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "contact-form-1": {
+    "type": "contact-form-split",
+    "props": {
+     "eyebrow": "Contact",
+     "title": "Tell us what you are looking for",
+     "description": "Send a question, sample request, or wholesale inquiry and our team will follow up with next steps.",
+     "responseTitle": "What happens after submission",
+     "responseDescription": "We usually reply within one business day with availability, pricing, or the right person to contact.",
+     "emailLabel": "Email",
+     "emailValue": "hello@thermoflask-demo.com",
+     "phoneLabel": "Phone",
+     "phoneValue": "+86 138 0000 0000",
+     "addressLabel": "Office",
+     "addressValue": "Building 3, No. 28 Xingang Road, Hangzhou, China",
+     "hoursLabel": "Hours",
+     "hoursValue": "Mon-Fri 9:00-18:00 (UTC+8)",
+     "formCardEyebrow": "Inquiry intake",
+     "formCardTitle": "Send the details",
+     "formCardDescription": "Share a few details about your request so we can send a useful reply.",
+     "formSlug": ""
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "page-root": {
+    "type": "page-root",
+    "props": {
+     "className": null
+    },
+    "children": [
+     "breadcrumb-inline-1",
+     "contact-header-1",
+     "contact-info-1",
+     "location-map-1",
+     "contact-form-1"
+    ],
+    "anchorId": null
+   }
+  }
+ },
+ "globals": {
+  "root": "page-root",
+  "elements": {
+   "header-dropdown-1": {
+    "type": "header-dropdown",
+    "props": {
+     "siteTitle": "ThermoFlask",
+     "tagline": "Vacuum insulated bottles",
+     "logoMedia": null,
+     "logoFit": "cover",
+     "logoTarget": {
+      "type": "custom",
+      "href": "/"
+     },
+     "navigation": [
+      {
+       "label": "Home",
+       "target": {
+        "type": "custom",
+        "href": "/"
+       },
+       "children": []
+      },
+      {
+       "label": "Products",
+       "target": {
+        "type": "custom",
+        "href": "/products"
+       },
+       "children": [
+        {
+         "label": "Insulated Bottles",
+         "target": {
+          "type": "custom",
+          "href": "/products?category=product-insulated-bottles"
+         },
+         "children": []
+        }
+       ]
+      },
+      {
+       "label": "Guides",
+       "target": {
+        "type": "custom",
+        "href": "/posts/how-to-choose-an-insulated-bottle"
+       },
+       "children": []
+      },
+      {
+       "label": "About",
+       "target": {
+        "type": "custom",
+        "href": "/about-us"
+       },
+       "children": []
+      },
+      {
+       "label": "Contact",
+       "target": {
+        "type": "custom",
+        "href": "/contact-us"
+       },
+       "children": []
+      }
+     ],
+     "ctaLabel": "Get a Quote",
+     "ctaTarget": {
+      "type": "action",
+      "anchorId": "contact-form-dialog"
+     }
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "footer-columns-1": {
+    "type": "footer-columns",
+    "props": {
+     "brand": "ThermoFlask",
+     "kicker": "Vacuum insulated bottles",
+     "description": "Double-wall vacuum insulated stainless steel bottles for commute, travel, and family use.",
+     "columns": [
+      {
+       "title": "Shop",
+       "links": [
+        {
+         "label": "Products",
+         "target": {
+          "type": "custom",
+          "href": "/products"
+         }
+        },
+        {
+         "label": "How to choose",
+         "target": {
+          "type": "custom",
+          "href": "/posts/how-to-choose-an-insulated-bottle"
+         }
+        }
+       ]
+      },
+      {
+       "title": "Company",
+       "links": [
+        {
+         "label": "About us",
+         "target": {
+          "type": "custom",
+          "href": "/about-us"
+         }
+        },
+        {
+         "label": "Contact us",
+         "target": {
+          "type": "custom",
+          "href": "/contact-us"
+         }
+        }
+       ]
+      },
+      {
+       "title": "Content",
+       "links": [
+        {
+         "label": "Journal",
+         "target": {
+          "type": "custom",
+          "href": "/posts"
+         }
+        },
+        {
+         "label": "Buying guide",
+         "target": {
+          "type": "custom",
+          "href": "/posts/how-to-choose-an-insulated-bottle"
+         }
+        }
+       ]
+      }
+     ],
+     "socialLinks": [],
+     "copyright": "© 2026 ThermoFlask. Demo site for qualification run.",
+     "systemNote": "Bottles built for long days, not short seasons."
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "contact-form-dialog": {
+    "type": "contact-dialog-form-modal",
+    "props": {
+     "title": "Ask about sizes, materials, or wholesale.",
+     "description": "Send a question about insulation, capacity, wholesale programs, or order support and we will reply within one business day.",
+     "eyebrow": "Product support",
+     "closeLabel": "Close contact dialog",
+     "formSlug": "contact-inquiry"
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "social-floating-button-1": {
+    "type": "social-floating-button",
+    "props": {
+     "brand": "whatsapp",
+     "url": "https://wa.me/8613800000000",
+     "label": "WhatsApp",
+     "showLabel": false,
+     "position": "bottom-right"
+    },
+    "children": [],
+    "anchorId": null
+   },
+   "page-root": {
+    "type": "page-root",
+    "props": {
+     "className": null
+    },
+    "children": [
+     "header-dropdown-1",
+     "footer-columns-1",
+     "contact-form-dialog",
+     "social-floating-button-1"
+    ],
+    "anchorId": null
+   }
+  }
+ },
+ "themeConfig": {
+  "light": {
+   "background": "oklch(1 0 0)",
+   "foreground": "oklch(0.141 0.005 285.823)",
+   "card": "oklch(1 0 0)",
+   "card-foreground": "oklch(0.141 0.005 285.823)",
+   "popover": "oklch(1 0 0)",
+   "popover-foreground": "oklch(0.141 0.005 285.823)",
+   "primary": "oklch(0.21 0.006 285.885)",
+   "primary-foreground": "oklch(0.985 0 0)",
+   "secondary": "oklch(0.967 0.001 286.375)",
+   "secondary-foreground": "oklch(0.21 0.006 285.885)",
+   "muted": "oklch(0.967 0.001 286.375)",
+   "muted-foreground": "oklch(0.552 0.016 285.938)",
+   "accent": "oklch(0.967 0.001 286.375)",
+   "accent-foreground": "oklch(0.21 0.006 285.885)",
+   "destructive": "oklch(0.577 0.245 27.325)",
+   "destructive-foreground": "oklch(1 0 0)",
+   "border": "oklch(0.92 0.004 286.32)",
+   "input": "oklch(0.92 0.004 286.32)",
+   "ring": "oklch(0.705 0.015 286.067)",
+   "chart-1": "oklch(0.646 0.222 41.116)",
+   "chart-2": "oklch(0.6 0.118 184.704)",
+   "chart-3": "oklch(0.398 0.07 227.392)",
+   "chart-4": "oklch(0.828 0.189 84.429)",
+   "chart-5": "oklch(0.769 0.188 70.08)",
+   "sidebar": "oklch(0.985 0 0)",
+   "sidebar-foreground": "oklch(0.141 0.005 285.823)",
+   "sidebar-primary": "oklch(0.21 0.006 285.885)",
+   "sidebar-primary-foreground": "oklch(0.985 0 0)",
+   "sidebar-accent": "oklch(0.967 0.001 286.375)",
+   "sidebar-accent-foreground": "oklch(0.21 0.006 285.885)",
+   "sidebar-border": "oklch(0.92 0.004 286.32)",
+   "sidebar-ring": "oklch(0.705 0.015 286.067)",
+   "font-sans": "'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+   "font-serif": "\"Geist\", \"Geist Fallback\", ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif",
+   "font-mono": "\"Geist Mono\", \"Geist Mono Fallback\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+   "radius": "0.625rem",
+   "shadow-color": "hsl(0 0% 0%)",
+   "shadow-opacity": "0.1",
+   "shadow-blur": "3px",
+   "shadow-spread": "0px",
+   "shadow-offset-x": "0",
+   "shadow-offset-y": "1px",
+   "letter-spacing": "0em",
+   "spacing": "0.25rem"
+  },
+  "dark": {
+   "background": "oklch(0.141 0.005 285.823)",
+   "foreground": "oklch(0.985 0 0)",
+   "card": "oklch(0.21 0.006 285.885)",
+   "card-foreground": "oklch(0.985 0 0)",
+   "popover": "oklch(0.21 0.006 285.885)",
+   "popover-foreground": "oklch(0.985 0 0)",
+   "primary": "oklch(0.92 0.004 286.32)",
+   "primary-foreground": "oklch(0.21 0.006 285.885)",
+   "secondary": "oklch(0.274 0.006 286.033)",
+   "secondary-foreground": "oklch(0.985 0 0)",
+   "muted": "oklch(0.274 0.006 286.033)",
+   "muted-foreground": "oklch(0.705 0.015 286.067)",
+   "accent": "oklch(0.274 0.006 286.033)",
+   "accent-foreground": "oklch(0.985 0 0)",
+   "destructive": "oklch(0.704 0.191 22.216)",
+   "destructive-foreground": "oklch(0.985 0 0)",
+   "border": "oklch(1 0 0 / 10%)",
+   "input": "oklch(1 0 0 / 15%)",
+   "ring": "oklch(0.552 0.016 285.938)",
+   "chart-1": "oklch(0.488 0.243 264.376)",
+   "chart-2": "oklch(0.696 0.17 162.48)",
+   "chart-3": "oklch(0.769 0.188 70.08)",
+   "chart-4": "oklch(0.627 0.265 303.9)",
+   "chart-5": "oklch(0.645 0.246 16.439)",
+   "sidebar": "oklch(0.21 0.006 285.885)",
+   "sidebar-foreground": "oklch(0.985 0 0)",
+   "sidebar-primary": "oklch(0.488 0.243 264.376)",
+   "sidebar-primary-foreground": "oklch(0.985 0 0)",
+   "sidebar-accent": "oklch(0.274 0.006 286.033)",
+   "sidebar-accent-foreground": "oklch(0.985 0 0)",
+   "sidebar-border": "oklch(1 0 0 / 10%)",
+   "sidebar-ring": "oklch(0.552 0.016 285.938)",
+   "font-sans": "'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+   "font-serif": "\"Geist\", \"Geist Fallback\", ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif",
+   "font-mono": "\"Geist Mono\", \"Geist Mono Fallback\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+   "radius": "0.625rem",
+   "shadow-color": "hsl(0 0% 0%)",
+   "shadow-opacity": "0.1",
+   "shadow-blur": "3px",
+   "shadow-spread": "0px",
+   "shadow-offset-x": "0",
+   "shadow-offset-y": "1px",
+   "letter-spacing": "0em",
+   "spacing": "0.25rem"
+  },
+  "hslAdjustments": {
+   "hueShift": 0,
+   "saturationScale": 1,
+   "lightnessScale": 1
+  }
+ }
+}

@@ -1,0 +1,36 @@
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   Copyright 2026 b2b-export-ai-workbench contributors
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+---
+
+IMPORTANT NOTICE — UNOFFICIAL THIRD-PARTY CLIENT
+
+This interface-kit is an unofficial, reverse-engineered API client for
+AllinCMS/LAICMS (a third-party SaaS platform). It is NOT affiliated with,
+endorsed by, or supported by AllinCMS or LAICMS.
+
+- Server Action IDs (42-hex) are extracted from the platform's public
+  JavaScript bundles and are bound to specific deployment versions.
+- The platform may change these IDs or schemas at any time without notice.
+- Users are responsible for complying with the platform's Terms of Service.
+- No warranty is provided for platform behavior, data integrity, or
+  continued operation of these APIs.
+
+For platform update recovery, see API-DISCOVERY.md.
