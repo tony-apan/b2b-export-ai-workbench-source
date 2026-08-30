@@ -15,6 +15,18 @@ redaction_status: "private-source-reviewed"
 
 ## 0.3.2-working — 2026-08-30
 
+### 建站工具包治理批（四项平台审计禁令清扫 + skill 仓风控 + 凭据治理）
+
+- 根 README 拆除 Quick Start 建站段（根页只做总导航）；建站入口 + mermaid 流程图移入 WCO README"建站一条龙"。
+- WCO 子库完成禁令全仓清扫（id-0002 退役、frontend_deferred_blocks 空集化、schema/验证器/负回归测试同步、去敏 30+ 处），逐项对比表见子库 CHANGELOG 2026-08-30。
+- skill 仓 allincms-bulk-content-upload 已转 private；3 个脏文件去敏后本地 commit 598b970（未 push，待授权）。
+- /tmp/ws-token.txt 明文 token 删除；文档与 scan-actions.py 全面改 WS_TOKEN 环境变量优先。
+- KIT registry 登记 DOC-035/036/037 + verify 未登记覆盖检查；id-0072 待办区两处履约勾选。
+- 待用户：CMS 密码轮换（OQ-AUTH-0001）、维持 private 确认（OQ-AUTH-0002）、5-commit 切分提交授权（OQ-COMMIT-0001）。
+- skill 仓合并（2026-08-30 用户决策"合并进母库"）：独立仓 tony-apan/allincms-bulk-content-upload 封存（archived，保留历史）；tracked 树（除 vendor 33MB 与 _archive）导入 `sub-libraries/website-content-ops/SKILL-INSTALL/`（6.6MB）；合并前清理母库实名×2 与客户名大小写变形×2（skill 仓 00da9e0/31191ea）；~/.agents|claude|codex 三软链重指母库目录。OQ-AUTH-0002（维持 private 确认）由此**作废**。
+- 提交切分方案（OQ-COMMIT-0001 授权对象；禁 squash、禁历史改写，以 git status 实数对账）：C1 禁令清扫+id-0002 退役+空集化（WCO 主体：PLAYBOOKS/PLAYBOOK/QA/START-HERE/SKILL/TEMPLATES/EXAMPLES/RUNTIME-CONTRACT/schema/scripts/ADAPTERS/WORKSPACE-TEMPLATE）；C2 interface-kit 工具面（KIT 全部 + ADAPTERS docs/TOKEN-AUTH）；C3 入口治理（根 README + WCO README）；C4 治理留痕（CHANGELOG×2 / current-focus / id-0072 / open-questions）；C5 skill 合并（SKILL-INSTALL/ 全目录 + wiki/00_meta/logs/2026/08/2026-08-30.md 当日日志）。
+
+
 ### 第三轮对抗审查修复（flash×2 + TERRA，14 处）
 
 **PII/凭据清零**：
@@ -73,7 +85,7 @@ redaction_status: "private-source-reviewed"
 
 ### 新增（+18,923 行 / 140 文件，commits `bf8d62d` + `0551b80`）
 
-**AllinCMS 建站完整管线（从 SINOPRO 生产实战沉淀）：**
+**AllinCMS 建站完整管线（从客户生产实战沉淀（已去敏））：**
 - `TOKEN-AUTH.md`：3 种 token 获取方式（纯 API 登录 / 浏览器 Cookie / 半自动提取），成功+失败双路径实测
 - `API-DISCOVERY.md`：平台更新后 AI 摸索接口的 7 步标准流程（重扫→反编译→对比→发现→适配→验证）
 - product/site operations 模块 + contracts + 测试（`product-operations.mjs` / `site-operations.mjs`）
@@ -115,7 +127,7 @@ redaction_status: "private-source-reviewed"
 | audit 检查项数 | 14→15→16→17 项 | **13 项** | lang/canonical/jsonld/img-attrs 永久移除（用户指令） |
 | 正文类型词法 | heading/paragraph | **p/h2/h3/blockquote** | 服务器存储形态统一（ISS-060/069） |
 | token 获取 | 仅浏览器手动 | **纯 API 登录（首选）** | login() 从 Set-Cookie 提取（ISS-083） |
-| 审计基线 | RiverTrail 硬编码 | **每站 `--config`** | ISS-063 假 FAIL 修复 |
+| 审计基线 | 客户站点硬编码 | **每站 `--config`** | ISS-063 假 FAIL 修复 |
 | 文章页 CTA | 纯文本 | **material-story-split 块真链接** | ISS-076/077 formSlug/CTA 修复 |
 | demo 清理范围 | 3 产品+3 文章 | **3+3+6 分类+7 标签全链** | ISS-071/074 taxonomy 种入发现 |
 | 客户数据位置 | `customer-runtime/`（库内） | **`701_runtime/`（独立物理根+软链）** | ISS-079 四层分离 |

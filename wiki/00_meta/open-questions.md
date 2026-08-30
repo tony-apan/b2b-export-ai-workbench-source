@@ -77,3 +77,12 @@ keywords: ["open questions", "blocked", "deferred", "owner", "evidence", "next a
 | `OQ-COURSE-0003` | deferred | 是否统一公开 fixture_id，并绑定 raw/source/verification/writeback？ | Governance owner | fixture 检索一致性 | 当前 synthetic 链已结构闭合 | 在新增第二 fixture 前决定，避免批量迁移。 |
 | `OQ-COURSE-0004` | blocked | 真实私有样本如何只公开来源类型、脱敏摘要和证据摘要而不泄露原文？ | Tony/privacy owner | 真实课程证据公开 | 发布去敏规则 | 先在私有运行区定义脱敏与授权记录。 |
 | `OQ-COURSE-0005` | open | `VER-`、`WB-`、redirect 等豁免记录是否需要独立完整性 validator？ | Governance owner | 记录完整性 | 当前仅从 durable ID 统计豁免 | 先统计实际缺口，再决定是否新增 validator。 |
+
+## 工具包治理与凭据（2026-08-30 建站工具包治理批）
+
+| question_id | 状态 | 问题 | owner | 阻断 scope | 证据 | 下一步 |
+|---|---|---|---|---|---|---|
+| `OQ-BAN-0001` | open | 四项禁令的机器侧残留（三状态字段名 12 文件+验证器+测试钉死；历史日志 4 处原句）豁免还是清除？ | Tony | Skill 化/发布 | flash b1671e77 + TERRA 72d4c4e8 双审 WARN | 用户定性后：豁免→记录口径；清除→另批清扫（含 vendor bundle 重建） |
+| `OQ-AUTH-0001` | blocked | CMS 登录密码轮换（密码曾现聊天明文；JWT 有效至 2026-09-29 且无法服务端吊销） | Tony | 凭据安全 | TERRA f850c1a1 | 用户改密后关闭 |
+| `OQ-AUTH-0002` | closed | ~~skill 仓维持 private~~ 已被 2026-08-30 用户决策取代：合并进母库（SKILL-INSTALL），独立仓封存 archived | Tony | Skill 分发 | 用户选项决策 + 母库 CHANGELOG 治理批 | 已关闭；安装包能力待 id-0073 dist 管线 |
+| `OQ-COMMIT-0001` | blocked | 母库 70+ 文件改动按 5-commit 切分（C1-C5）提交的授权（禁 squash、禁历史改写；切分清单见母库 CHANGELOG 2026-08-30 治理批小节） | Tony | 母库发布 | TERRA 72d4c4e8 + 2fc260ac 切分方案 | 用户授权后按 C1-C5 执行并推送 main |

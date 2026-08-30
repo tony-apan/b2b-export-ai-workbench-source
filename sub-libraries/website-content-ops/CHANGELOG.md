@@ -13,6 +13,29 @@ redaction_status: "safe-to-publish"
 ---
 # Changelog
 
+## Unreleased — 2026-08-30
+
+### 四项平台层审计禁令全仓清扫 + id-0002 退役 + 工具包治理（每批 flash+TERRA 双审）
+
+改动对比（旧 → 新 → 原因）：
+
+| 旧 | 新 | 原因 |
+|---|---|---|
+| id-0002 文章页前端合同整页 + WT 镜像 + 20 处引用 | 删除；页面验收并入 ID-0007 B/C 层与 QA-CHECKLIST | 2026-08-30 用户永久禁令：四项平台层审计项不检查、不报告、不讨论 |
+| frontend_deferred_blocks 三元组枚举（17 处模板/示例/规格句） | 空集 []，平台边界项不枚举 | 同上；字段与防漂移闸保留（exact-match 等强） |
+| RUNTIME-CONTRACT 与 schema const 三元组 | []（schema 形成单向闸：加回即 INVALID） | 同上 |
+| validate-article-package deferredExpected 三元组 + 负回归漂移算子 | [] + 漂移算子修复（测试 986/986 全绿） | 同上；防倒退闸保持等强 |
+| audit 口径 17/15/14 项（ONEPASS/FORMAT-SPEC/ONBOARDING/id-0007） | 统一 13 项 = site_pipeline.py 代码真源 | 消除断言漂移 |
+| issues.tsv ISS-012/043/053/058 平台审计事实行 | ⛔ 横幅式泛化（行结构与证据指针保留） | 禁令；原始文本在 git 历史可考证（禁 squash/改写） |
+| KIT 8 文档 + site_pipeline.py 代码内四词残留（含死变量/死过滤/孤儿注释） | 清零（⛔ 横幅豁免除外） | 禁令 |
+| 客户标识（品牌名/站点 key/任务路径）30+ 处（含 3 个 page-example JSON 模板与 registry 行） | Example/占位符 | 公开子库去敏 |
+| /tmp 明文 token 教习（SETUP/API-DISCOVERY/RUNBOOK/根 README） | WS_TOKEN 环境变量优先；scan-actions.py 已支持 env | 凭据治理（明文 token 文件已删） |
+| RUNBOOK/ONEPASS/API-DISCOVERY 未登记 registry | DOC-035/036 + verify 未登记覆盖检查（FAIL 闸）；DOC-037 与既有 DOC-034 去重 | 防 find 失明 |
+| skill 独立仓（thin router + vendor 33MB） | 合并进母库 SKILL-INSTALL/（6.6MB，vendor 退役待 dist 管线）；独立仓 GitHub 封存 archived | 2026-08-30 用户决策：母库为唯一真源 |
+
+- validate-sub-library 存量失败为基线既有（394→390，随修复推进下降；剩余 archived_at schema 等存量问题另行立项）。WORKSPACE-TEMPLATE 镜像含源模板 archived_at 追赶 hunk（sync 机制自愈，随本批入库）。
+- 待用户定性（OQ-BAN-0001）：三状态字段名（12 文件+验证器+测试）与历史日志 4 处原句的豁免/清除；vendor bundle 需在 Skill 化前重建。
+
 ## 0.3.2-preview.1 — 2026-07-30
 
 ### Public Preview
