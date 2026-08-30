@@ -5,7 +5,7 @@ type: "version"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-30"
+last_updated: "2026-08-30"
 sources: ["Mother-library and sub-library release architecture decision 2026-07-28"]
 related: ["MANIFEST.md", "RELEASE.md", "CHANGELOG.md"]
 visibility: "private"
@@ -18,8 +18,8 @@ release_status: "BLOCK"
 # Mother Library Version
 
 - Package ID：`b2b-export-ai-workbench-mother-library`
-- Version：`0.2.0-working`
-- Released：Private source synced（2026-07-30）
+- Version：`0.3.0-working`
+- Released：Private source synced（2026-08-30）
 - Compatibility：普通 Git checkout、Markdown 阅读器和可读取本地文件的 AI agent；不要求 Obsidian。
 - Repository sync status：`Synced`
 - Public release status：`BLOCK`

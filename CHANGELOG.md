@@ -5,13 +5,73 @@ type: "changelog"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-30"
+last_updated: "2026-08-30"
 sources: ["Mother-library and sub-library release architecture decision 2026-07-28", "Repository routing synchronization 2026-07-29"]
 related: ["README.md", "MANIFEST.md", "RELEASE.md", "VERSION.md", "wiki/00_meta/current-focus.md"]
 visibility: "private"
 redaction_status: "private-source-reviewed"
 ---
 # Mother Library Changelog
+
+## 0.3.0-working — 2026-08-30
+
+### 新增（+18,923 行 / 140 文件，commits `bf8d62d` + `0551b80`）
+
+**AllinCMS 建站完整管线（从 SINOPRO 生产实战沉淀）：**
+- `TOKEN-AUTH.md`：3 种 token 获取方式（纯 API 登录 / 浏览器 Cookie / 半自动提取），成功+失败双路径实测
+- `API-DISCOVERY.md`：平台更新后 AI 摸索接口的 7 步标准流程（重扫→反编译→对比→发现→适配→验证）
+- product/site operations 模块 + contracts + 测试（`product-operations.mjs` / `site-operations.mjs`）
+- `scan-server-action-ids.mjs`：42 位 hex action id 自动扫描（5th-arg 字面捕获）
+- content-plan host driver + host-run template（计划驱动内容操作）
+- 对审查合同 `id-0006`（adversarial review）+ 上线验收 `id-0007`（site launch acceptance）
+- AllinCMS 官方教程索引 + 查询脚本
+
+**审计管线（13 项，4 项平台 BLOCK 永久移除）：**
+- `root-home` 检查项：根路径 `/` 渲染真实首页（防 `set_home_page` 回归）
+- `form-render` 检查项：联系页 `<form>` 真实渲染（防 `formSlug` 空绑定断裂）
+- `set_home_page()` / `update_page()` / `delete_category()` / `delete_tag()` — 从客户端 bundle 逆向发现的 4 个关键 API
+- `delete-demo-content.py`：全链清理（产品+文章+分类+标签）+ `--dry-run` + 引用护栏
+- `create_tag` 支持 `content_type` 参数（产品域 vs 文章域隔离）
+- `create_product` / `create_post` 自动注入 `siteId`（平台校验必填）
+- 跨平台 token 路径（POSIX `/tmp` + Windows `%TEMP%` 双路径搜索）
+- `SCRATCH_DIR` 环境变量（会话级产物统一管理，不再 CWD 依赖）
+
+**运行时结构 v2（四层物理分离）：**
+- `id-0072`：母库（纯 tracked 知识）/ 客户运行区（独立物理根 `701_runtime/`）/ 结构化 scratch / 软链兼容
+- `id-0073`：interface-kit 真源管线任务卡（迁移绑定条款）
+- `.gitignore`：`customer-runtime` 无斜杠行（软链防追踪）+ `.DS_Store`
+
+**agency-operations 子库（全新 22 文件）：**
+- scripts（create-client / create-task / activate-task / runtime-search / validate）
+- WORKSPACE-TEMPLATE + RUNTIME-CONTRACT.json
+- canonical 注册进 `sub-libraries/registry.json`
+
+**母库治理：**
+- release evidence contract + runtime test profile 更新
+- governance tests + validate-artifact + validate-mother-library 更新
+- `in-repository-agency-runtime-model.md`（运行区模型）
+- wiki 日志（2026-07-31 / 08-01 / 08-11）+ 来源 SRC-20260731
+
+### 修改（vs 0.2.0）
+
+| 对象 | 旧 | 新 | 原因 |
+|---|---|---|---|
+| audit 检查项数 | 14→15→16→17 项 | **13 项** | lang/canonical/jsonld/img-attrs 永久移除（用户指令） |
+| 正文类型词法 | heading/paragraph | **p/h2/h3/blockquote** | 服务器存储形态统一（ISS-060/069） |
+| token 获取 | 仅浏览器手动 | **纯 API 登录（首选）** | login() 从 Set-Cookie 提取（ISS-083） |
+| 审计基线 | RiverTrail 硬编码 | **每站 `--config`** | ISS-063 假 FAIL 修复 |
+| 文章页 CTA | 纯文本 | **material-story-split 块真链接** | ISS-076/077 formSlug/CTA 修复 |
+| demo 清理范围 | 3 产品+3 文章 | **3+3+6 分类+7 标签全链** | ISS-071/074 taxonomy 种入发现 |
+| 客户数据位置 | `customer-runtime/`（库内） | **`701_runtime/`（独立物理根+软链）** | ISS-079 四层分离 |
+| interface-kit 位置 | `customer-runtime/00_shared/` | 同上（权威副本，dist 管线待建 id-0073） | flash-1 事实修正 |
+
+### 已知边界
+
+- `interface-kit` 真源管线（母库 tracked + dist 同步）→ 任务卡 `id-0073`（期限 2026-09-06）
+- 动态路由页 meta description 平台回退 → ISS-073 记录
+- 表单提交收件箱 UI 平台未提供 → ISS-076 记录
+- `lang/canonical/jsonld/img-attrs` 已永久移除（用户指令 2026-08-30：禁止检查、报告、讨论）
+
 
 ## 0.2.0-working — 2026-07-30
 
