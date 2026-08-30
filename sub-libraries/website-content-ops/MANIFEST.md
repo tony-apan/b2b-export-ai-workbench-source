@@ -36,6 +36,13 @@ durable_roots: ["KNOWLEDGE", "PLAYBOOKS", "COURSES", "OUTPUTS"]
 external_dependencies: ["Node.js >=20.9.0", "npm", "sharp 0.35.3 (AllinCMS adapter only)"]
 source_package_only: true
 license_status: "pending"
+license_records:
+  - artifact: "TOOLS/interface-kit"
+    license: "Apache-2.0"
+    notice: "UNOFFICIAL THIRD-PARTY CLIENT for AllinCMS/LAICMS; action ids from public bundles, may change without notice"
+    recorded: "2026-08-30"
+    reviewer: "TERRA 69cf48a1 + flash 07ba67df"
+    caveat: "3 bundled source cards (AllinCMS official, PicGo image-host, B2B SEO research) clearance still open; status stays pending/BLOCK until closed"
 approval_required: true
 approval_status: "pending"
 approval_record: "RELEASE-APPROVAL.json (external sidecar)"

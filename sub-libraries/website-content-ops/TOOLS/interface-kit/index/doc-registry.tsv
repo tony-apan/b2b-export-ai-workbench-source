@@ -6,7 +6,7 @@ DOC-004	doc	kit	模板资产使用说明	../templates/README.md	current	-	templa
 DOC-005	doc	kit	索引体系说明（本目录）	INDEX.md	current	index/registry_tools.py	index;registry	三张 TSV 主索引+自动生成的阅读页；查询/更新规则见文内	任何"找文档/找问题/找模块"的第一步
 SCRIPT-001	script	kit	AllinCMS 纯接口客户端	../allincms_api.py	current	-	api;rsc;write;read	零依赖客户端：写(站点/分类/标签/媒体/产品/文章/设计器)+读(RSC 9 路+CLI 8 命令)；action id 常量表	所有执行操作
 SCRIPT-002	script	kit	模块构建器	../allincms_blocks.py	current	-	modules;builder;json	hero/carousel/category/feature/product/material/proof/news/faq/newsletter/contact+公司页/联系页 builder+page_document 组装	生成页面 document/globals
-SCRIPT-003	script	kit	建站流水线工具	../site_pipeline.py	current	-	cli;validate;generate;check;diff	validate(含 3/4 数量门)/generate/check(模板词)/diff(readback)/gate(一键门)/contact(demo 联系方式门)/audit(13 项一体对抗审计+JSON 报告：FAQ答案SSR/真实CTA/单位/绝对化/Markdown/lang/canonical/JSON-LD/图片属性)	构建前校验、上线前自检、readback 比对
+SCRIPT-003	script	kit	建站流水线工具	../site_pipeline.py	current	-	cli;validate;generate;check;diff	validate(含 3/4 数量门)/generate/check(模板词)/diff(readback)/gate(一键门)/contact(demo 联系方式门)/audit(13 项一体对抗审计+JSON 报告：http/count/root-home/form-render/空态/模板词/demo联系方式/FAQ答案SSR/真实CTA/单位/绝对化/Markdown/h2语义)	构建前校验、上线前自检、readback 比对
 SCRIPT-004	script	kit	action id 扫描器	../scan/scan-actions.py	current	-	action-id;deploy	从页面/工作台 chunk 扫 createServerReference 得当前部署 action id	换部署/升级后必跑
 SCRIPT-005	script	kit	索引工具（registry）	registry_tools.py	current	-	index;cli	verify(引用存在/id 唯一/枚举合法)/gen(生成 INDEX.md)/ls/find(关键词查询)/add(安全追加)	维护索引、查询文档
 TPL-001	template	kit	产品 payload 参照	../templates/product-payload-example.json	current	-	payload;product	defaultValues 全字段(name/slug/description/order/media/mediaList/categories/tags/specifications/content)	构建产品 payload

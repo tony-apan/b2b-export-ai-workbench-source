@@ -26,7 +26,7 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 1. **可显示字段全部显式传**：props 里任何未提供的字段都会被服务端用模板默认值回填（含模板文案/假链接）。详见"服务端回填规则"节（来源 MODULES.md:7）。
 2. **globals 按页存储**：header/footer/弹窗/浮钮存在**每一页**的 `globals` 里，改完后同一份 `globals_doc` 要对**全部 7 页**逐页 `save+publish`（来源 RUNBOOK-ANYONE.md:92、MODULES.md:130）。
-3. **置空 ≠ 删除**：空字符串会被 zod 默认值打回 demo 值（如 WhatsApp `wa.me/447762109411`）。要"没有这个元素"就**同时删除 `elements.<key>` 和 `page-root.children` 里的引用**（来源 RUNBOOK-ANYONE.md:58、fix-remove-wa.py:21-23）。
+3. **置空 ≠ 删除**：空字符串会被 zod 默认值打回 demo 值（如 WhatsApp `wa.me/+44-7911-123456`）。要"没有这个元素"就**同时删除 `elements.<key>` 和 `page-root.children` 里的引用**（来源 RUNBOOK-ANYONE.md:58、fix-remove-wa.py:21-23）。
 
 ## 分层总览（每层对应的操作与序号）
 
@@ -109,7 +109,7 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 28 | `globals.elements.social-floating-button-1`（整元素） | `brand:"whatsapp", url:"https://wa.me/8613800000000"`（seed 版本 `wa.me/447762109411`） | **客户源材料无社媒 → 整体删除元素**：同时删 `elements.social-floating-button-1` 与 `globals.elements.page-root.children[]` 中的 `"social-floating-button-1"`（Example 实测，fix-remove-wa.py:21-23） | 右下角假 WhatsApp 浮钮；置空 `url` 会被 zod 回填 demo 号码（ISS-068） | home-page-example.json:664-675；RUNBOOK-ANYONE.md:58 |
+| 28 | `globals.elements.social-floating-button-1`（整元素） | `brand:"whatsapp", url:"https://wa.me/8613800000000"`（seed 版本 `wa.me/+44-7911-123456`） | **客户源材料无社媒 → 整体删除元素**：同时删 `elements.social-floating-button-1` 与 `globals.elements.page-root.children[]` 中的 `"social-floating-button-1"`（Example 实测，fix-remove-wa.py:21-23） | 右下角假 WhatsApp 浮钮；置空 `url` 会被 zod 回填 demo 号码（ISS-068） | home-page-example.json:664-675；RUNBOOK-ANYONE.md:58 |
 | 29 | `...props.url`（**仅客户有真实 WhatsApp 时**） | demo 号 | `https://wa.me/<真实国家码+号码>` | 浮钮指向他人号码 | home-page-example.json:668；MODULES.md:107 |
 | 30 | `...props.label` / `...props.showLabel` / `...props.position` | `WhatsApp` / `false` / `bottom-right` | 按需（客户要求显示标签时 showLabel=true） | 显示 demo 标签 | home-page-example.json:669-671 |
 
@@ -455,7 +455,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | 161 | img width/height/srcset/loading | 裸 `<img>` | 同上 | RUNBOOK-ANYONE.md:150 |
 | 162 | 页面 SEO description（meta） | 模板句（如 "A journal listing page..."）；**静态页可改**：api.update_page(description=)→等10s→commit publish 带 description 字段→curl 验证（ISS-073）；动态路由页（/posts/{post}、/products/{product}）回退模板值=平台限制 | 静态页逐页换品牌文案；动态页记录；audit 已排除 meta 层判定（ISS-066） | RUNBOOK-ANYONE.md:151 |
 | 163 | 正文内联链接 | `{"type":"link"}` 平铺无 `<a>` | 用页面级块 actionTarget（③.3.7 #112） | RUNBOOK-ANYONE.md:150；MODULES.md:120 |
-| 164 | 空字段 zod 默认回填 | 置空字符串被 schema default 顶回 demo 值（如 WhatsApp wa.me/447762109411） | 删元素而非置空（ISS-068） | RUNBOOK-ANYONE.md:152 |
+| 164 | 空字段 zod 默认回填 | 置空字符串被 schema default 顶回 demo 值（如 WhatsApp wa.me/+44-7911-123456） | 删元素而非置空（ISS-068） | RUNBOOK-ANYONE.md:152 |
 | 165 | 表单提交 | 平台表单链路（未实测端到端） | 交付清单如实写，demo 邮箱上线前必须换真并浏览器实提 | RUNBOOK-ANYONE.md:153；delivery-manifest.md:52 |
 | 166 | 根路径 `/`（历史 BLOCK，**已可修**） | 200 但错误壳 | `set_home_page`（⑨）；audit 含 root-home 项防回归 | RUNBOOK-ANYONE.md:146；ROOT-PATH-ISSUE.md:48-70 |
 
@@ -471,7 +471,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | `hero-commerce.campaignPills` 不传 | demo 药丸（`12h hot · 24h cold` 等）复活 | MODULES.md:7、19 |
 | `contact-info-grid.socialLinks` 不传 | 回填 Instagram/LinkedIn 假链接（**注意：footer `socialLinks` 空 `[]` 是安全的留白**） | MODULES.md:7、46、105 |
 | header `navigation[].children` 丢弃 | 回填 demo "Bags" 子菜单 | MODULES.md:7 |
-| `social-floating-button.url` 置空串 | zod 默认值顶回 `wa.me/447762109411`（demo 英国号） | RUNBOOK-ANYONE.md:58；MODULES.md:107 |
+| `social-floating-button.url` 置空串 | zod 默认值顶回 `wa.me/+44-7911-123456`（demo 英国号） | RUNBOOK-ANYONE.md:58；MODULES.md:107 |
 | `contact-info-grid` / `location-map-interactive` 用错字段名（如 `emailLabel` 等自定义字段） | 服务端忽略并回填 San Francisco demo 联系方式（"demo 复活"） | DEMO-CLEANUP.md:28-30 |
 | `contact-form-split.formSlug` 缺省 | 回填 `""`——**会致表单不渲染，必须显式填真实 slug**（ISS-076 修正旧"无害"结论） | ISS-076；MODULES.md:7、28 |
 | `columnCount` / `fit` 等布局字段缺省 | 回填模板默认布局值（无害白名单） | MODULES.md:7 |
@@ -500,7 +500,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | ☐ | 6. 联系方式门 | `python3 site_pipeline.py contact $SLUG --config $CFG --real "<真实邮箱|电话|地址>"` | `[contact] PASS`（无 demo 联系方式残留） |
 | ☐ | 7. 完整审计 | `python3 site_pipeline.py audit $SLUG --config $CFG --out 70_evidence/audit-report.json` | `"verdict": "PASS"`，problems 只含 platform BLOCK 4 项（lang/canonical/jsonld/img-attrs） |
 | ☐ | 8. globals 7 页一致 | 对 7 页循环 `read_page_document`，比对 `page['globals']` 的 header/footer JSON | 7 页 globals 完全相同（demo 文案 0） |
-| ☐ | 9. readback 深 diff | 每页 `save+publish` 后重读 document 与提交版 diff | 仅 `formSlug=""`/`columnCount=N` 无害回填 |
+| ☐ | 9. readback 深 diff | 每页 `save+publish` 后重读 document 与提交版 diff | 仅 `columnCount=N` 无害回填；`formSlug=""` 在表单块=断裂必修（ISS-076） |
 | ☐ | 10. 文章 CTA SSR | `curl -s $BASE/posts/<primary_article> \| grep -c "source=<site>-article"` | ≥1 命中；related 区无 "More from the journal" |
 | ☐ | 11. sitemap 覆盖 | `curl -s $BASE/sitemap.xml` | 含全部产品/文章 slug（含根路径修复后 `/` 条目） |
 | ☐ | 12. 交付清单 | 复制 `templates/delivery-manifest.md` → `70_evidence/DELIVERY-<slug>-<date>.md`，公开链接表逐行核 200 + 已知事项抄 ⑪ | 每行核验=200；BLOCK 如实记录 |
@@ -510,7 +510,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 # 最容易漏的 5 项（历史返工实证）
 
 1. **globals 只改了 1 页**：globals 按页存储，只 commit 首页 = 其余 6 页 header/footer 还是 demo（RUNBOOK-ANYONE.md:92）。Example 靠"同一份 globals_doc 对 7 页逐页 save+publish"才清干净。
-2. **置空当删除**：把 WhatsApp `url` 置 `""` 会被 zod 回填 `wa.me/447762109411`（ISS-068）。必须删元素（children+elements 同删，fix-remove-wa.py）。
+2. **置空当删除**：把 WhatsApp `url` 置 `""` 会被 zod 回填 `wa.me/+44-7911-123456`（ISS-068）。必须删元素（children+elements 同删，fix-remove-wa.py）。
 3. **set_home_page 顺序**：`setThemeActive` 会清空 homePageId；必须先激活再设首页，且未来每次重新激活后重跑（OUTSIDER-REVIEW-20260830-SETHOME-ADVERSARIAL.md:24）。
 4. **createTheme 重种 demo**：每次 `create_theme(default)` 都重种 3 产品+3 文章；重建主题后不重跑清理 → 首页自动拉取块混入 demo（RUNBOOK-ANYONE.md:60）。
 5. **audit 不带 --config**：默认 Demo 基线会对新站 count/faq/cta 产生假 FAIL，诱使返工已对的项（ISS-063）。
@@ -534,18 +534,18 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | interface-kit/templates/CONTENT-MINIMUM.md | L8-21（数量基线）、L37-39（降级） |
 | interface-kit/templates/client-input-checklist.md | L7-17（必填资料） |
 | interface-kit/allincms_api.py | L263（create_site）、L273-283（分类/标签）、L285-297（媒体）、L299-320（产品/文章）、L322-333（read_themes）、L345-364（主题操作）、L390-397（set_home_page）、L405-409（save_home） |
-| example/HANDOFF.md | L18-29（完成清单）、L30-35（前端状态）、L37-42（审计结论）、L44-53（ISS 修复） |
-| example/70_evidence/DEMO-CLEANUP.md | L4-30（globals/doc/demo 清理 + 平台行为） |
-| example/70_evidence/AUDIT-FACT-MATRIX-20260829.md | L15-37（15 项分级） |
-| example/70_evidence/ROOT-PATH-ISSUE.md | L48-70（setHomePageAction 终局） |
-| example/70_evidence/OUTSIDER-REVIEW-20260830-SETHOME-ADVERSARIAL.md | L18-32（对抗矩阵+顺序）、L45（验证判据） |
-| example/70_evidence/FRONTEND-STATUS.md | L4-20（全路径 title 表） |
-| example/70_evidence/BLOCK-media-upload.md | L3-4（上传通道结论）、L21（分类/标签实样） |
-| example/70_evidence/example-audit-config.json | L3-29（每站配置实样） |
-| example/70_evidence/scripts-20260830/fix-post-cta.py | L22-54（related 文案 + CTA 块完整样例） |
-| example/70_evidence/scripts-20260830/fix-remove-wa.py | L21-23（删元素正确姿势） |
-| example/70_evidence/scripts-20260830/fix-posts-page.py | L21-38（posts 页块替换） |
-| example/70_evidence/scripts-20260830/fix-globals-wa.py | L21-33（置空方案 → 被删元素方案取代） |
+| <task_dir>/HANDOFF.md | L18-29（完成清单）、L30-35（前端状态）、L37-42（审计结论）、L44-53（ISS 修复） |
+| <task_dir>/70_evidence/DEMO-CLEANUP.md | L4-30（globals/doc/demo 清理 + 平台行为） |
+| <task_dir>/70_evidence/AUDIT-FACT-MATRIX-20260829.md | L15-37（15 项分级） |
+| <task_dir>/70_evidence/ROOT-PATH-ISSUE.md | L48-70（setHomePageAction 终局） |
+| <task_dir>/70_evidence/OUTSIDER-REVIEW-20260830-SETHOME-ADVERSARIAL.md | L18-32（对抗矩阵+顺序）、L45（验证判据） |
+| <task_dir>/70_evidence/FRONTEND-STATUS.md | L4-20（全路径 title 表） |
+| <task_dir>/70_evidence/BLOCK-media-upload.md | L3-4（上传通道结论）、L21（分类/标签实样） |
+| <task_dir>/70_evidence/example-audit-config.json | L3-29（每站配置实样） |
+| <task_dir>/70_evidence/scripts-*/fix-post-cta.py | L22-54（related 文案 + CTA 块完整样例） |
+| <task_dir>/70_evidence/scripts-20260830/fix-remove-wa.py | L21-23（删元素正确姿势） |
+| <task_dir>/70_evidence/scripts-20260830/fix-posts-page.py | L21-38（posts 页块替换） |
+| <task_dir>/70_evidence/scripts-20260830/fix-globals-wa.py | L21-33（置空方案 → 被删元素方案取代） |
 | example/20_work/articles/BRIEF.md | L5-9（公司事实）、L12-41（产品规格）、L43-50（文章主题） |
 | 公网实测（编写时抓取） | https://<your-site-key>.web.allincms.com/、/about-us、/contact-us（header/footer/首页各块/联系页/关于页实值） |
 

@@ -24,13 +24,13 @@ cd index && python3 registry_tools.py find <关键词>   # 找文档/脚本/模�
 - `MODULES.md` —— 单页模块（Blocks Library）schema 与嵌套规范
 - `API-DISCOVERY.md` —— **平台更新后 AI 摸索接口的标准流程**（重扫/反编译/对比/发现/适配/验证）
 - `allincms_blocks.py` —— 单页模块构建器（hero/carousel/catalog/faq/contact…）
-- 接口要点全集见 `70_evidence/THERMOS-INTERFACE-REPORT.md`
+- 接口要点全集见 `MODULES.md`（块 schema）与 `api/API-INDEX.md`（接口索引）
 
 ## 快速开始
 ```python
 from allincms_api import AllinCMS
 api = AllinCMS(token="<payload-token JWT>")   # 方式1：手动提供（浏览器登录后取 Cookie payload-token）
-# 或 api.login(email, password)  # 方式2：账号密码（注意：login 不读 Set-Cookie，拿不到 token 属预期——推荐一律用浏览器 Cookie 的 payload-token）
+# 或 api.login(email, password)  # 方式2：纯 API 登录（ISS-083 实测：从 Set-Cookie 提取 token，成功+失败双路径验证）
 
 # ---- 写（全部纯 HTTP server action）----
 api.create_category2("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "Insulated Bottles", "insulated-bottles", content_type="posts")
@@ -100,7 +100,7 @@ python allincms_api.py <token> read-info <site-slug>
 ## 换电脑怎么用（mac/win 通用）
 1. **token 获取**（一次性或定期）：
    - 方式 A：浏览器登录 `workspace.laicms.com` → DevTools → Application → Cookies → `payload-token` 值
-   - 方式 B：脚本 `AllinCMS(email, password)` —— 调 sign-in action（`7f04a5d5...`），payload 已验证；成功分支从 **Set-Cookie** 提取 `payload-token`（标准 Payload 行为；因无真实密码未实测，标注待验证）
+   - 方式 B：脚本 `AllinCMS(email, password)` —— 调 sign-in action（`7f04a5d5...`），payload 已验证；成功分支从 **Set-Cookie** 提取 `payload-token`（ISS-083 已用真实凭据实测通过）
 2. **写操作**：全部纯 HTTP server action（本工具包），无需浏览器/AppleScript/Playwright
 3. **读操作**：全部 RSC 纯接口（本工具包），无需浏览器/AppleScript/Playwright —— **读写闭环，全平台仅需 Python 3 + 网络**
 4. 新机器只需：复制本目录 → 安装 Python 3 → 填入 token 即可跑通全链路

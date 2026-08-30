@@ -13,6 +13,43 @@ redaction_status: "private-source-reviewed"
 ---
 # Mother Library Changelog
 
+## 0.3.2-working — 2026-08-30
+
+### 第三轮对抗审查修复（flash×2 + TERRA，14 处）
+
+**PII/凭据清零**：
+- `xmc1204@qq.com` → `reviewer@example.com`（issues.tsv/INDEX.md）
+- `8617091913071` → `138-0000-0000`（真实格式中国手机号 → 假值）
+- `wa.me/447762109411` → `wa.me/+44-7911-123456`（5 个文档全清）
+
+**代码/配置修复**：
+- `AUDIT_CONFIG_DEFAULTS` 默认 pages 去掉站点专属产品 URL；`<demo-product-slug>` → `demo-product-slug`（纯词，默认审计不再必 FAIL）
+- `FORMAT-SPEC.md` migrate 签名 `<slug> <postId>` → `<article.json>`（与模块实际一致）
+- `doc-registry` SCRIPT-003 audit 描述去掉已移除的 4 个 BLOCK 项（13 项口径统一）
+
+**文档链修复**：
+- RUNBOOK:98 example 客户路径 → `<task_dir>` 风格（不再悬空）
+- RUNBOOK:36 本机仓库根 → 通用化
+- RUNBOOK:60 ROOT-PATH-ISSUE → 任务证据相对引用
+- RUNBOOK §1 vs §8 审计配置文件名统一为 `site-audit-config.template.json`
+- checklist:503 formSlug 旧"无害"口径 → 断裂必修（ISS-076）
+- checklist example/ 引用 8 处 → `<task_dir>` 通用描述
+- README:27 THERMOS 死链 → 改指 MODULES.md / api/API-INDEX.md
+
+**安全硬化**：
+- /tmp/ws-token.txt 补 `chmod 600` 建议（或 WS_TOKEN 环境变量优先）
+- MANIFEST 增 kit 级 Apache-2.0 license 记录（3 张 source card 未闭合，状态保持 pending/BLOCK）
+- 分发文件 chmod 644（防打包带 600）
+
+### 修改对比
+| 对象 | 旧 | 新 |
+|---|---|---|
+| 默认审计 pages | 含站点专属产品 URL（必 404） | 6 个通用导航页 |
+| cta 默认占位 | `<demo-product-slug>` | `demo-product-slug` |
+| PII 联系方式 | 3 处真实格式 | 假值 |
+| token 指引 | 无权限硬化 | chmod 600 / WS_TOKEN |
+
+
 ## 0.3.1-working — 2026-08-30
 
 ### 分发就绪（flash+TERRA 对抗审查后）

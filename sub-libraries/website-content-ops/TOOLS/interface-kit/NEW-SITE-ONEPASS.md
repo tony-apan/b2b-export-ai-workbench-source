@@ -195,7 +195,7 @@ related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-cus
   文章详情页 CTA 真链接：post-detail 页 `page-root.children` 追加 `cta-1`（type `material-story-split`，`actionTarget={"type":"custom","href":"/contact-us?source=<site>-article"}`），并替换 related-1 demo 文案。
 - **验收判据**：7 页 readback diff≈0；globals 7 页一致；公网无空态文案（`No content is available yet` 等——单品/单文时删详情页 related 模块）。
 - **产物**：`70_evidence/pages/<page>.json`（每页最终三件套存证，共 7 份）。
-- **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/447762109411`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取。
+- **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/+44-7911-123456`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取。
 
 ### 步骤 10 — 激活 + 路由 + set_home_page（顺序规则）
 
@@ -279,7 +279,7 @@ related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-cus
 | 2 | 200 | 配置内全部页面返回 200 |
 | 3 | 空态 | 无 `No content is available yet / No items yet / No results / coming soon` |
 | 4 | 模板词 | 模板词表 0 命中（自检词表见 MODULES.md 六） |
-| 5 | demo 联系方式 | 无 `wa.me/447762109411` 等 demo 电话/邮箱/WhatsApp |
+| 5 | demo 联系方式 | 无 `wa.me/+44-7911-123456` 等 demo 电话/邮箱/WhatsApp |
 | 6 | FAQ SSR | faq_answers 实质短语出现在公网 HTML（非客户端渲染） |
 | 7 | 真 CTA | 真实链接 + source 参数（`/contact-us?source=<site>-article`） |
 | 8 | 单位 | 规格/正文单位规范（metric/imperial 一致） |

@@ -219,21 +219,19 @@ DEMO_CONTACTS = {
     "555-0142": "template phone",
     "mission street": "template address",
     # 2026-08-30 对抗补充：default 主题 social-floating-button 默认值（曾漏网）
-    "wa.me/447762109411": "template whatsapp (Northstar demo)",
+    "wa.me/+44-7911-123456": "template whatsapp (fake)",
 }
 
 # ---------- audit 站点基线（对抗升级：单站硬编码 → 每站可配）----------
 # 默认基线 = Demo（向后兼容）；新站建站时必须提供 --config 覆盖，
 # 否则 count/faq-answer/cta/unit 会按 Demo 事实误判（ISS-063）。
 AUDIT_CONFIG_DEFAULTS = {
-    "pages": ["", "about-us", "contact-us", "posts", "products", "sitemap.xml",
-              "posts/how-to-choose-a-touring-kayak-for-two",
-              "products/<demo-product-slug>"],
+    "pages": ["", "about-us", "contact-us", "posts", "products", "sitemap.xml"],
     "count": {"products": 3, "posts": 4},
     "fallback_article": "how-to-choose-a-touring-kayak-for-two",
     "primary_article": None,            # 指定 faq/cta/h2 检查用主文章 slug；缺省用 arts[0]
     "faq_answers": ["not by itself", "add both paddlers", "typically heavier", "this guide is for calm lakes"],
-    "cta": {"product_link": "/products/<demo-product-slug>",
+    "cta": {"product_link": "/products/demo-product-slug",
             "consult_source": "source=tandem-kayak-guide"},
     "units": ["5.2m", "68cm", "220kg", "80kg", "65kg", "25kg", "170kg", "4.2m"],
     "template_words_extra": [],

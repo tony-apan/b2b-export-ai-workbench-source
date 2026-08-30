@@ -33,7 +33,7 @@ python3 scan/scan-actions.py /tmp/ws-token.txt /<site_key>/themes   # 部署更�
   2. **浏览器 Cookie（兜底，已验证）**：用户登录 `workspace.laicms.com` → DevTools → Cookies → 复制 `payload-token` → 写 `/tmp/ws-token.txt`。
   **拿 token 是唯一可能碰浏览器的环节；拿到后全程纯接口**（操作矩阵 10/10 实测：读 8 + 幂等写 2 + 媒体 multipart + 公开站表单 submit，零浏览器）。
 - 目标：工作台 `workspace.laicms.com`，公开站 `https://<site_key>.web.allincms.com`。
-- 路径约定：本文内 `customer-runtime/...` 开头的路径相对于**仓库根**（本机示例仓库根 `~/Work/01_Data/701_kecheng`）；`templates/...`、`writing/...`、`index/...` 相对于 interface-kit 目录。
+- 路径约定：本文内 `customer-runtime/...` 开头的路径相对于**仓库根**（示例：`~/Work/01_Data/<workspace>`）；`templates/...`、`writing/...`、`index/...` 相对于 interface-kit 目录。
 - 零第三方依赖：Python3 stdlib 即可；全文 API 直连，**不要开浏览器自动化**（除登录拿 token）。
 
 ## §1 建站总流程（10 步）
@@ -48,7 +48,7 @@ python3 scan/scan-actions.py /tmp/ws-token.txt /<site_key>/themes   # 部署更�
 6 产品：create_product -> publish_product（全字段 payload，见 templates/product-payload-example.json）
 7 文章：k3 子 agent 写（§7）-> flash 子 agent 审（§8）-> create_post -> publish_post
 8 主题页：create_theme(default) -> 改 7 页 doc + globals -> 每页 save+publish -> set_theme_active -> apply_theme_routes
-9 每站审计配置 example-audit-config.json -> audit/gate/contact 三门
+9 每站审计配置（templates/site-audit-config.template.json 复制改名）-> audit/gate/contact 三门
 10 交付清单 DELIVERY-<slug>-<date>.md + HANDOFF.md + 回填 issues.tsv
 ```
 
@@ -57,9 +57,9 @@ python3 scan/scan-actions.py /tmp/ws-token.txt /<site_key>/themes   # 部署更�
 | 事实 | 结论 | 出处 |
 |---|---|---|
 | 账号非首站时 createSite 只给 blank 主题（0 页）；手工 `create_theme(preset='default')` 总是生成 7 页 | 必须手工 create_theme | allincms_api.create_theme docstring（与 createSite 行为区分） |
-| **根路径 `/` 修复=set_home_page**：`api.set_home_page(slug, site_id, theme_id, home_page_id)`（action=setHomePageAction，URL 必须是 `/{slug}/themes/{themeId}`）。**顺序：先 setThemeActive 再 set_home_page**（激活会清 homePageId）。其余路径（/{slug}/themes）返回 200 但静默无效 | ✅ **可修（2026-08-30 实测上线）** | allincms_api.set_home_page + ROOT-PATH-ISSUE.md 终局节 |
+| **根路径 `/` 修复=set_home_page**：`api.set_home_page(slug, site_id, theme_id, home_page_id)`（action=setHomePageAction，URL 必须是 `/{slug}/themes/{themeId}`）。**顺序：先 setThemeActive 再 set_home_page**（激活会清 homePageId）。其余路径（/{slug}/themes）返回 200 但静默无效 | ✅ **可修（2026-08-30 实测上线）** | allincms_api.set_home_page + 任务证据 `70_evidence/ROOT-PATH-ISSUE.md` 终局节 |
 | 正文内联 link 节点平铺渲染无 `<a>` | 文章 CTA 用**页面级块**（material-story-split actionTarget）做真链接 | MODULES.md link 行 |
-| 空字符串字段会被 zod 打回默认值（如 WhatsApp url 默认 `wa.me/447762109411`） | 删 demo 按钮=**移除元素**（children+elements 同删），不是置空 | 2026-08-30 实测（ISS-068） |
+| 空字符串字段会被 zod 打回默认值（如 WhatsApp url 默认 `wa.me/+44-7911-123456`） | 删 demo 按钮=**移除元素**（children+elements 同删），不是置空 | 2026-08-30 实测（ISS-068） |
 | 文章发布=create 空壳草稿 → publish_post upsert；同 slug 重跑会堆积 Untitled 草稿 | 先 read_lists 查 slug 再 publish（勿重复 create） | ISS-059 |
 | **createTheme(default) 会重新种入 3 demo 产品+3 demo 文章+6 demo 分类+7 demo 标签**（站点级，新记录 id 时间戳=创建时刻；taxonomy 同样种入且 0 引用也会公开出现在筛选下拉） | 每次重建主题后重跑全链清理（delete-demo-content.py）；audit count 项自动暴露 | ISS-071/074 |
 | 正文原生 Slate 类型 = `p|h2|h3|blockquote`（服务器存储形态；'heading'/'paragraph' 旧词法禁用） | 格式见 templates/post-payload-example.json；生成器 writing-module.py block/skeleton | ISS-060 |
@@ -95,7 +95,7 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 
 - 页面文档结构：`{"root":"page-root","elements":{...}}`；块类型白名单与 props 见 `templates/home-page-example.json`、allincms_blocks.py 与 MODULES.md（37 块注册表全集在 MODULES.md 开头）。
 - globals（header/footer/contact dialog/social button）**按页存储**：改 globals 后用同一份 globals_doc 对**全部 7 页**逐页 save+publish（Example 实测可靠做法；只 commit 一页不可保证全站一致）。
-- **文章页 CTA 真链接**（已实测）：post-detail 页 `page-root.children` 追加 `cta-1` 元素（type `material-story-split`，actionTarget `{"type":"custom","href":"/contact-us?source=<site>-article"}`），同时把 related-1 的 demo 文案（"More from the journal"）换掉。参考脚本：`customer-runtime/10_clients/example/30_tasks/example-site-full-build-20260829/70_evidence/scripts-20260830/fix-post-cta.py`。
+- **文章页 CTA 真链接**（已实测）：post-detail 页 `page-root.children` 追加 `cta-1` 元素（type `material-story-split`，actionTarget `{"type":"custom","href":"/contact-us?source=<site>-article"}`），同时把 related-1 的 demo 文案（"More from the journal"）换掉。参考脚本：`<task_dir>/70_evidence/scripts-*/fix-post-cta.py`（参照你任务的同类脚本）。
 
 ## §4 产品（第 6 步展开）
 
@@ -153,7 +153,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | 根路径 `/` | 200 但错误壳（Allin CMS Runtime） | **可修**：`set_home_page`（先激活主题再设首页）；审计含 root-home 项防回归 |
 | 正文内联链接 | `{"type":"link"}` 平铺无 `<a>` | 用页面级块 actionTarget（§3） |
 | 页面 SEO description（meta） | 静态页可经 `api.update_page(..., description=...)` 改（配方=updatePage→等10s→commit publish 带 description→curl 验证）；**动态路由页**（/posts/{post}、/products/{product}）回退模板值=平台限制（ISS-073） | 静态页改、动态页记录；audit 已排除 meta 层判定 |
-| 空字段 zod 默认回填 | 置空字符串会被 schema default 顶回 demo 值（如 WhatsApp wa.me/447762109411） | 删元素（children+elements 同删）而非置空（ISS-068） |
+| 空字段 zod 默认回填 | 置空字符串会被 schema default 顶回 demo 值（如 WhatsApp wa.me/+44-7911-123456） | 删元素（children+elements 同删）而非置空（ISS-068） |
 | 表单提交 | **链路已实测可用**（ISS-076/077）：公开站 submitRuntimeFormAction(siteId,{formSlug,values}) → success:true + fieldErrors 服务端校验；**所有表单块 formSlug 必须绑真实 slug**（空=整个 <form> 不渲染——含首页内联块 contact-1 与 7 页 globals 弹窗，逐页核）；工作台暂无提交收件箱 UI（平台待补） | **回落三层**：①联系页/首页展示真实邮箱（sales@…）直达 ②全局弹窗表单（Request a Quote 按钮）同 slug 可用 ③向平台确认提交数据导出/邮件通知；audit form-render 项防回归 |
 
 ## §10 交付与回填（第 10 步）
