@@ -2,10 +2,10 @@
 title: "任务卡：interface-kit 真源管线（迁移绑定条款）"
 description: "把 runtime 权威的 interface-kit 纳入母库 tracked + dist 同步管线，消除长期悬空。"
 type: "meta"
-status: "Working（DoD ①②③ 完成，④ 双审进行中；期限 2026-09-06）"
+status: "Adopted（DoD ①-④ 全部完成 2026-08-31，期限 2026-09-06 前达成；release 随子库流程）"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-08-30"
+last_updated: "2026-08-31"
 doc_id: "id-0073"
 visibility: "public"
 redaction_status: "safe-to-publish"
@@ -31,7 +31,7 @@ related: ["id-0072-runtime-folder-structure-v2.md"]
 - [x] 选型：并入 website-content-ops 子库（TOOLS/interface-kit，C2 commit 73e3488 已推送）
 - [x] 建管线：`scripts/interface-kit-pipeline.py`（四子命令+selftest；build-dist 只读 git committed 字节；dist 本地产物按仓设计不入库）——2026-08-31
 - [x] runtime 切换为 dist 消费 + 回流约定：sync-runtime 前置守卫（未回流改动即中止，探针负测试实证）；anchor 记录 SHA 锚
-- [ ] 双审 + release：管线本批双审（flash+TERRA）后关闭；release 随子库 release 流程
+- [x] 双审 + release：双审完成 2026-08-31（flash 前台终审条件GO 三防御洞修复复现 + TERRA 前台终审条件GO 三条件落地），C6=2617b3d 已推送；release 随子库既有 release 流程（3 卡 BLOCK 未变）
 
 ## 期限建议
 2026-09-06 前完成验收（一周内；拖延即回流 id-0072 待办①警告的"无限期漂流"场景）。
