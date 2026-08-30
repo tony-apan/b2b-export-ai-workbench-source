@@ -6,7 +6,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-08-01"
+last_updated: "2026-08-30"
 sources: ["AGENTS.md", "wiki/00_meta/private-master-and-sub-library-model.md"]
 related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/in-repository-agency-runtime-model.md", "sub-libraries/README.md", "sub-libraries/agency-operations/README.md"]
 visibility: "private"
@@ -29,30 +29,6 @@ canonical_entry: "README.md"
 | `customer-runtime/` | 根目录下 Git 隔离的真实客户私有运行区；由 agency-operations 初始化，母库更新不得覆盖 | [运行模型](wiki/00_meta/in-repository-agency-runtime-model.md) / 初始化后本地 `customer-runtime/README.md` |
 
 `wiki/` 的目录 canonical 入口使用 `index.md`；允许 README-only 的非 wiki 目录必须显式声明 `canonical_entry: "README.md"`。父级入口只索引直接文件和直接子目录入口，不递归铺平全库。
-
-## Quick Start（建站 5 分钟上手）
-
-```bash
-# 1. Clone 本仓库
-git clone https://github.com/tony-apan/b2b-export-ai-workbench-source.git
-cd b2b-export-ai-workbench-source/sub-libraries/website-content-ops/TOOLS/interface-kit
-
-# 2. 获取 token（三选一，详见 docs/TOKEN-AUTH.md）
-#    方式 A：纯 API 登录（推荐）
-python3 -c "from allincms_api import AllinCMS; print(AllinCMS(email='you@example.com', password='pass').token)" > /tmp/ws-token.txt
-#    方式 B：浏览器 DevTools → Cookies → payload-token → 写 /tmp/ws-token.txt
-#    方式 C：设环境变量 WS_TOKEN=<token>
-
-# 3. 冒烟测试（确认连通）
-python3 index/registry_tools.py verify
-
-# 4. 建站（读 NEW-SITE-ONEPASS.md 13 步一条龙）
-cat NEW-SITE-ONEPASS.md
-```
-
-**依赖**：Python 3.8+（核心建站 = 零第三方依赖，纯 stdlib）；PDF/DOCX 解析选装 4 个 pip 包（`python3 install-deps.py --yes`）。
-
-**建站入口链**：NEW-SITE-ONEPASS.md（13 步一条龙）→ RUNBOOK-ANYONE.md（实测事实+回落表）→ templates/new-site-customization-checklist.md（166+ 字段逐项改）→ API-DISCOVERY.md（平台更新后重摸索）
 
 ---
 

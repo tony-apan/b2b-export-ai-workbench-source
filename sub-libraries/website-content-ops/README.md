@@ -125,6 +125,30 @@ R2、GitHub、腾讯云 COS 和阿里云 OSS 只在需要跨系统公开 URL、�
 
 这不是只给 AI 一条提示词的“技能文件”。它是一整套工作包，包含人类说明、AI 执行入口、模板、示例、客户工作区、工具接入模块和验证工具。[SKILL.md](SKILL.md) 只是其中一个 AI 入口，目前还不能当作已正式发布的一键安装 Skill。
 
+## 建站一条龙（AllinCMS 纯 API）
+
+```mermaid
+flowchart LR
+    P0[步骤0 索引 preflight: verify + find] --> A[客户资料 PDF/DOCX/表格/网站]
+    A --> B[brief.json 提炼+validate]
+    B --> C[COP 内容计划 数量/主题/FAQ/CTA 基线]
+    C --> D[create_site 只建站不填内容 + 默认主题]
+    D --> E[媒体上传 upload_media]
+    E --> F[分类/标签创建]
+    F --> G[产品/文章 upsert 到位]
+    G --> H[主题 7 页 + globals save/publish]
+    H --> X[步骤4 改造清单: 166+ 字段逐项核对]
+    X --> Y[步骤11 demo 种子清理: 删除演示内容(需删除授权)]
+    Y --> I[路由 → 激活 → set_home_page 收尾]
+    I --> J[audit 13 项 每站 --config 基线]
+    J --> K{全 PASS?}
+    K -- 否 --> L[回填 issues.tsv 重修]
+    L --> J
+    K -- 是 --> M[DELIVERY + HANDOFF 交付]
+```
+
+入口链：[NEW-SITE-ONEPASS.md](TOOLS/interface-kit/NEW-SITE-ONEPASS.md)（13 步）→ [RUNBOOK-ANYONE.md](TOOLS/interface-kit/RUNBOOK-ANYONE.md)（实测事实+回落库）→ [new-site-customization-checklist.md](TOOLS/interface-kit/templates/new-site-customization-checklist.md)（字段逐项改）→ [API-DISCOVERY.md](TOOLS/interface-kit/API-DISCOVERY.md)（平台更新后重摸索）。AI Skill 安装入口见 [SKILL-INSTALL/](SKILL-INSTALL/README.md)。
+
 ## 常用入口
 
 | 你要做什么 | 入口 |
@@ -133,12 +157,13 @@ R2、GitHub、腾讯云 COS 和阿里云 OSS 只在需要跨系统公开 URL、�
 | 没有账号或需要支持 | [CONTACT.md](CONTACT.md) |
 | 跟着虚拟公司演示 | [FluxPedal Motors](EXAMPLES/fluxpedal-motors/README.md) |
 | 建立客户私有工作区 | [RUNTIME-INTEGRATION.md](RUNTIME-INTEGRATION.md) |
+| 用纯 API 从零建一个 AllinCMS 网站 | [interface-kit 工具包](TOOLS/interface-kit/README.md) → [NEW-SITE-ONEPASS.md](TOOLS/interface-kit/NEW-SITE-ONEPASS.md)（13 步一条龙，零第三方依赖） |
+| 把本能力作为 AI Skill 安装 | [SKILL-INSTALL/](SKILL-INSTALL/README.md)（allincms-bulk-content-upload 合并后的唯一真源；旧独立仓已封存） |
 | 收集最少必要资料 | [INTAKE.md](INTAKE.md) |
 | 理解公司、产品、客户和内容的关系 | [MENTAL-MODEL.md](MENTAL-MODEL.md) |
 | 查看完整执行流程 | [PLAYBOOK.md](PLAYBOOK.md) |
 | 从空白规划和审查正式 B2B SEO 文章 | [PLAYBOOKS/README.md](PLAYBOOKS/README.md) → [B2B SEO Article Standard](PLAYBOOKS/id-0001-b2b-seo-article-standard.md) |
 | 优化已有 B2B 文章 | [B2B Article Optimization SOP](PLAYBOOKS/id-0003-b2b-article-optimization-sop.md)；质量闸仍以 ID-0001 为准 |
-| 实现和验收文章页 SEO/样式 | [Article Page Frontend SEO Contract](PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md) |
 | 查看课程路径 | [COURSE-MAP.md](COURSE-MAP.md) |
 | 选择模板 | [TEMPLATES/README.md](TEMPLATES/README.md) |
 | 接入 CMS 或图床 | [ADAPTERS/README.md](ADAPTERS/README.md) |
