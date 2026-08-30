@@ -10,7 +10,7 @@
   python site_pipeline.py diff a.json b.json           # 深度 diff（readback 对抗比对）
   python site_pipeline.py gate <slug> --config <cfg>           # 上线门（数量/200/空态/模板词）
   python site_pipeline.py contact <slug> --config <cfg> --real "..."  # demo 联系方式门
-  python site_pipeline.py audit <slug> --config <cfg> --out r.json  # 13 项对抗审计（必带每站 --config；lang/canonical/jsonld/img-attrs 已按用户指令永久移除）
+  python site_pipeline.py audit <slug> --config <cfg> --out r.json  # 13 项对抗审计（必带每站 --config）
 """
 import json, os, re, sys
 
@@ -213,7 +213,7 @@ DEMO_CONTACTS = {
     "8613800000000": "demo WhatsApp",
     "138 0000 0000": "demo phone",
     "hello@demo-demo.com": "demo email",
-    "hello@thermoflask-demo.com": "demo email",
+    "hello@example-demo.com": "demo email",
     "wa.me/8613": "demo whatsapp",
     "buildnbuzz.com": "template email",
     "555-0142": "template phone",
@@ -288,7 +288,7 @@ def contact_gate(base_url, check_values="", config=None):
 def audit(site_slug, base_url=None, html_dir=None, out=None, config=None):
     """综合对抗审计（优于 gate）：内容/前端/SEO 一体检查，输出 PASS/FAIL 与机器可读 JSON。
     覆盖：数量、200、空态、模板词、demo 联系方式、FAQ 答案 SSR、真实 CTA、
-          单位统一、绝对化词、Markdown 残留(](与#)、语言/canonical/JSON-LD、图片属性。
+          单位统一、绝对化词、Markdown 残留(](与#)、正文 h2 语义、根路径 home 回归、表单渲染。
     用法：python3 site_pipeline.py audit <slug> [--config site-audit-config.json] [--out audit-report.json]
     说明：--config 必带每站基线（ISS-063）；缺省= Demo 基线，新站会误判。"""
     import urllib.request, ssl
@@ -414,22 +414,15 @@ def audit(site_slug, base_url=None, html_dir=None, out=None, config=None):
     visible = re.sub(r"<[^>]+>", " ", raw_art).replace("\\\"", "").replace("**", "")
     md_hits = re.findall(r"\]\(|(?:^|[\s(])\*\*|\*\*(?:[\s).,])|^#\s", visible)
     add("markdown", not md_hits, f"md_hits={sorted(set(md_hits))[:5]}")
-    # 语言 / canonical / JSON-LD
-    home = htmls.get("home.html", "")
     # 正文语义标题（原生 h2）
     import re as _re
     n_h2 = raw_art.count('data-slate-type="h2"')
     add("h2-semantic", n_h2 >= cfg["required_h2"], f"正文 h2 数 = {n_h2}（原生 h2 语义标题；≥{cfg['required_h2']} 达标）")
 
-
-
-    # 图片属性（width/height/srcset/loading/fetchpriority）——文章页或 home 的 <img>
-
     # 汇总
-    fail = [p for p in report["problems"] if "platform BLOCK" not in p and "无 token" not in p]
-    report["verdict"] = "PASS" if not fail else ("FAIL" if report["problems"] else "PASS")
-    report["counts"] = {"checks": len(report["checks"]), "problems": len(report["problems"]),
-                        "block_only": sum(1 for p in report["problems"] if "platform BLOCK" in p)}
+    fail = list(report["problems"])
+    report["verdict"] = "PASS" if not fail else "FAIL"
+    report["counts"] = {"checks": len(report["checks"]), "problems": len(report["problems"])}
     if out:
         d = os.path.dirname(os.path.abspath(out))
         os.makedirs(d, exist_ok=True)
@@ -438,8 +431,7 @@ def audit(site_slug, base_url=None, html_dir=None, out=None, config=None):
     for k, v in report["checks"].items():
         mark = "✅" if v["ok"] else ("⏭️" if v["ok"] is None else "❌")
         print(f"  {mark} {k}: {v['detail']}")
-    print(f"VERDICT: {report['verdict']} | checks={report['counts']['checks']} problems={report['counts']['problems']} (平台BLOCK {report['counts']['block_only']})")
-    print("说明：lang/canonical/jsonld/img-attrs 已从审计移除（用户指令 2026-08-30：后续禁止涉及，平台层问题不属站内职责）。")
+    print(f"VERDICT: {report['verdict']} | checks={report['counts']['checks']} problems={report['counts']['problems']}")
     return 0 if report["verdict"] == "PASS" else 1
 
 

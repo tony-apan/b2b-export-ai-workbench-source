@@ -13,14 +13,14 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 > **用途**：任何 AI 给任何新客户建站时，拿着本清单**逐项照改**，即可把 default 主题模板的全部 demo 内容换成客户内容，无残留、可审计、可交付。
 > **配套总流程**：先读 `RUNBOOK-ANYONE.md`（10 步总流程），本清单是其第 8 步"主题页/globals 改造"的逐字段展开版 + 全流程防漏清单。
-> **前置**：`payload-token` 已放 `/tmp/ws-token.txt`（POSIX）或 `WS_TOKEN` 环境变量；站点已 `create_site`；`interface-kit` 目录可 `sys.path.insert` 导入 `allincms_api`。
+> **前置**：`payload-token` 已就绪（**推荐 `export WS_TOKEN=<token>`**；或 chmod 600 文件）；站点已 `create_site`；`interface-kit` 目录可 `sys.path.insert` 导入 `allincms_api`。
 >
 > **怎么读本清单**：
 > - 按 ①~⑪ 分层；每层一张或多张表，每行 = 一个字段。
 > - 行格式：**字段路径（精确）→ demo 默认值 → Example 替换示例 → 不改的后果 → 来源（文件:行）**。
 > - 路径前缀约定：全站块用 `globals.elements.<key>.props.<field>`，页面块用 `pageDoc.elements.<key>.props.<field>`（`read_page_document()` 返回的 `page.document` / `page.globals` 两个元素树，来源 MODULES.md:4-5、allincms_api.py:220-231）。
 > - **拿不准的字段标注"待验证"**，绝不猜值；所有 demo 值均来自 `templates/*.json` 实测样例，所有 Example 替换值均来自其 70_evidence 或编写时公网实测抓取。
-> - demo 品牌注意：seeded 模板实际品牌为 "Northstar"（DEMO-CLEANUP.md:5），模板样例文件里为 "ThermoFlask"（home-page-example.json:512）——两者都是 demo，全部替换。
+> - demo 品牌注意：seeded 模板实际品牌为 "Northstar"（DEMO-CLEANUP.md:5），模板样例文件里为 "Example Corp"（home-page-example.json:512）——两者都是 demo，全部替换。
 
 ## 三条铁律（每条都对应一次真实返工，先背下来）
 
@@ -67,15 +67,15 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 1 | `globals.elements.header-dropdown-1.props.siteTitle` | `ThermoFlask`（seed 实际为 `Northstar Supply`） | `Example Corp` | 顶栏品牌名全站错误 | home-page-example.json:512；DEMO-CLEANUP.md:5 |
-| 2 | `...props.tagline` | `Vacuum insulated bottles` | `Precision RF interconnect up to 67 GHz`（公网实测） | 品牌标语显示 demo 品类 | home-page-example.json:513 |
+| 1 | `globals.elements.header-dropdown-1.props.siteTitle` | `Example Corp`（seed 实际为 `Northstar Supply`） | `Example Corp` | 顶栏品牌名全站错误 | home-page-example.json:512；DEMO-CLEANUP.md:5 |
+| 2 | `...props.tagline` | `Vacuum insulated bottles` | `Precision components up to high-frequency specs`（公网实测） | 品牌标语显示 demo 品类 | home-page-example.json:513 |
 | 3 | `...props.logoMedia` | `null` | 无 logo 图 → 保持 `null`；有 → 传 `{type:"image",value:{name,type:"image",source:"url",url}}`（URL 带扩展名） | 无图时传错结构会显示破图 | home-page-example.json:514；MODULES.md:98-99 |
 | 4 | `...props.logoTarget.href` | `/` | `/`（set_home_page 修复前临时用 `/home`） | logo 点击回 demo 首页/错误壳 | home-page-example.json:518；fix-globals-wa.py:30 |
 | 5 | `...props.navigation[].label`（全树） | `Home / Products / Guides / About / Contact` | `Home / Products / Guides / About Us / Contact Us`（公网实测） | 导航显示 demo 站名（如 "Bags"） | home-page-example.json:520-570 |
 | 6 | `...props.navigation[1].target.href`（Products） | `/products` | `/products` | 指向错误列表页 | home-page-example.json:533 |
 | 7 | `...props.navigation[1].children[].label` | `Insulated Bottles` | `RF Test Cables`（公网实测） | **children 若不显式传会被回填 demo "Bags"** | home-page-example.json:537；MODULES.md:7 |
 | 8 | `...props.navigation[1].children[].target.href` | `/products?category=product-insulated-bottles` | `/products?category=rf-test-cable-assemblies`（另加 `microwave-adaptors` 子项） | 下拉点击 → 空分类/404 | home-page-example.json:540；DEMO-CLEANUP.md:6 |
-| 9 | `...props.navigation[2].target.href`（Guides） | `/posts/how-to-choose-an-insulated-bottle` | `/posts`（children: `Measurement guides`→`/posts/how-to-choose-rf-test-cable-assembly`、`Connector types`→`/posts/rf-connector-types-guide-sma-to-1-85mm`，公网实测） | 导航指向不存在的 demo 文章 | home-page-example.json:550 |
+| 9 | `...props.navigation[2].target.href`（Guides） | `/posts/how-to-choose-an-insulated-bottle` | `/posts`（children: `Measurement guides`→`/posts/example-guide-slug-assembly`、`Connector types`→`/posts/example-product-guide-slug`，公网实测） | 导航指向不存在的 demo 文章 | home-page-example.json:550 |
 | 10 | `...props.ctaLabel` | `Get a Quote` | `Request a Quote`（公网实测） | 主 CTA 文案 demo | home-page-example.json:571 |
 | 11 | `...props.ctaTarget` | `{type:"action", anchorId:"contact-form-dialog"}` | 保持不变（锚点开弹窗，公网实测 `#contact-form-dialog`） | 改了会断掉全站询价弹窗 | home-page-example.json:572-575 |
 
@@ -83,16 +83,16 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 12 | `...props.brand` | `ThermoFlask` | `Example Corp`（DEMO-CLEANUP.md:7） | 页脚品牌名 demo | home-page-example.json:583 |
-| 13 | `...props.kicker` | `Vacuum insulated bottles` | `Precision RF interconnect`（公网实测） | 页脚标语 demo 品类 | home-page-example.json:584 |
-| 14 | `...props.description` | `Double-wall vacuum insulated stainless steel bottles for commute, travel, and family use.` | `VNA test cable assemblies and microwave adaptors up to 67 GHz for production, metrology and R&D.`（公网实测） | 页脚公司简介整段 demo | home-page-example.json:585 |
+| 12 | `...props.brand` | `Example Corp` | `Example Corp`（DEMO-CLEANUP.md:7） | 页脚品牌名 demo | home-page-example.json:583 |
+| 13 | `...props.kicker` | `Vacuum insulated bottles` | `Precision components`（公网实测） | 页脚标语 demo 品类 | home-page-example.json:584 |
+| 14 | `...props.description` | `Double-wall vacuum insulated stainless steel bottles for commute, travel, and family use.` | `precision test cable assemblies and adaptors up to high-frequency for production, metrology and R&D.`（公网实测） | 页脚公司简介整段 demo | home-page-example.json:585 |
 | 15 | `...props.columns[0].title` + `links[].label` | `Shop` / `Products` / `How to choose` | `Products` / `RF test cables` / `Microwave adaptors`（公网实测） | 页脚第一列 demo 文案 | home-page-example.json:587-604 |
 | 16 | `...props.columns[0].links[].target.href` | `/products`、`/posts/how-to-choose-an-insulated-bottle` | `/products`、`/products`（或分类页 `?category=`） | 页脚链接指向 demo 文章 | home-page-example.json:591-602 |
 | 17 | `...props.columns[1].title` + `links[].label` | `Company` / `About us` / `Contact us` | `Company` / `About us` / `Contact us`（公网实测，语义同构可保留） | 文案不对位 | home-page-example.json:606-623 |
 | 18 | `...props.columns[2].title` + `links[].label` | `Content` / `Journal` / `Buying guide` | `Guides` / `Measurement guides` / `Connector types`（公网实测） | 页脚第三列 demo 文案 | home-page-example.json:625-642 |
-| 19 | `...props.columns[2].links[].target.href` | `/posts`、`/posts/how-to-choose-an-insulated-bottle` | `/posts`、`/posts/rf-connector-types-guide-sma-to-1-85mm`（公网实测） | 页脚链接 404 | home-page-example.json:630-639 |
+| 19 | `...props.columns[2].links[].target.href` | `/posts`、`/posts/how-to-choose-an-insulated-bottle` | `/posts`、`/posts/example-product-guide-slug`（公网实测） | 页脚链接 404 | home-page-example.json:630-639 |
 | 20 | footer `...props.socialLinks` | 样例为 `[]`；footer 此字段**空则留白不回填**（MODULES:105）——**会回填 Instagram/LinkedIn 的是 contact 页 contact-info-1.props.socialLinks**（见 ⑩ 回填规则表） | 无社媒 → footer 显式 `[]`、contact-info 显式 `[]`（Example 实测两处都清空，DEMO-CLEANUP.md:8） | 页脚出现 Instagram/LinkedIn 假链接（模板词审计 FAIL） | home-page-example.json:645；MODULES.md:7、46、105 |
-| 21 | `...props.copyright` | `© 2026 ThermoFlask. Demo site for qualification run.` | `© 2026 Example Corp Co., Ltd. All rights reserved.`（公网实测） | 版权行 demo 公司名 + "Demo site" 字样 | home-page-example.json:646；DEMO-CLEANUP.md:7 |
+| 21 | `...props.copyright` | `© 2026 Example Corp. Demo site for qualification run.` | `© 2026 Example Corp Co., Ltd. All rights reserved.`（公网实测） | 版权行 demo 公司名 + "Demo site" 字样 | home-page-example.json:646；DEMO-CLEANUP.md:7 |
 | 22 | `...props.systemNote` | `Bottles built for long days, not short seasons.`（seed 版本含 `San Francisco`） | `Shenzhen, Guangdong, China.`（公网实测；DEMO-CLEANUP.md:7 San Francisco→Shenzhen） | 页脚细则 demo 城市 | home-page-example.json:647 |
 
 ### 2.3 contact-form-dialog（元素 key `contact-form-dialog`）
@@ -134,11 +134,11 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 32 | `...props.slides[0..n].eyebrow` | `12h hot, 24h cold` 等 | `RF interconnect up to 67 GHz` 等（公网实测 slide 1） | 轮播眉题 demo | home-page-example.json:30 |
-| 33 | `...props.slides[].title` | `Keep it hot all day...` | `From cost-effective to 67 GHz`（公网实测） | 轮播大标题 demo | home-page-example.json:31 |
-| 34 | `...props.slides[].description` | `The ThermoSteel 500ml is a double-wall...` | `Example Corp designs and manufactures VNA test cable assemblies and microwave adaptors up to 67 GHz for measurement teams that need repeatable results.`（公网实测） | 轮播正文 demo | home-page-example.json:32 |
+| 32 | `...props.slides[0..n].eyebrow` | `12h hot, 24h cold` 等 | `precision components up to high-frequency specs` 等（公网实测 slide 1） | 轮播眉题 demo | home-page-example.json:30 |
+| 33 | `...props.slides[].title` | `Keep it hot all day...` | `From cost-effective to high-spec`（公网实测） | 轮播大标题 demo | home-page-example.json:31 |
+| 34 | `...props.slides[].description` | `The ThermoSteel 500ml is a double-wall...` | `Example Corp designs and manufactures precision test cable assemblies and adaptors up to high-frequency for measurement teams that need repeatable results.`（公网实测） | 轮播正文 demo | home-page-example.json:32 |
 | 35 | `...props.slides[].media.value.url` | `https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg`（demo 保温杯图） | 客户产品/场景图（Example: `https://assets.laicms.com/<your-site-key>/gk8y0l.webp`，fix-post-cta.py:41） | 首页主视觉是别人家保温杯 | home-page-example.json:39 |
-| 36 | `...props.slides[].price` / `...product` | `From $29` / `ThermoSteel 500ml Vacuum Insulated Bottle` | `A-TEST high-precision cable` 等真实系列名 | 价格/品名 demo | home-page-example.json:44-45 |
+| 36 | `...props.slides[].price` / `...product` | `From $29` / `ThermoSteel 500ml Vacuum Insulated Bottle` | `EX-SERIES high-precision cable` 等真实系列名 | 价格/品名 demo | home-page-example.json:44-45 |
 | 37 | `...props.slides[].primaryLabel` + `...primaryTarget.href` | `Shop the bottle` / `/products/thermosteel-500ml-vacuum-insulated-bottle` | `Explore the range` / `/products`（公网实测） | CTA 指向 demo 产品详情 | home-page-example.json:46-50 |
 | 38 | `...props.slides[].secondaryLabel` + `...secondaryTarget.href` | `How to choose` / `/posts/how-to-choose-an-insulated-bottle` | `Why phase stability matters` / `/posts/why-phase-stability-matters-rf-test-cables`（公网实测） | 次 CTA 指向 demo 文章 | home-page-example.json:51-55 |
 | 39 | `...props.serviceItems[].icon/title/description` | `truck` / `Export shipments` / `Consolidated container loads...` | `Ships in 1-2 days` / `Fast fulfillment with tracking on every order.` + `30 day returns` 条（公网实测，icon 值 待验证） | 轮播下服务条 demo 文案 | home-page-example.json:114-125；MODULES.md:66-67 |
@@ -147,7 +147,7 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 40 | `...props.sectionLabel` / `headline` / `supportingCopy` | `Shop by category` / `Pick your bottle.` / `Start with the size and use case...` | `Product families` / `Cables and adaptors for every bench` / `Four test cable series and three precision adaptor families cover sub-6 GHz to 67 GHz.`（公网实测） | 分类区标题 demo | home-page-example.json:133-135 |
+| 40 | `...props.sectionLabel` / `headline` / `supportingCopy` | `Shop by category` / `Pick your bottle.` / `Start with the size and use case...` | `Product families` / `Cables and adaptors for every bench` / `Four test cable series and three precision adaptor families cover sub-6 GHz to high-frequency.`（公网实测） | 分类区标题 demo | home-page-example.json:133-135 |
 | 41 | `...props.items[].name` / `description` | `Insulated Bottles` / `Buying Guide` / `Wholesale & OEM` | `RF Test Cables` / `Microwave Adaptors` / `Measurement Guides`（公网实测） | 分类卡 demo 品类 | home-page-example.json:138-189 |
 | 42 | `...props.items[].target.href` | `/products?category=product-insulated-bottles` 等 | `/products`、`/products`、`/posts`（公网实测） | 卡点击 → 空分类/404 | home-page-example.json:152 |
 | 43 | `...props.items[].media.value.url` | demo 图（且 3 卡同图） | 每卡不同真实图（**同页勿重复同一张**） | 分类卡显示 demo 图 | home-page-example.json:141-187；site-content-checklist.md H 节 |
@@ -156,13 +156,13 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 44 | `...props.eyebrow` / `title` / `description` | `ThermoFlask flagship` / `Insulated bottles for the whole day.` / demo 保温杯文案 | `Example Corp` / `Precision RF interconnect solutions up to 67 GHz` / `VNA test cable assemblies, microwave adaptors, attenuators and coaxial connectors for production, metrology and R&D.`（公网实测） | Hero 主区整段 demo | home-page-example.json:200-202 |
+| 44 | `...props.eyebrow` / `title` / `description` | `Example Corp flagship` / `Insulated bottles for the whole day.` / demo 保温杯文案 | `Example Corp` / `Precision components solutions up to high-frequency` / `Precision test components and adaptors for production, metrology and R&D.`（公网实测） | Hero 主区整段 demo | home-page-example.json:200-202 |
 | 45 | `...props.secondaryNote` | `Export quotations in 1-2 business days...` | `Around 20 years of RF experience, Shenzhen China`（公网实测） | 副注 demo | home-page-example.json:203 |
-| 46 | `...props.mediaCaption` / `mediaKicker` / `mediaMeta` | demo 图注/`ThermoFlask`/`Vacuum insulated / 500ml` | 真实图注与品名（如 A-TEST 系列名） | 图下规格面板 demo | home-page-example.json:214-216 |
+| 46 | `...props.mediaCaption` / `mediaKicker` / `mediaMeta` | demo 图注/`Example Corp`/`Vacuum insulated / 500ml` | 真实图注与品名（如 EX-SERIES 系列名） | 图下规格面板 demo | home-page-example.json:214-216 |
 | 47 | `...props.productName` / `productDescription` / `productPriceLabel` | `ThermoSteel 500ml Vacuum Insulated Bottle` / `(Synthetic demo product for the qualification run.)` / `From $29` | 真实旗舰品名/描述/价签（无价可不传） | 规格面板 demo 产品 | home-page-example.json:217-219 |
 | 48 | `...props.actions[].label` + `actions[].target.href` | `Shop the bottle`→`/products/thermosteel-...`、`Read the buying guide`→`/posts/how-to-choose-...` | `Explore products`→`/products`、`Request a quote`→`/contact-us`（公网实测） | Hero CTA 指向 demo | home-page-example.json:220-237 |
 | 49 | `...props.serviceItems[].label/value` | `Volume pricing`/`Wholesale · OEM` 等 3 组 | `Engineered repeatability`/`Designs tuned to your application`、`Modular ordering`、`Fast quoting`（公网实测） | 服务列表 demo | home-page-example.json:238-251 |
-| 50 | `...props.campaignPills[]` | `12h hot · 24h cold` 等 3 粒（**缺省会被回填 demo 药丸**） | `Up to 67 GHz`/`A-TEST high-precision low loss cable`、`67 GHz support`、`Low PIM`/`Below -125 dBm`、`Phase and flexure stable`（公网实测） | 药丸区 demo 复活 | home-page-example.json:252-265；MODULES.md:7 |
+| 50 | `...props.campaignPills[]` | `12h hot · 24h cold` 等 3 粒（**缺省会被回填 demo 药丸**） | `Up to high-frequency`/`EX-SERIES high-precision low loss cable`、`high-frequency support`、`Low PIM`/`Below -125 dBm`、`Phase and flexure stable`（公网实测） | 药丸区 demo 复活 | home-page-example.json:252-265；MODULES.md:7 |
 
 **块 4：features-1（feature-grid-proof 特性网格）**
 
@@ -176,7 +176,7 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 54 | `...props.sectionLabel` / `headline` / `supportingCopy` / `merchandisingNote` | `Shop the edit` / `Best sellers and new arrivals` / demo / demo | `Featured products` / `Test cable assemblies and adaptors` / `Seven products across the Example range, from cost-effective production cables to 67 GHz mmWave adaptors.`（公网实测） | 产品区标题 demo | home-page-example.json:319-322 |
+| 54 | `...props.sectionLabel` / `headline` / `supportingCopy` / `merchandisingNote` | `Shop the edit` / `Best sellers and new arrivals` / demo / demo | `Featured products` / `Test cable assemblies and adaptors` / `Seven products across the Example range, from cost-effective production cables to high-frequency mmWave adaptors.`（公网实测） | 产品区标题 demo | home-page-example.json:319-322 |
 | 55 | `...props.ctaLabel` + `ctaTarget.href` | `View all products` → `/products` | `Browse all products` → `/products`（公网实测） | CTA 文案 demo | home-page-example.json:323-327 |
 | 56 | `...props.productActionLabel` / `featuredProductActionLabel` | `View product` / `View featured product` | `View product` / `View featured product`（公网实测，语义同构） | 按钮文案 demo | home-page-example.json:328-329 |
 | 57 | `...props.associatedListPage.href` / `associatedDetailPage.href` / `categorySlug` / `sortOrder` | `/products` / `/products/{product}` / `""` / `newest` | 保持同构；categorySlug 可设产品分类 slug 过滤（Example 用 `""` 全量） | 列表跳转错误；**该块自动拉全部站点产品，demo 产品不删会混入**（DEMO-CLEANUP.md:30） | home-page-example.json:331-340 |
@@ -225,9 +225,9 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 |---|---|---|---|---|---|
 | 71 | `...props.eyebrow` / `title` / `description` | `Contact` / `Tell us what you are looking for` / demo | `Contact Example RF` / `Talk to our RF specialists` / `Tell us your frequency range, connector interface, length and application for a recommendation and quotation.`（公网实测） | 首页联系区标题 demo | home-page-example.json:483-485 |
 | 72 | `...props.responseTitle` / `responseDescription` | `What happens after submission` / demo | 客户响应承诺文案（公网实测值以 readback 为准） | 响应区 demo | home-page-example.json:486-487 |
-| 73 | `...props.emailValue` | `sales@thermoflask.example` | `sales@examplerf.com`（BRIEF.md:8、公网实测） | **表单通知/展示 demo 邮箱（demo-contact 审计 FAIL）** | home-page-example.json:489 |
+| 73 | `...props.emailValue` | `sales@example.example` | `sales@examplerf.com`（BRIEF.md:8、公网实测） | **表单通知/展示 demo 邮箱（demo-contact 审计 FAIL）** | home-page-example.json:489 |
 | 74 | `...props.phoneValue` | `+86 (0) 755 0000 0000` | 无真实电话 → 文案替代：`Inquiry via email/site form`（公网实测；源材料无电话号） | demo 电话泄漏；源无电话就不得编号 | home-page-example.json:491 |
-| 75 | `...props.addressValue` | `ThermoFlask Export Dept.\nShenzhen, China` | `5th Floor, Building H, Huamingcheng High-tech Industrial Park, Genyu Road, Matian Street, Guangming District, Shenzhen, Guangdong, China`（source-extraction.json + 公网实测） | demo 地址 | home-page-example.json:493 |
+| 75 | `...props.addressValue` | `Example Corp Export Dept.\nShenzhen, China` | `Example Industrial Park, Shenzhen`（source-extraction.json + 公网实测） | demo 地址 | home-page-example.json:493 |
 | 76 | `...props.hoursValue` | `Mon-Fri, 9:00-18:00 (GMT+8)` | 真实营业时间（Example 同 demo 值，公网实测；确认后沿用） | 营业时间 demo | home-page-example.json:495 |
 | 77 | `...props.formCardEyebrow` / `formCardTitle` / `formCardDescription` | `Inquiry intake` / `Send the details` / demo | `Inquiry intake` / `Send the details` / `Share your measurement requirements and we will reply with a recommendation.`（公网实测） | 表单卡文案 demo | home-page-example.json:496-498 |
 | 78 | **所有表单块** `formSlug`（contact-us 的 contact-split-1、**首页的 contact-1**、7 页 globals 的 contact-form-dialog——逐页逐块核） | `""`（**空=表单不渲染！ISS-076/077 实测：联系页与首页各有一个空 slug 块漏网**） | **每处都填站点真实表单 slug**（如 `contact-inquiry`，从 readback initialForms 取键名） | 空 slug → 该处整个 <form> 不渲染；填不存在的 slug 同样断 | ISS-076/077；MODULES.md:7 |
@@ -238,15 +238,15 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 79 | `...props.eyebrow` / `title` / `description` | `About us` / `Bottles designed for long days, not short seasons.` / demo | `About Example` / `Precision RF interconnect for repeatable measurements` / `Example Corp Co., Ltd. designs and manufactures RF interconnect solutions from Shenzhen, China.`（公网实测） | 公司简介头段 demo | about-page-example.json:14-16 |
-| 80 | `...props.body` | demo 保温杯公司介绍 | 客户公司介绍正文（只用源材料事实：20 年 RF 经验、67GHz、低 PIM 等，BRIEF.md:5-9） | 公司简介正文 demo | about-page-example.json:17 |
+| 79 | `...props.eyebrow` / `title` / `description` | `About us` / `Bottles designed for long days, not short seasons.` / demo | `About Example` / `Precision components for repeatable measurements` / `Example Corp Co., Ltd. designs and manufactures precision components solutions from Shenzhen, China.`（公网实测） | 公司简介头段 demo | about-page-example.json:14-16 |
+| 80 | `...props.body` | demo 保温杯公司介绍 | 客户公司介绍正文（只用源材料事实：20 年 行业经验、67GHz、低 PIM 等，BRIEF.md:5-9） | 公司简介正文 demo | about-page-example.json:17 |
 | 81 | `...props.media.value.url` / `caption` | demo 图 / demo 图注 | 客户公司/产线图；caption 显式传（**缺省会回填 demo 图注**） | 公司图 + 图注 demo | about-page-example.json:18-28 |
 
 **块 2：company-story-1（company-story-media）**
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 82 | `...props.sectionLabel` / `headline` / `lead` | `Our story` / `One leaky bag, one 500ml bottle...` / demo | `Our story` / `From component specialist to precision interconnect partner` / `Example Technology specializes in design, development and manufacturing of RF interconnect solutions.`（公网实测） | 公司故事 demo 起源 | about-page-example.json:36-38 |
+| 82 | `...props.sectionLabel` / `headline` / `lead` | `Our story` / `One leaky bag, one 500ml bottle...` / demo | `Our story` / `From component specialist to precision interconnect partner` / `Example Technology specializes in design, development and manufacturing of precision components solutions.`（公网实测） | 公司故事 demo 起源 | about-page-example.json:36-38 |
 | 83 | `...props.body` | demo 故事正文 | 客户发展史正文（源材料事实） | 故事正文 demo | about-page-example.json:39 |
 | 84 | `...props.note` / `noteLabel` | `If a claim cannot be measured...` / `What guides us` | 客户理念引述（Example 公网实测 `Technology innovation and professional service`，noteLabel 以 readback 为准） | 引述块 demo | about-page-example.json:50-51 |
 
@@ -255,7 +255,7 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
 | 85 | `...props.sectionLabel` / `headline` / `description` | `By the numbers` / `A short spec sheet...` / demo | `By the numbers` / `Engineering capability` / `A compact team with deep RF experience and the equipment to prove performance.`（公网实测） | 数据区标题 demo | about-page-example.json:59-61 |
-| 86 | `...props.stats[].value/label/description` | `12h`/`Hot retention`、`24h`、`304`、`100%` | `67 GHz`/`Frequency support`、`20+ yrs`/`RF experience`、`< -125 dBm`/`Low PIM design`、`100,000+`/`Fatigue life`（公网实测 4 组） | **数字是 demo 保温杯数据（严重失实）** | about-page-example.json:62-83；MODULES.md:78-79 |
+| 86 | `...props.stats[].value/label/description` | `12h`/`Hot retention`、`24h`、`304`、`100%` | `high-frequency`/`Frequency support`、`20+ yrs`/`RF experience`、`< -125 dBm`/`Low PIM design`、`100,000+`/`Fatigue life`（公网实测 4 组） | **数字是 demo 保温杯数据（严重失实）** | about-page-example.json:62-83；MODULES.md:78-79 |
 
 **块 4：company-values-1（company-values-grid）**
 
@@ -286,9 +286,9 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
 | 92 | `...props.sectionLabel` / `headline` / `description` | `Reach us` / `Use the channel that fits your question.` / demo | `Contact details` / `Talk to our RF specialists` / `Send an inquiry through the site form for a recommendation and quotation.`（公网实测） | 联系卡区标题 demo | contact-page-example.json:34-36 |
-| 93 | `...props.items[0]`（type=email）`value`/`detail` | `hello@thermoflask-demo.com` / demo | `sales@examplerf.com` / `For quotes, product questions and custom assemblies.`（公网实测） | **demo 邮箱公开（demo-contact 审计 FAIL + 询盘流失）** | contact-page-example.json:39-43 |
+| 93 | `...props.items[0]`（type=email）`value`/`detail` | `hello@example-demo.com` / demo | `sales@examplerf.com` / `For quotes, product questions and custom assemblies.`（公网实测） | **demo 邮箱公开（demo-contact 审计 FAIL + 询盘流失）** | contact-page-example.json:39-43 |
 | 94 | `...props.items[1]`（type=phone）`value`/`detail` | `+86 138 0000 0000` / demo | 无真实电话 → `Inquiry via email or site form` / `Sales and engineering support.`（公网实测，不编号码） | demo 电话公开 | contact-page-example.json:44-49 |
-| 95 | `...props.items[2]`（type=address）`value`/`detail` | `Building 3, No. 28 Xingang Road, Hangzhou, China` / demo | `5th Floor, Building H, Huamingcheng High-tech Industrial Park, Genyu Road, Matian Street, Guangming District, Shenzhen, Guangdong, China` / 到访说明（公网实测） | demo 城市地址 | contact-page-example.json:50-55 |
+| 95 | `...props.items[2]`（type=address）`value`/`detail` | `Building 3, No. 28 Xingang Road, Hangzhou, China` / demo | `Example Industrial Park, Shenzhen` / 到访说明（公网实测） | demo 城市地址 | contact-page-example.json:50-55 |
 | 96 | `...props.socialLinks` | 样例 `[]`；**缺省回填 Instagram/LinkedIn** | 无社媒 → 显式 `[]` | 假社媒链接复活（MODULES.md:46） | contact-page-example.json:57 |
 
 > **坑（DEMO-CLEANUP.md:28-30）**：此块必须用 `items[]`（type:email|phone|address）schema；误用 `emailLabel` 等自定义字段会被服务端忽略并回填 San Francisco demo 联系方式。
@@ -297,11 +297,11 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 
 | # | 字段路径 | demo 默认值 | Example 替换 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 97 | `...props.sectionLabel` / `headline` / `address` / `description` | `Visit us` / `Our studio is in Hangzhou.` / demo / `Building 3, No. 28 Xingang Road, Hangzhou, China` | `Find us` / `Shenzhen, Guangdong, China` / `5th Floor, Building H, ... Guangming District, Shenzhen, Guangdong, China` / 同左（公网实测） | 地图区文案 + 地址 demo | contact-page-example.json:66-69 |
+| 97 | `...props.sectionLabel` / `headline` / `address` / `description` | `Visit us` / `Our studio is in Hangzhou.` / demo / `Building 3, No. 28 Xingang Road, Hangzhou, China` | `Find us` / `Shenzhen, Guangdong, China` / `Example Industrial Park, Shenzhen` / 同左（公网实测） | 地图区文案 + 地址 demo | contact-page-example.json:66-69 |
 | 98 | `...props.latitude` / `longitude` | `30.25` / `120.15`（杭州） | 客户真实坐标（Example 深圳光明区坐标；具体数值 待验证，源材料未给 lat/lng） | 地图钉在 demo 城市 | contact-page-example.json:70-71 |
 | 99 | `...props.description`（主要）；`...props.details[]` 为可选空数组（Example 实测线上为 []，勿把地址塞进 details） | 模板 details 示例 `Transit`/`Near Xingang Road Metro Station` | 地址/到访信息写 description（Example 实测 `Guangming District high-tech industrial park`） | 到访细节 demo | contact-page-example.json:75-84 |
 
-**块 4：contact-form-1（contact-form-split）**：字段路径与首页 contact-1 完全一致（见 #71-78）；**emailValue/phoneValue/addressValue 必须与 contact-info-1 的 items 值一致**（site-content-checklist.md F 节）。Example 公网实测：Email `sales@examplerf.com`、Phone `Inquiry via email/site form`、Office `5th Floor, Building H, ...`、Hours `Mon-Fri, 9:00-18:00 (GMT+8)`。
+**块 4：contact-form-1（contact-form-split）**：字段路径与首页 contact-1 完全一致（见 #71-78）；**emailValue/phoneValue/addressValue 必须与 contact-info-1 的 items 值一致**（site-content-checklist.md F 节）。Example 公网实测：Email `sales@examplerf.com`、Phone `Inquiry via email/site form`、Office `Example Industrial Park, Shenzhen`、Hours `Mon-Fri, 9:00-18:00 (GMT+8)`。
 
 **块 5：breadcrumb-inline-1**：props `{}`，不改。
 
@@ -338,7 +338,7 @@ related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "clien
 |---|---|---|---|---|---|
 | 110 | `...（post-detail-article 块）.props.fit` | 模板默认 | 同构（正文渲染 Slate content，原生 p/h2/blockquote） | 正文样式异常 | MODULES.md:54、109-124 |
 | 111 | `...related-1.props.sectionLabel/headline/supportingCopy/postActionLabel` | `More from the journal` 等 demo（首轮漏网点） | `Read next` / `More RF engineering guides` / `Practical guides on RF test cable selection, phase stability, and connector types for your measurement setup.` / `Read article`（fix-post-cta.py:22-29 实测） | 详情页 related 区 demo 文案（ISS-068 漏网点） | fix-post-cta.py:22-29；AUDIT-FACT-MATRIX-20260829.md:20 |
-| 112 | **新增** `pageDoc.elements.cta-1`（type=`material-story-split`）+ `page-root.children` 追加 `"cta-1"` | 不存在（demo 模板无真 CTA） | props：`sectionLabel:"Work with Example RF"`、`headline:"Need an RF test cable assembly or adaptor for your setup?"`、`supportingCopy` 询价引导、`notes[]` 3 条（67 GHz / phase-stable / adaptors）、`actionLabel:"Request a Quote"`、`actionTarget:{type:"custom",href:"/contact-us?source=example-article"}`（fix-post-cta.py:31-54 完整样例） | **文章页无询价转化路径**（正文内联 link 平铺无 `<a>`，平台不支持；audit cta 项 FAIL） | RUNBOOK-ANYONE.md:93；MODULES.md:57、120；fix-post-cta.py:31-54 |
+| 112 | **新增** `pageDoc.elements.cta-1`（type=`material-story-split`）+ `page-root.children` 追加 `"cta-1"` | 不存在（demo 模板无真 CTA） | props：`sectionLabel:"Work with Example RF"`、`headline:"Need an RF test cable assembly or adaptor for your setup?"`、`supportingCopy` 询价引导、`notes[]` 3 条（high-frequency / phase-stable / adaptors）、`actionLabel:"Request a Quote"`、`actionTarget:{type:"custom",href:"/contact-us?source=example-article"}`（fix-post-cta.py:31-54 完整样例） | **文章页无询价转化路径**（正文内联 link 平铺无 `<a>`，平台不支持；audit cta 项 FAIL） | RUNBOOK-ANYONE.md:93；MODULES.md:57、120；fix-post-cta.py:31-54 |
 | 113 | `...related-1` 文章 <2 篇时的空态 | `No content is available yet.` | 补文章到 ≥3 或删 related 模块 | 详情页空态文案（用户可见） | MODULES.md:56；CONTENT-MINIMUM.md:21 |
 
 ---
@@ -413,7 +413,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 |---|---|---|---|---|---|
 | 142 | `pages` | 导航页 + sitemap + **全部产品/文章 slug** | `""`、`about-us`、`contact-us`、`posts`、`products`、`sitemap.xml`、7×`products/<slug>`（example-audit-config.json:3-17） | 页面 200 检查漏检详情页 | site-audit-config.template.json:3-12 |
 | 143 | `count` | 该站实建数（**不是模板数**） | `{"products":7,"posts":3}` | 用默认 Demo 基线 3/4 → 假 FAIL（ISS-063） | site-audit-config.template.json:13；RUNBOOK-ANYONE.md:140 |
-| 144 | `fallback_article` / `primary_article` | 主文章 slug | `how-to-choose-rf-test-cable-assembly` | h2 语义检查抓错页 | site-audit-config.template.json:14-15 |
+| 144 | `fallback_article` / `primary_article` | 主文章 slug | `example-guide-slug-assembly` | h2 语义检查抓错页 | site-audit-config.template.json:14-15 |
 | 145 | `faq_answers` | 文章**必须 SSR 的实质事实短语**（非 FAQ 模块问题） | `["phase stability","67 ghz","vswr","request a quote"]` | 用默认皮筏艇短语 → 4/4 假 FAIL | site-audit-config.template.json:16-21；AUDIT-FACT-MATRIX-20260829.md:22 |
 | 146 | `cta.product_link` / `cta.consult_source` | 真链接 + source 归因 | `/contact-us?source=example-article` / `source=example-article` | cta 项按默认站判定 → 假 FAIL | site-audit-config.template.json:22-25；example-audit-config.json:22-25 |
 | 147 | `units` | 该站计量单位清单；**没有就显式 `[]` 跳过**（三态 bug 已修） | `[]`（GHz/mm 非米制基线） | 空 units 曾因 `\b()\b` 正则假 FAIL（ISS-064） | site-audit-config.template.json:26；HANDOFF.md:41 |
@@ -429,7 +429,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | 150 | 调用 | `api.set_home_page(slug, site_id, theme_id, home_page_id)`；**URL 必须是 `/{slug}/themes/{themeId}`**（`/{slug}/themes` 返回 200 但静默无效） | 根路径 200 但 `Allin CMS Runtime` 错误壳（__next_error__ + noindex） | allincms_api.py:390-397；ROOT-PATH-ISSUE.md:61-62 |
 | 151 | **顺序** | `createTheme(default) → 写 7 页内容(save+publish) → apply_theme_routes → setThemeActive → set_home_page（必须最后）`；**setThemeActive 是唯一清空 homePageId 的操作**，任何未来重新激活主题后都要重跑 set_home_page | 顺序反了 → 激活清掉 homePageId → 根路径回到错误壳 | OUTSIDER-REVIEW-20260830-SETHOME-ADVERSARIAL.md:29-32；ROOT-PATH-ISSUE.md:63 |
 | 152 | 验证 | 状态 readback 三字段 `theme.homePageId + homePagePublished + page.isHome` 齐备 + `curl /` 无 `__next_error__`（对抗矩阵实测：改首页内容/重绑路由/启停页面都不破坏绑定） | 只看 200 会被静默无效骗过 | OUTSIDER-REVIEW-20260830-SETHOME-ADVERSARIAL.md:18-25、45 |
-| 153 | action id 漂移 | 42 位 action id 绑定部署；平台升级后跑 `python3 scan/scan-actions.py /tmp/ws-token.txt /<site_key>/themes/<themeId>` 重扫 | 旧 id 失效 → 静默失败 | RUNBOOK-ANYONE.md:24；OUTSIDER-REVIEW-20260830-SETHOME-ADVERSARIAL.md:38 |
+| 153 | action id 漂移 | 42 位 action id 绑定部署；平台升级后跑 `WS_TOKEN=$WS_TOKEN python3 scan/scan-actions.py - /<site_key>/themes/<themeId>` 重扫 | 旧 id 失效 → 静默失败 | RUNBOOK-ANYONE.md:24；OUTSIDER-REVIEW-20260830-SETHOME-ADVERSARIAL.md:38 |
 
 ---
 
@@ -450,9 +450,9 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 
 | # | BLOCK | 现象 | 回落 | 来源 |
 |---|---|---|---|---|
-| 159 | lang | 硬编码 zh-CN（英文站） | 内容层无法修；向平台反馈 | RUNBOOK-ANYONE.md:147；HANDOFF.md:41 |
-| 160 | canonical / JSON-LD | 无输出 | 同上 | RUNBOOK-ANYONE.md:148-149 |
-| 161 | img width/height/srcset/loading | 裸 `<img>` | 同上 | RUNBOOK-ANYONE.md:150 |
+| 159 | — | 已按 ⛔ 禁令移除（平台层项不再设字段） | — | — |
+| 160 | — | 已按 ⛔ 禁令移除（平台层项不再设字段） | — | — |
+| 161 | — | 已按 ⛔ 禁令移除（平台层项不再设字段） | — | — |
 | 162 | 页面 SEO description（meta） | 模板句（如 "A journal listing page..."）；**静态页可改**：api.update_page(description=)→等10s→commit publish 带 description 字段→curl 验证（ISS-073）；动态路由页（/posts/{post}、/products/{product}）回退模板值=平台限制 | 静态页逐页换品牌文案；动态页记录；audit 已排除 meta 层判定（ISS-066） | RUNBOOK-ANYONE.md:151 |
 | 163 | 正文内联链接 | `{"type":"link"}` 平铺无 `<a>` | 用页面级块 actionTarget（③.3.7 #112） | RUNBOOK-ANYONE.md:150；MODULES.md:120 |
 | 164 | 空字段 zod 默认回填 | 置空字符串被 schema default 顶回 demo 值（如 WhatsApp wa.me/+44-7911-123456） | 删元素而非置空（ISS-068） | RUNBOOK-ANYONE.md:152 |
@@ -488,17 +488,17 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 
 # 【新站开工 20 分钟自检表】（建完站后逐项打勾）
 
-> 前置：`TOKEN=open('/tmp/ws-token.txt')`；`SLUG=<site_key>`；`BASE=https://<slug>.web.allincms.com`；`CFG=70_evidence/<slug>-audit-config.json`；`cd <interface-kit>`。
+> 前置：`export WS_TOKEN=<token>`（推荐）；`SLUG=<site_key>`；`BASE=https://<slug>.web.allincms.com`；`CFG=70_evidence/<slug>-audit-config.json`；`cd <interface-kit>`。
 
 | ☐ | 检查项 | 命令 | 期望结果 |
 |---|---|---|---|
-| ☐ | 1. 站点+主题收敛 | `python3 -c "import sys;sys.path.insert(0,'.');from allincms_api import AllinCMS;a=AllinCMS(token=open('/tmp/ws-token.txt').read().strip());print(a.read_themes('$SLUG'))"` | 仅 1 个 active 主题；`homePageId` 非空、`homePagePublished=True` |
+| ☐ | 1. 站点+主题收敛 | `python3 -c "import sys;sys.path.insert(0,'.');from allincms_api import AllinCMS;import os;a=AllinCMS(token=os.environ['WS_TOKEN']);print(a.read_themes('$SLUG'))"` | 仅 1 个 active 主题；`homePageId` 非空、`homePagePublished=True` |
 | ☐ | 2. 根路径渲染 | `curl -s $BASE/ \| grep -c "__next_error__"` | 输出 `0`；且 `curl -s $BASE/ \| grep -o "<title>[^<]*</title>"` 含站名 |
 | ☐ | 3. 全路径 200 | `for p in "" about-us contact-us posts products sitemap.xml; do echo -n "/$p "; curl -s -o /dev/null -w "%{http_code}\n" $BASE/$p; done`（产品/文章详情逐条同查） | 全部 `200`，错误壳 0 |
 | ☐ | 4. demo 种子清理 | `python3 -c "...;print([x.get('slug') for x in a.read_lists('$SLUG','products')['data']]);print([x.get('slug') for x in a.read_lists('$SLUG','posts')['data']])"` | 无 `modular-packing-pouch`/`stackable-desk-tray-set`/`waxed-canvas-weekender`/`small-entryway-system`/`material-care-buying-decision`/`choose-a-weekender-bag` |
 | ☐ | 5. 模板词+空态扫描 | `python3 site_pipeline.py gate $SLUG --config $CFG` | gate 全 PASS；`northstar\|weekender\|555-0142\|mission street\|wa.me\|instagram.com` 0 命中（MODULES.md:142-143） |
 | ☐ | 6. 联系方式门 | `python3 site_pipeline.py contact $SLUG --config $CFG --real "<真实邮箱|电话|地址>"` | `[contact] PASS`（无 demo 联系方式残留） |
-| ☐ | 7. 完整审计 | `python3 site_pipeline.py audit $SLUG --config $CFG --out 70_evidence/audit-report.json` | `"verdict": "PASS"`，problems 只含 platform BLOCK 4 项（lang/canonical/jsonld/img-attrs） |
+| ☐ | 7. 完整审计 | `python3 site_pipeline.py audit $SLUG --config $CFG --out 70_evidence/audit-report.json` | `"verdict": "PASS"`，problems 为空（13 项站内检查全过） |
 | ☐ | 8. globals 7 页一致 | 对 7 页循环 `read_page_document`，比对 `page['globals']` 的 header/footer JSON | 7 页 globals 完全相同（demo 文案 0） |
 | ☐ | 9. readback 深 diff | 每页 `save+publish` 后重读 document 与提交版 diff | 仅 `columnCount=N` 无害回填；`formSlug=""` 在表单块=断裂必修（ISS-076） |
 | ☐ | 10. 文章 CTA SSR | `curl -s $BASE/posts/<primary_article> \| grep -c "source=<site>-article"` | ≥1 命中；related 区无 "More from the journal" |

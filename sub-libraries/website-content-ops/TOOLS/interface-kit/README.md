@@ -1,3 +1,13 @@
+---
+title: "AllinCMS 纯接口工具包（跨平台：macOS / Windows / Linux）"
+type: "toolkit"
+status: "Working"
+owner: "AI"
+created: "2026-08-30"
+last_updated: "2026-08-30"
+canonical_entry: "README.md"
+---
+
 # AllinCMS 纯接口工具包（跨平台：macOS / Windows / Linux）
 
 > **零上下文新人第一入口链：[NEW-SITE-ONEPASS.md](NEW-SITE-ONEPASS.md)（给一份客户资料→13 步一条龙建站）→ [RUNBOOK-ANYONE.md](RUNBOOK-ANYONE.md)（10 步总流程 + 实测事实表 + 平台回落表）**。本文档是 API/工具参考。

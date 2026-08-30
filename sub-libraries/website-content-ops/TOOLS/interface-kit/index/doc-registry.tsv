@@ -24,7 +24,6 @@ EV-006	evidence	evidence	清空前站点证据	../../70_evidence/sites-before-de
 CAN-001	doc	canonical	上线验收合同（ID-0007）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0007-site-launch-acceptance.md	current	-	launch;acceptance;boundary;forms	三层验收(A 内容/B 前端/C 平台边界)+Runtime Forms 链路+判定门槛	上线前判定、边界事实源
 CAN-002	doc	canonical	实站操作对抗审查（ID-0006）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0006-live-allincms-adversarial-review.md	current	-	adversarial;capability;duality	capability gate/Plan A-B/双审门槛/可分享 Skill 硬条件	评估操作是否可复用可分享
 CAN-003	doc	canonical	来源驱动建站 SOP（ID-0005）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md	current	-	sop;source-driven;authorization	Source Extraction→事实账本→desired state→动态发现→精确 diff→授权→串行执行	按 canonical 流程执行时
-CAN-004	doc	canonical	文章页前端 SEO 合同（ID-0002）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md	current	-	seo;frontend;article	索引资格/文档语言/canonical/结构化数据/OG/语义 HTML/图片合同	文章页 SEO 验收
 IDX-001	index	kit	索引阅读页（自动生成）	INDEX.md	current	index/registry_tools.py	index;generated	由registry_tools.py gen 生成；勿手改	快速导航
 IDX-002	index	kit	文档/脚本/模板 registry	doc-registry.tsv	current	index/registry_tools.py	index;tsv	主索引（本表）：每行一个可复用资产+状态+脚本+用途	查询/维护
 IDX-003	index	kit	问题/教训 registry	issues.tsv	current	index/registry_tools.py	index;tsv;lessons	问题库：现象/根因/修复/规避/文档/脚本/证据+状态(fixed/boundary/pending)	排错与经验复用
@@ -40,11 +39,11 @@ TPL-011	template	kit	产品/单页对抗审查清单	../templates/page-adversari
 TPL-012	template	kit	图片对抗审查清单	../templates/image-adversarial-checklist.md	current	-	adversarial;image;checklist	硬性门(分辨率/大小/许可/alt)+审美(主体/构图/一致性/裁切)+心理(场景/证据/情绪匹配)	每张图上站前
 TPL-013	template	kit	SEO 检查清单	../templates/seo-check.md	current	-	seo;checklist	每页 title/desc/H1层级/slug/alt/模板词/空态/og/发布后登记；平台边界标注不误报	每页发布前
 SCRIPT-006	script	kit	图片硬性门检查	../image-check.py	current	-	image;check	分辨率/文件大小/格式/alt/同尺寸重复检测（零依赖 jpg/png 头部解析）	图片上传前批量检查
-SCRIPT-007	script	kit	友商监控工具	../../../../../river-trail/40_competitors/competitor-watch.py	current	-	competitor;sitemap;watch	每友商一目录：add(初始化 sitemap.tsv+snapshots)/scan(对比输出 new/updated/removed)/watch(批量)/report；TSV 主表+md profile	定时扫描友商增量
+SCRIPT-007	script	kit	友商监控工具	../../../../../client-task/40_competitors/competitor-watch.py	current	-	competitor;sitemap;watch	每友商一目录：add(初始化 sitemap.tsv+snapshots)/scan(对比输出 new/updated/removed)/watch(批量)/report；TSV 主表+md profile	定时扫描友商增量
 SCRIPT-008	script	kit	文档解析能力检查	../doc-capability-check.py	current	-	docs;capability;pdf;docx;pptx;xlsx	环境门：检查 pypdf/python-docx/python-pptx/openpyxl/pdftotext + 安装建议 + self-test；分享 skill 前必跑	环境准备/分享前
-DOC-006	doc	client	友商自动发现流程	../../../../../river-trail/40_competitors/COMPETITOR-DISCOVERY.md	current	competitor-watch.py	competitor;discovery;search	daily 搜索语法+domains.tsv 去重表+探 sitemap+promote/scan 闭环；发现用 web_search 脚本登记	每日友商发现
-TPL-016	template	client	站点登记表（多公司多网站）	../../../../../river-trail/site-registry.tsv	current	-	sites;registry;multi-site	company→sites 映射：每品牌一 AllinCMS 站；sites/<slug>/ 目录层约定	多品多站规划
-EV-010	evidence	evidence	双审记录（SOL+TERRA）	../../../../../river-trail/70_evidence/DUAL-REVIEW-20260829.md	current	-	dual-review;safety;record	双审机制+本轮执行状态+客观门结果（路径/编译/列一致/凭据0/超时/上手）+调优	双审结论查询
+DOC-006	doc	client	友商自动发现流程	../../../../../client-task/40_competitors/COMPETITOR-DISCOVERY.md	current	competitor-watch.py	competitor;discovery;search	daily 搜索语法+domains.tsv 去重表+探 sitemap+promote/scan 闭环；发现用 web_search 脚本登记	每日友商发现
+TPL-016	template	client	站点登记表（多公司多网站）	../../../../../client-task/site-registry.tsv	current	-	sites;registry;multi-site	company→sites 映射：每品牌一 AllinCMS 站；sites/<slug>/ 目录层约定	多品多站规划
+EV-010	evidence	evidence	双审记录（SOL+TERRA）	../../../../../client-task/70_evidence/DUAL-REVIEW-20260829.md	current	-	dual-review;safety;record	双审机制+本轮执行状态+客观门结果（路径/编译/列一致/凭据0/超时/上手）+调优	双审结论查询
 SCRIPT-009	script	kit	依赖安装器	../install-deps.py	current	-	deps;install;setup	检测 runtime/docs-parse/canonical 三层依赖 → --yes 一键 pip 安装 → --verify 复检；跨平台	新环境第一步
 DOC-007	doc	kit	安装与依赖指南	../SETUP.md	current	install-deps.py;doc-capability-check.py	setup;deps;install	依赖全景表（runtime 零依赖/docs-parse 选装 4 包/canonical 选装 Node/截图 Chrome）+ 安装步骤 + mac/win/linux 命令 + 常见问题 + 干活前顺序	新机器安装引导
 TPL-017	template	kit	依赖清单 requirements	../requirements.txt	current	install-deps.py	deps;requirements	分层 requirements（runtime=空，docs-parse 4 包标注，canonical Node 标注）；提示阅读 SETUP.md	依赖参照
@@ -65,3 +64,5 @@ DOC-031	doc	current	新站改造清单（166 字段逐项改什么）	../templat
 DOC-032	doc	current	新站一条龙总入口（13 步 0→上线）	../NEW-SITE-ONEPASS.md	current	-	onepass;新站;13步;一条龙	拿到客户资料后从 0 到上线的一条龙执行链	新站开工第一步读本文
 DOC-033	script	current	demo 种子清理脚本	../delete-demo-content.py	current	-	demo;cleanup;createTheme;种子	createTheme(default) 重种的 3+3 demo 内容清理	createTheme 之后、audit 之前运行
 DOC-034	doc	current	API 摸索流程（平台更新后 7 步重发现）	../API-DISCOVERY.md	current	-	api;discovery;action-id;scan;platform-update;reverse-engineer	部署升级导致 action id/schema/模板变化时，AI 按此流程系统性重新摸索	接口不工作/新 action/新字段/平台升级时读本文
+DOC-035	doc	kit	RUNBOOK：任何人零上下文建站手册	../RUNBOOK-ANYONE.md	current	allincms_api.py;site_pipeline.py	runbook;zero-context;fallback;坑回填	实测事实与回落库；⛔ 禁令横幅；13 项审计口径；新坑回填流程	读完 ONEPASS 后查事实与回落时
+DOC-036	doc	kit	NEW-SITE-ONEPASS 13 步一条龙	../NEW-SITE-ONEPASS.md	current	site_pipeline.py	onepass;13-step;delivery	资料→brief→COP→建站→内容→主题→审计→交付 13 步全流程	建一个完整新站时

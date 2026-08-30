@@ -59,7 +59,38 @@ def verify():
     if remote_note:
         print(f"WARN docs {len(remote_note)} remote refs (client/repo 级引用) 不在本副本上下文：",
               " ".join(rid for rid, _ in remote_note[:6]))
-        print("     在权威任务目录（含 70_evidence/river-trail/sub-libraries）跑 verify 可覆盖。")
+        print("     在权威任务目录（含 70_evidence/<task>/sub-libraries）跑 verify 可覆盖。")
+    # 覆盖检查：interface-kit 根 *.md 必须全部登记（防 find 失明；DOC 登记遗漏即 FAIL）
+    import glob as _glob
+    _registered = set()
+    for _t, (_fn, _cols) in FILES.items():
+        for _r in _rows(_t):
+            _p = (_r.get("path") or "").strip()
+            if _p and not _p.startswith("../../"):
+                _registered.add(os.path.realpath(_resolve(_p)))  # 全路径比对，防同名 md 挡枪
+    _unreg = sorted(os.path.basename(f) for f in _glob.glob(os.path.join(HERE, "..", "*.md"))
+                    if os.path.realpath(f) not in _registered)
+    if _unreg:
+        print(f"FAIL coverage: interface-kit 根 {len(_unreg)} 个 *.md 未登记: {', '.join(_unreg)}"); ok = False
+    # 客户标识机器闸（大小写不敏感+词根级；2026-08-30 双审教训：人工清单漏大小写/词根变形两次，grep=0 必须变 FAIL 闸）
+    import re as _re
+    _ban_src = os.path.join(HERE, "client-ids.local.txt")  # 标识清单不发布（.gitignore），门文件零泄漏
+    _ids = [l.strip() for l in open(_ban_src, encoding="utf-8").read().splitlines() if l.strip() and not l.startswith("#")] if os.path.exists(_ban_src) else []
+    _BAN = _re.compile("(?i)(" + "|".join(_ids) + ")") if _ids else None
+    _scan = []
+    for _pat in ["index/*.tsv", "index/INDEX.md", "*.md", "*.py", "templates/*.md", "templates/*.json", "writing/*.md", "scan/*.py"]:
+        _scan += _glob.glob(os.path.join(HERE, "..", _pat))
+    _hits = []
+    for _f in sorted(set(_scan)):
+        if os.path.abspath(_f) == os.path.abspath(__file__): continue  # 门自身定义文件豁免
+        try: _txt = open(_f, encoding="utf-8", errors="ignore").read()
+        except OSError: continue
+        if _BAN:
+            _m = _BAN.findall(_txt)
+            if _m: _hits.append((os.path.relpath(_f, HERE), sorted({x.lower() for x in _m})))
+    if _hits:
+        for _rel, _ids in _hits: print(f"FAIL client-ids: {_rel} 含客户标识 {_ids}")
+        ok = False
     print("VERIFY PASS: 3 tables, refs present, ids unique, statuses valid" if ok else "VERIFY FAIL")
     return 0 if ok else 1
 
@@ -122,7 +153,7 @@ def main():
 
 def wiki(args):
     """wiki <client-registry.tsv 路径> [关键词] —— 客户知识索引查询（任意 TSV 通用查询）。
-    例：python3 registry_tools.py wiki ../../river-trail/20_wiki/client-registry.tsv 痛点"""
+    例：python3 registry_tools.py wiki ../../<client-task>/20_wiki/client-registry.tsv 痛点"""
     path = args[1] if len(args) > 1 else ""
     if not path or not os.path.exists(path):
         print("用法：wiki <path>/client-registry.tsv [关键词]；文件需存在"); return

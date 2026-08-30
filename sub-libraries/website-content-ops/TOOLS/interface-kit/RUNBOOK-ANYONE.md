@@ -25,15 +25,15 @@ mkdir -p <任务目录>/70_evidence          # 工作目录 = 该站点任务目
 cd <interface-kit 目录>            # 内含 allincms_api.py / site_pipeline.py / allincms_blocks.py / templates / writing / index
 python3 index/registry_tools.py verify     # 索引完整 -> PASS
 python3 index/registry_tools.py find <你的任务关键词>   # 必做：上传/分类/主题/文章/审计 等
-python3 scan/scan-actions.py /tmp/ws-token.txt /<site_key>/themes   # 部署更新后重扫 action id（42 位 hex）；扫出的新 id 回填 allincms_api.py 常量
+WS_TOKEN=<token> python3 scan/scan-actions.py - /<site_key>/themes   # 部署更新后重扫 action id（42 位 hex）；新 id 回填 allincms_api.py 常量（也支持传 token 文件路径）
 ```
 
-- 凭据：`payload-token` JWT 放 `/tmp/ws-token.txt`（POSIX；Windows 用户用 `WS_TOKEN` 环境变量）。获取方法（二选一）：
+- 凭据：`payload-token` JWT **优先 `export WS_TOKEN=<token>` 环境变量（跨平台推荐）**；或写 token 文件（chmod 600）后传路径。获取方法（二选一）：
   1. **纯 API（ISS-083）**：`api = AllinCMS(email=..., password=...)`——login() 会 POST sign-in 并从响应 Set-Cookie 提取 token**（成功+失败路径均实测 2026-08-30：email/password → Set-Cookie 提取 token → 读写全权限验证通过）**。
-  2. **浏览器 Cookie（兜底，已验证）**：用户登录 `workspace.laicms.com` → DevTools → Cookies → 复制 `payload-token` → 写 `/tmp/ws-token.txt`。
+  2. **浏览器 Cookie（兜底，已验证）**：用户登录 `workspace.laicms.com` → DevTools → Cookies → 复制 `payload-token` → `export WS_TOKEN=<token>`。
   **拿 token 是唯一可能碰浏览器的环节；拿到后全程纯接口**（操作矩阵 10/10 实测：读 8 + 幂等写 2 + 媒体 multipart + 公开站表单 submit，零浏览器）。
 - 目标：工作台 `workspace.laicms.com`，公开站 `https://<site_key>.web.allincms.com`。
-- 路径约定：本文内 `customer-runtime/...` 开头的路径相对于**仓库根**（示例：`~/Work/01_Data/<workspace>`）；`templates/...`、`writing/...`、`index/...` 相对于 interface-kit 目录。
+- 路径约定：本文内 runtime 相关路径相对于**运行时根 `$RUNTIME_ROOT`**（独立 runtime 目录；母库内经 `customer-runtime/` 软链可达）；`templates/...`、`writing/...`、`index/...` 相对于 interface-kit 目录。
 - 零第三方依赖：Python3 stdlib 即可；全文 API 直连，**不要开浏览器自动化**（除登录拿 token）。
 
 ## §1 建站总流程（10 步）
@@ -70,7 +70,7 @@ python3 scan/scan-actions.py /tmp/ws-token.txt /<site_key>/themes   # 部署更�
 ```python
 import sys; sys.path.insert(0, '<interface-kit 绝对路径>')
 from allincms_api import AllinCMS
-api = AllinCMS(token=open('/tmp/ws-token.txt').read().strip())
+import os; api = AllinCMS(token=os.environ["WS_TOKEN"])  # export WS_TOKEN=<token>（或 token 文件路径）
 # 建 default 主题（preset='default' 总是生成 7 页：/home /about-us /contact-us /posts /posts/{post} /products /products/{product}）
 api.create_theme(slug, site_id, 'My Default', 'Default theme', preset='default')
 # theme_id 来源：create_theme 后按 name 取最新（或取 active 主题）

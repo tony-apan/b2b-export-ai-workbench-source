@@ -36,7 +36,7 @@ UPSERT_POST 7f205ad6… ｜ COMMIT_DESIGN 7ff10702…
 ## 四、快速调用（copy-paste）
 ```python
 from allincms_api import AllinCMS
-api = AllinCMS(token=open("/tmp/ws-token.txt").read().strip())
+import os; api = AllinCMS(token=os.environ["WS_TOKEN"])  # export WS_TOKEN=<token>（或 token 文件路径）
 sites = api.read_sites()["sites"]                      # ① 冒烟
 api.create_category2("<demo-site-key>", SID, "Guide", "guide", content_type="posts", cover=None)
 api.upload_media("<demo-site-key>", SID, "photo.jpg", title="t")   # media_urls 是全量累积→取差值

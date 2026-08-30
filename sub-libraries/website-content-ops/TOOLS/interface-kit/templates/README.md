@@ -1,3 +1,13 @@
+---
+title: "模板资产使用说明"
+type: "index"
+status: "Working"
+owner: "AI"
+created: "2026-08-30"
+last_updated: "2026-08-30"
+canonical_entry: "README.md"
+---
+
 # 模板资产说明（templates/）
 
 这些文件是**已上线站的真实读回产物**（纯接口 RSC 读出），作为新站的字段参照与"骨架即用"模板：

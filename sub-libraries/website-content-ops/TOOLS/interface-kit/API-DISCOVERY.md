@@ -35,14 +35,14 @@ related: ["RUNBOOK-ANYONE.md", "allincms_api.py", "scan/scan-actions.py"]
 
 ```bash
 cd <interface-kit>
-python3 scan/scan-actions.py /tmp/ws-token.txt /sites                          # 站点域
-python3 scan/scan-actions.py /tmp/ws-token.txt /<slug>/themes                  # 主题域（含页面管理）
-python3 scan/scan-actions.py /tmp/ws-token.txt /<slug>/themes/<theme_id>       # 主题概览页（页面 CRUD + setHomePage）
-python3 scan/scan-actions.py /tmp/ws-token.txt /<slug>/posts?tab=categories    # 分类/标签域
-python3 scan/scan-actions.py /tmp/ws-token.txt /<slug>/posts                   # 文章域
-python3 scan/scan-actions.py /tmp/ws-token.txt /<slug>/products                # 产品域
-python3 scan/scan-actions.py /tmp/ws-token.txt /<slug>/forms                   # 表单域
-python3 scan/scan-actions.py /tmp/ws-token.txt /<slug>/media                   # 媒体域
+python3 scan/scan-actions.py - /sites                          # 站点域
+python3 scan/scan-actions.py - /<slug>/themes                  # 主题域（含页面管理）
+python3 scan/scan-actions.py - /<slug>/themes/<theme_id>       # 主题概览页（页面 CRUD + setHomePage）
+python3 scan/scan-actions.py - /<slug>/posts?tab=categories    # 分类/标签域
+python3 scan/scan-actions.py - /<slug>/posts                   # 文章域
+python3 scan/scan-actions.py - /<slug>/products                # 产品域
+python3 scan/scan-actions.py - /<slug>/forms                   # 表单域
+python3 scan/scan-actions.py - /<slug>/media                   # 媒体域
 ```
 
 > **关键**：每个页面加载的 chunk 不同，**必须扫多个页面**才能覆盖全部 action。
@@ -135,7 +135,7 @@ CREATE_SITE_A   = "7fedc609bd55e075..."   # ← 换新 id
 
 ```bash
 # 从工作台页面 HTML 提取 chunk URL
-TOKEN=$(cat /tmp/ws-token.txt)
+TOKEN="$WS_TOKEN"
 curl -s -H "Cookie: payload-token=$TOKEN" "https://workspace.laicms.com/<slug>/themes/<theme_id>" | \
   grep -oE '/_next/static/chunks/[a-zA-Z0-9_.-]+\.js' | sort -u
 
@@ -187,7 +187,7 @@ for m in re.finditer(r'z\.object\(\{([^}]{10,500})\}', s):
 ```python
 # 读一个产品/文章/页面的当前 schema
 from allincms_api import AllinCMS
-api = AllinCMS(token=open('/tmp/ws-token.txt').read().strip())
+import os; api = AllinCMS(token=os.environ["WS_TOKEN"])  # export WS_TOKEN=<token>（或 token 文件路径）
 
 # 产品 schema
 prod = api.read_product('slug', 'product_id')
@@ -242,7 +242,7 @@ print(s, t[:200])
 # 建站后立即对比 demo 内容清单
 python3 - <<'PY'
 from allincms_api import AllinCMS
-api = AllinCMS(token=open('/tmp/ws-token.txt').read().strip())
+import os; api = AllinCMS(token=os.environ["WS_TOKEN"])  # export WS_TOKEN=<token>（或 token 文件路径）
 for kind in ('products', 'posts'):
     items = api.read_lists('slug', kind)['data']
     demo = [x for x in items if x['slug'] in (
@@ -276,7 +276,7 @@ print('All action IDs = 42 chars ✓')
 # 3. 用一个只读 action 实测（如 read_sites）
 python3 -c "
 from allincms_api import AllinCMS
-api = AllinCMS(token=open('/tmp/ws-token.txt').read().strip())
+import os; api = AllinCMS(token=os.environ["WS_TOKEN"])  # export WS_TOKEN=<token>（或 token 文件路径）
 print('sites:', len(api.read_sites().get('sites', [])))
 "
 

@@ -61,3 +61,6 @@ node_modules/
 .DS_Store
 .DS_Store
 sub-libraries/website-content-ops/ADAPTERS/cms/allincms/.tmp-dbg.mjs
+
+# 客户标识机器闸本地清单（不发布）
+sub-libraries/website-content-ops/TOOLS/interface-kit/index/client-ids.local.txt

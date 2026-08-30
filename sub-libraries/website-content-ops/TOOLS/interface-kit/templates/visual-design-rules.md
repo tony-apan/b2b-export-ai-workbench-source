@@ -21,10 +21,9 @@
 | 移动端 | 参数纵向排列（callout 文本自动换行）、CTA 不低于 44px（模块按钮）、无横向溢出 |
 
 ## 3. 记录为平台边界（勿浪费工时）
-- html lang 硬编码 zh-CN（英文站需平台修复——反馈项）；canonical/JSON-LD 无
-- 字号/颜色/间距 CSS 与图片 srcset/宽高——平台固定
+- 字号/颜色/间距 CSS——平台固定
 - 正文 H2/H3 语义、正文内联链接、正文图片——渲染器不支持
-- FAQ 模块只有加在模板页有语义（无 JSON-LD）
+- FAQ 模块只有加在模板页有语义
 
 ## 4. CTA 文案原则（来自评审）
 - 不用 Learn more / Get a Quote 裸词；用收益句："Compare the Demo Product specifications" / "Get help choosing your tandem kayak"

@@ -13,8 +13,8 @@
     "props": {
      "eyebrow": "About us",
      "title": "Bottles designed for long days, not short seasons.",
-     "description": "ThermoFlask builds double-wall vacuum insulated bottles that keep drinks hot for 12 hours and cold for 24, carried daily and built to last.",
-     "body": "Every ThermoFlask bottle starts with 304 stainless steel, a BPA-free lid, and a vacuum-sealed double wall. We sample, test, and re-test each batch for insulation hours, leak resistance, and drop survival before it ships. The result: one bottle, one routine, replaced far less often.",
+     "description": "Example Corp builds double-wall vacuum insulated bottles that keep drinks hot for 12 hours and cold for 24, carried daily and built to last.",
+     "body": "Every Example Corp bottle starts with 304 stainless steel, a BPA-free lid, and a vacuum-sealed double wall. We sample, test, and re-test each batch for insulation hours, leak resistance, and drop survival before it ships. The result: one bottle, one routine, replaced far less often.",
      "media": {
       "type": "image",
       "value": {
@@ -35,7 +35,7 @@
     "props": {
      "sectionLabel": "Our story",
      "headline": "One leaky bag, one 500ml bottle, and a checklist that never gets shorter.",
-     "lead": "ThermoFlask started when a commuter bag came home soaked. The fix was not a bigger bag, it was a bottle that would not leak.",
+     "lead": "Example Corp started when a commuter bag came home soaked. The fix was not a bigger bag, it was a bottle that would not leak.",
      "body": "The first sample ran through 14 days of commute, gym, and flight tests: flip-lid openings, carbonated pressure, and 12-hour insulation checks. The checklist from that run still ships with every new batch, and it is why the product page can state 12h hot / 24h cold with confidence.",
      "media": {
       "type": "image",
@@ -166,7 +166,7 @@
    "header-dropdown-1": {
     "type": "header-dropdown",
     "props": {
-     "siteTitle": "ThermoFlask",
+     "siteTitle": "Example Corp",
      "tagline": "Vacuum insulated bottles",
      "logoMedia": null,
      "logoFit": "cover",
@@ -237,7 +237,7 @@
    "footer-columns-1": {
     "type": "footer-columns",
     "props": {
-     "brand": "ThermoFlask",
+     "brand": "Example Corp",
      "kicker": "Vacuum insulated bottles",
      "description": "Double-wall vacuum insulated stainless steel bottles for commute, travel, and family use.",
      "columns": [
@@ -300,7 +300,7 @@
       }
      ],
      "socialLinks": [],
-     "copyright": "© 2026 ThermoFlask. Demo site for qualification run.",
+     "copyright": "© 2026 Example Corp. Demo site for qualification run.",
      "systemNote": "Bottles built for long days, not short seasons."
     },
     "children": [],

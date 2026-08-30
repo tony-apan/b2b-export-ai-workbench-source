@@ -13,7 +13,7 @@
     "props": {
      "eyebrow": "Contact us",
      "title": "Questions, samples, or a leak-test story?",
-     "description": "Talk to the ThermoFlask team about product details, sample requests, wholesale programs, or finding the right size for your commute.",
+     "description": "Talk to the Example Corp team about product details, sample requests, wholesale programs, or finding the right size for your commute.",
      "items": [
       {
        "label": "Response time",
@@ -38,7 +38,7 @@
       {
        "type": "email",
        "label": "Email",
-       "value": "hello@thermoflask-demo.com",
+       "value": "hello@example-demo.com",
        "detail": "For product questions, order help, and wholesale requests."
       },
       {
@@ -95,7 +95,7 @@
      "responseTitle": "What happens after submission",
      "responseDescription": "We usually reply within one business day with availability, pricing, or the right person to contact.",
      "emailLabel": "Email",
-     "emailValue": "hello@thermoflask-demo.com",
+     "emailValue": "hello@example-demo.com",
      "phoneLabel": "Phone",
      "phoneValue": "+86 138 0000 0000",
      "addressLabel": "Office",
@@ -132,7 +132,7 @@
    "header-dropdown-1": {
     "type": "header-dropdown",
     "props": {
-     "siteTitle": "ThermoFlask",
+     "siteTitle": "Example Corp",
      "tagline": "Vacuum insulated bottles",
      "logoMedia": null,
      "logoFit": "cover",
@@ -203,7 +203,7 @@
    "footer-columns-1": {
     "type": "footer-columns",
     "props": {
-     "brand": "ThermoFlask",
+     "brand": "Example Corp",
      "kicker": "Vacuum insulated bottles",
      "description": "Double-wall vacuum insulated stainless steel bottles for commute, travel, and family use.",
      "columns": [
@@ -266,7 +266,7 @@
       }
      ],
      "socialLinks": [],
-     "copyright": "© 2026 ThermoFlask. Demo site for qualification run.",
+     "copyright": "© 2026 Example Corp. Demo site for qualification run.",
      "systemNote": "Bottles built for long days, not short seasons."
     },
     "children": [],

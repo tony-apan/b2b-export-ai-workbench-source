@@ -98,7 +98,7 @@
        "fit": "cover",
        "showMask": true,
        "price": "Volume pricing",
-       "product": "ThermoFlask series",
+       "product": "Example Corp series",
        "primaryLabel": "View catalogue",
        "primaryTarget": {
         "type": "custom",
@@ -197,7 +197,7 @@
    "hero-commerce-1": {
     "type": "hero-commerce",
     "props": {
-     "eyebrow": "ThermoFlask flagship",
+     "eyebrow": "Example Corp flagship",
      "title": "Insulated bottles for the whole day.",
      "description": "The ThermoSteel 500ml keeps drinks hot for 12 hours and cold for 24, with a 304 stainless inner wall, BPA-free lid, and a leakproof flip top.",
      "secondaryNote": "Export quotations in 1-2 business days with volume pricing and custom branding.",
@@ -212,7 +212,7 @@
      },
      "fit": "cover",
      "mediaCaption": "Red vacuum insulated flask (thermos) on a table. CC BY-SA 4.0 Schekinov Alexey Victorovich.",
-     "mediaKicker": "ThermoFlask",
+     "mediaKicker": "Example Corp",
      "mediaMeta": "Vacuum insulated / 500ml",
      "productName": "ThermoSteel 500ml Vacuum Insulated Bottle",
      "productDescription": "500ml double-wall vacuum insulated stainless steel bottle. (Synthetic demo product for the qualification run.)",
@@ -414,7 +414,7 @@
     "props": {
      "sectionLabel": "Stories and guides",
      "headline": "Field notes, buying guides, and updates",
-     "supportingCopy": "Read the latest product stories, buying guides, and company updates from the ThermoFlask team.",
+     "supportingCopy": "Read the latest product stories, buying guides, and company updates from the Example Corp team.",
      "digestLabel": "Latest stories",
      "featureLabel": "Featured story",
      "ctaLabel": "View all stories",
@@ -486,11 +486,11 @@
      "responseTitle": "What happens after submission",
      "responseDescription": "We usually reply within one business day with availability, volume pricing, or the right person to contact.",
      "emailLabel": "Email",
-     "emailValue": "sales@thermoflask.example",
+     "emailValue": "sales@example.example",
      "phoneLabel": "Phone",
      "phoneValue": "+86 (0) 755 0000 0000",
      "addressLabel": "Office",
-     "addressValue": "ThermoFlask Export Dept.\\nShenzhen, China",
+     "addressValue": "Example Corp Export Dept.\\nShenzhen, China",
      "hoursLabel": "Hours",
      "hoursValue": "Mon-Fri, 9:00-18:00 (GMT+8)",
      "formCardEyebrow": "Inquiry intake",
@@ -509,7 +509,7 @@
    "header-dropdown-1": {
     "type": "header-dropdown",
     "props": {
-     "siteTitle": "ThermoFlask",
+     "siteTitle": "Example Corp",
      "tagline": "Vacuum insulated bottles",
      "logoMedia": null,
      "logoFit": "cover",
@@ -580,7 +580,7 @@
    "footer-columns-1": {
     "type": "footer-columns",
     "props": {
-     "brand": "ThermoFlask",
+     "brand": "Example Corp",
      "kicker": "Vacuum insulated bottles",
      "description": "Double-wall vacuum insulated stainless steel bottles for commute, travel, and family use.",
      "columns": [
@@ -643,7 +643,7 @@
       }
      ],
      "socialLinks": [],
-     "copyright": "© 2026 ThermoFlask. Demo site for qualification run.",
+     "copyright": "© 2026 Example Corp. Demo site for qualification run.",
      "systemNote": "Bottles built for long days, not short seasons."
     },
     "children": [],

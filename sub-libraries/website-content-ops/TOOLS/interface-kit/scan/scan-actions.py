@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """AllinCMS action scanner (cross-platform, stdlib only).
-Usage: python3 scan-actions.py <token-file> <page-path> [page-path...] [--diff]
+Usage: python3 scan-actions.py <token-file|-> [page-path...] [--diff]
+  不传文件或传 - 时读 WS_TOKEN 环境变量
 Prints: actionName = actionId per page.
   --diff  自动与 allincms_api.py 已知常量对比，标出变化的 action"""
 import os,sys
@@ -23,8 +24,14 @@ def scan(path,tok):
         for m in re.finditer(r'createServerReference\)\("([0-9a-f]{42})",[^)]{0,160}?,"([A-Za-z0-9_$.]{4,100})"',j):
             a.setdefault(m.group(2),m.group(1))
     return a
-tok=open(sys.argv[1]).read().strip()
-for p in sys.argv[2:]:
+args=sys.argv[1:]
+if args and args[0]!='-':
+    tok=open(args[0]).read().strip(); paths=args[1:]
+else:
+    tok=(os.environ.get('WS_TOKEN') or '').strip()
+    if not tok: sys.exit('token: 传 token 文件路径，或 export WS_TOKEN=<token>')
+    paths=args[1:]
+for p in paths:
     try:
         a=scan(p,tok); print('###',p)
         for k in sorted(a): print('  ',k,'=',a[k])

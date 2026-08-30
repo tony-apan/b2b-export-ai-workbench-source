@@ -48,5 +48,5 @@ python3 writing/writing-module.py block h2 "QUICK ANSWER"        # 单块生成
 python3 writing/writing-module.py skeleton <brief.json>          # 骨架（含空段/h2/credit/editorial）
 python3 writing/writing-module.py check <article.json>           # 渐进+格式检查（三档）
 python3 writing/writing-module.py migrate <article.json>        # 旧格式→原生 h2/blockquote 迁移
-python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json   # 全站 17 项门（含 h2-semantic/root-home/form-render；必带每站 --config）
+python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json   # 全站 13 项门（含 h2-semantic/root-home/form-render；必带每站 --config）
 ```

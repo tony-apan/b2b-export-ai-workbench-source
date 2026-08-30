@@ -55,7 +55,7 @@ related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-cus
 
 ### 步骤 0 — 索引 find/verify（开工硬 gate，ISS-065）
 
-- **输入**：客户资料已到达（拿到任务关键词）+ **凭据就绪**：用户浏览器登录 workspace.laicms.com 后取 Cookie `payload-token` → `echo '<token>' > /tmp/ws-token.txt`（POSIX）或 `WS_TOKEN` 环境变量（任何 OS）。无 token = 全链路不可用。
+- **输入**：客户资料已到达（拿到任务关键词）+ **凭据就绪**：用户登录 workspace.laicms.com 后取 Cookie `payload-token` → **`export WS_TOKEN=<token>`（跨平台推荐）**；或 token 文件（chmod 600）传路径。无 token = 全链路不可用。
 - **动作**：
   ```bash
   cd <IFK>
@@ -63,7 +63,7 @@ related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-cus
   python3 index/registry_tools.py verify                     # 索引完整 → PASS
   python3 index/registry_tools.py find 上传 ; find 分类 ; find 主题 ; find 文章 ; find 审计
   python3 index/registry_tools.py find <客户品类关键词>        # 历史坑：现象→根因→修复链
-  python3 scan/scan-actions.py /tmp/ws-token.txt /sites       # 部署更新后必扫 action id（42 位 hex）
+  python3 scan/scan-actions.py - /sites       # 部署更新后必扫 action id（42 位 hex；token 从 WS_TOKEN 读取，也支持文件路径）
   # ⚠️ 如果扫描发现 id 变了/新 action 出现 → 读 API-DISCOVERY.md（7 步摸索流程）
   python3 allincms_api.py <token> read-sites                  # 冒烟：站点列表 JSON
   ```
@@ -238,9 +238,9 @@ related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-cus
   # DELIVERY：templates/delivery-manifest.md → 70_evidence/DELIVERY-<slug>-<date>.md（链接表每行核验 200 + 已知事项照抄 RUNBOOK §9）
   # 收尾：70_evidence/HANDOFF.md + 新坑回填 issues.tsv（fixed/boundary/pending）+ registry_tools.py verify + gen
   ```
-- **验收判据**：audit 站内项全 PASS（BLOCK 项除外，但必须记入「已知事项」）；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**。
+- **验收判据**：audit 13 项站内检查全 PASS（范围以 site_pipeline.py 为真源）；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**。
 - **产物**：`<slug>-audit-config.json`、`audit-report.json`、`DELIVERY-<slug>-<date>.md`、`HANDOFF.md`（详见 §4）。
-- **坑**：没有 `--config` 的 audit 会用 Demo 基线误判新站（ISS-063）；平台 BLOCK（lang/canonical/jsonld/img-attrs）不判站内 FAIL 但必须进「已知事项」；公网 CDN 缓存 publish 后 5–10s 生效，验收以列表页数据源 + counter 为准。
+- **坑**：没有 `--config` 的 audit 会用 Demo 基线误判新站（ISS-063）；公网 CDN 缓存 publish 后 5–10s 生效，验收以列表页数据源 + counter 为准。
 
 ---
 
@@ -269,9 +269,9 @@ related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-cus
 | 15 | 文章封面 assets URL | 图片资源 | 200 + license 已记录 |
 | 16 | `<DOMAIN>/contact-us?source=<site>-article` | 文章 CTA 真链接落点 | 200 + `source` 参数保留 |
 
-### 3.2 audit 机检项（17 项，含 root-home 根路径回归项 + form-render 表单渲染项）
+### 3.2 audit 机检项（13 项，含 root-home 根路径回归项 + form-render 表单渲染项）
 
-> 命令：`python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json`。**站内项（1–11、16）全 PASS 才上线**；平台 BLOCK（12–15）不判站内 FAIL，但必须逐条抄入 DELIVERY「已知事项」（RUNBOOK §9 回落表）。
+> 命令：`python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json`。**13 项站内检查全部 PASS 才上线**；审计范围以 site_pipeline.py 代码为唯一真源。
 
 | # | 机检项 | 判据 / 失败动作 |
 |---|---|---|
@@ -286,11 +286,7 @@ related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-cus
 | 9 | 绝对化 | 无绝对化违规声明（best/guaranteed 等） |
 | 10 | Markdown 残留 | 无 `**`/`#` 等 Markdown 符号泄漏到页面 |
 | 11 | h2 语义 | 正文 h2 结构符合 required_h2 基线 |
-| 12 | lang | **平台 BLOCK**：硬编码 zh-CN（英文站）→ 记已知事项，向平台反馈 |
-| 13 | canonical | **平台 BLOCK**：无输出 → 同上 |
-| 14 | JSON-LD | **平台 BLOCK**：无输出 → 同上 |
-| 15 | img 属性 | **平台 BLOCK**：裸 `<img>`（无 width/height/srcset/loading）→ 同上 |
-| 16 | root-home | 根路径 `/` 渲染首页而非 Runtime 壳（防 set_home_page 回归；任何重新激活主题后重跑步骤 10 末尾验证） |
+| 12 | root-home | 根路径 `/` 渲染首页而非 Runtime 壳（防 set_home_page 回归；任何重新激活主题后重跑步骤 10 末尾验证） |
 | form-render | contact-us 渲染真实 `<form>`+submit | 表单块 formSlug 空=断裂（ISS-076） |
 
 ---

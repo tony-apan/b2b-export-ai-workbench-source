@@ -42,7 +42,7 @@ python3 allincms_api.py <token> read-sites    # 预期：站点列表 JSON
 - **pip 安装权限**：用 `--user`（install-deps.py 已带）；公司镜像慢可加 `-i https://pypi.tuna.tsinghua.edu.cn/simple`
 - **macOS 系统 Python 受限**：装 `python3-docx` 失败时先 `python3 -m ensurepip` 再重试
 - **Node 不想装**：跳过 ④ 的 canonical 校验即可；界面校验不影响建站工具
-- **token 从哪来**：工作台登录 → DevTools → Application → Cookies → `payload-token`（写入环境变量或 /tmp/ws-token.txt（chmod 600；或 WS_TOKEN 环境变量），**不要提交到 git/公开目录**）
+- **token 从哪来**：工作台登录 → DevTools → Application → Cookies → `payload-token`（**推荐 `export WS_TOKEN=<token>` 环境变量**；或 token 文件 chmod 600 后传路径，**不要提交到 git/公开目录**）
 
 ## 安装后顺序（每次干活前）
 

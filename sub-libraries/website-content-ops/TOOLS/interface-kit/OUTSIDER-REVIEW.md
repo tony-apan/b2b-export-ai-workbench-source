@@ -38,8 +38,8 @@
 ```
 
 ## 3. 对抗评审协议（2026-08-29 多轮评审后新增——重要）
-0. **先跑 audit 门（必带每站 --config）**：收到外部评审/AI 复核前，先 `python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json --out 70_evidence/audit-report-<date>.json` 拿事实（13 项机检——含 root-home 与 form-render；lang/canonical/jsonld/img-attrs 已永久移除，用户指令禁止涉及），以报告为回应基准，避免重复评审已闭环项。**--config 基线（pages/count/faq_answers/cta/units）必须从该站内容计划(COP)取实建数，不得沿用他站**——audit 默认基线是 Demo，缺 config 会对新站产生假 FAIL（ISS-063）。
-1. **先建事实矩阵再回应**：收到外部评审/AI 复核后，第一步抓最新线上快照，逐点标"当前真实状态"（✅/❌/平台 BLOCK），并**标注评审引用版本**（多轮评审会基于旧快照——曾出现"FAQ 无答案/alt 未修"的误判，实为评审缓存旧版；以最新抓取证据回应，不盲从也不傲慢）
+0. **先跑 audit 门（必带每站 --config）**：收到外部评审/AI 复核前，先 `python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json --out 70_evidence/audit-report-<date>.json` 拿事实（13 项机检——含 root-home 与 form-render；审计范围以 site_pipeline.py 代码为唯一真源），以报告为回应基准，避免重复评审已闭环项。**--config 基线（pages/count/faq_answers/cta/units）必须从该站内容计划(COP)取实建数，不得沿用他站**——audit 默认基线是 Demo，缺 config 会对新站产生假 FAIL（ISS-063）。
+1. **先建事实矩阵再回应**：收到外部评审/AI 复核后，第一步抓最新线上快照，逐点标"当前真实状态"（✅/❌/平台边界），并**标注评审引用版本**（多轮评审会基于旧快照——曾出现"FAQ 无答案/alt 未修"的误判，实为评审缓存旧版；以最新抓取证据回应，不盲从也不傲慢）
 2. **完成声明=三点验证**：任何"已完成"必须提供 ①HTML grep 证据 ②DOM/结构检查 ③无 JS 抓取（curl）结果——三者一致才算
-3. **采纳分级**：真实未修项=立即修；平台 BLOCK=记录反馈；评审旧快照点=证据回应+记录（防对方反复）
+3. **采纳分级**：真实未修项=立即修；平台边界=记录反馈；评审旧快照点=证据回应+记录（防对方反复）
 4. **评审沉淀**：每轮评审的 P0/P1 必须落到规则/skill（否则下篇重蹈）——本仓库以此累计 8+ 条规则

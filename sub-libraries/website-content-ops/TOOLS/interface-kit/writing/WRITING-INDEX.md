@@ -26,7 +26,7 @@
 | 发布前审 | article-adversarial-checklist.md（A-F 六节） | templates/ |
 | 页面/图片/SEO/视觉 | page-/image-adversarial-checklist.md · seo-check.md · visual-design-rules.md | templates/ |
 | 内容质量合同 | canonical PLAYBOOKS ID-0001（六槽 pain chain/证据/禁声明） | sub-libraries/… |
-| 前端 SEO 合同 | ID-0002 · ID-0003（优化 SOP）· ID-0004（stage patterns） | sub-libraries/… |
+| 内容质量合同 | ID-0001（质量合同）· ID-0003（优化 SOP）· ID-0004（stage patterns） | sub-libraries/… |
 | 模板 | article-brief/draft/quality-review · customer-voice-to-content | canonical TEMPLATES/ |
 | 机器检查 | check_content_quality.py · validate_slate_content_shape.py | skill scripts/ |
 | 平台门 | MODULES 三·五（Slate 白名单：heading/link 平铺 ❌；callout ⚠️ emoji 弃用） | MODULES.md |

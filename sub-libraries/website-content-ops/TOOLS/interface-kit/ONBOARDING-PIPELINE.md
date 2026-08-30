@@ -3,7 +3,7 @@
 目标：拿到「公司/产品介绍文档」后，AI 按本文档直接执行，无需再摸索接口；一份资料 → 一个新站全量上线。
 所有命令均可复制粘贴；所有验证点都有输出判据。
 
-> **⛔ 永久禁令**：lang/canonical/JSON-LD/img-attrs 禁止检查、报告、讨论（用户指令 2026-08-30，平台层不属站内）。
+> **⛔ 永久禁令**：见 [RUNBOOK-ANYONE.md](RUNBOOK-ANYONE.md) 顶部横幅（2026-08-30 用户指令，四项平台层检查永不涉及）。
 >
 > **零上下文新人先读 [RUNBOOK-ANYONE.md](RUNBOOK-ANYONE.md)**（10 步总入口 + 实测事实表 + 平台 BLOCK 回落表 + k3 写/flash 审工作流）；本文档是细节 SOP，RUNBOOK 是地图。
 
@@ -33,7 +33,7 @@ python3 index/registry_tools.py verify        # 索引完整性
 ```bash
 # 0.1 环境
 #  - Python 3（mac/win/linux 均可），本目录 interface-kit 完整复制即用
-#  - token：工作台登录后 Cookie payload-token（JWT），存到环境变量或文件（如 /tmp/ws-token.txt）
+#  - token：工作台登录后 Cookie payload-token（JWT），推荐存 WS_TOKEN 环境变量（跨平台）；或 chmod 600 文件
 
 # 0.2 校验部署 id 与 action id（同一部署不重扫；换部署/升级必扫）
 python3 scan/scan-actions.py <token> /sites            # 输出当前部署所有 action id
@@ -163,7 +163,6 @@ for p in api.read_pages(slug, theme_id)["pages"]:
 # B. 对抗审计（推荐首位，替代手工清单部分）——**必带每站 --config**（ISS-063）：
 python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json --out 70_evidence/audit-report.json
 #    13 项自动化：数量/200/空态/模板词/demo 联系方式/FAQ 答案 SSR/真实 CTA/单位/绝对化/Markdown 残留/h2 语义/根路径首页(root-home)/表单渲染(form-render)——全 PASS 才上线
-#    lang/canonical/JSON-LD/图片属性已永久移除（用户指令 2026-08-30：平台层不属站内职责，禁止涉及）
 #    每站 --config 基线（pages/count/faq_answers/cta/units）从内容计划(COP)取实建数，不得沿用他站（旧口径 14/15/16 项已作废；root-home=根路径真实首页、form-render=表单真实渲染）
 # C. 截图人工复查（chrome headless），检查：导航链接、轮播、分类卡、规格面板、footer 无假社交链接
 python3 allincms_api.py <token> read-sites / read-posts / read-products / read-pages / read-doc / read-media
