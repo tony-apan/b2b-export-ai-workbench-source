@@ -1,0 +1,5 @@
+interface:
+  display_name: "AllinCMS Content Operations"
+  short_description: "Portable source-driven AllinCMS content operations"
+  default_prompt: "Use $allincms-bulk-content-upload as an API-first portable router: prefer a complete canonical Website Content Operations source checkout and otherwise verify the bundled runtime snapshot; return CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED only if neither validates; derive source-backed create, update, or noop plans for AllinCMS sites, taxonomy, media, articles, products, and theme pages; open the in-app login page only when canonical preflight returns login_required; execute only current-capability approved operations strictly serially, and preserve all BLOCK and evidence boundaries."
+  contract: "SKILL.md"
