@@ -5,7 +5,7 @@ type: "tooling-index"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-13"
+last_updated: "2026-08-31"
 sources: ["Repository structure adversarial upgrade 2026-07-28"]
 related: ["../README.md", "../MANIFEST.md", "../RUNTIME-CONTRACT.json", "../SCHEMAS/runtime-contract.schema.json", "../RELEASE.md", "../INSTALL.md", "validate-sub-library.mjs", "validate-article-package.mjs", "article-package.test.mjs", "sync-workspace-template.test.mjs", "validate-artifact.mjs", "validate-links.mjs", "release-governance.test.mjs", "query-allincms-official-tutorial-index.mjs", "query-allincms-official-tutorial-index.test.mjs", "build-release.mjs"]
 visibility: "public"
@@ -13,6 +13,20 @@ redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
 ---
 # Scripts
+
+## interface-kit 真源管线（id-0073）
+
+```bash
+python3 scripts/interface-kit-pipeline.py status            # runtime/tracked/dist 三层状态
+python3 scripts/interface-kit-pipeline.py pull-to-tracked --confirm   # runtime 改动回流 tracked（fail-closed）
+python3 scripts/interface-kit-pipeline.py anchor            # commit 后记录 SHA 锚
+python3 scripts/interface-kit-pipeline.py build-dist        # 从 git committed 字节构建 dist（本地产物）
+python3 scripts/interface-kit-pipeline.py sync-runtime --confirm      # runtime 消费 dist（前置守卫防覆盖）
+python3 scripts/interface-kit-pipeline.py check             # stale 守卫（落后 >10 commit 或 >7 天告警）
+python3 scripts/interface-kit-pipeline.py selftest          # 四场景自测
+```
+
+真源方向：runtime 编辑 → 回流 tracked → git commit（SHA 锚）→ build-dist（只读 committed 字节）→ runtime 消费。interface-kit 的 dist 为**本地消费产物**，不入 build-release.mjs 的子库候选；子库 release 重建 `dist/latest/` 后需重跑本管线 `build-dist`。`sync-runtime` 存在未回流改动即中止；`client-ids.local.txt`/`__pycache__` 等本地文件永不同步。
 
 ## AllinCMS 官方教程查询
 

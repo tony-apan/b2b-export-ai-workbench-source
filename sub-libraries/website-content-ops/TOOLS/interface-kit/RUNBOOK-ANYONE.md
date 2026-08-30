@@ -26,6 +26,7 @@ cd <interface-kit 目录>            # 内含 allincms_api.py / site_pipeline.py
 python3 index/registry_tools.py verify     # 索引完整 -> PASS
 python3 index/registry_tools.py find <你的任务关键词>   # 必做：上传/分类/主题/文章/审计 等
 WS_TOKEN=<token> python3 scan/scan-actions.py - /<site_key>/themes   # 部署更新后重扫 action id（42 位 hex）；新 id 回填 allincms_api.py 常量（也支持传 token 文件路径）
+python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/drift 守卫（id-0073；WARN/FAIL 先处理）
 ```
 
 - 凭据：`payload-token` JWT **优先 `export WS_TOKEN=<token>` 环境变量（跨平台推荐）**；或写 token 文件（chmod 600）后传路径。获取方法（二选一）：

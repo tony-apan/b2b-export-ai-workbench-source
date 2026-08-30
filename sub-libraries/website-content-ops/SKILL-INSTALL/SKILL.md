@@ -132,6 +132,10 @@ HTTP 200, toast, local test PASS, or a generated plan alone does not prove persi
 
 Do not copy canonical Schemas, validators, adapters or field contracts into this Skill. Fix the canonical source once, then keep this router thin.
 
+## 8.5 Destructive-operation whitelist gate
+
+Deleting sites, products, posts, taxonomy, media, unpublishing or deleting themes, running `delete-demo-content.py`, or any `--force`/`--confirm` bulk write always requires one-by-one explicit user approval listing exact targets and counts. The canonical `authorizationContext` (30-minute TTL) layers on top of this rule and never replaces it.
+
 ## 9. Stop conditions
 
 Stop without remote mutation when any of these is true:

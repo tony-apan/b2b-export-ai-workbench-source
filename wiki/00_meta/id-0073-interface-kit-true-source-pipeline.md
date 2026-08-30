@@ -2,7 +2,7 @@
 title: "任务卡：interface-kit 真源管线（迁移绑定条款）"
 description: "把 runtime 权威的 interface-kit 纳入母库 tracked + dist 同步管线，消除长期悬空。"
 type: "meta"
-status: "Open"
+status: "Working（DoD ①②③ 完成，④ 双审进行中；期限 2026-09-06）"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
@@ -27,11 +27,11 @@ related: ["id-0072-runtime-folder-structure-v2.md"]
 4. 两轮对抗审查（SOL+TERRA）通过。
 
 ## 步骤
-- [ ] 去敏审计：interface-kit 内客户引用扫描（issues.tsv 的 evidence_ref 列含客户路径——去敏或分层）
-- [ ] 选型：并入 website-content-ops 子库 vs 独立子库（manifest/合同/发布流）
-- [ ] 建管线：builder+digest+dist；README 同步说明
-- [ ] runtime 切换为 dist 消费 + 回流约定
-- [ ] 双审 + release
+- [x] 去敏审计：四批治理完成（客户名/站点 key/业务指纹/路径全量 Example 化；双机器闸拦截复发）——2026-08-30/31
+- [x] 选型：并入 website-content-ops 子库（TOOLS/interface-kit，C2 commit 73e3488 已推送）
+- [x] 建管线：`scripts/interface-kit-pipeline.py`（四子命令+selftest；build-dist 只读 git committed 字节；dist 本地产物按仓设计不入库）——2026-08-31
+- [x] runtime 切换为 dist 消费 + 回流约定：sync-runtime 前置守卫（未回流改动即中止，探针负测试实证）；anchor 记录 SHA 锚
+- [ ] 双审 + release：管线本批双审（flash+TERRA）后关闭；release 随子库 release 流程
 
 ## 期限建议
 2026-09-06 前完成验收（一周内；拖延即回流 id-0072 待办①警告的"无限期漂流"场景）。

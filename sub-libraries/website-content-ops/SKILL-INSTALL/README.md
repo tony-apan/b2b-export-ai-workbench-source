@@ -129,6 +129,22 @@ python3 scripts/build_bundled_runtime.py \
 
 宿主需要具备与输入相符的真实能力，例如 PDF、DOCX、表格、图像、浏览器或 HTTP/API。Skill 只路由这些能力，不复制解析器。先通过 canonical API preflight 判定：只有 `login_required` 才在内置浏览器打开登录页；`authenticated` 不导航，`http_error`、`contract_drift`、`pagination_incomplete` 分别 BLOCK。登录完成后必须丢弃旧结果，通过 API 重新读取 `user.id`、完整网站列表、精确目标站点和当前部署能力。
 
+## 非官方第三方客户端声明（UNOFFICIAL）
+
+- 本目录是与 AllinCMS / LAICMS **无授权关系、无背书**的第三方操作层；所有能力描述来自对公开前端行为的逆向观察。
+- 逆向观察所得的 server action ID 绑定具体部署、**可随平台任意更新失效**，且部分自动化行为可能被视为违反供应商当时有效的服务条款。
+- 使用者自担风险：账号限制、数据丢失、服务中断等后果不由本目录作者承担（见 LICENSE 的 NO WARRANTY 条款）。
+- 凭证只由使用者自己提供（推荐 `WS_TOKEN` 环境变量），**绝不入仓、不入日志、不入示例**。
+- 在任何批量/自动化操作前，使用者有责任确认供应商现行条款允许该操作。
+
+## 网络出口声明
+
+本能力只与以下域名通信：`workspace.laicms.com`（工作台/Server Actions，携带登录态）与 `<site-key>.web.allincms.com`（公开站只读验证）。`*.preview.laicms.com` 为平台预览域预留（当前工具代码未调用）。不与其他第三方端点通信。
+
+## 破坏性操作门禁（白名单）
+
+以下操作**永远要求用户单条显式批准**（逐条列出目标 + 数量，禁止打包授权）：删除站点、删除产品/文章/分类/标签/媒体、主题 unpublish/delete、`delete-demo-content.py` 全链路清理、任何 `--force`/`--confirm` 类参数触发的批量写。canonical 侧的 mutation 授权（authorizationContext，30 分钟 TTL）叠加在此规则之上，不替代它。
+
 ## 执行与授权
 
 - 默认只读；用户可以对一个不可变、有序、精确 target 的完整计划授权一次。
