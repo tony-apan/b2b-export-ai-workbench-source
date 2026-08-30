@@ -94,7 +94,7 @@ AI 执行：
 - 一张图片和 image manifest；
 - 若用户已明确批准并具备 AllinCMS 环境，通过 `uploadAllinCmsMediaSerial()` 上传一张图片；
 - 获得一一对应的 media ID、公开 URL、源 / 上传 / 远端哈希和本地私有图片索引；
-- 使用 `TEMPLATES/article-draft.md` 建立标题、正文和持久化格式合同；草稿完成后再使用 `TEMPLATES/article-quality-review.md` 做非作者对抗审查，并检查 [Article Page Frontend SEO Contract](PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md)；
+- 使用 `TEMPLATES/article-draft.md` 建立标题、正文和持久化格式合同；草稿完成后再使用 `TEMPLATES/article-quality-review.md` 做非作者对抗审查；
 - 只有内容、前端和目标 Adapter 均无 blocker，才建立一条 CMS 草稿；默认不直接发布；
 - 真实写入后用 `TEMPLATES/publish-record.md` 记录后台刷新、编辑器重开、桌面/移动前台、SEO 源码和 sitemap。
 
@@ -104,7 +104,7 @@ AI 执行：
 
 ## 4. 验证并写回
 
-验证页面、图片、字段和状态；正式文章还要验证 lang、canonical、robots、Article/Breadcrumb schema、语义层级、移动端、图片和 sitemap；记录失败、指标和人工判断。客户事实与 `image-index.json` 留在客户私有运行区，通用模板和 adapter 改进审核后写回母库。
+验证页面、图片、字段和状态；正式文章还要验证 robots、Open Graph、语义层级、移动端、图片和 sitemap；记录失败、指标和人工判断。客户事实与 `image-index.json` 留在客户私有运行区，通用模板和 adapter 改进审核后写回母库。
 
 只有当前样本通过并获得用户对下一批精确对象的批准后，才能扩大批次或迁移到第二工具。不能把一次样本通过外推为跨站点、跨部署稳定。
 

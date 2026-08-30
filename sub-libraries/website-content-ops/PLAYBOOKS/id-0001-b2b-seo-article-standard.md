@@ -8,7 +8,7 @@ owner: "AI"
 created: "2026-07-31"
 last_updated: "2026-08-11"
 sources: ["../REFERENCES/SRC-20260731-B2B-SEO-CONTENT-RESEARCH.md", "../EXAMPLES/fluxpedal-motors/customer-voice.md", "../ADAPTERS/cms/allincms/article-format-verification.redacted.md"]
-related: ["README.md", "id-0002-article-page-frontend-seo-contract.md", "id-0003-b2b-article-optimization-sop.md", "id-0004-b2b-article-stage-patterns.md", "../TEMPLATES/article-brief.md", "../TEMPLATES/article-draft.md", "../TEMPLATES/article-quality-review.md", "../TEMPLATES/publish-record.md", "../QA-CHECKLIST.md"]
+related: ["README.md", "id-0003-b2b-article-optimization-sop.md", "id-0004-b2b-article-stage-patterns.md", "../TEMPLATES/article-brief.md", "../TEMPLATES/article-draft.md", "../TEMPLATES/article-quality-review.md", "../TEMPLATES/publish-record.md", "../QA-CHECKLIST.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要策划、撰写、优化或审查正式英文 B2B SEO 文章，并判断其是否真正完成一个买家搜索任务时。"
@@ -141,7 +141,7 @@ mobile_visual_evidence_result: "missing|confirmed|failed|not-applicable"
 mobile_visual_gate_verdict: "pass|block|not-applicable"
 mobile_visual_evidence_refs: []
 production_readiness_scope: "cms-draft-content-contract"
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 inventory_zero_result_evidence_refs: []
 ```
 
@@ -173,8 +173,7 @@ Canonical template、example、validator 与 workspace projection 必须逐字�
 三层真源不得混写：
 
 1. 本页：正文、买家决策、证据与编辑质量；
-2. [Article Page Frontend SEO Contract](id-0002-article-page-frontend-seo-contract.md)：HTML、可访问性、页面 SEO 与 renderer；
-3. 目标 CMS Adapter：字段、持久化格式、发布生命周期和已验证组件。
+2. 目标 CMS Adapter：字段、持久化格式、发布生命周期和已验证组件。
 
 ## 1. Query 与 dominant buyer task 合同
 
@@ -1179,7 +1178,7 @@ terminal_action_contract
 first_round_expected_output
 candidate_decision_required_gates
 first_round_output_candidate_gate_verdict
-frontend_deferred_blocks = [html-lang, canonical, article-json-ld]
+frontend_deferred_blocks = []
 ```
 
 任一 destination、owner、三轴 status/result/verdict、evidence refs、fallback contract、terminal action、首轮输出、candidate gates、首轮 gate verdict 或 deferred exact set 漂移均为 fatal BLOCK；Validate 首轮出现 candidate-or-stop，或 route/policy BLOCK 时仍出现 submit/send 类动作，同样 fatal BLOCK；
@@ -1225,11 +1224,7 @@ Artifact digest 必须绑定真实 bytes；site/record/URL 必须锁定同一对
 
 禁止在 Title、meta description、excerpt、正文、CTA、Review 或 Publish Record 中声称或暗示结构优化会 `fill the sales pipeline`、带来 `ready-to-buy prospects`、把访客变成 `paying customers`、保证 customer acquisition、提升排名/流量/询盘/询盘质量/转化/收入，或使用任何等价结果保证。允许的表达只能是：帮助买家完成某个可观察任务、减少信息缺口、提高 packet 的可审查性，或“计划测量/可能影响”；实际效果保持 `unverified`，直到真实 observation window、metric definition、observed result、evidence refs 和 accountable reviewer 全部存在。
 
-以下三个前端 SEO BLOCK 本轮继续 deferred，不得由内容结构 PASS 代替；它们也不阻断本轮“B2B 内容合同 scope”完成，但仍阻断正式 production SEO PASS：
-
-1. `<html lang>`；
-2. canonical；
-3. Article JSON-LD。
+平台层前端边界项按 ⛔ 禁令不检查、不报告、不展开（见 RUNBOOK-ANYONE.md 顶部横幅）；不得由内容结构 PASS 代替，也不阻断本轮“B2B 内容合同 scope”完成。
 
 正文图片的 **final DOM 空 alt** 仍是独立 renderer BLOCK。Markdown/Slate 中写了 alt 或媒体元数据，不等于 final DOM 已解决。
 

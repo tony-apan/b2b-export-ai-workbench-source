@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "需要为一篇英文海外 B2B 文章选择搜索阶段、痛点结构、产品内链证据等级和 CTA 交互，而不能默认套用 Validate 技术收资模式时。"
 keywords: ["B2B SEO", "search stage", "Learn", "Troubleshoot", "Compare", "Validate", "Buy", "CTA pattern"]
 generated_from: "../../PLAYBOOKS/id-0004-b2b-article-stage-patterns.md"
-generated_source_sha256: "699c7b4cece7dd982fb7184aea760791496f07f0e1f2ac3c66e63dee5bb11e5f"
+generated_source_sha256: "b91c390095c535eba998ce7783ac3f4615549c103d713c74d7e6746b8c3bc493"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime projection from PLAYBOOKS/id-0004-b2b-article-stage-patterns.md; canonical edits belong in the core package. -->
@@ -73,7 +73,7 @@ generated_by: "scripts/sync-workspace-template.mjs"
 - 全部 buyer-visible CTA 都在 scope，包括首个 H2 前、普通段落、列表、表格、粗体标签、链接、按钮和所有 submit/send/share/upload/contact/book/download/email/forward/transfer 等直接或同义动作；末尾安全 CTA 不得覆盖早期 unsafe CTA；
 - 每篇文章保存并按序消费 `Hook → Diagnose → Decide → De-risk → Act` 的 `article_decision_sequence_map`，以及 `primary|soft|fallback` 的 `conversion_surface_map`；Review/Publish 必须 exact projection 并以对应 verdict fail closed；
 - 至少提供一个帮助买家决策的视觉资产，或用九槽 `not-applicable` row 解释为什么不需要；决策表先采用两列、key-value stack、分组卡片、definition list 或其他 320px 可纵向阅读结构；没有真实 renderer/readability structured evidence 时只能 `not-run + missing + block`，结构 scope 可继续审查但 production readiness 必须 BLOCK；唯一 evidence schema 为 `evidence_kind=mobile-readability`、`check_id=mobile-readability`、`target_task`、`accountable_owner`、`viewport_width_px=320`、`render_target`、`method`、`observed_result`、`acceptance_criteria`、`capability_acceptance`、`screenshot_or_trace_ref`，禁止 `mobile-visual` 与 `viewport_width` alias；
-- Brief/Draft/Review/Publish exact projection 主 CTA destination、owner、reference/reachability/capability 三轴 status/result/verdict/evidence refs、17 段 fallback contract，以及 `frontend_deferred_blocks=[html-lang, canonical, article-json-ld]`；
+- Brief/Draft/Review/Publish exact projection 主 CTA destination、owner、reference/reachability/capability 三轴 status/result/verdict/evidence refs、17 段 fallback contract，以及 `frontend_deferred_blocks=[]`（平台边界项按 ⛔ 禁令不展开）；
 - 所有 verdict 只允许 `pass|block|not-applicable`。ID-0001 §14 closed list（包括 `article_decision_sequence_verdict`、`conversion_surface_map_verdict`、`hierarchy_scan_verdict`、`semantic_emphasis_verdict`）中任一 applicable fatal verdict 为 `block`，都必须传播为 `fatal_gate_verdict: block`、`overall_verdict: block`、`production_readiness: block`；任何阶段模式、评分或末尾安全 CTA 都不能覆盖；
 - 不保证排名、询盘、销售接受、收入或转化提升；source/license、final DOM alt、CMS、release 与真实业务结果继续独立 BLOCK/未验证。
 

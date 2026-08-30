@@ -282,7 +282,7 @@ actual_outcome_evidence_refs: []
 actual_outcome_accountable_reviewer: not-applicable
 actual_sales_acceptance_evidence_refs: []
 unsupported_outcome_claims_status: pass
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: deferred-block
 canonical_status: deferred-block
 article_json_ld_status: deferred-block
@@ -480,9 +480,6 @@ Missing technical evidence never sets `disqualified`. Commercial triggers never 
 
 The article-body example can be reviewed independently of these known production blocks:
 
-- HTML `lang`: deferred BLOCK;
-- canonical: deferred BLOCK;
-- Article JSON-LD: deferred BLOCK;
 - final DOM image alt: independent renderer BLOCK.
 
 ## 9. Outcome evidence and non-claims

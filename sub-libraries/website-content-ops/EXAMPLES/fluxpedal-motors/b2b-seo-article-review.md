@@ -249,7 +249,7 @@ production_evidence_score_max: 100
 fatal_gate_verdict: block
 overall_verdict: block
 cta_route_transmission_verdict: block
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: deferred-block
 canonical_status: deferred-block
 article_json_ld_status: deferred-block
@@ -477,12 +477,6 @@ Allowed closed enums are:
 Any `observed-no-improvement`, `observed-improvement`, `not-accepted`, or `sales-accepted` result would require a dated observation window, metric/event definition, factual observed result, non-empty evidence refs, and an identifiable accountable reviewer. `sales-accepted` would additionally require sales-acceptance evidence, affirmative evidence for all four commercial gates, complete commercial inputs, and Morgan Lee's evidenced review and acceptance.
 
 ## 10. Deferred frontend blocks
-
-The following are intentionally deferred and are not scored as article-body defects:
-
-1. HTML `lang`;
-2. canonical;
-3. Article JSON-LD.
 
 Final DOM image alt remains a separate renderer BLOCK.
 

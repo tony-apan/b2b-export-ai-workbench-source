@@ -264,7 +264,7 @@ conversion_measurement_plan_status: planned
 measurement_window: 30-days-after-production-enable
 cta_measurement_plan_verdict: pass
 unsupported_outcome_claims_status: pass
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: deferred-block
 canonical_status: deferred-block
 article_json_ld_status: deferred-block
@@ -486,7 +486,6 @@ Missing evidence routes to `needs-follow-up`, never `disqualified`. Commercial i
 - Reserved URLs were not network-tested and cannot receive a reachability PASS.
 - Delivery capability is unsupported by real team evidence.
 - Target-page buyer-task acceptance is unverified.
-- HTML `lang`, canonical, and Article JSON-LD remain three deferred frontend SEO BLOCKs.
 - Final DOM image alt remains a separate renderer BLOCK.
 
 This is a canonical fail-closed negative/structure fixture only. Its CTA and internal-link safety shape may be reviewed, but conversion completion, mobile readability, Production publication, ranking, inquiry, and conversion outcomes remain BLOCK until real, dated evidence exists.

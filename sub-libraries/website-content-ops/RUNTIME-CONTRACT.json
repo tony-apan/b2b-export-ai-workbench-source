@@ -133,7 +133,7 @@
     "current candidate release identity or release eligibility from legacy Version, preview_version, preview_tag, or historical published fields while current_candidate_identity is unassigned or current_candidate_version is null",
     "frontend image accessibility or SEO pass while final DOM article-image alt remains empty despite non-empty CMS payload alt",
     "CMS publication, production deployment, or live SEO acceptance from ARTICLE_PACKAGE_STRUCTURE_PASS or other local article-package checks",
-    "html lang, canonical, or Article JSON-LD pass while those three frontend SEO checks are explicitly deferred",
+    "any platform-owned frontend boundary item pass while those items are ban-scoped (per the 2026-08-30 directive) and permanently outside this contract",
     "reuse of any PASS, reviewer identity, signature, digest, or partial green result from any failed and permanently void immutable review candidate",
     "B2B content-contract readiness or production readiness before the next immutable candidate passes four fresh reviews by reviewers who participated in neither the previous candidate review nor its remediation",
     "primary SERP result-type acceptance when a supporting query replaces, is pooled with, or overrides the independently sampled primary query",
@@ -286,11 +286,7 @@
         "deferred_blocks_remain_not_pass": true
       }
     },
-    "deferred_frontend_seo_blocks": [
-      "html-lang",
-      "canonical",
-      "article-json-ld"
-    ],
+    "deferred_frontend_seo_blocks": [],
     "deferred_blocks_are_pass": false,
     "automation_coverage_claimed": false,
     "automation_coverage_status": "blocked-pending-matching-validator-call-paths-and-non-noop-regressions",

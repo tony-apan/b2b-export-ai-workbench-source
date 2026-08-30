@@ -1027,11 +1027,7 @@
         },
         "deferred_frontend_seo_blocks": {
           "type": "array",
-          "const": [
-            "html-lang",
-            "canonical",
-            "article-json-ld"
-          ]
+          "const": []
         },
         "deferred_blocks_are_pass": {
           "const": false

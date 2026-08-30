@@ -265,7 +265,7 @@ conversion_measurement_plan_status: planned
 measurement_window: 30-days-after-production-enable
 cta_measurement_plan_verdict: pass
 unsupported_outcome_claims_status: pass
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: deferred-block
 canonical_status: deferred-block
 article_json_ld_status: deferred-block

@@ -21,7 +21,6 @@ const checkOnly = process.argv.includes('--check');
 
 const runtimePlaybookFiles = new Map([
   ['id-0001-b2b-seo-article-standard.md', 'b2b-seo-article-standard.runtime.md'],
-  ['id-0002-article-page-frontend-seo-contract.md', 'article-page-frontend-seo-contract.runtime.md'],
   ['id-0003-b2b-article-optimization-sop.md', 'b2b-article-optimization-sop.runtime.md'],
   ['id-0004-b2b-article-stage-patterns.md', 'b2b-article-stage-patterns.runtime.md'],
   ['id-0005-source-driven-cms-operation-sop.md', 'source-driven-cms-operation-sop.runtime.md'],
@@ -50,7 +49,6 @@ const linkReplacements = new Map([
   ['../INTAKE.md', '../00_intake/index.md'],
   ['../PLAYBOOK.md', '../30_tasks/index.md'],
   ['../PLAYBOOKS/id-0001-b2b-seo-article-standard.md', '../30_tasks/b2b-seo-article-standard.runtime.md'],
-  ['../PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md', '../30_tasks/article-page-frontend-seo-contract.runtime.md'],
   ['../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md', '../30_tasks/b2b-article-optimization-sop.runtime.md'],
   ['../PLAYBOOKS/id-0004-b2b-article-stage-patterns.md', '../30_tasks/b2b-article-stage-patterns.runtime.md'],
   ['../PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md', '../30_tasks/source-driven-cms-operation-sop.runtime.md'],
@@ -156,7 +154,6 @@ function transformPlaybook(content, sourceFile) {
   let output = content
     .replace(/^doc_id:\s*["']?([^\n"']+)["']?\s*$/m, 'source_doc_id: "$1"')
     .replaceAll('id-0001-b2b-seo-article-standard.md', 'b2b-seo-article-standard.runtime.md')
-    .replaceAll('id-0002-article-page-frontend-seo-contract.md', 'article-page-frontend-seo-contract.runtime.md')
     .replaceAll('id-0003-b2b-article-optimization-sop.md', 'b2b-article-optimization-sop.runtime.md')
     .replaceAll('id-0004-b2b-article-stage-patterns.md', 'b2b-article-stage-patterns.runtime.md')
     .replaceAll('id-0005-source-driven-cms-operation-sop.md', 'source-driven-cms-operation-sop.runtime.md')

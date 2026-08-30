@@ -74,7 +74,7 @@ const requiredFiles = [
   'QA-CHECKLIST.md', 'SOURCES.md', 'BRAND.md', 'CONTACT.md', 'VERSION.md',
   'WRITEBACK.md', 'CHANGELOG.md', 'RELEASE.md', 'INSTALL.md',
   'REFERENCES/README.md', sourceInventoryRelativePath,
-  'PLAYBOOKS/README.md', 'PLAYBOOKS/id-0001-b2b-seo-article-standard.md', 'PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md', 'PLAYBOOKS/id-0003-b2b-article-optimization-sop.md', 'PLAYBOOKS/id-0004-b2b-article-stage-patterns.md', 'PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md',
+  'PLAYBOOKS/README.md', 'PLAYBOOKS/id-0001-b2b-seo-article-standard.md', 'PLAYBOOKS/id-0003-b2b-article-optimization-sop.md', 'PLAYBOOKS/id-0004-b2b-article-stage-patterns.md', 'PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md',
   'TEMPLATES/article-brief.md', 'TEMPLATES/article-draft.md', 'TEMPLATES/article-quality-review.md', 'TEMPLATES/content-operation-plan.md',
   'EXAMPLES/fluxpedal-motors/b2b-seo-article-brief.md', 'EXAMPLES/fluxpedal-motors/b2b-seo-article-draft.md', 'EXAMPLES/fluxpedal-motors/b2b-seo-article-review.md', 'EXAMPLES/fluxpedal-motors/b2b-seo-publish-record.md',
   'scripts/README.md', 'scripts/validate-artifact.mjs', 'scripts/validate-links.mjs', 'scripts/validate-release-approval.mjs', 'scripts/sync-workspace-template.mjs',

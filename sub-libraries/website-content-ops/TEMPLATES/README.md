@@ -46,7 +46,7 @@ canonical_entry: "README.md"
 
 ### B2B article fail-closed contract 投影与模板边界
 
-四件套的后续模板修订必须消费 `RUNTIME-CONTRACT.json#b2b_article_fail_closed_projection` 的全部 required gates，并由 [QA Checklist](../QA-CHECKLIST.md#b2b-article-fail-closed-contract-qa) 验证；字段与正文语义继续以 ID-0001/ID-0003 为 canonical，不在本索引复制第二套定义。当前只完成模板入口路由，不表示具体模板、示例或 scripts 已实现这些 gate；fixtures 也不构成真实 production proof。`html-lang / canonical / article-json-ld` 继续 deferred/not PASS。
+四件套的后续模板修订必须消费 `RUNTIME-CONTRACT.json#b2b_article_fail_closed_projection` 的全部 required gates，并由 [QA Checklist](../QA-CHECKLIST.md#b2b-article-fail-closed-contract-qa) 验证；字段与正文语义继续以 ID-0001/ID-0003 为 canonical，不在本索引复制第二套定义。当前只完成模板入口路由，不表示具体模板、示例或 scripts 已实现这些 gate；fixtures 也不构成真实 production proof。平台前端边界项（⛔ 禁令范围，不展开）继续 deferred/not PASS。
 
 ### Primary SERP 到 Draft/Review/Publish 的闭环
 
@@ -67,15 +67,15 @@ canonical_entry: "README.md"
 - 每条 CTA 都必须绑定稳定 surface ID、位置、destination、`cta_owner`、interaction、route status、endpoint-specific evidence 与 fallback；跨角色时 `cta_receiving_owner` 是买方侧接收 owner，不能冒充供应商侧 `cta_owner`。
 - verified CTA/fallback 的 structured evidence 至少包含 `evidence_kind/check_id/task/owner/process/observed_result/capability_acceptance/evidence_ref`，并与该 exact endpoint 绑定；重复 endpoint 文本、存在同名页面或本地 reference parity 不能证明 route 可达或能力被接受。
 - unverified route 全文不得出现可点击 endpoint，也不得指示 use/send/email/share/submit/contact 到该 route；只能明确 **do not send、save locally、request a verified route through the buyer organization’s existing approved supplier-contact process**，三轴保持 `not-run + missing + block`。
-- 主 CTA 在四件套中 exact projection：`cta_destination`、`cta_owner`、reference/reachability/capability 的 execution status、evidence result、gate verdict、evidence refs、`cta_fallback_route_contract`。`frontend_deferred_blocks` exact set 只能是 `[html-lang, canonical, article-json-ld]`。
+- 主 CTA 在四件套中 exact projection：`cta_destination`、`cta_owner`、reference/reachability/capability 的 execution status、evidence result、gate verdict、evidence refs、`cta_fallback_route_contract`。`frontend_deferred_blocks` exact set 只能是 `[]`（平台边界项按 ⛔ 禁令不展开）。
 
 ### Qualification、mobile 与 fatal consumption
 
 - `first_round_inquiry_inputs` 与 `second_round_inquiry_inputs` 是 canonical、互斥输入组。缺输入只能进入 `needs-follow-up`；只有 evidenced incompatibility、out-of-envelope 或 unsupported scope 才能 `disqualified`。技术 qualification 与 sales acceptance 使用独立 gates、独立 named owner 和独立 evidence，不得自动升级。
 - 内容层先采用两列、key-value stack、分组卡片、definition list 或其他 320px 可纵向阅读形态。没有真实 renderer/readability structured evidence 时，`mobile_visual_check_execution_status`、`mobile_visual_evidence_result`、`mobile_visual_gate_verdict` 只能保持 `not-run`、`missing`、`block`；唯一 evidence schema 为 `evidence_kind=mobile-readability`、`check_id=mobile-readability`、`target_task`、`accountable_owner`、`viewport_width_px=320`、`render_target`、`method`、`observed_result`、`acceptance_criteria`、`capability_acceptance`、`screenshot_or_trace_ref`，禁止 `mobile-visual` 与 `viewport_width` alias；结构 scope 可以审查，但 production readiness 必须 BLOCK。真正 ready 才允许 evidence-backed PASS。
 - 所有 verdict 只允许 `pass|block|not-applicable`。ID-0001 §14 的 closed fatal verdict（包括两个 map verdict、`hierarchy_scan_verdict` 与 `semantic_emphasis_verdict`）中任一 applicable verdict 为 `block`，必须同时强制 `fatal_gate_verdict: block`、`overall_verdict: block`、`production_readiness: block`。评分、局部 PASS 或作者自报不能覆盖。
-- `html-lang`、canonical、Article JSON-LD 本轮可保持 deferred/not PASS，且不阻断“内容合同 scope”；source/license、final DOM image alt、CMS mutation/readback/editor-reopen/frontend acceptance、release，以及排名/询盘/转化仍是独立 BLOCK 或未验证，不能被结构 PASS 覆盖。
+- 平台前端边界项（⛔ 禁令范围，不展开）本轮可保持 deferred/not PASS，且不阻断“内容合同 scope”；source/license、final DOM image alt、CMS mutation/readback/editor-reopen/frontend acceptance、release，以及排名/询盘/转化仍是独立 BLOCK 或未验证，不能被结构 PASS 覆盖。
 
 ## 不要把模板当成完成证据
 
-模板填写完成只代表资料结构存在。正式文章使用 `Article Brief → Article Draft → Article Quality Review → Publish Record` 四件套；Brief 必须分开记录 buyer task、search demand 和 SERP format，Review 必须由不同 Reviewer 用逐项 evidence matrix 复核，不能用 blanket PASS 或布尔值自证；新写文章按 [B2B SEO 标准](../PLAYBOOKS/id-0001-b2b-seo-article-standard.md)，优化现有文章先按 [B2B Article Optimization SOP](../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md) 串行诊断，并继续接受 ID-0001 的全部质量闸；页面发布再按 [前端 SEO 合同](../PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md) 验收。只有完成真实动作、后台回读、编辑器重开、前台/SEO 检查、失败记录和写回，任务才可能通过验收。
+模板填写完成只代表资料结构存在。正式文章使用 `Article Brief → Article Draft → Article Quality Review → Publish Record` 四件套；Brief 必须分开记录 buyer task、search demand 和 SERP format，Review 必须由不同 Reviewer 用逐项 evidence matrix 复核，不能用 blanket PASS 或布尔值自证；新写文章按 [B2B SEO 标准](../PLAYBOOKS/id-0001-b2b-seo-article-standard.md)，优化现有文章先按 [B2B Article Optimization SOP](../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md) 串行诊断，并继续接受 ID-0001 的全部质量闸。只有完成真实动作、后台回读、编辑器重开、前台/SEO 检查、失败记录和写回，任务才可能通过验收。

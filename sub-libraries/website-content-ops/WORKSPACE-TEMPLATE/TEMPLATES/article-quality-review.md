@@ -17,7 +17,7 @@ reviewer_separation_verdict: "block"
 created: "2026-07-31"
 last_updated: "2026-08-11"
 sources: ["../30_tasks/b2b-seo-article-standard.runtime.md", "../30_tasks/b2b-article-optimization-sop.runtime.md"]
-related: ["article-brief.md", "article-draft.md", "publish-record.md", "../30_tasks/article-page-frontend-seo-contract.runtime.md"]
+related: ["article-brief.md", "article-draft.md", "publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要独立审查文章是否完成一个真实英文买家任务，并把结构质量、生产证据、fatal gate 和 deferred 前端问题明确分开时。"
@@ -276,7 +276,7 @@ release_decision: "blocked"
 operation_mode: "not-run"
 overall_verdict: "block"
 cta_route_transmission_verdict: "block"
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: "deferred-block"
 canonical_status: "deferred-block"
 article_json_ld_status: "deferred-block"
@@ -292,7 +292,7 @@ actual_outcome_evidence_refs: []
 actual_outcome_accountable_reviewer: "not-applicable"
 actual_sales_acceptance_evidence_refs: []
 generated_from: "../../TEMPLATES/article-quality-review.md"
-generated_source_sha256: "e921d335f208ec9d52837bf345fffc1338150b13da39008ca9ff3d2909b6d7fa"
+generated_source_sha256: "51b0ada9ab93c527df4b733d7afd43f52e7cd13d54fbba3fa625171925d4e131"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/article-quality-review.md; do not hand-edit this copy in the source package. -->
@@ -662,9 +662,6 @@ Any `observed-no-improvement`, `observed-improvement`, `not-accepted`, or `sales
 
 Do not treat content review as closure for these independent blocks:
 
-- HTML `lang` — deferred frontend SEO BLOCK;
-- canonical — deferred frontend SEO BLOCK;
-- Article JSON-LD — deferred frontend SEO BLOCK;
 - final DOM image alt — independent renderer BLOCK.
 
 ## 17. Final decision

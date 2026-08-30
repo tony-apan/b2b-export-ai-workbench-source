@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-03"
 sources: ["MENTAL-MODEL.md", "PLAYBOOK.md", "AGENTS.md", "MANIFEST.md"]
-related: ["WRITEBACK.md", "MANIFEST.md", "PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md", "PLAYBOOKS/id-0004-b2b-article-stage-patterns.md", "TEMPLATES/article-draft.md", "TEMPLATES/article-quality-review.md", "TEMPLATES/publish-record.md", "TEMPLATES/transfer-exercise-record.md"]
+related: ["WRITEBACK.md", "MANIFEST.md", "PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "PLAYBOOKS/id-0004-b2b-article-stage-patterns.md", "TEMPLATES/article-draft.md", "TEMPLATES/article-quality-review.md", "TEMPLATES/publish-record.md", "TEMPLATES/transfer-exercise-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---
@@ -37,7 +37,7 @@ redaction_status: "safe-to-publish"
 - [ ] FAQ conditional contract：FAQ 不是每篇强制。只有 dated 的真实 SERP/query pattern 或具体 buyer objection/uncertainty 触发时才标为 `applicable`；无符合条件的触发证据时，`not-applicable + 空 refs + 具体 absence reason` 合法且不扣分。若添加 FAQ，每题均绑定 `buyer job / objection-or-uncertainty / evidence ref 或明确 inferred boundary / article-owned answer`，且 Review 已检查 buyer-job parity、evidence 边界、正文重复、同义关键词堆叠与 keyword stuffing；仅因“SEO 最佳实践”、字数或关键词覆盖而添加则不通过。
 - [ ] `unsupported-outcome-semantic-detection`：标题、meta、excerpt、正文和 CTA 均检查排名、pipeline、ready-to-buy、paying-customer、询盘、转化、获客或收入结果的同义、改写及标点/不可见字符混淆；结构 PASS 不得暗示这些实际结果。
 - [ ] `fixture-production-proof-boundary`：所有 synthetic、fixture 或 production-shaped test data 明示仅用于合同/validator 测试，不得满足真实 production evidence、human identity、市场效果或发布资格。
-- [ ] 三个前端 SEO 项继续保持 exact deferred set：`html-lang / canonical / article-json-ld`。它们不阻断本轮“内容合同与 QA 路由”落档，但不是 PASS，仍阻断正式 production SEO PASS。
+- [ ] 平台前端边界项按 ⛔ 禁令不检查、不展开（见 RUNBOOK-ANYONE.md 横幅）。不阻断本轮“内容合同与 QA 路由”落档，但不是 PASS，不据此宣称 production SEO PASS。
 
 ## A. 源码包结构 QA
 
@@ -98,8 +98,8 @@ redaction_status: "safe-to-publish"
 - [ ] 跨角色 CTA 的 `cta_receiving_owner` 是买方接收任务的 named owner，`cta_owner` 是外部 route 的 accountable owner；Buy commercial 两者责任分离，destination 不得复用 technical/engineering-only path。
 - [ ] input-collecting / human-handoff / commercial CTA 在买家可见 CTA 区展示与 control record 精确一致的 copyable fallback：已验证 route 给出具体 endpoint 且 reachability/capability 为 `executed + confirmed + pass`；未验证 route 明确“不要发送、保存本地、经既有 approved supplier-contact process 请求 verified route”且保持 `not-run + missing + block`；两者都说明 route owner、完整首轮输入及不构成 quote/order/award/delivery/sales acceptance 的边界。
 - [ ] 已枚举全部 buyer-visible CTA instructions，扫描不依赖 H2：首个 H2 前、普通段落、列表、表格、粗体标签、链接/URL、按钮、heading，以及所有 send/email/share/submit/upload/contact/request/book/download/use/route 同义动作都进入 inventory；早期/中段/最终 CTA 的 endpoint、发送指令、owner、inputs、commitment boundary 与证据强度互不冲突，末尾安全 CTA 未覆盖早期 unsafe CTA，且三个 verdict `soft_path_route_safety_verdict`、`all_buyer_visible_cta_sections_evidence_parity_verdict`、`cross_cta_instruction_consistency_verdict` 均被 fatal gate 消费。
-- [ ] `html-lang`、`canonical`、`article-json-ld` 在四记录中均明确保持 `deferred-block`；内容合同 scope 可单独验收，但不得据此宣称页面正式 SEO PASS。
-- [ ] 四记录的主 CTA `cta_destination`、`cta_owner`、reference/reachability/capability 三轴 `check_execution_status/evidence_result/gate_verdict/evidence_refs` 与 `cta_fallback_route_contract` 逐字符 exact projection；`frontend_deferred_blocks` exact set 仅为 `[html-lang, canonical, article-json-ld]` 且四记录 parity。
+- [ ] `frontend_deferred_blocks` 四记录保持空集 `[]`（平台边界项按 ⛔ 禁令不展开）；内容合同 scope 可单独验收，但不得据此宣称页面正式 SEO PASS。
+- [ ] 四记录的主 CTA `cta_destination`、`cta_owner`、reference/reachability/capability 三轴 `check_execution_status/evidence_result/gate_verdict/evidence_refs` 与 `cta_fallback_route_contract` 逐字符 exact projection；`frontend_deferred_blocks` exact set 仅为 `[]`（平台边界项按 ⛔ 禁令不展开） 且四记录 parity。
 - [ ] 四记录的 `cta_fallback_route_contract` 为 exact 17 段同值；verified primary/fallback route 的 endpoint-specific structured evidence 至少包含 `evidence_kind/check_id/task/owner/process/observed_result/capability_acceptance/evidence_ref`，三轴各自绑定该 endpoint，不能只重复 endpoint 文本或借用其他 route 证据；unverified 分支全文无直接链接/use/send 指令，明确 do not send + save locally + request a verified route through the approved supplier-contact process；route、CTA receiving 与 role-handoff receiving owner 均为稳定 ID 或 person name + role，纯岗位/部门/团队不通过。
 - [ ] 正文 gate matrix 的 execution/result/verdict 每格只使用 closed enum：`not-run|executed|not-applicable`、`missing|synthetic-only|confirmed|failed|not-applicable`、`pass|block|not-applicable`；任何 alias 都 BLOCK。
 - [ ] `first_round_input_specifications` 与首轮字段一一对应，逐项给出 why-needed、单位/格式、示例、required/conditional 和 confidentiality boundary；正文 CTA 附近以可扫读表格或清单呈现，避免二次追问。
@@ -119,7 +119,7 @@ redaction_status: "safe-to-publish"
 - [ ] 图片先通过单图测试；CMS 先通过单条草稿测试。
 - [ ] 没有把命令、API 或按钮返回成功直接当成业务成功。
 - [ ] 真实 URL 可访问，后台刷新、编辑器重开与前台一致。
-- [ ] 正式索引文章的 lang、canonical、robots、Article/Breadcrumb schema、time、Open Graph、语义层级和 sitemap 已验证。内容规范单独落档时，只允许把 exact set `html-lang / canonical / article-json-ld` 记录为独立 deferred BLOCK；这不阻断“内容合同 scope”审查，但 deferred 不是 PASS，仍阻断“页面正式 SEO PASS”。
+- [ ] 正式索引文章的 robots、time、Open Graph、语义层级和 sitemap 已验证。内容规范单独落档时，平台前端边界项按 ⛔ 禁令不展开；这不阻断“内容合同 scope”审查，但 deferred 不是 PASS，不据此宣称“页面正式 SEO PASS”。
 - [ ] Source publication clearance/license、final DOM alt、CMS 写入与回读、release/Published/Stable、排名、询盘、sales acceptance 和转化均保持独立证据轴；任一未验证不能由内容结构 PASS、synthetic fixture、HTTP 200 或历史 release 状态覆盖。
 - [ ] QA / Format Lab / 预览页为 noindex，未进入 sitemap、推荐模块或正式内容内链。
 - [ ] 内容层先把决策表设计为 320px 可纵向阅读的两列、key-value stack、分组卡片、definition list 或重复表头结构；没有真实 renderer/readability structured evidence 时只能记录 `not-run + missing + block`；唯一 evidence schema 是 `evidence_kind=mobile-readability`、`check_id=mobile-readability`、`target_task`、`accountable_owner`、`viewport_width_px=320`、`render_target`、`method`、`observed_result`、`acceptance_criteria`、`capability_acceptance`、`screenshot_or_trace_ref`，禁止 `mobile-visual` 与 `viewport_width` alias；结构 scope 可独立审查，但 `fatal_gate_verdict`、`overall_verdict` 与 `production_readiness` 继续 BLOCK。真正 ready 时，evidence 必须绑定 endpoint/page version、320px viewport、check_id、target_task、accountable_owner、method、observed result、acceptance criteria、capability acceptance 与截图/trace ref。

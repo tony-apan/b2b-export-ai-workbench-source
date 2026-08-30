@@ -17,7 +17,7 @@ reviewer_separation_verdict: "block"
 created: "2026-07-31"
 last_updated: "2026-08-11"
 sources: ["../PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md", "../ADAPTERS/cms/allincms/article-format-verification.redacted.md"]
-related: ["article-brief.md", "article-quality-review.md", "publish-record.md", "../PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md"]
+related: ["article-brief.md", "article-quality-review.md", "publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "Brief 已批准，需要把单一英文搜索任务、买家痛点、决策证据、阶段化 CTA 和内链落实为可被 Reviewer 与目标 CMS Adapter 检查的正式草稿时。"
@@ -279,7 +279,7 @@ conversion_measurement_plan_status: "planned"
 measurement_window: "replace-with-observation-window"
 cta_measurement_plan_verdict: "block"
 unsupported_outcome_claims_status: "block"
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: "deferred-block"
 canonical_status: "deferred-block"
 article_json_ld_status: "deferred-block"
@@ -573,9 +573,6 @@ The bounded body must not contain `# Article Draft`, schema-parity notes, eviden
 
 Content structure does not close these independent blocks:
 
-- HTML `lang` (`html-lang`) — deferred BLOCK;
-- canonical — deferred BLOCK;
-- Article JSON-LD (`article-json-ld`) — deferred BLOCK;
 - final DOM image alt — independent renderer BLOCK.
 
 The exact deferred set does not block article-content contract scope, but it still blocks formal SEO PASS. Complex tables require endpoint/page-version-specific structured renderer/readability evidence at `viewport_width_px=320`; without it keep `not-run + missing + block` and do not claim mobile usability PASS.

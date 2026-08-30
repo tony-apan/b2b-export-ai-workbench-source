@@ -797,7 +797,7 @@ published_theme_alt_current_run: not_run_not_authorized
 | `postCreate` API | **PASS（当前部署、限定本次授权）** | 2026-07-30 已在同一站点严格串行创建并发布 2 篇全字段文章；每次均重新捕获当前 action/router/deployment，并用创建前后完整 ID snapshot 证明差集恰好一个、创建记录 ID 与该差集一致且属于精确站点。此证据不放行其他站点或未来部署；后续运行仍须重新确认当前合同后才可传 `createContractConfirmed: true` |
 | 503、transaction mismatch、请求可能成功后的文章恢复 | **BLOCK** | 只有本地故障控制测试，没有文章级远程注入证据；状态不明时 adapter 只允许停下，不会盲重发 |
 | 跨部署 / 跨站点 taxonomy 隔离 / 任意大于 11 篇远程长跑 | **BLOCK** | 尚未形成对应的当前会话实测证据 |
-| 主题语义与无障碍表现 | **BLOCK（当前主题正式 SEO / 无障碍层）** | 2026-07-31 单篇实测确认正文 Slate 图片在 CMS payload 中保留非空 `alt`，但最终 DOM 输出空 `alt`；同页还观察到文章语言与 `html lang` 冲突、canonical 缺失、Article JSON-LD 缺失。内容与响应式渲染可单独 PASS，但正式 SEO 不得 PASS；重复文章 API 请求不能修复 renderer/template。分类/标签可见性仍作为 WARN 单列 |
+| 主题语义与无障碍表现 | **BLOCK（当前主题正式 SEO / 无障碍层）** | 2026-07-31 单篇实测确认正文 Slate 图片在 CMS payload 中保留非空 `alt`，但最终 DOM 输出空 `alt`；同页还存在平台层前端边界项（⛔ 禁令范围，不展开）。内容与响应式渲染可单独 PASS，但平台层 SEO 不得 PASS；重复文章 API 请求不能修复 renderer/template。分类/标签可见性仍作为 WARN 单列 |
 
 本轮不把“敏感问题”作为阻断项；BLOCK 只针对已证实的 renderer/技术 SEO 缺陷，或跨部署、远程失败恢复、任意大批量与正式资格等尚未证明的范围。任何一个 BLOCK 未补证据前，不能把当前限定结果外推为通用 PASS。
 
@@ -816,7 +816,7 @@ requestStarted=true + client timeout
 
 该文章的内容层、后台持久化、编辑器重开、桌面与 390×844 移动端均通过；3 张页面图片成功加载/解码，其中 2 张为正文 Slate 图片。长页 CDP 拼接截图出现 sticky header 重复，但普通 viewport 截图和 DOM 几何证明页面本身没有重复内容或横向溢出，因此拼接图不能独立作为验收依据。
 
-正式 SEO 仍为独立 BLOCK：英文正文页面的 `html lang` 不匹配、canonical 缺失、Article JSON-LD 缺失；同时两张正文图片在 CMS payload 中都有非空 alt，前端却输出空 alt。最终 verdict 必须分开写为：内容优化 PASS、后台发布 PASS、响应式内容渲染 PASS、正式技术 SEO BLOCK、正文图片 alt renderer BLOCK。
+平台层 SEO 仍为独立 BLOCK（⛔ 禁令范围，不展开）；同时两张正文图片在 CMS payload 中都有非空 alt，前端却输出空 alt。最终 verdict 必须分开写为：内容优化 PASS、后台发布 PASS、响应式内容渲染 PASS、平台层技术 SEO BLOCK、正文图片 alt renderer BLOCK。
 
 2026-07-30 代码级对抗复核已修复五类远程前置缺口：旧实现只检查候选文章 ID 不在 `beforePostIds` 中，不能排除并发产生多个新 ID；创建记录的 `siteId` 缺失时可能未被强制阻断；分类/标签创建只比较 `siteId / slug / name`，不能发现 description、cover、parent、order 或 contentType 丢失；taxonomy 快照记录缺少 `siteId` 时会静默跳过同站重复 slug；`createPostDraft` 在形成返回值时会再次调用外部 ID callback，可能把已结构化停止的结果退化为 rejected promise。当前控制器和 48 项文章与 taxonomy 测试已在不增加虚假远程结论的前提下收紧上述闸门；创建结果直接复用 reconciliation 阶段已规范化的 ID，不再二次调用外部 callback。
 

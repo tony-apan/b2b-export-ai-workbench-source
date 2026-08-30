@@ -17,7 +17,7 @@ reviewer_separation_verdict: "block"
 created: "2026-07-31"
 last_updated: "2026-08-11"
 sources: ["../30_tasks/b2b-seo-article-standard.runtime.md", "../30_tasks/b2b-article-optimization-sop.runtime.md", "../30_tasks/index.md"]
-related: ["article-brief.md", "article-quality-review.md", "publish-record.md", "../30_tasks/article-page-frontend-seo-contract.runtime.md"]
+related: ["article-brief.md", "article-quality-review.md", "publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "Brief 已批准，需要把单一英文搜索任务、买家痛点、决策证据、阶段化 CTA 和内链落实为可被 Reviewer 与目标 CMS Adapter 检查的正式草稿时。"
@@ -279,7 +279,7 @@ conversion_measurement_plan_status: "planned"
 measurement_window: "replace-with-observation-window"
 cta_measurement_plan_verdict: "block"
 unsupported_outcome_claims_status: "block"
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: "deferred-block"
 canonical_status: "deferred-block"
 article_json_ld_status: "deferred-block"
@@ -295,7 +295,7 @@ production_readiness_scope: "cms-draft-content-contract"
 release_decision: "blocked"
 operation_mode: "not-run"
 generated_from: "../../TEMPLATES/article-draft.md"
-generated_source_sha256: "50b1c2e553f36a90487d83f66346c520b7b6d469152562dd20a61d37207fa0c2"
+generated_source_sha256: "55ded579d4aa59287142de0928623b492a00cd9200fa761b165fe97f4ad1993b"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/article-draft.md; do not hand-edit this copy in the source package. -->
@@ -577,9 +577,6 @@ The bounded body must not contain `# Article Draft`, schema-parity notes, eviden
 
 Content structure does not close these independent blocks:
 
-- HTML `lang` (`html-lang`) — deferred BLOCK;
-- canonical — deferred BLOCK;
-- Article JSON-LD (`article-json-ld`) — deferred BLOCK;
 - final DOM image alt — independent renderer BLOCK.
 
 The exact deferred set does not block article-content contract scope, but it still blocks formal SEO PASS. Complex tables require endpoint/page-version-specific structured renderer/readability evidence at `viewport_width_px=320`; without it keep `not-run + missing + block` and do not claim mobile usability PASS.

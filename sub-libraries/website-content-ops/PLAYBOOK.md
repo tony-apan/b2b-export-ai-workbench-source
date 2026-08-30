@@ -80,9 +80,9 @@ flowchart TD
 - 正文 canonical 顺序固定为 `Hook → Diagnose → Decide → De-risk → Act`，转化面固定枚举为 `primary|soft|fallback`；Brief、Draft、Review、Publish 必须 exact projection 两张 map 及对应 verdict，不得调序、漏段或把最终 CTA 当成全文唯一 CTA。
 - CTA inventory 不依赖 H2 或 `CTA` 标签。首个 H2 前、普通段落、列表、表格、粗体标签、链接、按钮，以及所有 send/email/share/submit/upload/contact/request/book/download/use-form/route-packet 等 buyer-visible 指令均在 scope。末尾安全 CTA 不能覆盖任何更早的 unsafe CTA。
 - 已验证 CTA 或 fallback route 必须有 endpoint-specific structured evidence，至少含 `evidence_kind/check_id/task/owner/process/observed_result/capability_acceptance/evidence_ref`，不能靠重复 endpoint 文本自证。未验证 route 全文不得直接链接或指示使用/发送；只允许明确 **do not send、save locally、request a verified route through the buyer organization’s existing approved supplier-contact process**。
-- Brief/Draft/Review/Publish 必须 exact projection 主 CTA 的 `cta_destination`、`cta_owner`、reference/reachability/capability 三轴 status/result/verdict/evidence refs、`cta_fallback_route_contract`，以及 `frontend_deferred_blocks=[html-lang, canonical, article-json-ld]`。任一 applicable fatal verdict 为 `block`，必须同时得到 `fatal_gate_verdict: block`、`overall_verdict: block`、`production_readiness: block`；不得自报 ready。
+- Brief/Draft/Review/Publish 必须 exact projection 主 CTA 的 `cta_destination`、`cta_owner`、reference/reachability/capability 三轴 status/result/verdict/evidence refs、`cta_fallback_route_contract`，以及 `frontend_deferred_blocks=[]`（平台边界项按 ⛔ 禁令不展开）。任一 applicable fatal verdict 为 `block`，必须同时得到 `fatal_gate_verdict: block`、`overall_verdict: block`、`production_readiness: block`；不得自报 ready。
 - 内容层先采用 320px 可纵向阅读的表格/决策结构。没有真实 renderer/readability structured evidence 时，移动验收只能记录 `not-run + missing + block`；唯一 evidence schema 为 `evidence_kind=mobile-readability`、`check_id=mobile-readability`、`target_task`、`accountable_owner`、`viewport_width_px=320`、`render_target`、`method`、`observed_result`、`acceptance_criteria`、`capability_acceptance`、`screenshot_or_trace_ref`，禁止 `mobile-visual` 与 `viewport_width` alias；结构 scope 可继续审查，但 production readiness 必须 BLOCK。H1 属于 page-shell metadata；publishable body 禁止 H1，并从 H2 开始。
-- `<html lang>`、canonical、Article JSON-LD 本轮保持 deferred/not PASS，但不阻断本轮内容合同 scope；source/license、final DOM alt、CMS、release、排名、询盘和转化仍是独立 BLOCK 或未验证状态。
+- 平台前端边界项（⛔ 禁令范围，不展开）本轮保持 deferred/not PASS，但不阻断本轮内容合同 scope；source/license、final DOM alt、CMS、release、排名、询盘和转化仍是独立 BLOCK 或未验证状态。
 
 
 ### B2B article fail-closed contract 路由
@@ -94,7 +94,7 @@ flowchart TD
 - production evidence：stable producer/reviewer IDs、artifact digest 字节绑定、kind-specific 非空且新鲜的 snapshot provenance；
 - 证据边界：fixture 或 production-shaped test data 只能证明测试结构，不能证明真实 production、身份、排名、询盘、转化或发布资格。
 
-任一 required gate 缺失、不可执行、未被 Review/Publish 消费或证据不闭合，均维持 `block`。这项路由落档不表示当前模板、示例或 scripts 已通过；`html-lang / canonical / article-json-ld` 继续 deferred 且不计为 PASS。
+任一 required gate 缺失、不可执行、未被 Review/Publish 消费或证据不闭合，均维持 `block`。这项路由落档不表示当前模板、示例或 scripts 已通过；平台前端边界项（⛔ 禁令范围，不展开）继续 deferred 且不计为 PASS。
 
 文章和产品页不从关键词开始堆字，而从客户任务开始：
 
@@ -135,7 +135,7 @@ AllinCMS 是当前首个图片参考实现；PicGo 与外部图床是独立备�
 
 ## 阶段 7：参考实现——CMS
 
-先用 [Article Draft](TEMPLATES/article-draft.md) 固定 page-shell title/H1 metadata、唯一 publishable body 与 Adapter 格式合同；正文禁止 H1，并从 H2 开始。草稿进入 CMS 前，再用 [Article Quality Review](TEMPLATES/article-quality-review.md) 独立审查，并按 [Article Page Frontend SEO Contract](PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md) 确认 indexing intent、canonical、lang、schema、语义 HTML、图片、移动端和 sitemap 责任。总分不得覆盖任何 fatal verdict；所有 verdict 只允许 `pass|block|not-applicable`；`article_decision_sequence_verdict`、`conversion_surface_map_verdict`、`hierarchy_scan_verdict`、`semantic_emphasis_verdict` 均属 fatal set，任一 applicable `block` 必须传播为 `overall_verdict=block`、`fatal_gate_verdict=block`、`production_readiness=block`。`html-lang`、`canonical`、`article-json-ld` 可在本轮内容合同中保持 deferred，但不得写成 PASS，也不得由内容结构 PASS 推导 CMS、release 或 production SEO ready。
+先用 [Article Draft](TEMPLATES/article-draft.md) 固定 page-shell title/H1 metadata、唯一 publishable body 与 Adapter 格式合同；正文禁止 H1，并从 H2 开始。草稿进入 CMS 前，再用 [Article Quality Review](TEMPLATES/article-quality-review.md) 独立审查。总分不得覆盖任何 fatal verdict；所有 verdict 只允许 `pass|block|not-applicable`；`article_decision_sequence_verdict`、`conversion_surface_map_verdict`、`hierarchy_scan_verdict`、`semantic_emphasis_verdict` 均属 fatal set，任一 applicable `block` 必须传播为 `overall_verdict=block`、`fatal_gate_verdict=block`、`production_readiness=block`。平台前端边界项（⛔ 禁令范围，不展开）可在本轮内容合同中保持 deferred，但不得写成 PASS，也不得由内容结构 PASS 推导 CMS、release 或 production SEO ready。
 
 
 1. 读取 `ADAPTERS/README.md` 并调查当前 CMS；

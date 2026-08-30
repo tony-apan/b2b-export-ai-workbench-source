@@ -6,7 +6,7 @@ status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
-sources: ["SINOPRO 全流程实战 2026-08-29/30（纯 API 登录成功+失败双路径实测）", "ISS-083"]
+sources: ["示例客户 全流程实战 2026-08-29/30（纯 API 登录成功+失败双路径实测）", "ISS-083"]
 related: ["RUNBOOK-ANYONE.md", "allincms_api.py"]
 visibility: "public"
 redaction_status: "safe-to-publish"
@@ -44,13 +44,13 @@ print(api.token)  # 357 字符 JWT——登录成功即自动提取
 
 ```python
 api = AllinCMS(email=..., password=...)
-open("/tmp/ws-token.txt", "w").write(api.token)   # 写标准位置，后续所有工具复用
+# 推荐：export WS_TOKEN=<token>（跨平台）；或写 token 文件（chmod 600）后传路径，后续工具复用
 import os; os.remove("/tmp/ws-creds.txt")          # 如果用了方式 B，用完即删
 ```
 
 **注意事项**：
 - 密码只在内存中用于发一次登录请求，不写入任何持久化文件
-- token 写入 `/tmp/ws-token.txt`（POSIX）或设 `WS_TOKEN` 环境变量（跨平台）
+- 推荐 `export WS_TOKEN=<token>` 环境变量（跨平台）；或写 token 文件（chmod 600）
 - `/tmp` 重启后清空——每台新机器/重启后需重新获取
 
 ---
@@ -63,7 +63,7 @@ import os; os.remove("/tmp/ws-creds.txt")          # 如果用了方式 B，用�
 1. 打开 `https://workspace.laicms.com` 并登录
 2. DevTools（F12 / Cmd+Option+I）→ Application（应用）→ Cookies → `https://workspace.laicms.com`
 3. 找到 `payload-token` 行，复制 Value 列（一长串 `eyJ...` 开头的 JWT）
-4. 交给 AI（贴对话或写文件 `echo '<token>' > /tmp/ws-token.txt`）
+4. 交给 AI（贴对话或 `export WS_TOKEN=<token>`；写文件必须 chmod 600）
 
 **适用场景**：
 - API 登录路径出问题（如平台改了登录接口）
@@ -115,7 +115,7 @@ EOF
 ```python
 from allincms_api import AllinCMS
 
-token = open("/tmp/ws-token.txt").read().strip()
+import os; token = os.environ["WS_TOKEN"]   # export WS_TOKEN=<token>
 api = AllinCMS(token=token)
 sites = api.read_sites()
 print([s["name"] for s in sites.get("sites", [])])   # 能列出站点 = token 有效
@@ -130,7 +130,7 @@ print([s["name"] for s in sites.get("sites", [])])   # 能列出站点 = token �
 | 密码不落盘 | 只在内存中用于一次登录请求；文件传递用完即删 |
 | token 是凭据 | 等同登录态——不推送到公开仓库、不贴到公开文档 |
 | token 有效期 | Payload 默认 JWT 有过期时间——过期后 read 会 401/空，重取即可 |
-| /tmp 位置 | POSIX 约定 `/tmp/ws-token.txt`（重启清空）；Windows 用 `WS_TOKEN` 环境变量 |
+| 凭据位置 | 推荐 `WS_TOKEN` 环境变量（跨平台）；token 文件须 chmod 600（/tmp 重启清空） |
 | 多账号 | 每个账号的 token 独立，不要混用——切换账号时重取 |
 
 ---

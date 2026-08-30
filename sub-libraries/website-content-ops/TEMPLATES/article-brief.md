@@ -8,7 +8,7 @@ owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-11"
 sources: ["../PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md"]
-related: ["article-draft.md", "article-quality-review.md", "publish-record.md", "../PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md"]
+related: ["article-draft.md", "article-quality-review.md", "publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要把英文买家问题、搜索意图、产品事实、站内内容职责和阶段化 CTA 合同整理为可写作、可评分、可发布验收的正式 B2B SEO brief 时。"
@@ -277,7 +277,7 @@ conversion_measurement_plan_status: "planned"
 measurement_window: "replace-with-observation-window"
 cta_measurement_plan_verdict: "block"
 unsupported_outcome_claims_status: "block"
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: "deferred-block"
 canonical_status: "deferred-block"
 article_json_ld_status: "deferred-block"
@@ -568,9 +568,6 @@ This brief does not promise ranking, inquiries, sales acceptance or conversion l
 
 Independent unresolved frontend/renderer blocks:
 
-- HTML lang;
-- canonical;
-- Article JSON-LD;
 - final DOM image alt.
 
-`html-lang`、`canonical` 与 `article-json-ld` 是本轮明确 deferred BLOCK：不阻断 article-content contract scope，但绝不等于 PASS，仍阻断正式 SEO PASS。复杂表只有在 endpoint/page-version-specific 的真实 320px renderer/readability evidence 闭合后才可宣称 mobile usability PASS；否则保持 `not-run + missing + block`。
+平台前端边界项（⛔ 禁令范围，不展开）本轮明确 deferred：不阻断 article-content contract scope，但绝不等于 PASS。复杂表只有在 endpoint/page-version-specific 的真实 320px renderer/readability evidence 闭合后才可宣称 mobile usability PASS；否则保持 `not-run + missing + block`。

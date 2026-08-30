@@ -7,7 +7,7 @@ owner: "Team"
 created: "2026-07-26"
 last_updated: "2026-08-11"
 sources: []
-related: ["../20_knowledge/index.md", "b2b-seo-article-standard.runtime.md", "b2b-article-optimization-sop.runtime.md", "article-page-frontend-seo-contract.runtime.md", "../TEMPLATES/tool-field-map.md", "../TEMPLATES/failure-diagnosis.md"]
+related: ["../20_knowledge/index.md", "b2b-seo-article-standard.runtime.md", "b2b-article-optimization-sop.runtime.md", "../TEMPLATES/tool-field-map.md", "../TEMPLATES/failure-diagnosis.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 runtime_visibility: "private"
@@ -24,7 +24,6 @@ when_to_read: "已激活外部 agency-operations task scope，需要查找内容
 
 | ID | 入口 | 内容说明（description） | 类型 | 状态 / 可见性 | 什么时候读 | 检索词 |
 |---|---|---|---|---|---|---|
-| — | [Article Page Frontend SEO Contract](article-page-frontend-seo-contract.runtime.md) | 定义正式文章页从语言、canonical、结构化数据到移动端、图片和发布后源码验收的前端 SEO 合同。 | page | Working / public | 需要实现、审查或验收正式文章详情页的技术 SEO、语义 HTML、图片、移动体验和索引资格时。 | frontend SEO、article page、canonical、structured data、semantic HTML |
 | — | [B2B Article Optimization SOP](b2b-article-optimization-sop.runtime.md) | 指导把现有英文文章串行优化为单一搜索任务、六节点因果链、阶段化内链与 CTA、证据边界清晰的 B2B 决策页面；不授权 CMS 写入，也不证明排名或转化提升。 | page | Working / public | 需要优化一篇现有英文 B2B 文章，而不是从空白新建，并要求 AI 按固定顺序完成诊断、改写、对抗审查和写回时。 | article optimization、English-only、B2B SOP、search intent、content refresh、stage CTA、internal links |
 | — | [B2B Article Stage Patterns](b2b-article-stage-patterns.runtime.md) | 为 Learn、Troubleshoot、Compare、Validate、Buy 五个搜索与决策阶段提供可供 AI 直接复用的最小文章模式，防止所有文章被误写成两轮技术资格流程；不证明真实搜索需求或转化效果。 | page | Working / public | 需要为一篇英文海外 B2B 文章选择搜索阶段、痛点结构、产品内链证据等级和 CTA 交互，而不能默认套用 Validate 技术收资模式时。 | B2B SEO、search stage、Learn、Troubleshoot、Compare、Validate、Buy、CTA pattern |
 | — | [B2B SEO Article Standard](b2b-seo-article-standard.runtime.md) | 定义 English-only B2B SEO 文章的单一搜索任务、六节点因果链、阶段化内容/CTA/内链、证据状态、产品决策与独立质量门禁；不证明排名、询盘或转化提升。 | page | Working / public | 需要策划、撰写、优化或审查正式英文 B2B SEO 文章，并判断其是否真正完成一个买家搜索任务时。 | B2B SEO、English-only、search intent、buyer task、six-node pain chain、stage contract、information gain、CTA |

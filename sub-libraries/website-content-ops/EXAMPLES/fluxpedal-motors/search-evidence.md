@@ -127,7 +127,7 @@ actual_outcome_observed_result: not-applicable
 actual_outcome_evidence_refs: []
 actual_outcome_accountable_reviewer: not-applicable
 actual_sales_acceptance_evidence_refs: []
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 final_dom_image_alt_renderer_status: block
 ---
 # Synthetic Search and Acceptance Evidence
@@ -526,7 +526,7 @@ This fixture does not verify or promise:
 - real target-page buyer-task acceptance;
 - CMS rendering or frontend acceptance.
 
-Three frontend SEO items are deferred as separate BLOCKs: HTML `lang`, canonical, and Article JSON-LD. Final DOM image alt is a separate renderer BLOCK.
+Final DOM image alt is a separate renderer BLOCK.
 
 
 ## CTA data-policy structure

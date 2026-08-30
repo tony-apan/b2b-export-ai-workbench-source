@@ -62,7 +62,7 @@ These files can explain where the fixture hypotheses came from, but they cannot 
 - `cta-measurement-evidence.md` binds each current measurement row by `measurement_row_sha256`; this is a planned synthetic measurement contract, not observed analytics, ranking, inquiry, conversion or revenue evidence.
 - The complete first-round field set, units, formats, and examples appear only in the single worksheet. Decision blocks and CTAs reference that worksheet instead of repeating it.
 - Route or endpoint status is not proven by a reserved URL, HTTP response, toast, or status string.
-- HTML `lang`, canonical, Article JSON-LD, final DOM image-alt behavior, and mobile production rendering remain separate deferred or blocked evidence axes.
+- Final DOM image-alt behavior and mobile production rendering remain separate deferred or blocked evidence axes.
 
 ## External-action statement
 

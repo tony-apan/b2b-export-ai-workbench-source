@@ -8,7 +8,7 @@ owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-11"
 sources: ["../PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md", "../ADAPTERS/cms/allincms/article-operations.md"]
-related: ["article-brief.md", "article-draft.md", "article-quality-review.md", "../PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md"]
+related: ["article-brief.md", "article-draft.md", "article-quality-review.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "已获得当前站点和当前动作授权，需要记录一篇英文 B2B 文章的实际 CMS 写入、回读、前台验收、CTA/内链证据和仍未关闭的生产边界时。"
@@ -296,7 +296,7 @@ actual_outcome_evidence_refs: []
 actual_outcome_accountable_reviewer: "not-applicable"
 actual_sales_acceptance_evidence_refs: []
 unsupported_outcome_claims_status: "block"
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: "deferred-block"
 canonical_status: "deferred-block"
 article_json_ld_status: "deferred-block"
@@ -546,9 +546,6 @@ These remain independent deferred BLOCKs and are not closed by article-content P
 
 | Block | Current status | Boundary |
 |---|---|---|
-| HTML `lang` | deferred-block | Frontend SEO implementation and final DOM verification required |
-| Canonical | deferred-block | Correct absolute canonical and final DOM verification required |
-| Article JSON-LD | deferred-block | Visible-content parity and final DOM verification required |
 | Final DOM image alt | block | Renderer must emit a meaningful non-empty alt where required |
 
 Markdown, Slate or media metadata containing alt text does not prove the final DOM issue is solved.

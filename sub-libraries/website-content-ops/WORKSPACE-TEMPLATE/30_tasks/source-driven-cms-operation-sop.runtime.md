@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "用户提供资料并要求新建或更新网站、文章、产品、分类、标签或媒体，且需要通过 CMS 接口执行时。"
 keywords: ["source driven", "CMS operation plan", "create update upsert", "desired state", "API first", "reconciliation"]
 generated_from: "../../PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md"
-generated_source_sha256: "f95cbf77a39227e27775b7f21df54ffd5a06442e93949cef760d58e9b96e6254"
+generated_source_sha256: "441ca83133b0ce3e0544945074db8894de892b1583bf0b0208d5a8944d491929"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime projection from PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md; canonical edits belong in the core package. -->
@@ -210,7 +210,7 @@ node scripts/validate-content-operation-plan.mjs path/to/content-operation-plan.
 - writeback targets；
 - 对 canonical plan projection 计算的 SHA-256；摘要排除 `plan_digest`、`plan_sha256` 和授权 actor/时间，只绑定不可变业务计划与精确站点/operation scope，避免自引用循环。
 
-用户授权必须绑定**同一计划摘要、同一 target scope/key 和同一 operation ID 列表**。Plan A 绑定账号，Plan B 绑定真实站点；二者不能共用摘要或授权。计划、资料字节、目标站点、操作顺序、字段或图片发生变化后，旧授权失效。计划结构 PASS 只证明本地合同；`authorization_scope.status=pending` 时不得执行。
+用户授权必须绑定**同一计划摘要、同一 target scope/key 和同一 operation ID 列表**。授权必须在**同一文件写入步骤**连同 `archived_at`(=approved_at) 落盘（冻结即归档）；验证器对 approved 计划强制归档字段，缺档 BLOCK。Plan A 绑定账号，Plan B 绑定真实站点；二者不能共用摘要或授权。计划、资料字节、目标站点、操作顺序、字段或图片发生变化后，旧授权失效。计划结构 PASS 只证明本地合同；`authorization_scope.status=pending` 时不得执行。
 
 ## 9. 接口优先与严格串行执行
 

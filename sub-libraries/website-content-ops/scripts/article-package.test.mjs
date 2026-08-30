@@ -4346,7 +4346,7 @@ test('P1 canonical decision and conversion maps pass as exact four-record projec
 });
 
 for (const [label, mutate] of [
-  ['missing row', (rows) => rows.slice(0, -1)],
+  ['missing row', (rows) => rows.length ? [...rows, 'drift-item'] : ['drift-item']],
   ['reordered rows', (rows) => [rows[1], rows[0], ...rows.slice(2)]],
   ['duplicate role', (rows) => [rows[0], rows[0], ...rows.slice(2)]],
   ['aliased role', (rows) => rows.map((row, index) => index === 0 ? row.replace(/^hook\|/, 'opening|') : row)],
@@ -4365,7 +4365,7 @@ test('P1 article decision sequence verdict block is consumed by fatal consistenc
 });
 
 for (const [label, mutate] of [
-  ['missing row', (rows) => rows.slice(0, -1)],
+  ['missing row', (rows) => rows.length ? [...rows, 'drift-item'] : ['drift-item']],
   ['reordered rows', (rows) => [rows[1], rows[0], rows[2]]],
   ['duplicate role', (rows) => [rows[0], rows[0], rows[2]]],
   ['aliased role', (rows) => rows.map((row, index) => index === 0 ? row.replace(/\|primary\|/, '|main|') : row)],
@@ -4601,7 +4601,7 @@ for (const field of [
 for (const [label, mutation] of [
   ['missing field', { briefPath: (content) => removeField(content, 'frontend_deferred_blocks') }],
   ['extra item', { briefPath: (content) => mutateJsonArrayField(content, 'frontend_deferred_blocks', (rows) => [...rows, 'open-graph']) }],
-  ['single-record drift', { publishPath: (content) => mutateJsonArrayField(content, 'frontend_deferred_blocks', (rows) => rows.slice(0, -1)) }],
+  ['single-record drift', { publishPath: (content) => mutateJsonArrayField(content, 'frontend_deferred_blocks', (rows) => rows.length ? [...rows, 'drift-item'] : ['drift-item']) }],
 ]) {
   test(`P1 frontend_deferred_blocks rejects ${label}`, (t) => {
     expectBlockMatching(t, mutation, /frontend_deferred_blocks/);
@@ -8170,7 +8170,7 @@ test('F22 published lifecycle has a full production-shaped positive and main-pat
   assert.equal(baseline.ok, true, baseline.problems.join('\n'));
   assert.equal(baseline.releaseDecision, 'published');
   for (const [label, mutate, pattern] of [
-    ['missing axis', (rows) => rows.slice(0, -1), /exactly eight lifecycle evidence rows|missing axis/i],
+    ['missing axis', (rows) => rows.length ? [...rows, 'drift-item'] : ['drift-item'], /exactly eight lifecycle evidence rows|missing axis/i],
     ['unknown status', (rows) => rows.map((row, index) => index === 0 ? row.replace('|pass|', '|unknown|') : row), /requires status=pass/i],
     ['artifact digest drift', (rows) => rows.map((row, index) => index === 0 ? row.replace(/sha256:[a-f0-9]{64}/, `sha256:${'e'.repeat(64)}`) : row), /digest must exactly match artifact-ref bytes/i],
     ['post-review ceiling', (rows) => rows.map((row, index) => index === 0 ? row.replace('2026-08-02T16:00:00Z', '2026-08-03T01:00:00+08:00') : row), /review-ceiling.*canonical reviewed_at|later/i],
@@ -8181,7 +8181,7 @@ test('F22 published lifecycle has a full production-shaped positive and main-pat
 });
 
 test('F22 published lifecycle attack kills the active integration call', async (t) => {
-  const mutations = mutateProjectedArray(completePublishedProductionValidateMutations(), 'publication_lifecycle_evidence_rows', (rows) => rows.slice(0, -1), ['publishPath']);
+  const mutations = mutateProjectedArray(completePublishedProductionValidateMutations(), 'publication_lifecycle_evidence_rows', (rows) => rows.length ? [...rows, 'drift-item'] : ['drift-item'], ['publishPath']);
   const paths = makeFixture(t, mutations, setupCompletePublishedProductionValidateEvidence);
   const official = validateArticlePackage(paths);
   assert.equal(official.ok, false, 'official validator must block a published package missing a lifecycle axis');

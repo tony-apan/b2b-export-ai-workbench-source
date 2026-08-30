@@ -8,13 +8,13 @@ owner: "AI"
 created: "2026-07-31"
 last_updated: "2026-08-11"
 sources: ["b2b-seo-article-standard.runtime.md", "b2b-article-stage-patterns.runtime.md", "../10_sources/index.md"]
-related: ["index.md", "b2b-seo-article-standard.runtime.md", "article-page-frontend-seo-contract.runtime.md", "b2b-article-stage-patterns.runtime.md", "../TEMPLATES/article-brief.md", "../TEMPLATES/article-draft.md", "../TEMPLATES/article-quality-review.md", "../TEMPLATES/publish-record.md"]
+related: ["index.md", "b2b-seo-article-standard.runtime.md", "b2b-article-stage-patterns.runtime.md", "../TEMPLATES/article-brief.md", "../TEMPLATES/article-draft.md", "../TEMPLATES/article-quality-review.md", "../TEMPLATES/publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要优化一篇现有英文 B2B 文章，而不是从空白新建，并要求 AI 按固定顺序完成诊断、改写、对抗审查和写回时。"
 keywords: ["article optimization", "English-only", "B2B SOP", "search intent", "content refresh", "stage CTA", "internal links"]
 generated_from: "../../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md"
-generated_source_sha256: "dbb66731472d60d7b8a506a89e3335be32c4ae5b9169158be8d4b7bd66ce5eef"
+generated_source_sha256: "43d66d10245d42b16e23e7013810bfbc2cdc010584f5a78eebefe242d5a56ce2"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime projection from PLAYBOOKS/id-0003-b2b-article-optimization-sop.md; canonical edits belong in the core package. -->
@@ -33,7 +33,7 @@ generated_by: "scripts/sync-workspace-template.mjs"
 
 本 SOP、四份 canonical template、examples 与 validator 必须在同一候选中投影 Standard 的 canonical 字段与枚举，包括独立 buyer-task/query/search-demand/SERP 证据轴、stage-specific intake、六槽 Direct Answer、六槽位 pain chain、publishable-body boundary 与 qualification contracts；不得生成同义 alias、旧 action 型 commitment 或 snapshot 分叉。本 SOP 不宣称这些对象当前已同步。
 
-四记录的不可分叉 projection 还必须包含：`content_action`、`dominant_search_intent`、`content_family_matches`、`content_family_singleton_verdict`、`customer_language_gate_verdict`、`pain_evidence_gate_verdict`、`evidence_origin`、`fixture_identity`、`production_proof_eligible`、`cta_transmission_action_inventory`、`cta_collection_route_policy_contracts`、`section_information_gain_verdict` 与 `normalized_field_set_redundancy_verdict`。字段缺失、snapshot alias、值漂移或任一记录未消费均 BLOCK。三个 deferred frontend SEO 项 `html-lang|canonical|article-json-ld` 继续保持独立 BLOCK，不因本文整改而变成 PASS。
+四记录的不可分叉 projection 还必须包含：`content_action`、`dominant_search_intent`、`content_family_matches`、`content_family_singleton_verdict`、`customer_language_gate_verdict`、`pain_evidence_gate_verdict`、`evidence_origin`、`fixture_identity`、`production_proof_eligible`、`cta_transmission_action_inventory`、`cta_collection_route_policy_contracts`、`section_information_gain_verdict` 与 `normalized_field_set_redundancy_verdict`。字段缺失、snapshot alias、值漂移或任一记录未消费均 BLOCK。平台前端边界项（⛔ 禁令范围，不展开）继续 deferred，不因本文整改而变成 PASS。
 
 ## Phase A：判断页面是否应存在
 
@@ -438,7 +438,7 @@ route-status|endpoint|owner|required-inputs-mode|commitment-boundary|reference-e
 - execution/result/verdict 分别只允许 `not-run|executed|not-applicable`、`missing|synthetic-only|confirmed|failed|not-applicable`、`pass|block|not-applicable`；
 - `cta_receiving_owner`、route owner 与 role-handoff receiving owner 共用 named-owner 规则，纯岗位名同样 BLOCK；
 - `soft_path_route_safety_verdict`、`all_buyer_visible_cta_sections_evidence_parity_verdict`、`cross_cta_instruction_consistency_verdict` 任一 `block` 都必须进入 fatal gate；
-- Brief/Draft/Review/Publish 的主 CTA `cta_destination`、`cta_owner`、reference/reachability/capability execution-result-verdict-evidence refs 与 17 段 fallback contract 必须逐字符 exact projection；`frontend_deferred_blocks` 必须是四记录完全相等的 exact set `[html-lang, canonical, article-json-ld]`。
+- Brief/Draft/Review/Publish 的主 CTA `cta_destination`、`cta_owner`、reference/reachability/capability execution-result-verdict-evidence refs 与 17 段 fallback contract 必须逐字符 exact projection；`frontend_deferred_blocks` 必须是四记录完全相等的 exact set `[]`（平台边界项按 ⛔ 禁令不展开）。
 
 所有实际收资的 verified primary/fallback endpoint 还必须各自恰好绑定一行 `cta_collection_route_policy_contracts`：
 
@@ -562,11 +562,8 @@ Standard、SOP、canonical templates、examples、validator、tests 与 workspac
 
 实际 CMS 动作必须另行授权。转换或复制正文时只能提取唯一 `PUBLISHABLE_BODY_START/END` 内的 bounded body；marker 外 control record 禁止进入 CMS。HTTP 200、toast、后台状态字符串或 `publication_status: Published` 均不能自证。Publish Record 必须逐轴绑定 authorization、CMS mutation、backend readback、editor reopen、anonymous frontend、desktop、mobile、image fetch/decode；每轴含 artifact ref + SHA-256 digest、site/record/URL、producer/reviewer、observed_at/reviewed_at/review ceiling，任一轴缺失即 lifecycle BLOCK。
 
-以下保持独立 BLOCK，不由正文 PASS 覆盖；其中前三项本轮 deferred，不阻断“内容合同 scope”审查，但仍阻断正式 production SEO PASS：
+以下保持独立 BLOCK，不由正文 PASS 覆盖；平台边界项按 ⛔ 禁令不展开：
 
-- `<html lang>`；
-- canonical；
-- Article JSON-LD；
 - final DOM 图片空 alt renderer 问题；
 - source publication clearance 与 license status；
 - candidate freeze、release approval、tag/push/publish 与 Stable/Published 状态。

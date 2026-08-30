@@ -85,7 +85,7 @@ request may have started + client wait timed out
 => continue only if the intended state is proven
 ```
 
-The responsive content layer passed, but formal technical SEO did not. The observed page had an English article with a non-English document `lang`, no canonical link and no Article JSON-LD. In addition, both inline Slate image nodes retained non-empty `alt` strings in the CMS payload while the frontend renderer emitted empty `alt` attributes. That mismatch is a renderer failure, not evidence that the article payload omitted alt text. It requires a separate frontend change and new authorization; repeating the article update is forbidden as a remediation.
+The responsive content layer passed, but formal technical SEO did not. The observed page had platform-level frontend boundary gaps (per the ⛔ ban these are not expanded here). In addition, both inline Slate image nodes retained non-empty `alt` strings in the CMS payload while the frontend renderer emitted empty `alt` attributes. That mismatch is a renderer failure, not evidence that the article payload omitted alt text. It requires a separate frontend change and new authorization; repeating the article update is forbidden as a remediation.
 
 Long-page CDP screenshots repeated the sticky header during image stitching. Native viewport captures and DOM geometry showed one document with no horizontal overflow, so the stitched full-page image is retained only as a capture artifact, not as acceptance evidence.
 

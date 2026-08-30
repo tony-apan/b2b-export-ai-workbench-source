@@ -17,7 +17,7 @@ reviewer_separation_verdict: "block"
 created: "2026-07-31"
 last_updated: "2026-08-11"
 sources: ["../PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md"]
-related: ["article-brief.md", "article-draft.md", "publish-record.md", "../PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md"]
+related: ["article-brief.md", "article-draft.md", "publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要独立审查文章是否完成一个真实英文买家任务，并把结构质量、生产证据、fatal gate 和 deferred 前端问题明确分开时。"
@@ -276,7 +276,7 @@ release_decision: "blocked"
 operation_mode: "not-run"
 overall_verdict: "block"
 cta_route_transmission_verdict: "block"
-frontend_deferred_blocks: ["html-lang", "canonical", "article-json-ld"]
+frontend_deferred_blocks: []
 html_lang_status: "deferred-block"
 canonical_status: "deferred-block"
 article_json_ld_status: "deferred-block"
@@ -658,9 +658,6 @@ Any `observed-no-improvement`, `observed-improvement`, `not-accepted`, or `sales
 
 Do not treat content review as closure for these independent blocks:
 
-- HTML `lang` — deferred frontend SEO BLOCK;
-- canonical — deferred frontend SEO BLOCK;
-- Article JSON-LD — deferred frontend SEO BLOCK;
 - final DOM image alt — independent renderer BLOCK.
 
 ## 17. Final decision

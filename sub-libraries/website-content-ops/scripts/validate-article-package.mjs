@@ -7498,10 +7498,10 @@ function validateReviewEvidenceAxisVocabulary(review, problems) {
 function validateArticleProjectionMatrix({ records, brief, draft, review, publish, evidenceScope, problems }) {
   requireCanonicalMatch(records, 'page_h1', problems, 'page_h1', 'exact-raw-scalar');
   for (const field of ['serp_primary_query', 'serp_primary_query_sample_size', 'serp_primary_query_dominant_result_type', 'serp_primary_query_dominant_result_count', 'serp_primary_query_dominance_threshold', 'serp_primary_query_dominance_verdict', 'serp_primary_query_result_type_counts', 'serp_supporting_query_result_type_rows', 'production_readiness_scope', 'cta_destination', 'cta_owner', 'cta_reference_check_execution_status', 'cta_reference_evidence_result', 'cta_reference_gate_verdict', 'cta_reference_evidence_refs', 'cta_reachability_check_execution_status', 'cta_reachability_evidence_result', 'cta_reachability_gate_verdict', 'cta_reachability_evidence_refs', 'cta_capability_check_execution_status', 'cta_capability_evidence_result', 'cta_capability_gate_verdict', 'cta_capability_evidence_refs', 'cta_fallback_route_contract', 'mobile_visual_check_execution_status', 'mobile_visual_evidence_result', 'mobile_visual_gate_verdict', 'mobile_visual_evidence_refs']) requireCanonicalMatch(records, field, problems);
-  const deferredExpected = ['article-json-ld', 'canonical', 'html-lang'];
+  const deferredExpected = []; // 平台边界项按 ⛔ 禁令不展开（2026-08-30 用户指令），字段保留但恒为空集
   for (const record of records) {
     const actual = strings(record, 'frontend_deferred_blocks', problems, { allowEmpty: true }).map(normalizeText).sort();
-    if (JSON.stringify(actual) !== JSON.stringify(deferredExpected)) fail(problems, `${record.source} frontend_deferred_blocks must be the exact set html-lang, canonical, article-json-ld`);
+    if (JSON.stringify(actual) !== JSON.stringify(deferredExpected)) fail(problems, `${record.source} frontend_deferred_blocks must be the exact empty set (platform boundary items are ban-scoped, not enumerated)`);
   }
 
   for (const field of ['query_evidence_refs', 'buyer_task_evidence_refs', 'search_demand_evidence_refs', 'serp_format_evidence_refs']) {
