@@ -85,4 +85,4 @@ keywords: ["open questions", "blocked", "deferred", "owner", "evidence", "next a
 | `OQ-BAN-0001` | open | 四项禁令的机器侧残留（三状态字段名 12 文件+验证器+测试钉死；历史日志 4 处原句）豁免还是清除？ | Tony | Skill 化/发布 | flash b1671e77 + TERRA 72d4c4e8 双审 WARN | 用户定性后：豁免→记录口径；清除→另批清扫（含 vendor bundle 重建） |
 | `OQ-AUTH-0001` | blocked | CMS 登录密码轮换（密码曾现聊天明文；JWT 有效至 2026-09-29 且无法服务端吊销） | Tony | 凭据安全 | TERRA f850c1a1 | 用户改密后关闭 |
 | `OQ-AUTH-0002` | closed | ~~skill 仓维持 private~~ 已被 2026-08-30 用户决策取代：合并进母库（SKILL-INSTALL），独立仓封存 archived | Tony | Skill 分发 | 用户选项决策 + 母库 CHANGELOG 治理批 | 已关闭；安装包能力待 id-0073 dist 管线 |
-| `OQ-COMMIT-0001` | blocked | 母库 70+ 文件改动按 5-commit 切分（C1-C5）提交的授权（禁 squash、禁历史改写；切分清单见母库 CHANGELOG 2026-08-30 治理批小节） | Tony | 母库发布 | TERRA 72d4c4e8 + 2fc260ac 切分方案 | 用户授权后按 C1-C5 执行并推送 main |
+| `OQ-COMMIT-0001` | closed | 5-commit 切分授权已履行：C1-C5（c8b1849..55f69ff）+ C6 管线（2617b3d）+ 收口（30c71f9）全部推送 main，禁 squash 纪律保持 | Tony | 母库发布 | git log origin/main | 已关闭（2026-08-31） |

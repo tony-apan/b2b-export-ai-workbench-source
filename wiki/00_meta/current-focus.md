@@ -5,8 +5,8 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-08-11"
-sources: ["Tony conversation 2026-07-26", "Tony decisions 2026-07-27", "Local repository evidence 2026-07-29", "Tony publication authorization 2026-07-30", "GitHub remote verification 2026-07-30", "Local B2B SEO adversarial evidence 2026-07-31", "Authorized redacted existing-article optimization and publish acceptance 2026-07-31", "Tony preparation-only acceptance 2026-08-01", "F23 local immutable review and four-reviewer closure 2026-08-11"]
+last_updated: "2026-08-31"
+sources: ["Tony conversation 2026-07-26", "Tony decisions 2026-07-27", "Local repository evidence 2026-07-29", "Tony publication authorization 2026-07-30", "GitHub remote verification 2026-07-30", "Local B2B SEO adversarial evidence 2026-07-31", "Authorized redacted existing-article optimization and publish acceptance 2026-07-31", "Tony preparation-only acceptance 2026-08-01", "F23 local immutable review and four-reviewer closure 2026-08-11", "Governance batch dual-reviews 2026-08-30/31", "skill merge + id-0073 pipeline closure 2026-08-31"]
 related: ["current-focus-history-2026-07.md", "check-mechanism-map.md", "open-questions.md", "in-repository-agency-runtime-model.md", "../../MANIFEST.md", "../../sub-libraries/agency-operations/README.md", "../../sub-libraries/website-content-ops/README.md", "logs/2026/07/2026-07-30.md", "logs/2026/07/2026-07-31.md", "logs/2026/08/2026-08-01.md", "logs/2026/08/2026-08-11.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
@@ -15,9 +15,9 @@ redaction_status: "safe-to-publish"
 
 ## Current Focus
 
-**Agency Operations 本地准备阶段已经收口完成**：用户可把完整母库放在一个根目录内，未来再把多客户、多公司、多产品、多网站、社媒、来发信和邮件运行数据放入 Git 隔离的 `customer-runtime/`。当前已建立上游 Core / 初始化 Template / 私有 Runtime 三层合同、显式 `client_id` 搜索边界、TASK/HANDOFF 续接模型和 Draft/BLOCK 子库；本轮没有创建真实运行区，自动母库更新第一版只允许 `--check`，不允许 fetch/pull/apply。后续真实客户、备份、远程 apply 或发布只有另行立项和授权后才进入 Current。
+**建站工具包治理批与真源管线已全部收口（2026-08-30/31）**：四项平台审计禁令全仓清扫、id-0002 退役、skill 独立仓封存并合并进母库 `SKILL-INSTALL/`、id-0073 真源管线落地（四子命令+四守卫+双机器闸）、客户标识去敏体系（含 verify FAIL 闸）。当前收尾焦点：validate-sub-library 存量 ~390 失败修复立项（恢复发布门判别力）与 interface-kit 轻量安装能力（install-from-dist）。
 
-当前入口：[运行模型](in-repository-agency-runtime-model.md) → [Agency Operations README](../../sub-libraries/agency-operations/README.md) → [START-HERE](../../sub-libraries/agency-operations/START-HERE.md)。Website Content Operations 的历史 Preview 和当前 release BLOCK 继续保留，但本阶段不再作为唯一 Current。
+当前入口：建站走 [WCO README 建站一条龙](../../sub-libraries/website-content-ops/README.md) → [NEW-SITE-ONEPASS](../../sub-libraries/website-content-ops/TOOLS/interface-kit/NEW-SITE-ONEPASS.md)；管线与真源约定见 [scripts/README](../../sub-libraries/website-content-ops/scripts/README.md)；运行模型与 Agency Operations 入口不变。
 
 ## Current State
 
@@ -60,4 +60,5 @@ redaction_status: "safe-to-publish"
 2. 母库后续只同步到新的私有 canonical 仓；旧公开/私有仓继续作为只读历史边界，不 force push、不覆盖。
 3. 收集真实新手冷启动、跨部署和失败恢复证据；涉及远程 CMS mutation 时继续逐次获得明确授权。
 4. 外部固定 workflow SHA、Protected Environment/ruleset、可信签名 annotated tag、包外 approval/evidence、课程真实提交和跨部署证据未齐备前，母库公开/Stable、子库 Stable 和课程 release 继续 `BLOCK`。
-- 2026-08-30 晚：allincms-bulk-content-upload skill 独立仓已封存（archived），安装壳与运维参考合并进母库 `sub-libraries/website-content-ops/SKILL-INSTALL/`（唯一真源）；vendor 快照退役待 id-0073 dist 管线。
+5. 2026-08-30/31 治理批事实：skill 独立仓封存（archived）并合并进母库 `sub-libraries/website-content-ops/SKILL-INSTALL/`（唯一真源）；id-0073 真源管线已落地（`scripts/interface-kit-pipeline.py`，Adopted）——vendor 快照能力由 build-dist 承接；公开 git 历史中的既有客户标识按用户决策"直接推送去敏树"接受现状（HEAD 已清零）。
+6. 下一步（2026-08-31 建议批次）：validate-sub-library 存量失败修复（恢复发布门）；interface-kit install-from-dist 轻量安装；license 3 卡维持 BLOCK 按需通关。

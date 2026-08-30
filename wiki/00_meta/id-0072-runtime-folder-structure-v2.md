@@ -2,10 +2,10 @@
 title: "运行时文件夹结构 v2（四层物理分离）"
 description: "母库知识/工具代码/客户私有数据/会话 scratch 四层物理分离的结构约定；解决'每次清理'残留问题。"
 type: "meta"
-status: "Adopted（迁移已执行 2026-08-30；绑定任务卡 id-0073 已立项）"
+status: "Adopted（迁移执行 2026-08-30；绑定卡 id-0073 已 Adopted 2026-08-31；全部待办收口）"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-08-30"
+last_updated: "2026-08-31"
 doc_id: "id-0072"
 sources: ["用户结构诉求 2026-08-30", "残留实测（217 /tmp 文件 + 64 tracked 修改 + skill 仓 dirty）"]
 related: ["AGENTS.md", "in-repository-agency-runtime-model.md"]
@@ -68,6 +68,6 @@ redaction_note: "仅结构规则与统计数，无凭据/客户数据；fluxpeda
 - [x] **① interface-kit 真源已立项**（绑定条款履行）：任务卡 id-0073（DoD/步骤/期限 2026-09-06）
 - [x] **迁移已执行**（2026-08-30 17:14）：7/7 步通过（闸门 A1/A2/B + realpath 断言 + 软链可达 + git 无条目）；功能级验证通过（registry VERIFY PASS / 工具语法 OK / dry-run 连 API 成功 / 站点 200）；母库根已纯净（tmp/ 已清，pdfs 归 runtime/90_archive）
 - [x] 用户授权迁移 + 软链（2026-08-30 已履行；六条件核备：①gitignore ②相对链 ③701_runtime 先验 ④realpath ⑤64 分拣 ⑥skill commit）。绑定条款（TERRA X3）与待办①同日履行
-- [ ] 母库 64 个 tracked 修改按 release 流程分拣（TERRA 8 文件抽查全=知识升级；不裸 push，需用户授权）；untracked 剔除 .tmp-dbg.mjs/tmp//.DS_Store
-- [ ] ~/.agents/skills 仓 3 个脏文件 commit（TERRA 判合规；.git 目录实证存在——flash-1 误报"无 git 仓"已核销）
+- [x] 母库 64 个 tracked 修改按 release 流程分拣——已由 C1-C5 五 commit 消化（2026-08-30 用户授权；.tmp-dbg 已删、tmp/ 已清、.DS_Store 已 ignore）
+- [x] ~/.agents/skills 仓 3 个脏文件 commit（598b970 履行；后续该仓整体封存，安装壳合并进母库 SKILL-INSTALL/，见 id-0073 与当日日志）
 - [x] .DS_Store 加 .gitignore（已忽略）；RUNBOOK 路径约定已改 $RUNTIME_ROOT（2026-08-30）

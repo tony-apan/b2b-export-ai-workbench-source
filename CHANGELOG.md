@@ -13,6 +13,20 @@ redaction_status: "private-source-reviewed"
 ---
 # Mother Library Changelog
 
+## 0.3.3-working — 2026-08-31
+
+### 治理批收口 + skill 合并 + 真源管线（每批 flash+TERRA 双审）
+
+| 项 | 0.3.2-working | 0.3.3-working |
+|---|---|---|
+| skill 仓 | 独立仓（public→private 冻结） | 封存 archived；311 文件合并进母库 SKILL-INSTALL/（唯一真源，source-only 身份） |
+| interface-kit 真源 | 手工 cp 双副本 | id-0073 管线：四子命令+四守卫+stale 守卫（Adopted，期限前达成） |
+| 客户标识防线 | 人工清单式清扫（三次变形漏网） | 大小写不敏感机器闸（verify FAIL）+ 回流内容级去敏闸 |
+| 提交纪律 | 工作树长期 dirty | C1-C6 分批 commit+push（禁 squash 保持） |
+
+- 详细逐项对比见子库 CHANGELOG 2026-08-30 三列表与本文 0.3.2-working 治理批小节。
+- 已知边界不变：license 3 卡 BLOCK（按需通关）、公开 git 历史既有标识维持接受现状、validate-sub-library 存量失败修复立项中。
+
 ## 0.3.2-working — 2026-08-30
 
 ### 建站工具包治理批（四项平台审计禁令清扫 + skill 仓风控 + 凭据治理）
