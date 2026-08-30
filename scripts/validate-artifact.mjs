@@ -64,6 +64,101 @@ function validateManifestFilePath(file) {
   }
   return true;
 }
+
+function canonicalJson(value) {
+  if (value === null || typeof value === 'boolean' || typeof value === 'string' || typeof value === 'number') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (typeof value !== 'object') return JSON.stringify(String(value));
+  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+}
+function validateSourceProvenance(manifest, files) {
+  const provenance = manifest?.source_provenance;
+  if (!provenance || typeof provenance !== 'object' || Array.isArray(provenance)) {
+    fail('MANIFEST.json source_provenance must be an object');
+    return;
+  }
+  if (provenance.schema !== 'git-file-provenance/v1') fail('MANIFEST.json source_provenance.schema must be git-file-provenance/v1');
+  if (provenance.source_commit !== manifest.source_commit) fail('MANIFEST.json source_provenance.source_commit must equal source_commit');
+  if (Object.hasOwn(provenance, 'source_scope') && provenance.source_scope !== manifest.source_scope) fail('MANIFEST.json source_provenance.source_scope must equal source_scope');
+
+  const records = Array.isArray(provenance.files) ? provenance.files : [];
+  if (!Array.isArray(provenance.files)) fail('MANIFEST.json source_provenance.files must be an array');
+  const recordPaths = [];
+  const seenPaths = new Set();
+  const allowedGitStates = new Set(['committed', 'modified', 'untracked', 'ignored']);
+  const hex64 = /^[a-f0-9]{64}$/;
+  const gitObject = /^[a-f0-9]{40,64}$/;
+
+  for (const [index, record] of records.entries()) {
+    const label = `MANIFEST.json source_provenance.files[${index}]`;
+    if (!record || typeof record !== 'object' || Array.isArray(record)) {
+      fail(`${label} must be an object`);
+      continue;
+    }
+    const path = record.path;
+    if (typeof path !== 'string' || !path) {
+      fail(`${label}.path must be a non-empty string`);
+      continue;
+    }
+    recordPaths.push(path);
+    if (seenPaths.has(path)) fail(`MANIFEST.json source_provenance.files has duplicate path: ${path}`);
+    seenPaths.add(path);
+    if (!files.includes(path)) fail(`MANIFEST.json source_provenance.files has unmanifested path: ${path}`);
+    if (!hex64.test(record.sha256 ?? '')) fail(`${label}.sha256 must be a lowercase SHA-256 digest`);
+    else if (files.includes(path) && record.sha256 !== sha256(join(artifactRoot, path))) fail(`source provenance file SHA mismatch: ${path}`);
+    if (!allowedGitStates.has(record.git_state)) fail(`${label}.git_state is invalid: ${String(record.git_state)}`);
+    if (typeof record.commit_bound !== 'boolean') fail(`${label}.commit_bound must be boolean`);
+
+    if (record.commit_bound === true) {
+      if (record.git_state !== 'committed') fail(`${label} commit_bound=true requires git_state committed`);
+      if (!gitObject.test(record.commit_blob ?? '')) fail(`${label}.commit_blob must be a Git object SHA when commit_bound=true`);
+      if (!hex64.test(record.commit_sha256 ?? '')) fail(`${label}.commit_sha256 must be a SHA-256 digest when commit_bound=true`);
+      else if (record.commit_sha256 !== record.sha256) fail(`source provenance commit SHA-256 mismatch: ${path}`);
+    } else if (record.commit_bound === false) {
+      if (record.git_state === 'committed') fail(`${label} commit_bound=false cannot use git_state committed`);
+      if (record.git_state === 'modified') {
+        if (!gitObject.test(record.commit_blob ?? '')) fail(`${label}.commit_blob must be a Git object SHA when git_state=modified`);
+        if (!hex64.test(record.commit_sha256 ?? '')) fail(`${label}.commit_sha256 must be a SHA-256 digest when git_state=modified`);
+        else if (record.commit_sha256 === record.sha256) fail(`${label} git_state=modified requires different candidate and commit SHA-256 values`);
+      } else if (record.git_state === 'untracked' || record.git_state === 'ignored') {
+        if (record.commit_blob !== null) fail(`${label}.commit_blob must be null when git_state=${record.git_state}`);
+        if (record.commit_sha256 !== undefined && record.commit_sha256 !== null) fail(`${label}.commit_sha256 must be omitted when git_state=${record.git_state}`);
+      }
+    }
+  }
+
+  if (recordPaths.length === files.length && recordPaths.some((path, index) => path !== files[index])) {
+    fail('MANIFEST.json source_provenance.files paths must exactly match MANIFEST.json files in deterministic order');
+  }
+  for (const file of files) if (!seenPaths.has(file)) fail(`MANIFEST.json source_provenance.files missing path: ${file}`);
+
+  const computedUnbound = records.filter((record) => record && record.commit_bound === false);
+  if (!Array.isArray(provenance.unbound_files)) fail('MANIFEST.json source_provenance.unbound_files must be an array');
+  else if (canonicalJson(provenance.unbound_files) !== canonicalJson(computedUnbound)) fail('MANIFEST.json source_provenance.unbound_files does not match unbound file records');
+
+  const missing = Array.isArray(provenance.missing_commit_files) ? provenance.missing_commit_files : [];
+  if (!Array.isArray(provenance.missing_commit_files)) fail('MANIFEST.json source_provenance.missing_commit_files must be an array');
+  else {
+    const seenMissing = new Set();
+    for (const path of missing) {
+      if (typeof path !== 'string' || !path || path.startsWith('/') || path.includes('\\') || path.split('/').some((segment) => !segment || segment === '.' || segment === '..')) fail(`unsafe source_provenance.missing_commit_files path: ${String(path)}`);
+      else if (seenMissing.has(path)) fail(`duplicate source_provenance.missing_commit_files path: ${path}`);
+      else if (seenPaths.has(path)) fail(`source_provenance.missing_commit_files overlaps packaged file: ${path}`);
+      seenMissing.add(path);
+    }
+  }
+
+  const commitBoundCount = records.filter((record) => record?.commit_bound === true).length;
+  const commitRebuildable = records.length === files.length && commitBoundCount === records.length && missing.length === 0;
+  if (provenance.selected_file_count !== records.length) fail('MANIFEST.json source_provenance.selected_file_count does not match file records');
+  if (provenance.commit_bound_file_count !== commitBoundCount) fail('MANIFEST.json source_provenance.commit_bound_file_count does not match file records');
+  if (provenance.commit_rebuildable !== commitRebuildable) fail('MANIFEST.json source_provenance.commit_rebuildable does not match file records');
+  if (manifest.source_commit_rebuildable !== commitRebuildable) fail('MANIFEST.json source_commit_rebuildable does not match source_provenance records');
+  if (manifest.source_selected_dirty !== !commitRebuildable) fail('MANIFEST.json source_selected_dirty does not match source_provenance records');
+  const expectedSnapshotKind = commitRebuildable ? 'source-commit' : 'working-tree-snapshot';
+  if (manifest.source_snapshot_kind !== expectedSnapshotKind) fail(`MANIFEST.json source_snapshot_kind must be ${expectedSnapshotKind}`);
+}
+
 function runEmbeddedValidator(scriptName, validatorArgs = []) {
   const validatorPath = join(artifactRoot, 'scripts', scriptName);
   if (!existsSync(validatorPath)) {
@@ -116,6 +211,7 @@ if (!failures.length) {
   if ((releaseMode || prepareMode) && manifest?.source_dirty) fail('prepared/release artifact must be built from a clean source worktree');
   if ((releaseMode || prepareMode) && (manifest?.source_commit_rebuildable !== true || manifest?.source_snapshot_kind !== 'source-commit' || manifest?.source_selected_dirty !== false)) fail('prepared/release artifact must be fully rebuildable from its source commit');
   if (listed.size !== files.length) fail('MANIFEST.json files list contains duplicates');
+  validateSourceProvenance(manifest, files);
   if (JSON.stringify(files) !== JSON.stringify([...files].sort())) fail('MANIFEST.json files list must be sorted for deterministic artifacts');
   const safeListed = new Set([...listed].filter((file) => validateManifestFilePath(file)));
   if (safeListed.size !== listed.size) {
@@ -173,19 +269,19 @@ if (!failures.length) {
       else if (approvalResult.status !== 0) fail('release approval sidecar/tag gate failed');
     }
   }
-  if (releaseMode) {
+  if (!failures.length && releaseMode) {
     runEmbeddedValidator('validate-indexes.mjs', ['--strict']);
     runEmbeddedValidator('validate-links.mjs', ['--release', artifactRoot]);
     runEmbeddedValidator('validate-logs.mjs', ['--release']);
     runEmbeddedValidator('validate-knowledge-chain.mjs', ['--release']);
     runEmbeddedValidator('validate-mother-library.mjs', ['--prepare']);
-  } else if (prepareMode) {
+  } else if (!failures.length && prepareMode) {
     runEmbeddedValidator('validate-indexes.mjs', ['--strict']);
     runEmbeddedValidator('validate-links.mjs', ['--release', artifactRoot]);
     runEmbeddedValidator('validate-logs.mjs', ['--release']);
     runEmbeddedValidator('validate-knowledge-chain.mjs');
     runEmbeddedValidator('validate-mother-library.mjs', ['--prepare']);
-  } else {
+  } else if (!failures.length) {
     runEmbeddedValidator('validate-mother-library.mjs');
   }
 }

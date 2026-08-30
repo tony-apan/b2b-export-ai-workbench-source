@@ -5,9 +5,9 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
+last_updated: "2026-08-01"
 sources: ["Subagent adversarial review"]
-related: ["current-focus.md", "ai-operating-manual.md", "source-taxonomy.md", "definition-of-done.md", "check-mechanism-map.md", "agent-handoff.md"]
+related: ["in-repository-agency-runtime-model.md", "current-focus.md", "ai-operating-manual.md", "source-taxonomy.md", "definition-of-done.md", "check-mechanism-map.md", "agent-handoff.md"]
 ---
 
 # Task Router
@@ -16,6 +16,7 @@ related: ["current-focus.md", "ai-operating-manual.md", "source-taxonomy.md", "d
 
 | 用户请求 | 先读 | 可更新 | 必须更新 | 交付格式 |
 |---|---|---|---|---|
+| 真实客户代运营 / 续接任务 | `in-repository-agency-runtime-model.md`, 本地 `customer-runtime/README.md`, `AGENTS.md`, `00_control/ACTIVE-CONTEXT.json`, 目标客户 `CLIENT.json`, 活动任务 `TASK.json` 与 `HANDOFF.md` | 仅目标客户 scope 内的来源、任务、输出、指标、证据、日志和写回候选 | TASK 当前状态、HANDOFF、当日事件、证据引用和任务 Registry；外部动作另做批准与回读 | client/company/task/channel/account scope、已完成、BLOCK、下一步和未验证边界 |
 | 新建长期知识页 | `wiki/00_meta/document-id-standard.md`, 目标目录 `index.md`, 最窄模板 | 目标知识页、对应 index | `doc_id`, sources/related, 当日日志 | 文件名、description、适用边界、证据和验证状态 |
 | 处理原始对话 | `raw/index.md`, `raw/10_conversations/index.md`, `raw/_templates/conversation-source.md`, `publishing-and-redaction.md` | 私有 raw 或公开去敏入口、source registry | 当日日志、`derived_to`, 必要时 open questions | Source ID、敏感级别、同意状态、原文与提炼边界 |
 | 提炼课程模块 | `wiki/90_outputs/courses/index.md`, `wiki/_templates/course-module.md`, 相关 concept/playbook | course module、练习、验证记录 | 当日日志、source registry、writeback | 来源、目标、步骤、练习、验收、边界和写回 |
@@ -41,14 +42,14 @@ related: ["current-focus.md", "ai-operating-manual.md", "source-taxonomy.md", "d
 
 | 内容类型 | 唯一真相源 | 其他位置如何引用 | 禁止复制 / 冒充的位置 |
 |---|---|---|---|
-| 原始对话、网页抓取、文档转写、媒体或导出 | `raw/` 对应分类；真实敏感材料进入仓库外私有运行区 | `10_sources` 登记 Source ID、授权、摘要和 raw 指针 | 不把原文复制进 wiki、课程、日志或子库源码 |
+| 原始对话、网页抓取、文档转写、媒体或导出 | `raw/` 对应分类；真实敏感材料进入根目录下 Git 隔离的 `customer-runtime/` 或外部挂载私有运行区 | `10_sources` 登记 Source ID、授权、摘要和 raw 指针 | 不把原文复制进 wiki、课程、日志或子库源码 |
 | 来源身份、日期、授权、证据边界 | `wiki/10_sources/` | concept、playbook、course 通过 Source ID / 路径引用 | 不在多个业务页各维护一套来源事实 |
 | 稳定定义、判断模型和跨场景原则 | `wiki/20_concepts/` | playbook、channel、course 链接该概念并补场景差异 | 不把工具按钮说明写成长期概念 |
 | 可重复执行的方法、步骤、失败处理和验收 | `wiki/30_playbooks/` | channel、course、sub-library 只引用或声明自己的适配差异 | 不在课程和子库各复制一套通用 SOP |
 | 当前公司、产品、ICP、offer、异议和证据事实 | `wiki/40_business/`；真实客户事实进私有运行区 | 渠道和输出页链接业务事实并注明快照日期 | 不把假设、synthetic fixture 或客户私密数据写成母库事实 |
 | 教学顺序、练习、验收和学员 writeback | `wiki/90_outputs/courses/` | 引用 source、concept、playbook；只新增教学表达 | 不把 raw 原文或未经验证的框架包装成课程结论 |
 | 可独立交付的完整能力模块 | `sub-libraries/<id>/` | 母库只保留 registry、canonical 入口和通用知识链接 | 不建平行根级 `skills/` 或复制整套母库知识 |
-| 真实运行输入、凭据、客户对象、接口响应和私有证据 | 仓库外客户私有运行区 | 公开库只写去敏证据指针、边界和可复用结论 | 不提交到公开 `raw/`、wiki、日志、fixture 或 release artifact |
+| 真实运行输入、凭据、客户对象、接口响应和私有证据 | 根目录下 Git 隔离的 `customer-runtime/` 或外部挂载的客户私有运行区 | 公开库只写去敏证据指针、边界和可复用结论 | 不提交到公开 `raw/`、wiki、日志、fixture 或 release artifact |
 | 发布范围、版本、许可、状态、approval 和 tag | 当前 scope 的 `MANIFEST.md`、`RELEASE.md`、`VERSION.md` 与 sidecar | README/registry 展示同步后的摘要并链接合同 | 不用 README 文案、日志或另一个 scope 的 PASS 覆盖合同 |
 | 当日事件与证据指针 | `wiki/00_meta/logs/YYYY/YYYY-MM/YYYY-MM-DD.md` | 月度摘要提炼稳定结论并回写上述真相源 | 不复制 raw 原文，不用日志替代长期知识页 |
 

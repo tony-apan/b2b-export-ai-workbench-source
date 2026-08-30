@@ -237,7 +237,7 @@ jobs:
                 --tmpfs /tmp:rw,noexec,nosuid,nodev,size=256m \
                 --tmpfs /scratch:rw,noexec,nosuid,nodev,size=32m \
                 "$runtime_image" \
-                sh -ceu 'mkdir -p "$HOME"; exec node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs' \
+                sh -ceu 'mkdir -p "$HOME"; exec node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs' \
                 > "$test_log" 2>&1; then
                 cat "$test_log"
                 echo "BLOCK: isolated trusted Node test command failed" >&2
@@ -246,13 +246,13 @@ jobs:
               cat "$test_log"
               node scripts/verify-node-test-summary.mjs \
                 --log "$test_log" \
-                --expected-tests 131
+                --expected-tests 156
               runtime_output_sha256="$(sha256sum "$test_log" | awk '{print $1}')"
               runtime_output_bytes="$(wc -c < "$test_log" | tr -d '[:space:]')"
               runtime_output_lines="$(wc -l < "$test_log" | tr -d '[:space:]')"
               printf 'runtime_image_digest=%s\n' "$RUNTIME_IMAGE_DIGEST" >> "$GITHUB_OUTPUT"
               printf 'runtime_output_sha256=%s\nruntime_output_bytes=%s\nruntime_output_lines=%s\n' "$runtime_output_sha256" "$runtime_output_bytes" "$runtime_output_lines" >> "$GITHUB_OUTPUT"
-              printf 'expected_tests=131\npassed_tests=131\nfailed_tests=0\nskipped_tests=0\n' >> "$GITHUB_OUTPUT"
+              printf 'expected_tests=156\npassed_tests=156\nfailed_tests=0\nskipped_tests=0\n' >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "BLOCK: no trusted formal qualification test profile exists for sub-library $PACKAGE_ID" >&2
@@ -690,7 +690,7 @@ jobs:
           QUALIFICATION_PASSED_TESTS: ${{ steps.release.outputs.scope == 'sub-library' && needs.isolated-runtime-tests.outputs.passed_tests || '0' }}
           QUALIFICATION_FAILED_TESTS: ${{ steps.release.outputs.scope == 'sub-library' && needs.isolated-runtime-tests.outputs.failed_tests || '0' }}
           QUALIFICATION_SKIPPED_TESTS: ${{ steps.release.outputs.scope == 'sub-library' && needs.isolated-runtime-tests.outputs.skipped_tests || '0' }}
-          QUALIFICATION_TEST_PLAN_JSON: ${{ steps.release.outputs.scope == 'sub-library' && '["upload-media-browser.test.mjs","article-image-binding.test.mjs","article-operations.test.mjs"]' || '[]' }}
+          QUALIFICATION_TEST_PLAN_JSON: ${{ steps.release.outputs.scope == 'sub-library' && '["upload-media-browser.test.mjs","article-image-binding.test.mjs","article-content-formats.test.mjs","article-operations.test.mjs"]' || '[]' }}
         shell: bash
         run: |
           set -euo pipefail

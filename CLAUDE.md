@@ -27,6 +27,7 @@ related: ["CONTEXT.md", "AGENTS.md", "README.md", "wiki/index.md", "wiki/00_meta
 - 课程：从 [课程入口](wiki/90_outputs/courses/index.md) 进入；结构完整不等于真实课程效果。
 - 日志：按 [logging-standard.md](wiki/00_meta/logging-standard.md) 写入每日事件和月度摘要，不复制 raw 原文。
 - 子库：先读其 `README.md`、`MANIFEST.md`、`AGENTS.md` 和 `RUNTIME-CONTRACT.json`；仅在 manifest 声明时再读 `SKILL.md`。
+- 真实客户代运营：先读 [仓库内运行模型](wiki/00_meta/in-repository-agency-runtime-model.md)，再进入本地 `customer-runtime/README.md`、`AGENTS.md` 和 `00_control/ACTIVE-CONTEXT.json`；没有明确 `client_id` 时不得扫描客户目录。
 - 索引与 Markdown：遵守 [index-and-discovery-standard.md](wiki/00_meta/index-and-discovery-standard.md)；不要手改 index 生成区，命令从 [scripts/README.md](scripts/README.md) 读取。
 - 发布或去敏：读当前 scope 的 manifest、[RELEASE.md](RELEASE.md)、[release-checklist.md](wiki/00_meta/release-checklist.md) 和 [check-mechanism-map.md](wiki/00_meta/check-mechanism-map.md)。
 

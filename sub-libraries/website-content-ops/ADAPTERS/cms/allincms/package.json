@@ -24,14 +24,19 @@
     "media-operations-contract.redacted.json",
     "mutation-authorization.mjs",
     "observed-contract.redacted.json",
+    "product-operations-contract.json",
+    "product-operations.mjs",
     "scripts/build-interface-index.mjs",
     "scripts/validate-interface-registry.mjs",
+    "site-operations-contract.json",
+    "site-operations.mjs",
     "upload-media-browser.mjs",
     "verification-evidence-contract.json",
     "verify-media.mjs",
     "workspace-preflight-contract.json",
     "workspace-preflight.md",
-    "workspace-preflight.mjs"
+    "workspace-preflight.mjs",
+    "scripts/scan-server-action-ids.mjs"
   ],
   "scripts": {
     "test": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs workspace-preflight.test.mjs content-run-controller.test.mjs interface-registry.test.mjs",
@@ -44,7 +49,8 @@
     "interfaces:index": "node scripts/build-interface-index.mjs",
     "interfaces:index:check": "node scripts/build-interface-index.mjs --check",
     "test:interfaces": "node --test interface-registry.test.mjs",
-    "test:controller": "node --test content-run-controller.test.mjs"
+    "test:controller": "node --test content-run-controller.test.mjs",
+    "scan:actions": "node scripts/scan-server-action-ids.mjs"
   },
   "dependencies": {
     "acorn": "8.15.0",
@@ -52,6 +58,8 @@
     "sharp": "0.35.3"
   },
   "source_only_modules": [
-    "content-run-controller.mjs"
+    "content-plan-host-driver.mjs",
+    "content-run-controller.mjs",
+    "host-run-template.mjs"
   ]
 }

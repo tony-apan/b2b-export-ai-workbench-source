@@ -60,6 +60,19 @@ export function deriveAllinCmsMutationBinding({ siteKey, route, actionName, payl
   } else if (actionName === 'postDelete') {
     operation = 'allincms.article.delete';
     target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), post_id: nonEmptyString(body.id, 'payload.id') };
+  } else if (actionName === 'siteCreate') {
+    operation = 'allincms.site.create';
+    target = {
+      name: nonEmptyString(body.name, 'payload.name'),
+      ...(body.description !== undefined ? { description: body.description } : {}),
+    };
+  } else if (actionName === 'productCreate') {
+    operation = 'allincms.product.create';
+    target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), payload_digest: sha256(Buffer.from(canonicalJson(body), 'utf8')) };
+  } else if (actionName === 'productUpdate') {
+    if (!['update', 'publish', 'unpublish'].includes(body.mode)) throw new Error('productUpdate mutation requires update, publish, or unpublish mode');
+    operation = `allincms.product.${body.mode}`;
+    target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), product_id: nonEmptyString(body.productId, 'payload.productId') };
   } else {
     const match = /^(category|tag)(Create|Update|Delete)$/.exec(actionName || '');
     if (!match) throw new Error(`Unsupported AllinCMS mutation actionName: ${actionName ?? 'missing'}`);

@@ -51,6 +51,7 @@ redaction_status: "safe-to-publish"
 - 底层对象和迁移： [MENTAL-MODEL.md](MENTAL-MODEL.md)；
 - 完整执行： [PLAYBOOK.md](PLAYBOOK.md)；
 - 资料驱动的新建/更新 CMS 对象：先读 [Source-Driven CMS Create and Update SOP](PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md)，再用 [Content Operation Plan](TEMPLATES/content-operation-plan.md) 和机器验证器冻结本次 desired state、精确 diff 与授权摘要；
+- 真实 AllinCMS 操作/可分享能力对抗审查：先读 [Live AllinCMS Operation Adversarial Review](PLAYBOOKS/id-0006-live-allincms-adversarial-review.md)，确认 capability gate、Plan A/B、证据轴和双审门槛；未经双审不得宣称可分享或 production-ready；
 - 正式 B2B SEO 文章： [PLAYBOOKS/README.md](PLAYBOOKS/README.md)；新写走 [B2B SEO Article Standard](PLAYBOOKS/id-0001-b2b-seo-article-standard.md)，优化现有文章走 [B2B Article Optimization SOP](PLAYBOOKS/id-0003-b2b-article-optimization-sop.md)，页面发布再验 [Article Page Frontend SEO Contract](PLAYBOOKS/id-0002-article-page-frontend-seo-contract.md)；
 - 工具调查： [TOOLS.md](TOOLS.md) 和对应 [ADAPTERS/README.md](ADAPTERS/README.md)；
 - 验收： [QA-CHECKLIST.md](QA-CHECKLIST.md)；

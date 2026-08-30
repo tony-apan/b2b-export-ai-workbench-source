@@ -140,14 +140,62 @@ function commitTreeEntries(commit) {
   return entries;
 }
 const sourceCommitTree = commitTreeEntries(sourceCommit);
-const commitBlobSha256Cache = new Map();
-function commitBlobSha256(object) {
-  if (commitBlobSha256Cache.has(object)) return commitBlobSha256Cache.get(object);
-  const result = gitResult(['cat-file', 'blob', object]);
-  if (result.status !== 0) fail(`could not read Git blob ${object} from source commit`);
-  const digest = createHash('sha256').update(result.stdout).digest('hex');
-  commitBlobSha256Cache.set(object, digest);
-  return digest;
+function commitBlobSha256Batch(objects) {
+  const uniqueObjects = [...new Set(objects)];
+  if (!uniqueObjects.length) return new Map();
+
+  const input = Buffer.from(`${uniqueObjects.join('\n')}\n`, 'utf8');
+  const check = gitResult(
+    ['cat-file', '--batch-check=%(objectname) %(objecttype) %(objectsize)'],
+    {
+      input,
+      encoding: 'utf8',
+      maxBuffer: Math.max(1024 * 1024, uniqueObjects.length * 128 + 1024),
+    },
+  );
+  if (check.error) fail(`could not inspect Git blobs from source commit: ${check.error.message}`);
+  if (check.status !== 0) fail('could not inspect Git blobs from source commit');
+
+  const lines = check.stdout.trimEnd().split('\n');
+  if (lines.length !== uniqueObjects.length) fail('Git blob batch-check returned an unexpected object count');
+
+  let totalBlobBytes = 0;
+  for (const [index, line] of lines.entries()) {
+    const expectedObject = uniqueObjects[index];
+    const match = line.match(/^([a-f0-9]{40,64}) blob ([0-9]+)$/);
+    if (!match || match[1] !== expectedObject) fail(`Git blob batch-check did not bind expected object ${expectedObject}`);
+    const size = Number(match[2]);
+    if (!Number.isSafeInteger(size) || size < 0) fail(`Git blob batch-check returned an unsafe size for ${expectedObject}`);
+    if (!Number.isSafeInteger(totalBlobBytes + size)) fail('Git blob batch exceeds the safe in-memory size range');
+    totalBlobBytes += size;
+  }
+
+  const result = gitResult(['cat-file', '--batch'], {
+    input,
+    maxBuffer: totalBlobBytes + uniqueObjects.length * 128 + 1024,
+  });
+  if (result.error) fail(`could not batch-read Git blobs from source commit: ${result.error.message}`);
+  if (result.status !== 0) fail('could not batch-read Git blobs from source commit');
+
+  const output = result.stdout;
+  const digests = new Map();
+  let offset = 0;
+  for (const expectedObject of uniqueObjects) {
+    const headerEnd = output.indexOf(0x0a, offset);
+    if (headerEnd < 0) fail(`Git blob batch output is missing a header for ${expectedObject}`);
+    const header = output.subarray(offset, headerEnd).toString('utf8');
+    const match = header.match(/^([a-f0-9]{40,64}) blob ([0-9]+)$/);
+    if (!match || match[1] !== expectedObject) fail(`Git blob batch output did not bind expected object ${expectedObject}`);
+    const size = Number(match[2]);
+    if (!Number.isSafeInteger(size) || size < 0) fail(`Git blob batch output returned an unsafe size for ${expectedObject}`);
+    const contentStart = headerEnd + 1;
+    const contentEnd = contentStart + size;
+    if (contentEnd >= output.length || output[contentEnd] !== 0x0a) fail(`Git blob batch output is truncated for ${expectedObject}`);
+    digests.set(expectedObject, createHash('sha256').update(output.subarray(contentStart, contentEnd)).digest('hex'));
+    offset = contentEnd + 1;
+  }
+  if (offset !== output.length) fail('Git blob batch output contains unexpected trailing bytes');
+  return digests;
 }
 function isGitIgnored(path) {
   return gitResult(['check-ignore', '-q', '--', path]).status === 0;
@@ -244,6 +292,15 @@ function collect(dir) {
   return result;
 }
 function fileProvenance(files) {
+  const commitObjects = [];
+  for (const path of files) {
+    const treeEntry = sourceCommitTree.get(path);
+    if (!treeEntry) continue;
+    if (treeEntry.type !== 'blob') fail(`selected source path is not a Git blob in ${sourceCommit}: ${path}`);
+    commitObjects.push(treeEntry.object);
+  }
+  const commitSha256ByObject = commitBlobSha256Batch(commitObjects);
+
   const records = files.map((path) => {
     const fileSha256 = sha256(join(stagingRoot, path));
     const treeEntry = sourceCommitTree.get(path);
@@ -256,8 +313,8 @@ function fileProvenance(files) {
         commit_blob: null,
       };
     }
-    if (treeEntry.type !== 'blob') fail(`selected source path is not a Git blob in ${sourceCommit}: ${path}`);
-    const committedSha256 = commitBlobSha256(treeEntry.object);
+    const committedSha256 = commitSha256ByObject.get(treeEntry.object);
+    if (!committedSha256) fail(`missing batched Git blob digest for ${path} at ${treeEntry.object}`);
     return {
       path,
       sha256: fileSha256,
@@ -362,10 +419,10 @@ checksums.push(`${sha256(join(stagingRoot, 'MANIFEST.json'))}  MANIFEST.json`);
 writeFileSync(join(stagingRoot, 'SHA256SUMS'), checksums.join('\n') + '\n');
 const checksumCount = verifyChecksums(stagingRoot, join(stagingRoot, 'SHA256SUMS'));
 if (prepareMode) outputRoot = join(releaseDir, 'prepared', `v${version}`, manifest.content_digest);
-const candidateValidator = spawnSync(process.execPath, [join(stagingRoot, 'scripts/validate-mother-library.mjs'), ...(prepareMode ? ['--prepare'] : [])], { encoding: 'utf8' });
-process.stdout.write(candidateValidator.stdout ?? '');
-process.stderr.write(candidateValidator.stderr ?? '');
-if (candidateValidator.status !== 0) fail('generated mother-library candidate failed its own validation');
+// The artifact validator executes the embedded mother-library validator after
+// integrity, provenance, and path checks pass. Running that same embedded
+// validator directly here would duplicate the candidate-wide validation while
+// adding no independent gate.
 const artifactValidator = spawnSync(process.execPath, [join(stagingRoot, 'scripts/validate-artifact.mjs'), ...(prepareMode ? ['--prepare'] : []), stagingRoot], {
   encoding: 'utf8',
   env: { ...process.env },

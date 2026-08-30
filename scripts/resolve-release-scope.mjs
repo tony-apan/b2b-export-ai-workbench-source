@@ -24,8 +24,37 @@ function readVersion(path, label) {
   if (!existsSync(path) || !statSync(path).isFile()) block(`${label} VERSION.md is missing: ${relative(sourceRoot, path)}`);
   const text = readFileSync(path, 'utf8');
   const version = text.match(/^- Version：`([^`\r\n]+)`\s*$/m)?.[1]?.trim();
-  if (!version || !/^[0-9A-Za-z][0-9A-Za-z._-]*$/.test(version)) block(`${label} VERSION.md does not contain a safe current Version value`);
+  if (!version || !/^[0-9A-Za-z][0-9A-Za-z._-]*$/.test(version)) block(`${label} VERSION.md does not contain a safe Version value`);
   return version;
+}
+
+function readIdentityProjection(path, label) {
+  if (!existsSync(path) || !statSync(path).isFile()) block(`${label} is missing: ${relative(sourceRoot, path)}`);
+  const text = readFileSync(path, 'utf8').replace(/\r\n?/g, '\n');
+  const frontMatter = text.match(/^---\n([\s\S]*?)\n---(?:\n|$)/)?.[1];
+  if (!frontMatter) block(`${label} has no readable front matter`);
+  const values = new Map();
+  for (const line of frontMatter.split('\n')) {
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_-]*):\s*(.+)$/);
+    if (!match) continue;
+    if (values.has(match[1])) block(`${label} has duplicate front matter field ${match[1]}`);
+    const raw = match[2].trim();
+    let value;
+    if (raw === 'null' || raw === '~') value = null;
+    else if (raw.startsWith('"')) {
+      try { value = JSON.parse(raw); } catch { block(`${label} has invalid quoted value for ${match[1]}`); }
+    } else if (raw.startsWith("'") && raw.endsWith("'")) value = raw.slice(1, -1).replace(/''/g, "'");
+    else value = raw;
+    values.set(match[1], value);
+  }
+  const required = ['historical_published_version', 'historical_published_tag', 'current_candidate_identity', 'current_candidate_snapshot', 'current_candidate_version'];
+  for (const field of required) if (!values.has(field)) block(`${label} lacks required identity field ${field}`);
+  return Object.fromEntries(values);
+}
+
+function assertSafeVersion(value, label) {
+  if (typeof value !== 'string' || !/^[0-9A-Za-z][0-9A-Za-z._-]*$/.test(value)) block(`${label} is missing or unsafe`);
 }
 
 function assertSafeRegistryPath(path, id) {
@@ -87,8 +116,29 @@ if (entry.package_id !== id) block(`sub-library ${id} registry package_id must e
 if (entry.tag_namespace !== `sub-library/${id}`) block(`sub-library ${id} registry tag_namespace mismatch`);
 if (entry.tag_prefix !== `sub-library/${id}/v`) block(`sub-library ${id} registry tag_prefix mismatch`);
 const childRoot = assertSafeRegistryPath(entry.path, id);
-const version = readVersion(resolve(childRoot, 'VERSION.md'), `sub-library ${id}`);
-if (entry.version !== version) block(`sub-library ${id} registry version ${entry.version ?? 'missing'} does not match VERSION.md ${version}`);
+const manifestIdentity = readIdentityProjection(resolve(childRoot, 'MANIFEST.md'), `sub-library ${id} MANIFEST.md`);
+const versionIdentity = readIdentityProjection(resolve(childRoot, 'VERSION.md'), `sub-library ${id} VERSION.md`);
+const legacyVersion = readVersion(resolve(childRoot, 'VERSION.md'), `sub-library ${id}`);
+for (const field of ['historical_published_version', 'historical_published_tag', 'current_candidate_identity', 'current_candidate_snapshot', 'current_candidate_version']) {
+  if (versionIdentity[field] !== manifestIdentity[field]) block(`sub-library ${id} VERSION.md ${field} does not match MANIFEST.md`);
+  if (entry[field] !== manifestIdentity[field]) block(`sub-library ${id} registry ${field} does not match MANIFEST.md`);
+}
+const historicalVersion = manifestIdentity.historical_published_version;
+const historicalTag = manifestIdentity.historical_published_tag;
+const currentIdentity = manifestIdentity.current_candidate_identity;
+const currentSnapshot = manifestIdentity.current_candidate_snapshot;
+const version = manifestIdentity.current_candidate_version;
+assertSafeVersion(historicalVersion, `sub-library ${id} historical_published_version`);
+if (historicalTag !== `v${historicalVersion}`) block(`sub-library ${id} historical_published_tag must be v${historicalVersion}`);
+if (legacyVersion !== historicalVersion) block(`sub-library ${id} legacy VERSION.md Version must equal historical_published_version`);
+if (entry.version !== historicalVersion || entry.version_semantics !== 'historical-published-only') block(`sub-library ${id} legacy registry version must be historical-published-only and match historical_published_version`);
+if (entry.release_status !== manifestIdentity.release_status) block(`sub-library ${id} registry release_status does not match MANIFEST.md`);
+if (currentIdentity === 'unassigned' || version === null) block(`sub-library ${id} current candidate identity/version is unassigned`);
+assertSafeVersion(version, `sub-library ${id} current_candidate_version`);
+if (typeof currentSnapshot !== 'string' || !currentSnapshot || currentSnapshot === 'dirty-working-tree') block(`sub-library ${id} current_candidate_snapshot is not release-eligible`);
+if (version === historicalVersion) block(`sub-library ${id} current_candidate_version collides with immutable historical_published_version`);
+if (`v${version}` === historicalTag) block(`sub-library ${id} current candidate tag collides with immutable historical_published_tag`);
+if (manifestIdentity.release_status !== 'Ready') block(`sub-library ${id} current candidate release_status must be Ready before routing a release tag`);
 const expectedTag = `sub-library/${id}/v${version}`;
 if (releaseTag !== expectedTag) block(`sub-library tag version mismatch: expected ${expectedTag}, got ${releaseTag}`);
 
@@ -97,6 +147,11 @@ writeOutputs({
   package_id: id,
   path: entry.path,
   version,
+  historical_published_version: historicalVersion,
+  historical_published_tag: historicalTag,
+  current_candidate_identity: currentIdentity,
+  current_candidate_snapshot: currentSnapshot,
+  current_candidate_version: version,
   release_tag: releaseTag,
 });
 console.log(`RELEASE_SCOPE_PASS: sub-library ${id} ${releaseTag}`);

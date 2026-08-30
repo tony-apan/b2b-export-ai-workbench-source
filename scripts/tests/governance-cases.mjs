@@ -173,7 +173,7 @@ function fixedEvidenceChecks(manifest, profile, tagName) {
   const checks = [
     {
       id: 'governance-tests', status: 'pass', result: {
-        ...common('node scripts/run-governance-tests.mjs --timeout-ms 30000'),
+        ...common('node scripts/run-governance-tests.mjs --timeout-ms 120000'),
         test_plan: ['scripts/run-governance-tests.mjs'], expected_tests: 1, passed_tests: 1, failed_tests: 0, skipped_tests: 0,
       },
     },
@@ -192,9 +192,9 @@ function fixedEvidenceChecks(manifest, profile, tagName) {
       validation('sub-library-structure-validation', 'release'),
       {
         id: 'runtime-tests', status: 'pass', result: {
-          ...common('node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs'),
-          test_plan: ['upload-media-browser.test.mjs', 'article-image-binding.test.mjs', 'article-operations.test.mjs'],
-          expected_tests: 131, passed_tests: 131, failed_tests: 0, skipped_tests: 0,
+          ...common('node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs'),
+          test_plan: ['upload-media-browser.test.mjs', 'article-image-binding.test.mjs', 'article-content-formats.test.mjs', 'article-operations.test.mjs'],
+          expected_tests: 156, passed_tests: 156, failed_tests: 0, skipped_tests: 0,
         },
       },
     );
@@ -413,8 +413,8 @@ function createQualificationFixture(root, name, options = {}) {
         QUALIFICATION_RUNTIME_STATUS: 'runtime_verified',
         QUALIFICATION_RUNTIME_REASON: 'trusted-sub-library-runtime-profile',
         QUALIFICATION_RUNTIME_IMAGE_DIGEST: `sha256:${'e'.repeat(64)}`,
-        QUALIFICATION_TEST_PLAN_JSON: '["upload-media-browser.test.mjs","article-image-binding.test.mjs","article-operations.test.mjs"]',
-        QUALIFICATION_EXPECTED_TESTS: '131', QUALIFICATION_PASSED_TESTS: '131',
+        QUALIFICATION_TEST_PLAN_JSON: '["upload-media-browser.test.mjs","article-image-binding.test.mjs","article-content-formats.test.mjs","article-operations.test.mjs"]',
+        QUALIFICATION_EXPECTED_TESTS: '156', QUALIFICATION_PASSED_TESTS: '156',
         QUALIFICATION_FAILED_TESTS: '0', QUALIFICATION_SKIPPED_TESTS: '0',
       }
     : {
@@ -610,9 +610,9 @@ export const governanceCases = new Map([
     expected: 'accept',
     run({ root, timeoutMs }) {
       assertValidatorBaseline(root, 'scripts/validate-document-ids.mjs', [], /DOCUMENT_ID_PASS:/, 'document ID', timeoutMs);
-      const target = join(root, 'sub-libraries/website-content-ops/KNOWLEDGE/id-0001-scope-fixture.md');
+      const target = join(root, 'sub-libraries/website-content-ops/KNOWLEDGE/id-0999-scope-fixture.md');
       mkdirSync(dirname(target), { recursive: true });
-      writeFileSync(target, `---\ndoc_id: "ID-0001"\ntitle: "Independent Scope Fixture"\ndescription: "验证母库和独立子库可以各自拥有 ID-0001，而不会把两个发布 scope 错误合并。"\ntype: "concept"\nstatus: "Working"\nowner: "AI"\ncreated: "2026-07-29"\nlast_updated: "2026-07-29"\nsources: ["governance regression fixture"]\nrelated: []\nwhen_to_read: "验证子库编号 scope 隔离时读取。"\nkeywords: ["document id", "scope", "sub-library"]\n---\n# Independent Scope Fixture\n`);
+      writeFileSync(target, `---\ndoc_id: "ID-0999"\ntitle: "Independent Scope Fixture"\ndescription: "验证母库和独立子库可以各自拥有 ID-0999，而不会把两个发布 scope 错误合并。"\ntype: "concept"\nstatus: "Working"\nowner: "AI"\ncreated: "2026-07-29"\nlast_updated: "2026-07-29"\nsources: ["governance regression fixture"]\nrelated: []\nwhen_to_read: "验证子库编号 scope 隔离时读取。"\nkeywords: ["document id", "scope", "sub-library"]\n---\n# Independent Scope Fixture\n`);
       const result = run(root, 'scripts/validate-document-ids.mjs', [], { timeoutMs });
       assertAccepted(result, /DOCUMENT_ID_PASS:/, 'cross-scope document ID boundary');
     },
@@ -898,7 +898,7 @@ export const governanceCases = new Map([
         kind: 'sub',
         manifest: { release_status: 'Ready', maturity_status: 'stable', verification_status: 'e2e-pass', license_status: 'cleared', approval_status: 'pending' },
       });
-      for (const staleCount of [120, 130, 132]) {
+      for (const staleCount of [120, 135, 137]) {
         const subApprovalPath = join(root, `.governance-fixtures/approval-evidence-runtime-count-${staleCount}.json`);
         writeApproval(subCandidate, subApprovalPath);
         const subApproval = JSON.parse(readFileSync(subApprovalPath, 'utf8'));
@@ -912,7 +912,7 @@ export const governanceCases = new Map([
         writeFileSync(subApprovalPath, `${JSON.stringify(subApproval, null, 2)}\n`);
         assertRejected(
           run(root, 'scripts/validate-release-approval.mjs', [subCandidate, subApprovalPath, subEvidencePath], { timeoutMs }),
-          /approval evidence runtime-tests expected_tests must be 131/,
+          /approval evidence runtime-tests expected_tests must be 156/,
           `non-canonical ${staleCount}-test approval evidence`,
         );
       }
@@ -1029,6 +1029,84 @@ export const governanceCases = new Map([
       writeFileSync(readmePath, `${originalReadme}\n<!-- modified provenance attack -->\n`);
       const modified = run(root, 'scripts/build-mother-release.mjs', ['--require-commit-provenance'], { timeoutMs });
       assertRejected(modified, /README\.md\(modified\)/, 'modified selected source provenance');
+      writeFileSync(readmePath, originalReadme);
+      const matrixArtifactRoot = join(root, '.governance-fixtures/mother-provenance-shape');
+      writeArtifact(matrixArtifactRoot, {
+        contents: { 'README.md': '# Fixture\n', 'SECOND.md': '# Second fixture\n' },
+      });
+      const artifactManifestPath = join(matrixArtifactRoot, 'MANIFEST.json');
+      const baselineArtifactManifest = readFileSync(artifactManifestPath, 'utf8');
+      const assertProvenanceMutationRejected = (mutate, expectedDiagnostics, label) => {
+        writeFileSync(artifactManifestPath, baselineArtifactManifest);
+        rewriteArtifactManifest(matrixArtifactRoot, mutate);
+        const result = run(root, 'scripts/validate-artifact.mjs', [matrixArtifactRoot], { timeoutMs });
+        const diagnostics = Array.isArray(expectedDiagnostics) ? expectedDiagnostics : [expectedDiagnostics];
+        assertRejected(result, diagnostics[0], label);
+        for (const expected of diagnostics.slice(1)) {
+          if (!expected.test(outputOf(result))) throw new Error(`${label} missed diagnostic ${expected}\n${shortOutput(result)}`);
+        }
+      };
+      assertProvenanceMutationRejected(
+        (manifest) => {
+          manifest.source_provenance.schema = 'git-file-provenance/v2';
+          manifest.source_provenance.selected_file_count += 1;
+          manifest.source_provenance.commit_bound_file_count += 1;
+          manifest.source_provenance.unbound_files = [{ ...manifest.source_provenance.files[0] }];
+          manifest.source_provenance.missing_commit_files = [manifest.source_provenance.files[0].path];
+        },
+        [
+          /source_provenance\.schema must be git-file-provenance\/v1/,
+          /source_provenance\.selected_file_count does not match file records/,
+          /source_provenance\.commit_bound_file_count does not match file records/,
+          /source_provenance\.unbound_files does not match unbound file records/,
+          /source_provenance\.missing_commit_files overlaps packaged file/,
+        ],
+        'ordinary mother artifact rejects forged provenance schema and summaries',
+      );
+      assertProvenanceMutationRejected(
+        (manifest) => { manifest.source_provenance.files[1].path = manifest.source_provenance.files[0].path; },
+        [
+          /source_provenance\.files has duplicate path/,
+          /source_provenance\.files missing path/,
+        ],
+        'ordinary mother artifact rejects duplicate and missing provenance paths',
+      );
+      assertProvenanceMutationRejected(
+        (manifest) => {
+          manifest.source_provenance.files[0] = { ...manifest.source_provenance.files[0], path: 'extra-provenance-record.md' };
+        },
+        [
+          /source_provenance\.files has unmanifested path: extra-provenance-record\.md/,
+          /source_provenance\.files missing path/,
+          /source_provenance\.files paths must exactly match MANIFEST\.json files in deterministic order/,
+        ],
+        'ordinary mother artifact rejects extra, missing, and position-drifted provenance paths',
+      );
+      assertProvenanceMutationRejected(
+        (manifest) => { [manifest.source_provenance.files[0], manifest.source_provenance.files[1]] = [manifest.source_provenance.files[1], manifest.source_provenance.files[0]]; },
+        /source_provenance\.files paths must exactly match MANIFEST\.json files in deterministic order/,
+        'ordinary mother artifact rejects reordered provenance paths',
+      );
+      rmSync(matrixArtifactRoot, { recursive: true, force: true });
+      const ordinaryBuild = run(root, 'scripts/build-mother-release.mjs', [], { timeoutMs });
+      assertAccepted(ordinaryBuild, /RELEASE_CANDIDATE:/, 'ordinary mother provenance artifact baseline');
+      if (!/ARTIFACT_PASS:/.test(outputOf(ordinaryBuild))) {
+        throw new Error(`ordinary mother provenance build did not prove embedded artifact validation\n${shortOutput(ordinaryBuild)}`);
+      }
+      const artifactRoot = join(root, 'dist/mother/latest');
+      const toolsPath = join(artifactRoot, 'sub-libraries/website-content-ops/TOOLS.md');
+      writeFileSync(toolsPath, `${readFileSync(toolsPath, 'utf8')}\n<!-- safe artifact provenance mutation -->\n`);
+      rewriteArtifactManifest(artifactRoot, () => {});
+      const staleReceipt = run(root, 'scripts/validate-artifact.mjs', [artifactRoot], { timeoutMs });
+      assertRejected(staleReceipt, /source provenance file SHA mismatch: sub-libraries\/website-content-ops\/TOOLS\.md/, 'ordinary mother artifact stale provenance receipt');
+
+      rewriteArtifactManifest(artifactRoot, (manifest) => {
+        const record = manifest.source_provenance.files.find((item) => item.path === 'sub-libraries/website-content-ops/TOOLS.md');
+        if (!record) throw new Error('TOOLS.md provenance record missing');
+        record.sha256 = sha256File(toolsPath);
+      });
+      const forgedReceipt = run(root, 'scripts/validate-artifact.mjs', [artifactRoot], { timeoutMs });
+      assertRejected(forgedReceipt, /source provenance commit SHA-256 mismatch: sub-libraries\/website-content-ops\/TOOLS\.md/, 'ordinary mother artifact forged candidate provenance digest');
     },
   }],
   ['release-artifact-dirty-source', {
@@ -1143,15 +1221,50 @@ ${output}`);
     },
   }],
   ['release-router-sub-library-scope', {
-    title: 'A valid registered sub-library tag resolves to only that sub-library scope',
+    title: 'A sub-library route rejects historical or colliding candidate identities and accepts only a distinct assigned current version',
     expected: 'accept',
     run({ root, timeoutMs }) {
       const outputPath = join(root, '.governance-fixtures/router-sub-output.txt');
       mkdirSync(dirname(outputPath), { recursive: true });
-      const result = run(root, 'scripts/resolve-release-scope.mjs', ['sub-library/website-content-ops/v0.3.2-preview.1'], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
-      assertAccepted(result, /RELEASE_SCOPE_PASS: sub-library website-content-ops sub-library\/website-content-ops\/v0\.3\.2-preview\.1/, 'sub-library release route');
+      const historicalTag = 'sub-library/website-content-ops/v0.3.2-preview.1';
+      const unassigned = run(root, 'scripts/resolve-release-scope.mjs', [historicalTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
+      assertRejected(unassigned, /current candidate identity\/version is unassigned/, 'unassigned sub-library candidate route');
+
+      const manifestPath = join(root, 'sub-libraries/website-content-ops/MANIFEST.md');
+      const versionPath = join(root, 'sub-libraries/website-content-ops/VERSION.md');
+      const registryPath = join(root, 'sub-libraries/registry.json');
+      for (const path of [manifestPath, versionPath]) {
+        replaceExact(path, 'release_status: "BLOCK"', 'release_status: "Ready"');
+        replaceExact(path, 'current_candidate_identity: "unassigned"', 'current_candidate_identity: "assigned"');
+        replaceExact(path, 'current_candidate_snapshot: "dirty-working-tree"', 'current_candidate_snapshot: "source-commit"');
+        replaceExact(path, 'current_candidate_version: null', 'current_candidate_version: "0.3.2-preview.1"');
+      }
+      mutateJson(registryPath, (registry) => {
+        const entry = registry.entries.find((item) => item.id === 'website-content-ops');
+        if (!entry) throw new Error('website-content-ops registry fixture entry missing');
+        entry.release_status = 'Ready';
+        entry.current_candidate_identity = 'assigned';
+        entry.current_candidate_snapshot = 'source-commit';
+        entry.current_candidate_version = '0.3.2-preview.1';
+      });
+
+      const collision = run(root, 'scripts/resolve-release-scope.mjs', [historicalTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
+      assertRejected(collision, /current_candidate_version collides with immutable historical_published_version/, 'historical/current sub-library version collision');
+
+      for (const path of [manifestPath, versionPath]) {
+        replaceExact(path, 'current_candidate_version: "0.3.2-preview.1"', 'current_candidate_version: "0.3.3-preview.1"');
+      }
+      mutateJson(registryPath, (registry) => {
+        const entry = registry.entries.find((item) => item.id === 'website-content-ops');
+        if (!entry) throw new Error('website-content-ops registry fixture entry missing');
+        entry.current_candidate_version = '0.3.3-preview.1';
+      });
+
+      const releaseTag = 'sub-library/website-content-ops/v0.3.3-preview.1';
+      const result = run(root, 'scripts/resolve-release-scope.mjs', [releaseTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
+      assertAccepted(result, /RELEASE_SCOPE_PASS: sub-library website-content-ops sub-library\/website-content-ops\/v0\.3\.3-preview\.1/, 'assigned sub-library candidate release route');
       const output = readFileSync(outputPath, 'utf8');
-      if (!/^scope=sub-library\npackage_id=website-content-ops\npath=sub-libraries\/website-content-ops\nversion=0\.3\.2-preview\.1\nrelease_tag=sub-library\/website-content-ops\/v0\.3\.2-preview\.1\n$/.test(output)) {
+      if (!/^scope=sub-library\npackage_id=website-content-ops\npath=sub-libraries\/website-content-ops\nversion=0\.3\.3-preview\.1\nhistorical_published_version=0\.3\.2-preview\.1\nhistorical_published_tag=v0\.3\.2-preview\.1\ncurrent_candidate_identity=assigned\ncurrent_candidate_snapshot=source-commit\ncurrent_candidate_version=0\.3\.3-preview\.1\nrelease_tag=sub-library\/website-content-ops\/v0\.3\.3-preview\.1\n$/.test(output)) {
         throw new Error(`sub-library route emitted unexpected or multiple scope outputs:
 ${output}`);
       }
@@ -1561,13 +1674,13 @@ ${output}`);
           QUALIFICATION_RUNTIME_IMAGE_DIGEST: '', QUALIFICATION_TEST_PLAN_JSON: '[]',
           QUALIFICATION_EXPECTED_TESTS: '0', QUALIFICATION_PASSED_TESTS: '0',
         }),
-        /sub-library attestation must bind the trusted runtime_verified 131-test profile/,
+        /sub-library attestation must bind the trusted runtime_verified 156-test profile/,
         'sub-library runtime_not_applicable forgery',
       );
       assertRejected(
-        runQualification(root, sub, timeoutMs, { ...sub.env, QUALIFICATION_PASSED_TESTS: '130' }),
+        runQualification(root, sub, timeoutMs, { ...sub.env, QUALIFICATION_PASSED_TESTS: '155' }),
         /runtime test counters do not represent an exact clean pass/,
-        'sub-library incomplete 130-of-131 runtime count',
+        'sub-library incomplete 155-of-156 runtime count',
       );
       assertRejected(
         runQualification(root, sub, timeoutMs, {
@@ -1575,17 +1688,17 @@ ${output}`);
           QUALIFICATION_EXPECTED_TESTS: '120',
           QUALIFICATION_PASSED_TESTS: '120',
         }),
-        /sub-library attestation must bind the trusted runtime_verified 131-test profile/,
+        /sub-library attestation must bind the trusted runtime_verified 156-test profile/,
         'stale 120-test qualification profile',
       );
       assertRejected(
         runQualification(root, sub, timeoutMs, {
           ...sub.env,
-          QUALIFICATION_EXPECTED_TESTS: '132',
-          QUALIFICATION_PASSED_TESTS: '132',
+          QUALIFICATION_EXPECTED_TESTS: '157',
+          QUALIFICATION_PASSED_TESTS: '157',
         }),
-        /sub-library attestation must bind the trusted runtime_verified 131-test profile/,
-        'inflated 132-test qualification profile',
+        /sub-library attestation must bind the trusted runtime_verified 156-test profile/,
+        'inflated 157-test qualification profile',
       );
     },
   }],
@@ -1682,8 +1795,8 @@ ${output}`);
         '--network none',
         '--read-only',
         '--mount "type=bind,src=$subject,dst=/subject,readonly"',
-        'node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs',
-        '--expected-tests 131',
+        'node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs',
+        '--expected-tests 156',
         'trusted signer allowlist contains an invalid fingerprint',
         'BLOCK: no trusted formal qualification test profile exists for sub-library',
         'tar --sort=name --mtime=',
@@ -1727,7 +1840,7 @@ ${output}`);
       if (runtimeStart < 0 || qualificationStart <= runtimeStart) throw new Error('formal release workflow must define the isolated runtime-test job before qualification');
       const runtimeJob = formal.slice(runtimeStart, qualificationStart);
       const qualificationJob = formal.slice(qualificationStart);
-      if (!runtimeJob.includes('node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs')) throw new Error('isolated runtime-test job does not execute the trusted direct Node test profile');
+      if (!runtimeJob.includes('node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs')) throw new Error('isolated runtime-test job does not execute the trusted direct Node test profile');
       if (runtimeJob.includes('npm test')) throw new Error('isolated runtime-test job delegates test execution to candidate-controlled npm lifecycle');
       if (!runtimeJob.includes("printf 'candidate_commit=%s\\n'") || !runtimeJob.includes("printf 'tag_object_sha=%s\\n'")) throw new Error('isolated runtime-test job does not export the exact tested commit and tag object');
       if (qualificationJob.includes('npm test') || qualificationJob.includes('npm ci')) throw new Error('candidate runtime execution remains in the artifact qualification job');
@@ -1771,16 +1884,129 @@ ${output}`);
       if (/^\s{6}evidence_bundle_base64:/m.test(formal)) throw new Error('dispatcher must not inject a self-asserted evidence bundle into formal qualification');
     },
   }],
+  ['mother-state-projection-drift', {
+    title: 'Mother active status documents cannot drift from their canonical manifest',
+    expected: 'reject',
+    run({ root, timeoutMs }) {
+      const versionPath = join(root, 'VERSION.md');
+      const baselineContent = readFileSync(versionPath, 'utf8');
+      // Each source-level attack is checked by the validator's mandatory state-projection
+      // preflight. The successful full builder run below is the positive baseline and also
+      // exercises the packaged artifact, avoiding a redundant ~25s whole-repository scan
+      // that made this single governance case exceed the fixed 120s release-evidence budget.
+      const attacks = [
+        {
+          label: 'projected value drift',
+          mutate: (content) => content.replace('repository_sync_status: "Synced"', 'repository_sync_status: "Ready"'),
+          expected: /VERSION\.md state drift for repository_sync_status: expected "Synced" from MANIFEST\.md, got "Ready"/,
+        },
+        {
+          label: 'projected field removed',
+          mutate: (content) => content.replace('release_status: "BLOCK"\n', ''),
+          expected: /VERSION\.md projects release_status, but the document does not declare it/,
+        },
+        {
+          label: 'non-manifest source',
+          mutate: (content) => content.replace('state_source: "MANIFEST.md"', 'state_source: "RELEASE.md"'),
+          expected: /VERSION\.md state_source must resolve to the canonical scope MANIFEST\.md: RELEASE\.md/,
+        },
+        {
+          label: 'cross-scope manifest source',
+          mutate: (content) => content
+            .replace('state_source: "MANIFEST.md"', 'state_source: "sub-libraries/website-content-ops/MANIFEST.md"')
+            .replace('state_projection: ["repository_sync_status", "release_status"]', 'state_projection: ["release_status"]')
+            .replace('release_status: "BLOCK"', 'release_status: "Preview"'),
+          expected: /VERSION\.md state_source must resolve to the canonical scope MANIFEST\.md: sub-libraries\/website-content-ops\/MANIFEST\.md/,
+        },
+        {
+          label: 'empty projection',
+          mutate: (content) => content.replace('state_projection: \["repository_sync_status", "release_status"\]', 'state_projection: []'),
+          expected: /VERSION\.md state_projection must be a non-empty inline string array/,
+        },
+        {
+          label: 'required projection declarations removed together',
+          mutate: (content) => content
+            .replace('state_source: "MANIFEST.md"\n', '')
+            .replace('state_projection: ["repository_sync_status", "release_status"]\n', ''),
+          expected: /VERSION\.md required state projection must declare both state_source and state_projection/,
+        },
+        {
+          label: 'required projection field set narrowed',
+          mutate: (content) => content.replace('state_projection: ["repository_sync_status", "release_status"]', 'state_projection: ["release_status"]'),
+          expected: /VERSION\.md required state_projection must exactly equal/,
+        },
+      ];
+      for (const attack of attacks) {
+        const mutated = attack.mutate(baselineContent);
+        if (mutated === baselineContent) throw new Error(`fixture mutation failed: ${attack.label}`);
+        writeFileSync(versionPath, mutated);
+        const result = run(root, 'scripts/validate-mother-library.mjs', [], { timeoutMs });
+        assertRejected(result, attack.expected, attack.label);
+        writeFileSync(versionPath, baselineContent);
+      }
+
+      const git = (args) => spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+      for (const [args, label] of [
+        [['init', '-q'], 'initialize state-projection artifact fixture'],
+        [['config', 'user.name', 'Governance Fixture'], 'configure fixture Git user'],
+        [['config', 'user.email', 'fixture@example.invalid'], 'configure fixture Git email'],
+        [['add', '-f', '.'], 'stage state-projection fixture'],
+        [['commit', '-qm', 'state projection artifact baseline'], 'commit state-projection fixture'],
+      ]) {
+        const result = git(args);
+        ensureCompleted(result, label);
+        if (result.status !== 0) throw new Error(`${label} failed\n${shortOutput(result)}`);
+      }
+      const build = run(root, 'scripts/build-mother-release.mjs', [], { timeoutMs });
+      assertAccepted(build, /RELEASE_CANDIDATE:/, 'mother artifact state-projection baseline');
+      const artifactRoot = join(root, 'dist/mother/latest');
+      const artifactVersionPath = join(artifactRoot, 'VERSION.md');
+      replaceExact(artifactVersionPath, 'repository_sync_status: "Synced"', 'repository_sync_status: "Ready"');
+      rewriteArtifactManifest(artifactRoot, (manifest) => {
+        const record = manifest.source_provenance.files.find((item) => item.path === 'VERSION.md');
+        if (!record) throw new Error('VERSION.md provenance record missing');
+        record.sha256 = sha256File(artifactVersionPath);
+        record.commit_sha256 = record.sha256;
+      });
+      const artifactValidation = run(root, 'scripts/validate-artifact.mjs', [artifactRoot], { timeoutMs });
+      assertRejected(artifactValidation, /VERSION\.md state drift for repository_sync_status: expected "Synced" from MANIFEST\.md, got "Ready"/, 'mother artifact state drift with recomputed integrity metadata');
+    },
+  }],
   ['mother-index-layered-sub-library-entry', {
-    title: 'Mother wiki routes to the sub-library registry instead of flattening every child package',
+    title: 'Mother validator preserves layered sub-library routing and propagates formal modes to child validators',
     expected: 'reject',
     run({ root, timeoutMs }) {
       const indexPath = join(root, 'wiki/index.md');
       const baseline = run(root, 'scripts/validate-mother-library.mjs', [], { timeoutMs });
-      assertAccepted(baseline, /STRUCTURE_PASS:/, 'layered mother-to-sub-library navigation baseline');
+      ensureCompleted(baseline, 'layered mother-to-sub-library navigation baseline');
+      if (!/Mother library:/.test(outputOf(baseline))) throw new Error(`mother validator did not reach its verdict output\n${shortOutput(baseline)}`);
       if (/lacks canonical website-content-ops entry/.test(outputOf(baseline))) {
         throw new Error('mother validator still expects a grandchild sub-library entry in wiki/index.md');
       }
+
+      const registry = JSON.parse(readFileSync(join(root, 'sub-libraries/registry.json'), 'utf8'));
+      const childValidators = registry.entries.map((entry) => join(root, entry.path, 'scripts/validate-sub-library.mjs'));
+      for (const mode of ['--prepare', '--release']) {
+        for (const childValidator of childValidators) {
+          writeFileSync(childValidator, `#!/usr/bin/env node
+const expected = process.env.EXPECTED_CHILD_MODE;
+const seen = process.argv.slice(2);
+if (seen.includes(expected)) {
+  console.error('CHILD_MODE_OK:' + expected);
+  process.exit(1);
+}
+console.error('CHILD_MODE_MISSING:' + expected + ':' + JSON.stringify(seen));
+process.exit(1);
+`);
+        }
+        const result = run(root, 'scripts/validate-mother-library.mjs', [mode], {
+          timeoutMs,
+          env: { EXPECTED_CHILD_MODE: mode },
+        });
+        assertRejected(result, new RegExp(`CHILD_MODE_OK:${mode}`), `mother ${mode} child-mode propagation`);
+        if (/CHILD_MODE_MISSING:/.test(outputOf(result))) throw new Error(`mother ${mode} failed to propagate to at least one child validator\n${shortOutput(result)}`);
+      }
+
       removeLine(indexPath, /^.*\(\.\.\/sub-libraries\/README\.md\).*\n/m);
       const result = run(root, 'scripts/validate-mother-library.mjs', [], { timeoutMs });
       assertRejected(result, /wiki\/index\.md lacks canonical sub-libraries\/README\.md entry/, 'mother-to-sub-library canonical registry entry');

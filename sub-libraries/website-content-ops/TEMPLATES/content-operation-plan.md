@@ -41,7 +41,7 @@ node scripts/runtime-scope.mjs <client_id> <company_id> <task_id>
 7. 更新操作绑定 exact ID 或站点内唯一 natural key，并保存 expected-current fingerprint。未提及字段默认保持不变，清空必须显式声明。
 8. operations 按真实依赖排成单链；每个 mutation 显式声明 `publication_effect`。任何公开 mutation 使用的来源都必须 `approved/not-applicable`。
 9. 先生成 `authorization_scope.status=pending` 的计划，运行验证器并展示 target、操作顺序、publication effects 与摘要。
-10. 用户按精确计划 SHA-256 授权后，填入 actor、时间、最长 30 分钟 expires 和同一 plan digest。摘要只绑定不可变业务计划和精确 target/operation scope，不把 actor/授权时间自身纳入摘要循环；任何业务计划变化都重新授权。
+10. 用户按精确计划 SHA-256 授权后，填入 actor、时间、最长 30 分钟 expires 和同一 plan digest；**同一写入步骤必须同时落盘 `archived_at`（= `approved_at`）**——冻结即归档，验证器对 approved 计划强制 `AUTHORIZATION_ARCHIVE_REQUIRED`，缺档即 BLOCK。摘要只绑定不可变业务计划和精确 target/operation scope，不把 actor/授权时间自身纳入摘要循环；任何业务计划变化都重新授权。
 
 ## Plan B：已有或已回读真实站点的最小骨架
 

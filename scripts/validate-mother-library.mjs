@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
@@ -9,13 +10,10 @@ const scriptPath = fileURLToPath(import.meta.url);
 const root = resolve(dirname(scriptPath), '..');
 const releaseMode = process.argv.includes('--release');
 const prepareMode = process.argv.includes('--prepare');
+const GOVERNANCE_COMMAND_TIMEOUT_MS = 120_000;
 const failures = [];
 const warnings = [];
 
-const linkGate = spawnSync(process.execPath, [join(root, 'scripts/validate-links.mjs'), ...((releaseMode || prepareMode) ? ['--release'] : []), root], { encoding: 'utf8' });
-if (linkGate.status !== 0) fail('local Markdown link validation failed');
-process.stdout.write(linkGate.stdout ?? '');
-process.stderr.write(linkGate.stderr ?? '');
 const allowedMaturity = new Set(['draft', 'validated', 'stable', 'deprecated']);
 const allowedVerification = new Set(['unverified', 'structure-pass', 'evidence-partial', 'e2e-pass']);
 const allowedRelease = new Set(['BLOCK', 'Preview', 'candidate', 'Ready', 'Published', 'retired']);
@@ -27,6 +25,11 @@ const allowedPackageKinds = new Set(['standalone-sub-library']);
 const allowedDeliveryModes = new Set(['human-playbook', 'ai-skill-draft', 'ai-skill-stable', 'toolkit', 'adapter', 'template-pack', 'reference-implementation', 'course']);
 const allowedSkillStatus = new Set(['draft-adapter-not-installable', 'preview-adapter-not-installable', 'validated-adapter', 'stable-adapter', 'retired']);
 const ignoredSourceDirs = new Set(['.git', '.obsidian', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace']);
+const requiredStateProjections = new Map([
+  ['VERSION.md', ['repository_sync_status', 'release_status']],
+  ['RELEASE.md', ['repository_sync_status', 'release_status']],
+  ['LICENSE.md', ['release_status', 'license_status']],
+]);
 
 const requiredFiles = [
   'README.md', 'AGENTS.md', 'CLAUDE.md', 'MANIFEST.md', 'RELEASE.md', 'VERSION.md',
@@ -67,6 +70,95 @@ function fieldArray(front, field) {
   if (!line) return [];
   return [...line.matchAll(/"([^"]*)"|'([^']*)'/g)].map((m) => m[1] ?? m[2]);
 }
+function hasField(front, field) { return new RegExp(`^${field}:`, 'm').test(front ?? ''); }
+function validateStateProjections(scopeRoot, markdownFiles) {
+  const markdownByDocument = new Map(markdownFiles
+    .filter((file) => extname(file).toLowerCase() === '.md')
+    .map((file) => [relative(scopeRoot, file).split(sep).join('/'), file]));
+  for (const document of requiredStateProjections.keys()) {
+    if (!markdownByDocument.has(document)) fail(`missing required state projection document: ${document}`);
+  }
+
+  for (const [document, path] of markdownByDocument) {
+    const requiredFields = requiredStateProjections.get(document);
+    const front = frontMatter(path, read(path));
+    if (!front) {
+      if (requiredFields) fail(`${document} required state projection document must have readable front matter`);
+      continue;
+    }
+    const hasSource = hasField(front, 'state_source');
+    const hasProjection = hasField(front, 'state_projection');
+    if (!hasSource && !hasProjection && !requiredFields) continue;
+
+    if (!hasSource || !hasProjection) {
+      fail(requiredFields
+        ? `${document} required state projection must declare both state_source and state_projection`
+        : `${document} state projection must declare both state_source and state_projection`);
+      continue;
+    }
+
+    const sourceReference = fieldValue(front, 'state_source');
+    const projectedFields = fieldArray(front, 'state_projection');
+    if (!sourceReference) {
+      fail(`${document} state_source must be a non-empty relative MANIFEST.md path`);
+      continue;
+    }
+    if (sourceReference.startsWith('/') || /^file:/i.test(sourceReference) || sourceReference.includes('\\')) {
+      fail(`${document} state_source must be a portable relative path: ${sourceReference}`);
+      continue;
+    }
+    const sourcePath = resolve(dirname(path), sourceReference);
+    if (!isInside(scopeRoot, sourcePath)) {
+      fail(`${document} state_source escapes validation scope: ${sourceReference}`);
+      continue;
+    }
+    const relativeParts = relative(scopeRoot, path).split(sep);
+    const documentScopeRoot = relativeParts[0] === 'sub-libraries' && relativeParts.length > 2
+      ? resolve(scopeRoot, 'sub-libraries', relativeParts[1])
+      : resolve(scopeRoot);
+    const canonicalSourcePath = resolve(documentScopeRoot, 'MANIFEST.md');
+    if (sourcePath !== canonicalSourcePath) {
+      fail(`${document} state_source must resolve to the canonical scope MANIFEST.md: ${sourceReference}`);
+      continue;
+    }
+    if (!existsSync(sourcePath)) {
+      fail(`${document} state_source does not exist: ${sourceReference}`);
+      continue;
+    }
+    if (!projectedFields.length) {
+      fail(`${document} state_projection must be a non-empty inline string array`);
+      continue;
+    }
+    if (new Set(projectedFields).size !== projectedFields.length) {
+      fail(`${document} state_projection contains duplicate fields`);
+      continue;
+    }
+    if (requiredFields && (
+      projectedFields.length !== requiredFields.length
+      || requiredFields.some((field) => !projectedFields.includes(field))
+    )) {
+      fail(`${document} required state_projection must exactly equal ${JSON.stringify(requiredFields)}`);
+      continue;
+    }
+
+    const sourceFront = frontMatter(sourcePath, read(sourcePath));
+    if (!sourceFront) {
+      fail(`${document} state_source has no readable front matter: ${sourceReference}`);
+      continue;
+    }
+    for (const field of projectedFields) {
+      if (!/^[a-z][a-z0-9_]*$/.test(field)) {
+        fail(`${document} state_projection has invalid field name: ${field}`);
+        continue;
+      }
+      const expected = fieldValue(sourceFront, field);
+      const actual = fieldValue(front, field);
+      if (expected === null) fail(`${document} projects ${field}, but ${sourceReference} does not declare it`);
+      else if (actual === null) fail(`${document} projects ${field}, but the document does not declare it`);
+      else if (actual !== expected) fail(`${document} state drift for ${field}: expected ${JSON.stringify(expected)} from ${sourceReference}, got ${JSON.stringify(actual)}`);
+    }
+  }
+}
 function isExternal(value) { return /^(https?:|mailto:|data:|tel:|#)/i.test(value); }
 function isPathLike(value) { return !isExternal(value) && !/[\s]/.test(value) && (value.startsWith('.') || /\.(md|json|mjs|js|txt|yaml|yml|sh|png|jpg|jpeg|webp)$/i.test(value)); }
 function checkLocalReference(path, value, field) {
@@ -88,13 +180,32 @@ function checkMarkdownLinks(path, content) {
 
 function enforceCleanGitRelease() {
   if (!releaseMode) return;
-  const probe = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: root, encoding: 'utf8' });
+  const probe = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: root, encoding: 'utf8', timeout: GOVERNANCE_COMMAND_TIMEOUT_MS });
   if (probe.status !== 0) { warn('release mode running without Git metadata; commit/artifact provenance remains unverified'); return; }
-  const status = spawnSync('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: root, encoding: 'utf8' });
+  const status = spawnSync('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: root, encoding: 'utf8', timeout: GOVERNANCE_COMMAND_TIMEOUT_MS });
   if ((status.stdout ?? '').trim()) fail('release mode requires a clean Git worktree');
 }
 
 for (const file of requiredFiles) if (!existsSync(join(root, file))) fail(`missing required file: ${file}`);
+
+// State projection drift is both release-critical and cheap to detect. Run the
+// mandatory root projections before the expensive link/index/child validators
+// so adversarial mutation fixtures fail closed without exhausting their budget.
+const requiredProjectionFiles = [...requiredStateProjections.keys()]
+  .map((document) => join(root, document))
+  .filter((path) => existsSync(path));
+validateStateProjections(root, requiredProjectionFiles);
+if (failures.length) {
+  for (const item of failures) console.log(`FAIL: ${item}`);
+  console.error(`\nBLOCK: ${failures.length} preflight check(s) failed.`);
+  process.exit(1);
+}
+
+const linkGate = spawnSync(process.execPath, [join(root, 'scripts/validate-links.mjs'), ...((releaseMode || prepareMode) ? ['--release'] : []), root], { encoding: 'utf8', timeout: GOVERNANCE_COMMAND_TIMEOUT_MS });
+if (linkGate.status !== 0) fail('local Markdown link validation failed');
+process.stdout.write(linkGate.stdout ?? '');
+process.stderr.write(linkGate.stderr ?? '');
+
 enforceCleanGitRelease();
 const files = walk(root);
 for (const path of files) {
@@ -111,6 +222,7 @@ for (const path of files) {
   if (/\/Users\/|\/var\/folders\/|\/private\/var\/folders\/|\/tmp\//.test(content)) fail(`machine-local path pattern found: ${relative(root, path)}`);
   if (/(?:api[_ -]?key|secret|access[_ -]?token|password|cookie|session)\s*[:=]\s*['"]?[A-Za-z0-9_\-/+=]{12,}/i.test(content)) fail(`possible credential pattern found: ${relative(root, path)}`);
 }
+validateStateProjections(root, files);
 
 
 function checkNameCollisions(dir) {
@@ -131,7 +243,7 @@ checkNameCollisions(root);
 
 const indexValidator = join(root, 'scripts/validate-indexes.mjs');
 if (existsSync(indexValidator)) {
-  const indexResult = spawnSync(process.execPath, [indexValidator, '--check'], { cwd: root, encoding: 'utf8' });
+  const indexResult = spawnSync(process.execPath, [indexValidator, '--check'], { cwd: root, encoding: 'utf8', timeout: GOVERNANCE_COMMAND_TIMEOUT_MS });
   if (indexResult.status !== 0) {
     const evidence = `${indexResult.stdout ?? ''}${indexResult.stderr ?? ''}`.trim().split('\n').slice(-8).join(' | ');
     fail(`index validator failed${evidence ? `: ${evidence}` : ''}`);
@@ -322,7 +434,20 @@ for (const entry of subEntries) {
   }
   const childValidator = join(subRoot, 'scripts/validate-sub-library.mjs');
   if (existsSync(childValidator)) {
-    const result = spawnSync(process.execPath, [childValidator], { cwd: subRoot, encoding: 'utf8' });
+    const motherGovernanceFixture = process.env.GOVERNANCE_TEST_FIXTURE === '1'
+      && root.startsWith(join(realpathSync(tmpdir()), '701-governance-'))
+      && root.endsWith(join('repo'))
+      && !releaseMode
+      && !prepareMode;
+    const childModeArgs = [releaseMode ? '--release' : null, prepareMode ? '--prepare' : null].filter(Boolean);
+    const result = spawnSync(process.execPath, [childValidator, ...childModeArgs], {
+      cwd: subRoot,
+      encoding: 'utf8',
+      timeout: GOVERNANCE_COMMAND_TIMEOUT_MS,
+      env: motherGovernanceFixture
+        ? { ...process.env, WCO_GOVERNANCE_FIXTURE_FAST: '1' }
+        : { ...process.env },
+    });
     if (result.status !== 0) {
       const evidence = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim().split('\n').slice(-3).join(' | ');
       fail(`${name} child validator failed${evidence ? `: ${evidence}` : ''}`);

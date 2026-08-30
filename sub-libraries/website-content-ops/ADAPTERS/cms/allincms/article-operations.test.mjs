@@ -171,6 +171,16 @@ test('root and child category payloads keep parent distinction', () => {
   const child = buildCategoryPayload({ siteId: ids.siteId, name: '子', slug: 'child', parent: ids.categoryId, cover: null, order: 1 });
   assert.equal(Object.hasOwn(root, 'parent'), false); assert.equal(child.parent, ids.categoryId); assert.equal(root.contentType, 'posts');
 });
+test('taxonomy payloads omit empty or whitespace descriptions (observed 2026-08-27: server rejects create with empty-string description)', () => {
+  const tag = buildTagPayload({ siteId: ids.siteId, name: '标签', slug: 'tag', description: '' });
+  assert.equal(Object.hasOwn(tag, 'description'), false, 'empty description must be omitted from tag payload');
+  const category = buildCategoryPayload({ siteId: ids.siteId, name: '分类', slug: 'category', description: '   ' });
+  assert.equal(Object.hasOwn(category, 'description'), false, 'whitespace-only description must be omitted from category payload');
+  const withDescription = buildTagPayload({ siteId: ids.siteId, name: '标签', slug: 'tag', description: 'phase stability' });
+  assert.equal(withDescription.description, 'phase stability');
+  const undefinedDescription = buildTagPayload({ siteId: ids.siteId, name: '标签', slug: 'tag' });
+  assert.equal(Object.hasOwn(undefinedDescription, 'description'), false);
+});
 test('taxonomy slug duplicate is scoped to same site', () => {
   assert.throws(() => assertNoDuplicateSlug([{ siteId: ids.siteId, slug: 'same' }], 'same', ids.siteId, 'tag'), /already exists/);
   assert.doesNotThrow(() => assertNoDuplicateSlug([{ siteId: 'other-site', slug: 'same' }], 'same', ids.siteId, 'tag'));

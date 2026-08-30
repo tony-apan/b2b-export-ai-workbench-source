@@ -5,14 +5,24 @@ type: "tooling-index"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-12"
+last_updated: "2026-08-13"
 sources: ["Repository structure adversarial upgrade 2026-07-28"]
-related: ["../README.md", "../MANIFEST.md", "../RUNTIME-CONTRACT.json", "../SCHEMAS/runtime-contract.schema.json", "../RELEASE.md", "../INSTALL.md", "validate-sub-library.mjs", "validate-article-package.mjs", "article-package.test.mjs", "sync-workspace-template.test.mjs", "validate-artifact.mjs", "validate-links.mjs", "release-governance.test.mjs", "build-release.mjs"]
+related: ["../README.md", "../MANIFEST.md", "../RUNTIME-CONTRACT.json", "../SCHEMAS/runtime-contract.schema.json", "../RELEASE.md", "../INSTALL.md", "validate-sub-library.mjs", "validate-article-package.mjs", "article-package.test.mjs", "sync-workspace-template.test.mjs", "validate-artifact.mjs", "validate-links.mjs", "release-governance.test.mjs", "query-allincms-official-tutorial-index.mjs", "query-allincms-official-tutorial-index.test.mjs", "build-release.mjs"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
 ---
 # Scripts
+
+## AllinCMS 官方教程查询
+
+```bash
+node scripts/query-allincms-official-tutorial-index.mjs "怎么新建文章并发布"
+node scripts/query-allincms-official-tutorial-index.mjs --json "如何创建产品分类"
+node --test scripts/query-allincms-official-tutorial-index.test.mjs
+```
+
+查询器只读取 [官方教程发现索引](../REFERENCES/ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json)，不联网、不登录、不执行 CMS mutation。命中后必须打开 `official_url` 实时核验；用户实际询问 API、字段或真实写入时，继续读取 AllinCMS canonical Adapter 和 Interface Registry。
 
 ## Content Operation Plan 校验
 

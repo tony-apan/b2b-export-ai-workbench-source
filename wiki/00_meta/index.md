@@ -5,7 +5,7 @@ type: "index"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-30"
+last_updated: "2026-08-11"
 sources: ["User request"]
 related: ["../index.md"]
 visibility: "public"
@@ -35,6 +35,7 @@ when_to_read: "开始维护知识库、调整目录或索引、处理发布与�
 | — | [Definition of Done](definition-of-done.md) | 定义资料吸收、业务输出、实验记录、页面合并、wiki 体检等任务怎样才算完成。 | meta | Working | 需要理解规则、边界或协作方式时 | — |
 | — | [Document ID Standard](document-id-standard.md) | 规定长期知识页、来源页、原始资料、日志和发布合同分别如何命名与编号，避免重命名造成断链，同时让人和 AI 能用稳定 ID 引用文档。 | governance | Working / public | 需要修改规则、发布或验收时 | — |
 | — | [Glossary](glossary.md) | 统一知识库、增长、渠道、销售、实验、SEO/SEM/GEO 和 AI 协作中的核心术语，避免 Claude、Codex、新人对同一词理解不一致。 | meta | Working | 需要理解规则、边界或协作方式时 | — |
+| — | [In-Repository Agency Runtime Model](in-repository-agency-runtime-model.md) | 规定用户下载母库后，如何在同一物理根目录内安全维护多客户、多公司、多产品、多网站、社媒、来发信与邮件运行数据，并让上游母库持续更新而不覆盖本地日志、任务和证据。 | governance | Working / public | 初始化、升级、搜索或审计同一母库根目录内的多客户私有运行区，或需要判断母库更新能否安全应用时。 | agency runtime、customer-runtime、multi-client、scoped search、core update、handoff、private logs |
 | — | [Index and Discovery Standard](index-and-discovery-standard.md) | 规定每级 index.md 如何同时服务人和 AI：只索引当前层、用人话描述文档、提供读取时机和检索词，并通过分层入口避免把全文递归堆进上级目录。 | governance | Working / public | 新增、重命名、拆分目录或发现 AI 找不到文档时，先确认索引粒度和描述规则。 | index、索引、目录、检索、description、导航、AI retrieval |
 | — | [Ingestion Log](ingestion-log.md) | 冻结的旧版资料吸收与验证摘要兼容入口；历史 INGEST/VERIFY 别名保留，新来源登记、原始资料和运行事件分别进入 source registry、raw 与按日日志。 | meta | Archived / public | 需要理解规则、边界或协作方式时 | — |
 | — | [Knowledge Compounding System](knowledge-compounding-system.md) | 定义本库唯一的知识积累闭环；所有 SEO、独立站、主动开发、社媒和课程 Module 都必须从这里读取并向这里回写。 | meta | Working / public | 需要理解规则、边界或协作方式时 | — |

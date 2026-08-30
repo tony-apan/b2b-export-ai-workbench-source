@@ -10,6 +10,9 @@ sources: ["Mother Library Private Source Manifest", "Sub-library contract", "Pub
 related: ["README.md", "MANIFEST.md", "VERSION.md", "CHANGELOG.md", "AGENTS.md", "scripts/README.md", "sub-libraries/README.md", "wiki/00_meta/release-state-machine.md", "wiki/00_meta/release-checklist.md"]
 visibility: "private"
 redaction_status: "private-source-reviewed"
+state_source: "MANIFEST.md"
+state_projection: ["repository_sync_status", "release_status"]
+repository_sync_status: "Synced"
 release_status: "BLOCK"
 ---
 # Mother Library Sync And Release Guide

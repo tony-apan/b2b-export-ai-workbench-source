@@ -111,6 +111,51 @@
       "check_id": "article.visible_content_and_media",
       "evidence_kind": "anonymous_frontend",
       "acceptance": "Confirm the expected buyer-visible article content and required media are present in the anonymous frontend DOM and required images decode."
+    },
+    {
+      "check_id": "product.complete_backend_field_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back all submitted product fields, lifecycle state and exact same-site product ID from the authoritative backend record."
+    },
+    {
+      "check_id": "product.editor_reopen_health",
+      "evidence_kind": "editor_reopen",
+      "acceptance": "Reopen the exact product editor and confirm the editor is healthy and renders persisted fields rather than only HTTP 200."
+    },
+    {
+      "check_id": "product.taxonomy_media_binding_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "When present, read back exact category, tag, media and specification bindings from the authoritative product record."
+    },
+    {
+      "check_id": "product.backend_published_state",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the exact product ID in the backend published lifecycle state after the publish transition."
+    },
+    {
+      "check_id": "product.public_url",
+      "evidence_kind": "anonymous_resource",
+      "acceptance": "Resolve the exact absolute HTTPS public product URL anonymously and observe HTTP 200."
+    },
+    {
+      "check_id": "product.anonymous_frontend_detail",
+      "evidence_kind": "anonymous_frontend",
+      "acceptance": "Load the exact product detail URL without authenticated state and confirm the expected product detail page, not a login page, fallback or generic 200 shell."
+    },
+    {
+      "check_id": "product.visible_content_and_media",
+      "evidence_kind": "anonymous_frontend",
+      "acceptance": "Confirm the expected buyer-visible product content, specifications and required media are present in the anonymous frontend DOM and required images decode."
+    },
+    {
+      "check_id": "site.before_after_unique_id_delta",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Prove exactly one new site ID appeared between complete before/after site lists."
+    },
+    {
+      "check_id": "site.owner_key_domain_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back the new site owner, generated site key, default domain and setupError from the authoritative account record."
     }
   ],
   "profiles": [
@@ -177,6 +222,40 @@
         "article.public_url",
         "article.anonymous_frontend_detail",
         "article.visible_content_and_media"
+      ]
+    },
+    {
+      "capability_id": "allincms.product.create",
+      "required_check_ids": [
+        "concurrency.expected_current_fingerprint",
+        "product.complete_backend_field_readback",
+        "product.editor_reopen_health"
+      ]
+    },
+    {
+      "capability_id": "allincms.product.update",
+      "required_check_ids": [
+        "concurrency.expected_current_fingerprint",
+        "product.complete_backend_field_readback",
+        "product.editor_reopen_health",
+        "product.taxonomy_media_binding_readback"
+      ]
+    },
+    {
+      "capability_id": "allincms.product.publish",
+      "required_check_ids": [
+        "product.backend_published_state",
+        "product.editor_reopen_health",
+        "product.public_url",
+        "product.anonymous_frontend_detail",
+        "product.visible_content_and_media"
+      ]
+    },
+    {
+      "capability_id": "allincms.site.create",
+      "required_check_ids": [
+        "site.before_after_unique_id_delta",
+        "site.owner_key_domain_readback"
       ]
     }
   ],

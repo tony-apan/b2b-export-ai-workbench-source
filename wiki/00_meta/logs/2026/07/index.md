@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-30"
+last_updated: "2026-07-31"
 sources: ["../../../../../AGENTS.md"]
 related: ["2026-07-28.md", "2026-07-summary.md"]
 visibility: "public"
@@ -22,7 +22,8 @@ redaction_status: "safe-to-publish"
 |---|---|---|---|---|---|---|
 | — | [Daily Operations Log 2026-07-28](2026-07-28.md) | 记录 2026 年 7 月 28 日母库结构升级、文档 ID、raw 分类、课程提炼入口、日志系统和索引验证的事件流水。 | log | Working / public | 需要处理本目录对应主题时 | — |
 | — | [Daily Operations Log 2026-07-29](2026-07-29.md) | 记录 2026 年 7 月 29 日治理负向回归、CI、上下文入口、检查机制地图、handoff verdict、validator 加固、最终测试计数和 reviewer/remote 证据边界。 | log | Working / public | 需要追溯 2026-07-29 的治理加固范围、测试证据、未解除的课程或发布阻断，以及后续 reviewer 应从哪里继续时。 | governance tests、CI、CONTEXT、handoff verdict、current focus、validator、release gate、adversarial review |
-| — | [Daily Operations Log 2026-07-30](2026-07-30.md) | 记录 2026 年 7 月 30 日 website-content-ops 人类 README、AI START-HERE、无账号微信入口、层级索引修复和本地对抗验证结果。 | log | Working / public | 需要追溯 2026-07-30 的人类/AI 入口分工、无 AllinCMS 账号处理、二维码验证和正式发布边界时。 | human README、AI START-HERE、AllinCMS account、WeChat QR、adversarial review、release block |
+| — | [Daily Operations Log 2026-07-30](2026-07-30.md) | 记录 2026 年 7 月 30 日入口升级、非覆盖发布、母库与 website-content-ops 状态漂移修复及 fail-closed 对抗验证结果。 | log | Working / public | 需要追溯 2026-07-30 的人类/AI 入口分工、无 AllinCMS 账号处理、二维码验证和正式发布边界时。 | human README、AI START-HERE、AllinCMS account、WeChat QR、adversarial review、state drift、state projection、manifest、release block |
+| — | [Daily Operations Log 2026-07-31](2026-07-31.md) | 记录 B2B SEO 文章标准、四件套结构合同、受限 Markdown→Slate 预检和 fail-closed 对抗回落。 | log | Working / public | 需要追溯 2026-07-31 的 B2B SEO 文章标准、文章包对抗验证、结构 PASS 和未验证边界时。 | B2B SEO、article package、Markdown to Slate、adversarial review、fail closed、synthetic evidence |
 | — | [Monthly Operations Summary 2026-07](2026-07-summary.md) | 截至 2026-07-30 的 7 月滚动摘要，加入私有母库非覆盖同步、公开子库 Public Preview 发布和远端重克隆验收，并保留 Stable/真实效果阻断。 | log-summary | Working / public | 需要快速恢复 2026 年 7 月截至 7 月 30 日的人类/AI 入口、稳定结论、已关闭事项和真实阻断时。 | 2026-07、month-to-date、structure governance、raw to course、release block、review evidence、legacy migration |
 
 <!-- INDEX:END -->

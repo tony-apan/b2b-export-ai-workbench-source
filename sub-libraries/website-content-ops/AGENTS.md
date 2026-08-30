@@ -85,3 +85,11 @@ redaction_status: "safe-to-publish"
 ## AllinCMS 内容 mutation 授权
 
 文章、分类、标签和正文图片草稿写入不得接受裸布尔授权。调用子库 adapter 时必须提供与准确站点、操作、目标摘要、具名 `human-asserted` actor、批准时间和最长 30 分钟有效期绑定的 `authorizationContext`；每次请求前必须重新校验。`approval_identity_status` 保持 `not_verified`，该上下文不是正式批准或身份凭证。发布、删除、批量或全局修改继续要求独立明确人工批准和可验证回读。
+
+## AllinCMS canonical run discipline (2026-08-27 lessons; hard rules)
+
+- Freeze-and-archive: 任何远程 mutation 前，计划的 `authorization_scope.approved_at/expires_at/plan_sha256` 与 `capability_snapshot` 时间必须与 file write 同一步骤落盘（`content-operation-plan.json` 保存即证据）。请求时的手工/运行期校验不替代归档窗口。
+- Transport: 页内桥一律 `new TextDecoder().decode(Uint8Array.from(atob(...)))`；`eval(atob(...))` 为 Latin-1，禁止用于含 UTF-8/CJK 载荷。
+- Success pattern: 本部署 update/publish/metadata 返回整页 flight 属成功重渲染；任何 PASS 必须来自权威回读原文 +（公开变更）匿名公网验证。HTTP 200 / flight / 本地测试 ≠ PASS。
+- Authorization stratification: product/taxonomy/article/site 走 `deriveAllinCmsMutationBinding` 结构化上下文；media 写入无 binding 分支 → 一律标注「request-scoped/empirical」，不得宣称结构化授权覆盖；删除/清理/发布需单条显式批准。
+- Contexts: 动作 ID 用 5th-arg 字面捕获（`ADAPTERS/cms/allincms/scripts/scan-server-action-ids.mjs`）；旧 name-adjacent 正则作废。

@@ -1,0 +1,1360 @@
+{
+  "schema_version": 1,
+  "index_id": "allincms-official-tutorial-discovery-index",
+  "status": "working",
+  "source_id": "SRC-20260727-ALLINCMS-OFFICIAL",
+  "description": "供人和 AI 按问题发现 AllinCMS 官方教程的只读索引；保存 URL、原创问题意图和轻量页面元数据，不复制官方正文。",
+  "official_origin": "https://www.allincms.com/",
+  "official_docs_root": "https://www.allincms.com/docs",
+  "official_sitemap": "https://www.allincms.com/sitemap.xml",
+  "last_verified_at": "2026-08-13",
+  "verification_method": "从同域 sitemap 发现页面后，对 36 个 /docs URL 低速串行读取 HTTP 状态、title、description 与 H1；索引只保留短标题、原创摘要和查询意图，不保存官方正文或图片。",
+  "discovery_summary": {
+    "same_domain_urls_in_sitemap": 38,
+    "docs_urls_indexed": 36,
+    "docs_http_200": 36,
+    "excluded_non_tutorial_urls": [
+      "https://www.allincms.com/",
+      "https://www.allincms.com/search"
+    ]
+  },
+  "authority_boundary": {
+    "use_for": [
+      "判断应该阅读哪篇官方 UI/产品教程",
+      "核验官方公开的建站、内容、页面、域名、上线和排错工作流",
+      "为 AI 提供官方原页发现入口"
+    ],
+    "never_use_for": [
+      "证明公开稳定的开发者 API",
+      "证明当前部署的 Server Action ID、payload、字段或返回合同",
+      "替代登录态、user.id、完整网站列表和目标站点 preflight",
+      "替代远程 mutation 授权、当前 capability、回读和前台验收"
+    ],
+    "canonical_order": [
+      "用户当前明确要求",
+      "本库 canonical Adapter、Interface Registry 与当前部署证据",
+      "AllinCMS 官方教程原页",
+      "本地教程发现索引",
+      "历史 Skill/记录"
+    ]
+  },
+  "lookup_protocol": [
+    "按 problem_intents、keywords、topic、title 查询本索引。",
+    "打开命中的 official_url，实时确认页面仍可访问且教程没有漂移。",
+    "先判断命中的是 UI/产品教程，还是用户实际在问 API/内部接口合同。",
+    "涉及真实写入时，继续读取 canonical_adapter_routes；没有路由时从 ADAPTERS/cms/allincms/AI-START-HERE.md 和 INTERFACE-INDEX.md 开始。",
+    "执行当前部署 preflight、capability 与授权检查；教程内容不能放宽 Adapter 的 BLOCK。",
+    "若官方 URL 失效，先回到 official_docs_root 和 official_sitemap 重新发现，不静默删除旧条目。"
+  ],
+  "global_does_not_prove": [
+    "public_api",
+    "observed_internal_contract",
+    "current_deployment_action_id",
+    "current_payload_contract",
+    "current_user_or_site_identity",
+    "mutation_authorization",
+    "persistence_or_publication"
+  ],
+  "not_found_in_current_public_docs_inventory": [
+    {
+      "gap_id": "ALLINCMS-GAP-001",
+      "topic": "public developer API overview or authentication",
+      "problem_intents": [
+        "AllinCMS 有公开 API 吗",
+        "开发者文档在哪里",
+        "API 怎么认证",
+        "接口 token 怎么获取"
+      ],
+      "keywords": [
+        "API",
+        "开发者",
+        "认证",
+        "token"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/INTERFACE-INDEX.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "API",
+        "开发者",
+        "认证",
+        "token",
+        "AllinCMS 有公开 API 吗",
+        "开发者文档在哪里",
+        "API 怎么认证",
+        "接口 token 怎么获取"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-002",
+      "topic": "user.id API",
+      "problem_intents": [
+        "如何获取用户 id",
+        "user.id 接口",
+        "当前登录用户是谁",
+        "userId 从哪里取"
+      ],
+      "keywords": [
+        "user.id",
+        "user id",
+        "userId",
+        "用户 ID",
+        "登录用户"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/AI-START-HERE.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "user.id",
+        "user id",
+        "userId",
+        "用户 ID",
+        "登录用户",
+        "如何获取用户 id",
+        "user.id 接口",
+        "当前登录用户是谁",
+        "userId 从哪里取",
+        "登录态",
+        "是否登录",
+        "是不是登录",
+        "当前登录用户"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-003",
+      "topic": "complete website-list API and pagination contract",
+      "problem_intents": [
+        "网站列表 API",
+        "怎么接口检查网站列表",
+        "网站列表有哪些字段",
+        "站点列表分页"
+      ],
+      "keywords": [
+        "网站列表",
+        "站点列表",
+        "分页",
+        "site list"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/INTERFACE-INDEX.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "网站列表",
+        "站点列表",
+        "分页",
+        "site list",
+        "网站列表 API",
+        "怎么接口检查网站列表",
+        "网站列表有哪些字段",
+        "站点列表分页"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-004",
+      "topic": "create-site API fields and supported mutation contract",
+      "problem_intents": [
+        "新建网站 API",
+        "新建站点接口有哪些字段",
+        "接口创建网站",
+        "create site payload"
+      ],
+      "keywords": [
+        "新建网站 API",
+        "新建站点接口",
+        "create site",
+        "payload",
+        "字段"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/INTERFACE-INDEX.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "新建网站 API",
+        "新建站点接口",
+        "create site",
+        "新建站点接口有哪些字段",
+        "接口创建网站",
+        "create site payload"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-005",
+      "topic": "taxonomy API fields and mutation contract",
+      "problem_intents": [
+        "分类 API",
+        "标签 API",
+        "新建文章分类接口",
+        "创建文章标签接口",
+        "产品分类接口字段"
+      ],
+      "keywords": [
+        "分类 API",
+        "标签 API",
+        "taxonomy",
+        "文章分类",
+        "文章标签",
+        "产品分类"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/article-operations.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "分类 API",
+        "标签 API",
+        "taxonomy",
+        "文章分类",
+        "文章标签",
+        "产品分类",
+        "新建文章分类接口",
+        "创建文章标签接口",
+        "产品分类接口字段"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-006",
+      "topic": "media upload API fields and mutation contract",
+      "problem_intents": [
+        "上传图片接口",
+        "媒体库 API",
+        "图片上传有哪些字段",
+        "media upload payload"
+      ],
+      "keywords": [
+        "图片上传接口",
+        "媒体 API",
+        "media upload",
+        "媒体库",
+        "payload"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/INTERFACE-INDEX.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "图片上传接口",
+        "媒体 API",
+        "media upload",
+        "媒体库",
+        "上传图片接口",
+        "媒体库 API",
+        "图片上传有哪些字段",
+        "media upload payload"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-007",
+      "topic": "article API fields and mutation contract",
+      "problem_intents": [
+        "文章接口有哪些字段",
+        "新建文章 API",
+        "更新文章接口",
+        "发布文章接口",
+        "文章 payload"
+      ],
+      "keywords": [
+        "文章 API",
+        "文章字段",
+        "post API",
+        "发布文章接口",
+        "payload"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/article-operations.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "文章 API",
+        "文章字段",
+        "post API",
+        "发布文章接口",
+        "文章接口有哪些字段",
+        "新建文章 API",
+        "更新文章接口",
+        "文章 payload"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-008",
+      "topic": "product API fields and mutation contract",
+      "problem_intents": [
+        "产品接口有哪些字段",
+        "新建产品 API",
+        "更新产品接口",
+        "发布产品接口",
+        "产品 payload"
+      ],
+      "keywords": [
+        "产品 API",
+        "产品字段",
+        "product API",
+        "发布产品接口",
+        "payload"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/INTERFACE-INDEX.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "产品 API",
+        "产品字段",
+        "product API",
+        "发布产品接口",
+        "产品接口有哪些字段",
+        "新建产品 API",
+        "更新产品接口",
+        "产品 payload"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-009",
+      "topic": "versioning, rate limits, idempotency and compatibility guarantees",
+      "problem_intents": [
+        "API 版本策略",
+        "接口限流",
+        "接口幂等",
+        "兼容性承诺",
+        "请求失败能重试吗"
+      ],
+      "keywords": [
+        "版本",
+        "限流",
+        "幂等",
+        "兼容性",
+        "重试"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/INTERFACE-INDEX.md",
+      "gap_type": "api_contract",
+      "trigger_markers": [
+        "版本",
+        "限流",
+        "幂等",
+        "兼容性",
+        "重试",
+        "API 版本策略",
+        "接口限流",
+        "接口幂等",
+        "兼容性承诺",
+        "请求失败能重试吗"
+      ]
+    },
+    {
+      "gap_id": "ALLINCMS-GAP-010",
+      "gap_type": "tutorial_coverage",
+      "topic": "dedicated article category/tag UI tutorial",
+      "problem_intents": [
+        "文章标签怎么创建",
+        "文章分类怎么创建",
+        "后台怎么新增文章标签",
+        "后台怎么新增文章分类"
+      ],
+      "keywords": [
+        "文章标签",
+        "文章分类",
+        "post tag",
+        "post category"
+      ],
+      "trigger_markers": [
+        "文章标签",
+        "文章分类",
+        "post tag",
+        "post category"
+      ],
+      "status": "not_discovered",
+      "next_route": "ADAPTERS/cms/allincms/article-operations.md"
+    }
+  ],
+  "entries": [
+    {
+      "tutorial_id": "ALLINCMS-DOC-000",
+      "topic": "overview",
+      "problem_intents": [
+        "建站流程",
+        "教程入口",
+        "先看哪篇",
+        "文档导航",
+        "从哪里开始",
+        "AI 建站顺序"
+      ],
+      "keywords": [
+        "建站",
+        "教程",
+        "导航",
+        "SOP",
+        "知识库"
+      ],
+      "official_url": "https://www.allincms.com/docs",
+      "title": "建站流程 | AllinCMS",
+      "h1": "建站流程",
+      "content_scope": "官方教程总入口，用来按建站阶段进入准备、编辑、上线与后续运营文档。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-001",
+      "topic": "article",
+      "problem_intents": [
+        "新建文章",
+        "添加文章",
+        "编辑文章",
+        "文章有哪些字段",
+        "文章支持 Markdown 吗",
+        "发布文章",
+        "文章封面和摘要"
+      ],
+      "keywords": [
+        "文章",
+        "Posts",
+        "Markdown",
+        "Slug",
+        "摘要",
+        "封面图",
+        "发布"
+      ],
+      "official_url": "https://www.allincms.com/docs/content/add-posts",
+      "title": "添加文章 | AllinCMS",
+      "h1": "添加文章",
+      "content_scope": "说明后台文章入口、首批文章准备、正文充实、媒体处理和前台检查。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [
+        "ADAPTERS/cms/allincms/article-operations.md",
+        "ADAPTERS/cms/allincms/INTERFACE-INDEX.md"
+      ],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-002",
+      "topic": "product",
+      "problem_intents": [
+        "新建产品",
+        "添加产品",
+        "编辑产品",
+        "产品有哪些字段",
+        "产品分类和标签",
+        "产品主图和相册",
+        "发布产品"
+      ],
+      "keywords": [
+        "产品",
+        "Products",
+        "Slug",
+        "分类",
+        "标签",
+        "主图",
+        "相册",
+        "发布"
+      ],
+      "official_url": "https://www.allincms.com/docs/content/add-products",
+      "title": "添加产品 | AllinCMS",
+      "h1": "添加产品",
+      "content_scope": "说明产品分类前置、产品新建或编辑、Slug、排序、描述、主图、相册与前台检查。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [
+        "ADAPTERS/cms/allincms/INTERFACE-INDEX.md"
+      ],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-003",
+      "topic": "product",
+      "problem_intents": [
+        "首页推荐哪些产品",
+        "推荐产品排序",
+        "首页产品顺序",
+        "手动排序产品"
+      ],
+      "keywords": [
+        "首页",
+        "推荐产品",
+        "产品排序"
+      ],
+      "official_url": "https://www.allincms.com/docs/content/homepage-featured-products",
+      "title": "首页推荐产品 | AllinCMS",
+      "h1": "首页推荐产品",
+      "content_scope": "说明如何通过人工排序选择首页重点展示的产品。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [
+        "ADAPTERS/cms/allincms/INTERFACE-INDEX.md"
+      ],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-004",
+      "topic": "media",
+      "problem_intents": [
+        "上传图片前怎么处理",
+        "图片尺寸",
+        "图片比例",
+        "图片压缩",
+        "产品图变形",
+        "Banner 尺寸",
+        "文章主图尺寸",
+        "图片 alt"
+      ],
+      "keywords": [
+        "图片",
+        "媒体",
+        "尺寸",
+        "比例",
+        "WebP",
+        "压缩",
+        "alt",
+        "Banner"
+      ],
+      "official_url": "https://www.allincms.com/docs/content/image-guidelines",
+      "title": "图片规范 | AllinCMS",
+      "h1": "图片规范",
+      "content_scope": "整理常见图片用途对应的尺寸、比例、压缩、裁剪与描述检查。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [
+        "ADAPTERS/cms/allincms/AI-START-HERE.md",
+        "ADAPTERS/cms/allincms/INTERFACE-INDEX.md"
+      ],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-005",
+      "topic": "taxonomy",
+      "problem_intents": [
+        "新建产品分类",
+        "整理产品分类",
+        "产品分类 Slug",
+        "分类链接",
+        "分类和菜单不同步"
+      ],
+      "keywords": [
+        "产品分类",
+        "taxonomy",
+        "Slug",
+        "分类链接",
+        "菜单"
+      ],
+      "official_url": "https://www.allincms.com/docs/content/product-categories",
+      "title": "产品分类 | AllinCMS",
+      "h1": "产品分类",
+      "content_scope": "说明如何检查、创建和整理产品分类，以及分类 Slug、链接和菜单同步边界。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [
+        "ADAPTERS/cms/allincms/article-operations.md",
+        "ADAPTERS/cms/allincms/INTERFACE-INDEX.md"
+      ],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-006",
+      "topic": "page-module",
+      "problem_intents": [
+        "首页产品模块",
+        "特色产品列表",
+        "推荐产品模块",
+        "产品图片统一尺寸",
+        "产品详情打不开"
+      ],
+      "keywords": [
+        "产品模块",
+        "特色产品",
+        "推荐产品",
+        "页面模块"
+      ],
+      "official_url": "https://www.allincms.com/docs/content/product-module",
+      "title": "产品模块 | AllinCMS",
+      "h1": "产品模块",
+      "content_scope": "区分页面里的特色产品与推荐产品模块，并覆盖分类、图片和详情页检查。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-007",
+      "topic": "seo-content",
+      "problem_intents": [
+        "SEO 文章怎么写",
+        "B2B 文章结构",
+        "搜索意图",
+        "文章 H2 H3",
+        "文章内链",
+        "文章 CTA",
+        "发布前 SEO 检查"
+      ],
+      "keywords": [
+        "SEO",
+        "文章结构",
+        "搜索意图",
+        "H2",
+        "H3",
+        "内链",
+        "CTA"
+      ],
+      "official_url": "https://www.allincms.com/docs/content/seo-article-structure",
+      "title": "文章 SEO 教程 | AllinCMS",
+      "h1": "文章 SEO 教程",
+      "content_scope": "给出以客户问题为起点的 SEO 文章流程，包括标题、开头、层级、内链和发布检查。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-008",
+      "topic": "domain",
+      "problem_intents": [
+        "绑定域名",
+        "域名解析",
+        "CNAME 设置",
+        "www 解析",
+        "DNS 检查",
+        "SSL 等多久"
+      ],
+      "keywords": [
+        "域名",
+        "DNS",
+        "CNAME",
+        "www",
+        "SSL"
+      ],
+      "official_url": "https://www.allincms.com/docs/domains/bind-domain",
+      "title": "域名解析 | AllinCMS",
+      "h1": "10 分钟完成域名解析",
+      "content_scope": "说明自有域名的 CNAME 解析、DNS 生效和 SSL 检查流程。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-009",
+      "topic": "domain",
+      "problem_intents": [
+        "Cloudflare 绑定域名",
+        "Cloudflare DNS",
+        "Cloudflare www 跳转",
+        "代理状态怎么设"
+      ],
+      "keywords": [
+        "Cloudflare",
+        "DNS",
+        "域名",
+        "www"
+      ],
+      "official_url": "https://www.allincms.com/docs/domains/cloudflare-dns",
+      "title": "Cloudflare 解析 | AllinCMS",
+      "h1": "Cloudflare 解析",
+      "content_scope": "说明通过 Cloudflare 配置域名解析与 www 跳转时的操作顺序。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-010",
+      "topic": "migration",
+      "problem_intents": [
+        "迁移旧站",
+        "旧版后台迁移",
+        "切换旧域名",
+        "迁移后检查"
+      ],
+      "keywords": [
+        "迁移",
+        "旧站",
+        "域名切换"
+      ],
+      "official_url": "https://www.allincms.com/docs/domains/migrate-old-site",
+      "title": "迁移旧站 | AllinCMS",
+      "h1": "迁移旧站",
+      "content_scope": "列出旧版站点迁移到新版后台后应完成的内容检查与域名切换。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-011",
+      "topic": "troubleshooting",
+      "problem_intents": [
+        "网站提示不安全",
+        "HTTPS 不生效",
+        "SSL 异常",
+        "证书问题"
+      ],
+      "keywords": [
+        "HTTPS",
+        "SSL",
+        "网站不安全",
+        "故障排查"
+      ],
+      "official_url": "https://www.allincms.com/docs/domains/ssl-not-secure",
+      "title": "网站不安全 | AllinCMS",
+      "h1": "网站不安全",
+      "content_scope": "用于排查 HTTPS 未生效、证书状态异常或浏览器安全提示。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-012",
+      "topic": "ai-content-ops",
+      "problem_intents": [
+        "用 Codex 上传内容",
+        "安装 AllinCMS skill",
+        "AI 批量上传网站",
+        "AI 读取资料建站",
+        "AI 上传产品文章图片",
+        "上传前授权和验收"
+      ],
+      "keywords": [
+        "Codex",
+        "AI",
+        "skill",
+        "批量上传",
+        "内容运营",
+        "验收"
+      ],
+      "official_url": "https://www.allincms.com/docs/launch/codex-auto-content-upload",
+      "title": "用 Codex 自动上传网站内容 | AllinCMS",
+      "h1": "用 Codex 自动上传网站内容",
+      "content_scope": "说明用 Codex 读取资料、安装 Skill、准备内容、取得确认、上传并验收的用户工作流。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [
+        "ADAPTERS/cms/allincms/AI-START-HERE.md",
+        "ADAPTERS/cms/allincms/INTERFACE-INDEX.md"
+      ],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-013",
+      "topic": "analytics",
+      "problem_intents": [
+        "安装 GA4",
+        "Google Analytics 设置",
+        "G- 衡量 ID",
+        "网站访问统计"
+      ],
+      "keywords": [
+        "GA4",
+        "Google Analytics",
+        "衡量 ID",
+        "统计"
+      ],
+      "official_url": "https://www.allincms.com/docs/launch/google-analytics-4",
+      "title": "Google Analytics 4 (GA4) 设置 | AllinCMS",
+      "h1": "Google Analytics 4 (GA4) 设置教程",
+      "content_scope": "说明创建 GA4 数据流、取得衡量 ID 并在后台接入统计。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-014",
+      "topic": "seo-launch",
+      "problem_intents": [
+        "Google 收录查询",
+        "提交 sitemap",
+        "Search Console",
+        "网站没收录",
+        "site 命令"
+      ],
+      "keywords": [
+        "Google 收录",
+        "Search Console",
+        "sitemap",
+        "site:"
+      ],
+      "official_url": "https://www.allincms.com/docs/launch/google-search-console-sitemap",
+      "title": "查询网站收录并提交站点地图 | AllinCMS",
+      "h1": "查询网站收录，并提交站点地图",
+      "content_scope": "说明检查 Google 收录、连接 Search Console 和提交 sitemap 的步骤。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-015",
+      "topic": "launch",
+      "problem_intents": [
+        "网站上线前检查",
+        "发布前检查",
+        "模板内容检查",
+        "表单收信检查",
+        "手机端检查",
+        "404 检查"
+      ],
+      "keywords": [
+        "上线",
+        "发布",
+        "检查清单",
+        "表单",
+        "404",
+        "移动端"
+      ],
+      "official_url": "https://www.allincms.com/docs/launch/launch-checklist",
+      "title": "上线检查 | AllinCMS",
+      "h1": "上线检查",
+      "content_scope": "提供网站公开上线前的模板内容、联系方式、表单、链接、图片、移动端、域名与 HTTPS 检查。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-016",
+      "topic": "page",
+      "problem_intents": [
+        "新建 Cases 页面",
+        "高级页面",
+        "添加画廊视频弹窗",
+        "案例页面"
+      ],
+      "keywords": [
+        "页面",
+        "Cases",
+        "画廊",
+        "视频",
+        "弹窗"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/advanced-pages",
+      "title": "进阶页面 | AllinCMS",
+      "h1": "进阶页面：Cases、画廊、视频和弹窗",
+      "content_scope": "介绍基础首页之后可增加的案例、画廊、视频和弹窗页面模块。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-017",
+      "topic": "contact",
+      "problem_intents": [
+        "电话点击拨打",
+        "邮箱点击发送",
+        "联系方式链接",
+        "tel mailto"
+      ],
+      "keywords": [
+        "电话",
+        "邮箱",
+        "联系方式",
+        "tel",
+        "mailto"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/contact-links",
+      "title": "网站联系方式设置 | AllinCMS",
+      "h1": "网站联系方式设置：一键拨打与发邮件",
+      "content_scope": "说明如何把电话和邮箱配置为访客可直接触发的联系链接。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-018",
+      "topic": "page",
+      "problem_intents": [
+        "新建页面",
+        "创建路由",
+        "页面绑定路由",
+        "页面 404"
+      ],
+      "keywords": [
+        "页面",
+        "路由",
+        "新建页面",
+        "404"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/create-page",
+      "title": "新建页面 | AllinCMS",
+      "h1": "新建页面",
+      "content_scope": "说明新建路由、新建页面和绑定路由的完整后台流程。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-019",
+      "topic": "navigation",
+      "problem_intents": [
+        "添加子菜单",
+        "下拉菜单",
+        "导航层级",
+        "菜单分组"
+      ],
+      "keywords": [
+        "导航",
+        "子菜单",
+        "下拉菜单"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/dropdown-menu",
+      "title": "子菜单和下拉菜单 | AllinCMS",
+      "h1": "添加子菜单和下拉菜单",
+      "content_scope": "说明如何为导航建立子菜单与下拉层级。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-020",
+      "topic": "homepage",
+      "problem_intents": [
+        "首页怎么装修",
+        "首页必备模块",
+        "Banner 轮播",
+        "首页产品分类",
+        "首页文章推荐",
+        "页脚设置"
+      ],
+      "keywords": [
+        "首页",
+        "Banner",
+        "轮播",
+        "产品分类",
+        "文章推荐",
+        "页脚"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/homepage-basics",
+      "title": "首页必备模块 | AllinCMS",
+      "h1": "首页必备模块",
+      "content_scope": "按页面顺序梳理首页菜单、Banner、分类、产品、文章与页脚等基础模块。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-021",
+      "topic": "contact",
+      "problem_intents": [
+        "添加 Google 地图",
+        "修改公司地图地址",
+        "联系页地图",
+        "位置地图"
+      ],
+      "keywords": [
+        "Google 地图",
+        "地址",
+        "联系页",
+        "地图"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/location-map",
+      "title": "添加位置地图 | AllinCMS",
+      "h1": "添加位置地图，并修改地图地址",
+      "content_scope": "说明在联系区域添加位置地图并替换成公司的地图地址。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-022",
+      "topic": "page-module",
+      "problem_intents": [
+        "添加视频模块",
+        "添加图片画廊",
+        "YouTube 视频",
+        "画廊分栏和裁剪"
+      ],
+      "keywords": [
+        "视频",
+        "图片画廊",
+        "YouTube",
+        "页面模块"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/media-sections",
+      "title": "视频模块和图片画廊 | AllinCMS",
+      "h1": "视频模块和图片画廊",
+      "content_scope": "说明视频和图片画廊模块的添加、链接、分栏、裁剪与展示设置。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-023",
+      "topic": "navigation",
+      "problem_intents": [
+        "调整导航顺序",
+        "菜单排序",
+        "栏目顺序"
+      ],
+      "keywords": [
+        "导航",
+        "菜单",
+        "排序"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/menu-order",
+      "title": "导航顺序 | AllinCMS",
+      "h1": "导航顺序",
+      "content_scope": "说明如何调整导航菜单栏目顺序。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-024",
+      "topic": "lead-generation",
+      "problem_intents": [
+        "添加弹窗表单",
+        "按钮打开表单",
+        "询盘弹窗",
+        "Popup Form"
+      ],
+      "keywords": [
+        "弹窗",
+        "表单",
+        "询盘",
+        "Popup Form"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/popup-form",
+      "title": "弹窗表单 | AllinCMS",
+      "h1": "添加弹窗表单",
+      "content_scope": "说明如何添加弹窗表单，并让按钮打开指定询盘表单。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-025",
+      "topic": "navigation",
+      "problem_intents": [
+        "设置按钮链接",
+        "设置菜单链接",
+        "Internal 和 Custom",
+        "链接产品分类",
+        "链接文章页面"
+      ],
+      "keywords": [
+        "跳转链接",
+        "Internal",
+        "Custom",
+        "按钮",
+        "菜单",
+        "内链"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/redirect-link",
+      "title": "跳转链接 | AllinCMS",
+      "h1": "跳转链接",
+      "content_scope": "说明按钮和菜单如何跳转到分类、产品、文章、页面或自定义地址。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-026",
+      "topic": "theme",
+      "problem_intents": [
+        "修改网站主题色",
+        "修改整体背景色",
+        "统一网站颜色",
+        "Theme 设置"
+      ],
+      "keywords": [
+        "主题色",
+        "背景色",
+        "Theme",
+        "视觉"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/theme-colors",
+      "title": "整体背景色和主题色 | AllinCMS",
+      "h1": "整体背景色和主题色",
+      "content_scope": "说明基础内容完成后如何统一调整网站背景色和主题色。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-027",
+      "topic": "contact",
+      "problem_intents": [
+        "添加 WhatsApp 按钮",
+        "修改 WhatsApp 号码",
+        "WhatsApp 悬浮按钮"
+      ],
+      "keywords": [
+        "WhatsApp",
+        "悬浮按钮",
+        "联系方式"
+      ],
+      "official_url": "https://www.allincms.com/docs/pages/whatsapp-floating-button",
+      "title": "WhatsApp 悬浮按钮 | AllinCMS",
+      "h1": "WhatsApp 悬浮按钮添加与修改号码",
+      "content_scope": "说明添加 WhatsApp 悬浮入口并替换联系号码。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-028",
+      "topic": "site",
+      "problem_intents": [
+        "新建网站",
+        "创建站点",
+        "新站打开 404",
+        "创建默认主题",
+        "启用主题",
+        "配置 Home 页面"
+      ],
+      "keywords": [
+        "站点",
+        "网站",
+        "创建",
+        "主题",
+        "Home",
+        "404"
+      ],
+      "official_url": "https://www.allincms.com/docs/quickstart/create-site",
+      "title": "新建站点 | AllinCMS",
+      "h1": "新建站点",
+      "content_scope": "说明从登录、创建站点到主题启用、Home 页面检查和 404 排查的流程。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [
+        "ADAPTERS/cms/allincms/INTERFACE-INDEX.md"
+      ],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-029",
+      "topic": "quickstart",
+      "problem_intents": [
+        "快速建站",
+        "AllinCMS 快速上手",
+        "第一次使用后台",
+        "从建站到上线"
+      ],
+      "keywords": [
+        "快速上手",
+        "建站",
+        "新手",
+        "上线"
+      ],
+      "official_url": "https://www.allincms.com/docs/quickstart/overview",
+      "title": "快速上手 | AllinCMS",
+      "h1": "快速上手",
+      "content_scope": "提供新手从创建站点、准备内容、修改首页到上线检查的总流程。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-030",
+      "topic": "intake",
+      "problem_intents": [
+        "建站前要准备什么",
+        "准备域名资料图片",
+        "公司资料清单",
+        "建站账号和联系方式"
+      ],
+      "keywords": [
+        "建站准备",
+        "域名",
+        "资料",
+        "图片",
+        "联系方式",
+        "账号"
+      ],
+      "official_url": "https://www.allincms.com/docs/quickstart/preparation",
+      "title": "建站前准备 | AllinCMS",
+      "h1": "建站前准备",
+      "content_scope": "列出开始建站前应准备的域名、公司资料、图片、联系方式、账号和目标。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-031",
+      "topic": "site-settings",
+      "problem_intents": [
+        "设置站点图标",
+        "设置 favicon",
+        "设置通知邮箱",
+        "表单收信邮箱"
+      ],
+      "keywords": [
+        "站点设置",
+        "图标",
+        "favicon",
+        "通知邮箱"
+      ],
+      "official_url": "https://www.allincms.com/docs/quickstart/site-settings",
+      "title": "站点基础设置 | AllinCMS",
+      "h1": "站点图标和站点通知邮箱",
+      "content_scope": "说明站点图标和表单通知邮箱等基础设置。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-032",
+      "topic": "troubleshooting",
+      "problem_intents": [
+        "AllinCMS 常见问题",
+        "域名页面产品发布问题",
+        "不知道看哪篇排错"
+      ],
+      "keywords": [
+        "FAQ",
+        "常见问题",
+        "故障排查"
+      ],
+      "official_url": "https://www.allincms.com/docs/troubleshooting/faq",
+      "title": "常见问题 | AllinCMS",
+      "h1": "常见问题",
+      "content_scope": "汇总域名、页面、产品和发布等常见问题的排查入口。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-033",
+      "topic": "troubleshooting",
+      "problem_intents": [
+        "图片显示不全",
+        "图片被裁剪",
+        "图片变形",
+        "图片比例不规整"
+      ],
+      "keywords": [
+        "图片",
+        "裁剪",
+        "显示不全",
+        "比例"
+      ],
+      "official_url": "https://www.allincms.com/docs/troubleshooting/image-fit",
+      "title": "图片显示不全 | AllinCMS",
+      "h1": "图片显示不全",
+      "content_scope": "用于处理图片被裁剪、比例不合适或显示不完整的问题。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-034",
+      "topic": "recovery",
+      "problem_intents": [
+        "恢复页面历史版本",
+        "恢复产品历史版本",
+        "恢复文章历史版本",
+        "内容改错怎么回退"
+      ],
+      "keywords": [
+        "历史版本",
+        "恢复",
+        "回退",
+        "页面",
+        "产品",
+        "文章"
+      ],
+      "official_url": "https://www.allincms.com/docs/troubleshooting/page-history-restore",
+      "title": "恢复页面、产品和文章历史版本 | AllinCMS",
+      "h1": "恢复页面、产品和文章历史版本",
+      "content_scope": "说明页面、产品或文章改错后如何从各自编辑器恢复历史版本。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    },
+    {
+      "tutorial_id": "ALLINCMS-DOC-035",
+      "topic": "troubleshooting",
+      "problem_intents": [
+        "发布失败",
+        "Failed to publish editor changes",
+        "编辑器无法发布"
+      ],
+      "keywords": [
+        "发布失败",
+        "Failed to publish",
+        "编辑器",
+        "故障排查"
+      ],
+      "official_url": "https://www.allincms.com/docs/troubleshooting/publish-failed",
+      "title": "发布失败 | AllinCMS",
+      "h1": "发布失败",
+      "content_scope": "用于排查编辑器提示发布失败时的常见处理路径。",
+      "evidence_level": "official_tutorial",
+      "http_status": 200,
+      "last_verified_at": "2026-08-13",
+      "canonical_adapter_routes": [],
+      "fallback": "https://www.allincms.com/docs"
+    }
+  ],
+  "contract_question_markers": [
+    "API",
+    "接口",
+    "开发者",
+    "用户 id",
+    "用户ID",
+    "user.id",
+    "user id",
+    "userId",
+    "网站列表 API",
+    "站点列表 API",
+    "payload",
+    "Action ID",
+    "Server Action",
+    "返回值",
+    "限流",
+    "幂等",
+    "版本策略",
+    "认证",
+    "登录态",
+    "是否登录",
+    "是不是登录",
+    "当前登录用户"
+  ]
+}

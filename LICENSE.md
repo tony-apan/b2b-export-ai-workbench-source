@@ -10,6 +10,8 @@ sources: ["MANIFEST.md", "Tony private mother-library decision 2026-07-30"]
 related: ["MANIFEST.md", "RELEASE.md", "sub-libraries/website-content-ops/LICENSE"]
 visibility: "private"
 redaction_status: "private-source-reviewed"
+state_source: "MANIFEST.md"
+state_projection: ["release_status", "license_status"]
 release_status: "BLOCK"
 license_status: "restricted"
 ---

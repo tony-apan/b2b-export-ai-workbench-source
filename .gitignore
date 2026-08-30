@@ -50,3 +50,14 @@ dist/
 # Installed dependencies; never commit platform binaries or generated package trees.
 node_modules/
 **/node_modules/
+
+# Private customer runtime and local credentials; reserved namespaces must never be tracked by the mother repository.
+/customer-runtime/
+/customer-runtime
+/credentials/
+/secrets/
+/browser-profiles/
+/.runtime-update-staging/
+.DS_Store
+.DS_Store
+sub-libraries/website-content-ops/ADAPTERS/cms/allincms/.tmp-dbg.mjs

@@ -208,7 +208,7 @@ export function buildCategoryPayload({ siteId, name, slug, description, cover = 
   asNonEmptyString(slug, 'category slug');
   if (!Number.isInteger(order)) throw new Error('category order must be an integer');
   const payload = { siteId, contentType, name: name.trim(), slug: slug.trim(), order };
-  if (description !== undefined) payload.description = description;
+  if (description !== undefined && `${description}`.trim() !== '') payload.description = description;
   if (cover !== undefined) payload.cover = cover;
   if (parent !== undefined && parent !== null) payload.parent = asNonEmptyString(parent, 'category parent');
   return payload;
@@ -220,7 +220,7 @@ export function buildTagPayload({ siteId, name, slug, description, contentType =
   asNonEmptyString(name, 'tag name');
   asNonEmptyString(slug, 'tag slug');
   const payload = { siteId, contentType, name: name.trim(), slug: slug.trim() };
-  if (description !== undefined) payload.description = description;
+  if (description !== undefined && `${description}`.trim() !== '') payload.description = description;
   if (id !== undefined) payload.id = asNonEmptyString(id, 'tag id');
   return payload;
 }

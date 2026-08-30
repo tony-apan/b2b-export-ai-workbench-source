@@ -6,9 +6,9 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-30"
+last_updated: "2026-08-01"
 sources: ["AGENTS.md", "wiki/00_meta/private-master-and-sub-library-model.md"]
-related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "wiki/00_meta/current-focus.md", "sub-libraries/README.md"]
+related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/in-repository-agency-runtime-model.md", "sub-libraries/README.md", "sub-libraries/agency-operations/README.md"]
 visibility: "private"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
@@ -26,6 +26,7 @@ canonical_entry: "README.md"
 | `wiki/90_outputs/courses/` | 从来源与知识链提炼的课程模块、练习、验收和写回 | [课程入口](wiki/90_outputs/courses/index.md) |
 | `wiki/00_meta/logs/` | 按日事件与证据指针、按月摘要；不是第二知识库 | [日志入口](wiki/00_meta/logs/index.md) |
 | `sub-libraries/` | 可独立发布的能力模块；每个 scope 使用自己的 manifest、运行合同和发布证据 | [子库入口](sub-libraries/README.md) |
+| `customer-runtime/` | 根目录下 Git 隔离的真实客户私有运行区；由 agency-operations 初始化，母库更新不得覆盖 | [运行模型](wiki/00_meta/in-repository-agency-runtime-model.md) / 初始化后本地 `customer-runtime/README.md` |
 
 `wiki/` 的目录 canonical 入口使用 `index.md`；允许 README-only 的非 wiki 目录必须显式声明 `canonical_entry: "README.md"`。父级入口只索引直接文件和直接子目录入口，不递归铺平全库。
 
@@ -37,6 +38,7 @@ canonical_entry: "README.md"
 - 当前状态与阻断：[current-focus.md](wiki/00_meta/current-focus.md)
 - 人和 AI 的知识导航：[wiki/index.md](wiki/index.md)
 - 子库机器注册表：[sub-libraries/registry.json](sub-libraries/registry.json)
+- 多客户代运营运行区：[Agency Operations](sub-libraries/agency-operations/README.md)；初始化前先读 [仓库内运行模型](wiki/00_meta/in-repository-agency-runtime-model.md)
 - 检查结果能证明什么：[check-mechanism-map.md](wiki/00_meta/check-mechanism-map.md)
 - 任务完成标准：[definition-of-done.md](wiki/00_meta/definition-of-done.md)
 

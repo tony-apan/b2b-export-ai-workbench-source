@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "package_id": "website-content-ops",
+  "adapter": "allincms",
+  "contract_type": "site-operations",
+  "description": "Minimal site bootstrap lifecycle contract for AllinCMS Server Action create-site.",
+  "fields": ["name", "description"],
+  "authorization": {
+    "required": true,
+    "scheme": "structured_context",
+    "operation": "allincms.site.create",
+    "ttl_ms": 1800000
+  },
+  "verification": {
+    "required": true,
+    "evidence": [
+      "before_after_unique_id_delta",
+      "owner_key_domain_readback",
+      "ambiguous_transport_reconciliation"
+    ],
+    "retry_policy": "no_automatic_retry"
+  },
+  "boundary": "Local contract only; live qualification requires fresh live_verified_current_deployment evidence."
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "package_id": "website-content-ops",
+  "adapter": "allincms",
+  "contract_type": "product-operations",
+  "description": "Minimal product lifecycle contract for AllinCMS Server Action operations.",
+  "fields": [
+    "name",
+    "slug",
+    "description",
+    "order",
+    "media",
+    "mediaList",
+    "content",
+    "categories",
+    "tags",
+    "specifications",
+    "siteId",
+    "productId",
+    "mode"
+  ],
+  "modes": ["update", "publish", "unpublish"],
+  "authorization": {
+    "required": true,
+    "scheme": "structured_context",
+    "ttl_ms": 1800000
+  },
+  "verification": {
+    "required": true,
+    "evidence": [
+      "backend_readback",
+      "editor_reopen",
+      "anonymous_frontend",
+      "media_decode"
+    ],
+    "retry_policy": "no_automatic_retry"
+  },
+  "boundary": "Local contract only; live deployment qualification requires fresh live_verified_current_deployment evidence."
+}

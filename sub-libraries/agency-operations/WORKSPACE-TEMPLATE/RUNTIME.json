@@ -1,0 +1,11 @@
+{
+  "runtime_schema_version": 1,
+  "runtime_id": "uninitialized",
+  "created_at": null,
+  "core_lock": "00_control/CORE-LOCK.json",
+  "clients_registry": "00_control/clients-registry.json",
+  "task_registry": "00_control/task-registry.jsonl",
+  "search_catalog": "00_control/search-catalog.jsonl",
+  "private_runtime": true,
+  "tracked_by_mother_git": false
+}

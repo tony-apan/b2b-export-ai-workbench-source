@@ -19,14 +19,16 @@ const PROFILES = new Map([
     implementationFiles: [
       'upload-media-browser.mjs',
       'article-image-binding.mjs',
+      'article-content-formats.mjs',
       'article-operations.mjs',
     ],
     testFiles: [
       'upload-media-browser.test.mjs',
       'article-image-binding.test.mjs',
+      'article-content-formats.test.mjs',
       'article-operations.test.mjs',
     ],
-    expectedTests: 131,
+    expectedTests: 156,
   }],
 ]);
 

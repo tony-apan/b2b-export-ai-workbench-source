@@ -15,6 +15,7 @@ const REQUIRED_CLI_COMMANDS = [
   'npm run interfaces:validate',
   'npm run interfaces:index',
   'npm run interfaces:index:check',
+  'npm run scan:actions -- <chunks-text-file>',
 ];
 const REQUIRED_PACKAGE_FILES = [
   'AI-START-HERE.md', 'README.md',

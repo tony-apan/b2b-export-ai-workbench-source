@@ -5,7 +5,7 @@ type: "source"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
+last_updated: "2026-08-01"
 sources: ["Risk review"]
 related: ["source-registry.md", "../00_meta/publishing-and-redaction.md", "../00_meta/sensitive-data-inventory.md"]
 when_to_read: "准备吸收、引用或公开发布一份来源资料前，用本页核对版权、同意、raw 保存和审批状态。"
@@ -27,7 +27,10 @@ redaction_status: "safe-to-publish"
 | SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL | PicGo / Cloudflare R2 / GitHub / Tencent COS / Alibaba OSS official public docs | public official docs; verify trademarks and provider terms | needs-approval | source-card only | yes | pending | official public URL set in source card; provider terms to review | pending | 2026-10-27 |
 | SRC-20260726-KARPATHY-LLM-WIKI | Andrej Karpathy official public GitHub Gist | public source; derivative summary requires attribution and scope review | needs-approval | source-card only | yes | pending | source URL plus attribution note in source card | pending | 2026-10-26 |
 | SRC-20260728-0001 | Original synthetic training fixture authored for repository closure testing | original synthetic fixture | yes, public-safe fixture only | yes, this fixture only | no | AI + human reviewer | raw fixture front matter: `synthetic: true`, `redaction_status: safe-to-publish` | pending / review required | 2026-10-28 |
+| SRC-20260731-B2B-SEO-CONTENT-RESEARCH | Google Search Central plus public Animalz, Ahrefs, and CXL articles | public official and editorial webpages; original summary only | no — `method_use=internal-research-only-links-and-original-summary`; `publication_review_status=pending`; `publication_status=BLOCK`; `license_status=pending` | source-card only | yes, no copied article body or performance claim | pending | public URLs and method boundaries in source note; redaction-safe is not publication-cleared; no publication clearance yet | pending | 2026-10-31 |
 
 ## Public Use Rule
 
 可以公开链接和原创摘要，不复制官方网页全文，不上传第三方课程、客户资料、账号导出或后台截图。`needs-approval`、`pending` 或没有 Approval Owner / Evidence / Decision Date 的记录都不是授权通过；母库和子库在审批完成前继续保持 `BLOCK`。
+
+对 `SRC-20260731-B2B-SEO-CONTENT-RESEARCH`，`method_use` 仅表示内部方法研究许可，不是 publication clearance；`redaction_status: safe-to-publish` 也不等于 `publication-cleared`。该来源保持 `publication_review_status=pending`、`publication_status=BLOCK`、`license_status=pending`。当前 release validator 尚未机械绑定 Source ID 的来源级 clearance，因此不得仅通过修改候选包级 `license_status` 放行。该 pending 状态不撤销已经完成的结构测试，但继续阻断包含该来源的当前 dirty candidate 之 Public Preview publication、release、Stable 或 Published 声明。

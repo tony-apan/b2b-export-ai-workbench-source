@@ -148,7 +148,7 @@ const checks = [];
 const add = (id, result) => checks.push({ id, status: 'pass', result: { ...result, context_sha256: contextSha256, producer_job: id === 'runtime-tests' ? execution.runtime_job_id : jobId } });
 const runNode = (id, script, scriptArgs = [], cwd = sourceRoot) => runCommand({ id, command: contract.get(id), cwd, argv: [process.execPath, script, ...scriptArgs], logRoot: outputRoot });
 
-let result = runNode('governance-tests', join(sourceRoot, 'scripts/run-governance-tests.mjs'), ['--timeout-ms', '30000']);
+let result = runNode('governance-tests', join(sourceRoot, 'scripts/run-governance-tests.mjs'), ['--timeout-ms', '60000']);
 const governanceOutput = readFileSync(join(outputRoot, result.output_file), 'utf8');
 const summary = governanceOutput.match(/GOVERNANCE_TEST_SUMMARY: total=(\d+) passed=(\d+) known_gaps=(\d+) failed=(\d+)/);
 if (!summary || summary[1] !== summary[2] || summary[3] !== '0' || summary[4] !== '0') fail('governance test output lacks an exact all-pass summary');

@@ -58,7 +58,7 @@ function makePlan({ approved = false, publicationClearance = 'approved' } = {}) 
       { operation_id: 'OP-002', entity_ref: 'article:buyer-guide', entity_type: 'article', intent: 'create', identity: { id: null, natural_key: { site_key: 'site-fixture', slug: 'buyer-guide' }, match_strategy: 'exact_natural_key' }, field_refs: ['title','summary'], capability_ref: 'CAP-article-create', expected_current_fingerprint: null, dependencies: ['OP-001'], mutation: true, publication_effect: 'private_draft', readback_requirements: ['article-id', 'slug', 'taxonomy'] },
       { operation_id: 'OP-003', entity_ref: 'article:buyer-guide', entity_type: 'article', intent: 'publish', identity: { id: null, natural_key: { site_key: 'site-fixture', slug: 'buyer-guide' }, match_strategy: 'exact_natural_key' }, field_refs: [], capability_ref: 'CAP-article-publish', expected_current_fingerprint: null, dependencies: ['OP-002'], mutation: true, publication_effect: 'publish_transition', readback_requirements: ['published-status', 'public-url'] }
     ],
-    authorization_scope: { status: approved ? 'approved' : 'pending', actor: approved ? 'Human Reviewer Fixture' : null, identity_status: 'not_verified', target_scope: 'site', target_key: 'site-fixture', operation_ids: ['OP-001','OP-002','OP-003'], approved_at: approved ? '2026-08-12T00:05:00Z' : null, expires_at: approved ? '2026-08-12T00:25:00Z' : null, plan_sha256: null },
+    authorization_scope: { status: approved ? 'approved' : 'pending', actor: approved ? 'Human Reviewer Fixture' : null, identity_status: 'not_verified', target_scope: 'site', target_key: 'site-fixture', operation_ids: ['OP-001','OP-002','OP-003'], approved_at: approved ? '2026-08-12T00:05:00Z' : null, archived_at: approved ? '2026-08-12T00:05:00Z' : null, expires_at: approved ? '2026-08-12T00:25:00Z' : null, plan_sha256: null },
     reconciliation_policy: { ambiguous_write: 'read-only-reconcile-before-any-retry', automatic_retry_after_request_started: false, identity_rule: 'exact-id-or-site-scoped-natural-key' },
     verification_plan: { backend_readback: true, editor_reopen: true, frontend: true, evidence_targets: [runtimePath('40_evidence/readback.json'), runtimePath('40_evidence/frontend.json')] },
     writeback_targets: [{ kind: 'task', path: runtimePath('TASK.json'), visibility: 'private-runtime' }]
@@ -101,7 +101,7 @@ function makeBootstrapPlan({ approved = false } = {}) {
   plan.authorization_scope = {
     status: approved ? 'approved' : 'pending', actor: approved ? 'Human Reviewer Fixture' : null,
     identity_status: 'not_verified', target_scope: 'account', target_key: 'user-fixture',
-    operation_ids: ['OP-SITE-001'], approved_at: approved ? '2026-08-12T00:05:00Z' : null,
+    operation_ids: ['OP-SITE-001'], approved_at: approved ? '2026-08-12T00:05:00Z' : null, archived_at: approved ? '2026-08-12T00:05:00Z' : null,
     expires_at: approved ? '2026-08-12T00:25:00Z' : null, plan_sha256: null,
   };
   plan.verification_plan = { backend_readback: true, editor_reopen: false, frontend: false, evidence_targets: [runtimePath('40_evidence/site-bootstrap-readback.json')] };

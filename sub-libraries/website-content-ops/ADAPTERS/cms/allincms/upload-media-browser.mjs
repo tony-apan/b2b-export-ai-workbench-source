@@ -3013,3 +3013,134 @@ export async function uploadAllinCmsMedia({
     },
   };
 }
+
+// ---------------------------------------------------------------------------
+// 2026-08-27 deployment wire contract guard + verified dialog driver.
+// Observed on dpl 83eddf696484d494d59ae961cb4ded1d61d14b56:
+//   the media upload dialog builds `new FormData(); i.append("files", new File(...))`
+//   and calls `uploadMedia(siteId, formData)` through the app dispatcher.
+// The historical in-page template (`_1_files` + `0` slots) is STALE for this
+// deployment and silently produced full-flight responses without a record.
+// `assertAllinCmsUploadWireShape` blocks direct entrypoints before a request
+// when the discovered chunk text is not the current `files` contract, and
+// `uploadAllinCmsUploadViaDialog` drives the app's own dialog (the only
+// empirically reliable mutation path on the current deployment) with an
+// explicit `uiFallbackApproved` gate.
+// ---------------------------------------------------------------------------
+
+export function assertAllinCmsUploadWireShape(scriptTexts, { siteKey, actionLabel = 'uploadMedia' } = {}) {
+  if (!Array.isArray(scriptTexts)) throw new Error('scriptTexts must be an array of client chunk texts');
+  const joined = scriptTexts.filter((s) => typeof s === 'string').join('\n');
+  const hasFilesAppend = /append\(\s*["']files["']/.test(joined);
+  const hasActionReference = joined.indexOf(actionLabel) > -1;
+  if (!hasActionReference || !hasFilesAppend) {
+    throw new Error(`UPLOAD_WIRE_CONTRACT_DRIFT ${siteKey ?? ''}: expected ${actionLabel} reference and FormData field "files" in current client chunks; observed actionReference=${hasActionReference} filesAppend=${hasFilesAppend}. Re-capture the wire contract or use uploadAllinCmsUploadViaDialog with explicit approval.`);
+  }
+  return { status: 'observed', actionLabel, wireShape: 'files+siteId-formdata' };
+}
+
+export async function uploadAllinCmsUploadViaDialog({
+  runInTab,
+  expectedSiteKey,
+  mediaPagePath,
+  file,
+  uiFallbackApproved = false,
+  waitMs = 4000,
+  pollTries = 6,
+  pollDelayMs = 3000,
+  onProgress = () => {},
+}) {
+  if (uiFallbackApproved !== true) {
+    throw new Error('UI fallback upload requires explicit uiFallbackApproved: true for this batch and image');
+  }
+  if (typeof runInTab !== 'function') throw new Error('runInTab callback is required');
+  if (!file || typeof file !== 'object') throw new Error('file entry is required');
+  const base64 = Buffer.isBuffer(file.bytes) ? file.bytes.toString('base64') : file.base64;
+  if (!base64) throw new Error('file.bytes (Buffer) or file.base64 is required');
+  const filename = file.filename || file.name;
+  const mimeType = file.mimeType || 'image/webp';
+  const path = mediaPagePath || `/${expectedSiteKey}/media`;
+
+  const openAndInject = `(function(){
+    var d=document.querySelector('[role=dialog]');
+    try{
+      var btns=[].slice.call(document.querySelectorAll('button')).filter(function(b){return b.textContent.trim().indexOf(String.fromCharCode(19978,20256))>-1;});
+      if(btns.length){btns[0].click();}
+    }catch(e){}
+    return 'opened';
+  })()`;
+  await runInTab(openAndInject);
+  onProgress({ stage: 'dialog-open', filename });
+  await sleep(waitMs);
+
+  const inject = `(function(){
+    try{
+      var d=document.querySelector('[role=dialog]');
+      var inp=d?d.querySelector('input[type=file]'):null;
+      if(!inp) return 'NO_INPUT';
+      var bytes=Uint8Array.from(atob(${JSON.stringify(base64)}),function(c){return c.charCodeAt(0)});
+      var f=new File([bytes],${JSON.stringify(filename)},{type:${JSON.stringify(mimeType)}});
+      var dt=new DataTransfer();dt.items.add(f);
+      inp.files=dt.files;
+      inp.dispatchEvent(new Event('change',{bubbles:true}));
+      inp.dispatchEvent(new Event('input',{bubbles:true}));
+      return 'INJECTED';
+    }catch(e){return 'ERR:'+e.message}
+  })()`;
+  const injected = await runInTab(inject);
+  if (injected !== 'INJECTED') throw new Error(`dialog input injection failed: ${injected}`);
+  onProgress({ stage: 'file-injected', filename });
+  await sleep(500);
+  const submit = `(function(){
+    var d=document.querySelector('[role=dialog]');
+    if(!d) return 'NO_DIALOG';
+    var bs=[].slice.call(d.querySelectorAll('button')).filter(function(b){return /${'\\u4e0a\\u4f20'}/.test(b.textContent);});
+    if(!bs.length) return 'NO_SUBMIT';
+    bs[bs.length-1].click();
+    return 'SUBMITTED';
+  })()`;
+  const submitted = await runInTab(submit);
+  if (submitted !== 'SUBMITTED') throw new Error(`dialog submit failed: ${submitted}`);
+  onProgress({ stage: 'submitted', filename });
+
+  const lookFor = filename.replace(/\.[^.]+$/, '');
+  for (let attempt = 1; attempt <= pollTries; attempt++) {
+    await sleep(pollDelayMs);
+    const record = await readMediaRecordInDialog(runInTab, expectedSiteKey, lookFor);
+    if (record) {
+      return { status: 'uploaded_for_dialog_driver', mediaId: record.id, url: record.url, title: record.title, filename: record.filename, mimeType: record.mimeType, bytes: record.bytes, attempts: attempt };
+    }
+    onProgress({ stage: 'readback-poll', attempt, filename });
+  }
+  return { status: 'stopped_ambiguous__no_record_in_media_library', attempts: pollTries, filename };
+}
+
+async function readMediaRecordInDialog(runInTab, siteKey, stem) {
+  const js = `(function(){
+    try{
+      var n=Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+      var x=new XMLHttpRequest();
+      x.open('GET','https://workspace.laicms.com/${siteKey}/media?_rsc='+n,false);
+      x.setRequestHeader('Accept','text/x-component');x.setRequestHeader('RSC','1');x.withCredentials=true;x.send(null);
+      var t=x.responseText;
+      var i=t.indexOf(${JSON.stringify(stem)});
+      if(i<0) return 'NM';
+      var s=t.lastIndexOf('{"id"',i-400);if(s<0)s=Math.max(0,i-500);
+      var d=0,fi=-1;
+      for(var k=s;k<t.length;k++){var c=t[k];if(c==='{')d++;if(c==='}'){d--;if(d===0){fi=k+1;break;}}}
+      var chunk=t.slice(s,fi);
+      var id=(chunk.match(/"id":"([0-9a-f]{24})"/)||[])[1]||null;
+      var url=(chunk.match(/"url":"(https:\\/\\/assets\\.laicms\\.com\\/[^"]+)"/)||[])[1]||null;
+      var title=(chunk.match(/"title":"([^"]+)"/)||[])[1]||null;
+      var fn=(chunk.match(/"filename":"([^"]+)"/)||[])[1]||null;
+      var mt=(chunk.match(/"mimeType":"([^"]+)"/)||[])[1]||null;
+      var sz=(chunk.match(/"filesize":(\\d+)/)||[])[1]||null;
+      return id&&url?JSON.stringify({id:id,url:url,title:title,filename:fn,mimeType:mt,bytes:sz?Number(sz):null}):'NM';
+    }catch(e){return 'ERR:'+e.message}
+  })()`;
+  const out = await runInTab(js);
+  if (!out || out === 'NM' || out.startsWith('ERR:')) return null;
+  try { return JSON.parse(out); } catch { return null; }
+}
+
+function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }

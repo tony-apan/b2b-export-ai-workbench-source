@@ -30,6 +30,16 @@ related: ["CONTEXT.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/ai-operat
 
 权威结构见 [母库/子库模型](wiki/00_meta/private-master-and-sub-library-model.md)、[子库合同](wiki/00_meta/sub-library-contract.md) 和 [发布去敏规则](wiki/00_meta/publishing-and-redaction.md)。
 
+## 上游核心与客户运行区
+
+- 母库 tracked 文件是可更新的上游核心，普通使用者原则上只读；本地偏好、客户事实、任务、日志和证据进入根目录下被 Git 保留排除的 `customer-runtime/`，不得直接修改母库来保存运行状态。
+- `customer-runtime/` 可以与母库共享物理根目录，但不共享 Git、发布、索引或客户授权 scope；根 Git 不得追踪 `customer-runtime/**`、`credentials/**`、`secrets/**` 或 `browser-profiles/**`。
+- 进入客户数据前必须锁定 `client_id`；无客户 scope 的递归搜索、跨客户读取和跨客户写入 fail-closed。任务至少绑定 `client_id`、`company_id`、`task_id`，涉及产品、渠道或账号时继续绑定对应 ID。
+- 客户运行区的 Registry/JSON 合同是动态机器真源，README/index 只作生成或同步的展示视图；日志和聊天不能替代 `TASK.json` 与 `HANDOFF.md` 的当前状态。
+- 母库更新不得重新复制模板覆盖已有运行区。更新前检查 tracked core clean、版本锁、备份和 schema 兼容；破坏性迁移、外部动作或凭据/账号 scope 改变必须再次获得用户明确授权。
+
+完整模型见 [仓库内多客户代运营运行模型](wiki/00_meta/in-repository-agency-runtime-model.md)。
+
 ## 入口与 canonical 规则
 
 - 新任务先读 [CONTEXT.md](CONTEXT.md)、[wiki/index.md](wiki/index.md)、[current-focus.md](wiki/00_meta/current-focus.md) 和目标目录入口；不要为小任务扫描全库。

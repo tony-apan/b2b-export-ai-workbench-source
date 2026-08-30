@@ -1,0 +1,115 @@
+{
+  "schema_ref": "SCHEMAS/runtime-contract.schema.json",
+  "contract_version": 1,
+  "package_id": "agency-operations",
+  "inputs": [
+    {
+      "name": "private_customer_runtime",
+      "type": "directory",
+      "required": true,
+      "sensitivity": "private"
+    },
+    {
+      "name": "explicit_client_scope",
+      "type": "client-id",
+      "required": true,
+      "sensitivity": "private"
+    },
+    {
+      "name": "task_and_authorization_context",
+      "type": "json-object",
+      "required": true,
+      "sensitivity": "private"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "scoped_task_state",
+      "type": "json",
+      "required": true
+    },
+    {
+      "name": "handoff",
+      "type": "markdown",
+      "required": true
+    },
+    {
+      "name": "append_only_activity",
+      "type": "markdown-or-jsonl",
+      "required": true
+    },
+    {
+      "name": "scoped_outputs_and_evidence",
+      "type": "directory",
+      "required": false
+    }
+  ],
+  "required_permissions": [
+    {
+      "permission": "read_scoped_client_files",
+      "default": "ask"
+    },
+    {
+      "permission": "write_scoped_runtime",
+      "default": "ask"
+    },
+    {
+      "permission": "network_access",
+      "default": "deny"
+    },
+    {
+      "permission": "external_account_mutation",
+      "default": "deny"
+    }
+  ],
+  "network_access": [
+    {
+      "purpose": "core-update-check",
+      "approval": "not-used-in-v1-local-check"
+    },
+    {
+      "purpose": "website-or-channel-operation",
+      "approval": "explicit-human-only"
+    },
+    {
+      "purpose": "cross-client-analysis",
+      "approval": "prohibited-by-default"
+    }
+  ],
+  "external_side_effects": [
+    {
+      "action": "send_publish_message_delete_or_batch_change",
+      "approval": "explicit-object-bound-human-only",
+      "verification": "independent-readback-required"
+    },
+    {
+      "action": "apply-core-update",
+      "approval": "unsupported-in-v1",
+      "verification": "check-only-command-fails-closed"
+    }
+  ],
+  "human_approval_points": [
+    "external_send",
+    "publish",
+    "social_interaction",
+    "delete",
+    "overwrite",
+    "batch_change",
+    "account_switch",
+    "permission_change",
+    "destructive_migration",
+    "cross-client-analysis"
+  ],
+  "rollback_strategy": "stop at last verified local state; restore runtime from an explicit pre-migration backup and core from the recorded lock; never overwrite runtime with the tracked template.",
+  "writeback_scope": "only de-identified, human-reviewed reusable methods may return to the mother library; customer facts, logs, outputs, metrics and evidence remain private.",
+  "private_runtime_required": true,
+  "unsupported_claims": [
+    "production multi-tenant isolation",
+    "multi-operator authorization stability",
+    "automatic core update apply",
+    "automatic social or outreach actions",
+    "real-customer business outcome",
+    "installable Skill",
+    "Published release"
+  ]
+}

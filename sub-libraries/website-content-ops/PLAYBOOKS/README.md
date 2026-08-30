@@ -25,6 +25,8 @@ keywords: ["playbooks", "B2B SEO", "article standard", "frontend SEO", "content 
 3. [B2B Article Stage Patterns](id-0004-b2b-article-stage-patterns.md)：为 Learn、Troubleshoot、Compare、Validate、Buy 提供最小可复用模式，防止 AI 把所有文章写成同一套技术收资流程。
 4. [Article Page Frontend SEO Contract](id-0002-article-page-frontend-seo-contract.md)：定义文章页可索引、结构化数据、语义 HTML、图片、移动端和发布后验收合同。
 5. [Source-Driven CMS Create and Update SOP](id-0005-source-driven-cms-operation-sop.md)：用户提供 PDF、DOCX、表格、网站、图片或 brief 后，先按宿主能力生成私有 Source Extraction（原始 digest、locator、提取 digest、warning），再形成事实账本和 desired state，动态发现 CMS、做精确 create/update/upsert diff、两阶段新建站、计划摘要授权、严格串行接口执行和真实回读；不能把示例站、字段、CTA、产品模型或 Action ID 写死。
+6. [Live AllinCMS Operation Adversarial Review](id-0006-live-allincms-adversarial-review.md)：针对真实站点、媒体、文章、产品、主题、路由、首页操作的双审升级合同，定义 capability gate、不可变 Plan A/B、证据轴、SOL + TERRA 双审门槛和可分享 Skill 硬性条件。
+7. [Site Launch Acceptance](id-0007-site-launch-acceptance.md)：AllinCMS 站点上线前验收合同（内容/数据层、前端表现层、平台边界层），含 Runtime Forms 提交链路（load/submit action id、payload 形状、500 观察）、模板残留自检与 demo 值替换清单；上线前必查。
 
 ## 执行链
 

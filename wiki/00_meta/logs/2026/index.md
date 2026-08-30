@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-30"
+last_updated: "2026-08-11"
 sources: ["../index.md"]
 related: ["07/index.md"]
 visibility: "public"
@@ -21,5 +21,6 @@ redaction_status: "safe-to-publish"
 | ID | 入口 | 内容说明（description） | 类型 | 状态 / 可见性 | 什么时候读 | 检索词 |
 |---|---|---|---|---|---|---|
 | — | [July 2026 Logs](07/index.md) | 2026 年 7 月的每日维护日志和月度摘要入口，记录母库/子库结构升级、索引、模板、来源吸收和验证证据。 | meta | Working / public | 需要理解规则、边界或协作方式时 | — |
+| — | [August 2026 Logs](08/index.md) | 2026 年 8 月的每日维护日志和月度摘要入口，记录多客户代运营 runtime、AI 续接、更新安全和边界验证。 | meta | Working / public | 需要追溯 2026 年 8 月的多客户代运营 runtime、日志续接、索引隔离和更新安全工作时。 | 2026-08、agency operations、customer runtime、AI handoff、update safety |
 
 <!-- INDEX:END -->

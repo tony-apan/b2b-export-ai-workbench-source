@@ -5,9 +5,9 @@ type: "tooling-index"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-29"
+last_updated: "2026-08-01"
 sources: ["Mother-library and sub-library release architecture decision 2026-07-28"]
-related: ["../MANIFEST.md", "../RELEASE.md", "run-governance-tests.mjs", "tests/governance-cases.mjs", "verify-runtime-test-profile.mjs", "verify-tested-candidate-identity.mjs", "verify-node-test-summary.mjs", "resolve-release-scope.mjs", "validate-release-approval.mjs", "validate-mother-library.mjs", "validate-artifact.mjs", "validate-links.mjs", "build-mother-release.mjs"]
+related: ["../MANIFEST.md", "../RELEASE.md", "run-governance-tests.mjs", "tests/governance-cases.mjs", "verify-runtime-test-profile.mjs", "verify-tested-candidate-identity.mjs", "verify-node-test-summary.mjs", "resolve-release-scope.mjs", "validate-release-approval.mjs", "validate-mother-library.mjs", "validate-artifact.mjs", "validate-links.mjs", "build-mother-release.mjs", "../sub-libraries/agency-operations/scripts/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
@@ -33,6 +33,24 @@ node scripts/validate-knowledge-chain.mjs
 ```
 
 它检查 raw 必填字段、Source ID / registry、`derived_to`、source note 的 concept/playbook/course/verification/writeback 指针，以及 raw 不得混入提炼标题。若课程仍是 `assigned-not-submitted` 或 `partially_verified`，普通模式输出 `KNOWLEDGE_CHAIN_STRUCTURE_PASS`；`--release` 会将未完成的人工作业/真实验证转为 BLOCK。
+
+## 多客户私有运行区
+
+真实客户代运营不使用母库 index 脚本；它有独立、强制 `client_id` 的初始化、索引、搜索与边界 validator：
+
+```bash
+node sub-libraries/agency-operations/scripts/init-customer-runtime.mjs
+node sub-libraries/agency-operations/scripts/create-client.mjs --client cli-acme --name "Acme"
+node sub-libraries/agency-operations/scripts/register-entity.mjs --client cli-acme --type product --id prd-main --name "Main Product" --company co-acme
+node sub-libraries/agency-operations/scripts/create-task.mjs --client cli-acme --task tsk-first-outreach --title "First outreach" --activate
+node sub-libraries/agency-operations/scripts/sync-runtime-indexes.mjs
+node sub-libraries/agency-operations/scripts/validate-runtime-indexes.mjs
+node sub-libraries/agency-operations/scripts/runtime-search.mjs --client cli-acme --query motor
+node sub-libraries/agency-operations/scripts/validate-runtime-boundary.mjs
+node sub-libraries/agency-operations/scripts/update-core.mjs --check
+```
+
+第一版 `update-core.mjs` 只做本地 preflight；`fetch`、`pull` 和 `apply` 固定 BLOCK。运行区工具不会复用母库 `sync-indexes.mjs`，因为母库脚本按设计忽略 `customer-runtime/`。完整边界见 [Agency Operations scripts](../sub-libraries/agency-operations/scripts/README.md)。
 
 ## 本地 Markdown 链接校验
 
@@ -89,6 +107,8 @@ CI 使用 `node scripts/validate-indexes.mjs --check`，只要索引生成区过
 node scripts/validate-mother-library.mjs
 ```
 
+`MANIFEST.md` 是母库和各子库当前发布状态的唯一真源。母库 required contract 固定为 `VERSION.md` / `RELEASE.md` 投影 `repository_sync_status, release_status`，`LICENSE.md` 投影 `release_status, license_status`；这些文档同时删除两个声明或缩窄字段集合也不能退出检查。其他活动 Markdown 只要声明了 `state_source` 或 `state_projection` 中任一项，就必须同时声明两项。validator 只接受精确解析到当前文档所属 scope 根目录的 `MANIFEST.md`，逐字段比较投影值；来源缺失、越根、不是 manifest、投影为空/重复、字段缺失或值不一致都会直接 BLOCK。历史日志和审查快照不声明投影，因此保留当时状态。完整规则见 [Markdown Standard](../wiki/00_meta/markdown-standard.md#mutable-state-projection)。
+
 发布闸检查：
 
 ```bash
@@ -118,7 +138,9 @@ node scripts/validate-artifact.mjs --prepare dist/mother/prepared/v<version>/<co
 
 `--release` 只用于后续 qualification，且只接受 frozen `prepared-unapproved` 候选；不得把 `dist/mother/latest` 传入正式资格闸。正式流程还必须先用 trusted root 的 `validate-release-approval.mjs` 校验 approval/evidence、canonical tag annotation、实际 tag object/signer 和 commit provenance；artifact validator 的 PASS 不能替代该绑定。
 
-该脚本校验 `MANIFEST.json`、`SHA256SUMS`、文件集合、嵌套构建产物和候选包内嵌 validator，并在打包后再次扫描本地绝对路径和明显凭据赋值。候选文件只允许 `.md`、`.json`、`.mjs`、`.yml`、`.yaml`，以及显式的 `.gitignore`；其他扩展名（包括默认未声明理由的 `.txt`、`.sh`）一律阻断。普通 inspect 不会因状态文案自动冒充正式资格；只有显式 `--release` 才读取外部 approval/evidence 并执行 tag/commit gate。prepared 候选路径、状态和 tree digest 任何不一致都会阻断。
+该脚本校验 `MANIFEST.json`、`SHA256SUMS`、文件集合、嵌套构建产物和候选包内嵌 validator，并在打包后再次扫描本地绝对路径和明显凭据赋值。它还逐文件核对 `git-file-provenance/v1` receipt：provenance 路径集合必须与 `MANIFEST.json.files` 精确一一对应，每条 SHA-256 必须等于候选包实际 bytes，commit-bound 记录还必须与其 `commit_sha256` 一致；因此只重算 `content_digest` 和 `SHA256SUMS` 不能掩盖陈旧 provenance。候选文件只允许 `.md`、`.json`、`.mjs`、`.yml`、`.yaml`，以及显式的 `.gitignore`；其他扩展名（包括默认未声明理由的 `.txt`、`.sh`）一律阻断。普通 inspect 不会因状态文案自动冒充正式资格；只有显式 `--release` 才读取外部 approval/evidence 并执行 tag/commit gate。prepared 候选路径、状态和 tree digest 任何不一致都会阻断。
+
+普通 artifact PASS 只证明候选包内的 manifest、checksums、文件 bytes 与 provenance receipt **内部自洽**；它不能独立证明 Git commit object 真实存在、记录的 blob 确实属于该 commit、远端 tag 受保护、signer 可信或批准者是真人。正式 qualification 仍必须由候选包外的可信 workflow 在 clean/tagged checkout 上验证 commit、tag、signer、approval/evidence 并注入实际绑定值。
 
 `--prepare` 在候选包根目录依次运行 strict index、release link/log checks 和 `validate-mother-library.mjs --prepare`，但不要求真实课程效果资格；正式 `--release` 还运行 `validate-knowledge-chain.mjs --release` 并验证外部批准、tag 和 commit provenance。任何内嵌校验器缺失、失败或修改 frozen candidate 字节都会阻断。
 
@@ -135,7 +157,7 @@ node scripts/run-governance-tests.mjs
 ```bash
 node scripts/run-governance-tests.mjs --list
 node scripts/run-governance-tests.mjs --test artifact-unknown-extension
-node scripts/run-governance-tests.mjs --timeout-ms 30000
+node scripts/run-governance-tests.mjs --timeout-ms 60000
 ```
 
 runner 在系统临时目录为每个用例复制一份不含 `.git`、`node_modules` 和 `dist` 的仓库快照；每个测试由独立 Node 子进程执行并受超时限制，结束后删除临时目录。运行前后会比较真实仓库的 Git 状态；若状态变化，测试整体失败。测试 fixture 不得直接写入真实仓库。
@@ -193,7 +215,7 @@ resolver 只接受当前 `VERSION.md` 与 registry 精确匹配的 `mother/v<ver
 - 匹配环境级 `FORMAL_RELEASE_TRUSTED_WORKFLOW_SHA` 与启用 secret；
 - 验证 signed annotated tag、candidate HEAD 和可信 GPG signing-key fingerprint；allowlist 登记 `VALIDSIG` 实际返回的 signing subkey fingerprint，并明确轮换/撤销；
 - 比对母库 scripts、release workflow、`sub-libraries/registry.json` 与目标子库 scripts，阻止 candidate 自带弱化 validator；
-- 在独立 runner job 对目标子库运行可信 runtime-test profile：`verify-runtime-test-profile.mjs` 逐级拒绝 adapter/祖先 symlink，要求 package/lock/test 与祖先目录 npm/package-manager 控制文件和 trusted governance 一致，并把显式 allowlist 中的 candidate implementation 与 trusted tests 复制到 `$RUNNER_TEMP/runtime-subject`。依赖安装与测试在 `FORMAL_RELEASE_NODE20_IMAGE_DIGEST` 固定的 Node 容器内运行；测试容器只读挂载 subject、禁网、降权、移除 capabilities，不能看到 sibling governance checkout 或 GitHub command files。pinned workflow 直接执行固定 `node --test --test-reporter=tap`，`verify-node-test-summary.mjs` 再要求精确的最终 test plan/pass/fail/skipped 计数；当前 `website-content-ops` trusted profile 固定为 3 个测试文件和 131/131 全通过，120、130、132 或任意 failed/skipped 都必须 fail-closed。runtime job 输出实际测试的 candidate commit 与 annotated tag object SHA，qualification job 的全新 checkout 通过 `verify-tested-candidate-identity.mjs` 精确比对后再构建，避免 candidate 重定向测试对象、污染后续 builder、替换 npm lifecycle、提前退出伪造空跑，或 tag 在两个 job 之间 retarget；未来新增子库若没有 profile，正式 qualification 必须 BLOCK；
+- 在独立 runner job 对目标子库运行可信 runtime-test profile：`verify-runtime-test-profile.mjs` 逐级拒绝 adapter/祖先 symlink，要求 package/lock/test 与祖先目录 npm/package-manager 控制文件和 trusted governance 一致，并把显式 allowlist 中的 candidate implementation 与 trusted tests 复制到 `$RUNNER_TEMP/runtime-subject`。依赖安装与测试在 `FORMAL_RELEASE_NODE20_IMAGE_DIGEST` 固定的 Node 容器内运行；测试容器只读挂载 subject、禁网、降权、移除 capabilities，不能看到 sibling governance checkout 或 GitHub command files。pinned workflow 直接执行固定 `node --test --test-reporter=tap`，`verify-node-test-summary.mjs` 再要求精确的最终 test plan/pass/fail/skipped 计数；当前 `website-content-ops` trusted profile 固定为 4 个测试文件和 156/156 全通过（媒体 45、正文图片 52、正文格式 11、文章生命周期/taxonomy 48），旧 120、131、136、145、155、157 或任意 failed/skipped 都必须 fail-closed。runtime job 输出实际测试的 candidate commit 与 annotated tag object SHA，qualification job 的全新 checkout 通过 `verify-tested-candidate-identity.mjs` 精确比对后再构建，避免 candidate 重定向测试对象、污染后续 builder、替换 npm lifecycle、提前退出伪造空跑，或 tag 在两个 job 之间 retarget；未来新增子库若没有 profile，正式 qualification 必须 BLOCK；
 - 对 builder 输出的精确 frozen candidate 执行 qualification，确认 validator 未修改 tree；随后生成以 `content_digest` 命名的确定性 tar.gz 和精确单行 SHA-256 sidecar，解包到独立目录并再次运行 approval/artifact 校验。候选原树、workflow 解包树和 attestation 脚本再次解包树必须用 `sha256-canonical-tree-v1` 得到相同 path/type/mode/size/content/symlink/empty-directory digest。候选包外的 `QUALIFICATION-ATTESTATION.json` 再绑定 candidate tree、archive、approval/evidence、workflow、tag、signer、runtime 状态和精确测试计数，三者一起上传，避免验证对象与下载对象发生 TOCTOU。
 
 所有 `actions/*` 引用固定完整 commit SHA。此 workflow 只产生 qualification artifact，不创建 GitHub Release；Protected Environment、默认分支/正式 tag ruleset、真实 sidecar、可信 signer 和服务端成功 run 仍是仓库外部前置条件；同名 trust anchor 不得在 repository/org scope 作为后备值，首次演练需保存配置快照。

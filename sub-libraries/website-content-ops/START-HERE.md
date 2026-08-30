@@ -5,9 +5,9 @@ type: "guide"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-08-12"
+last_updated: "2026-08-13"
 sources: ["COURSE-MAP.md", "Tony decisions 2026-07-27", "Tony AI execution entry decision 2026-07-30"]
-related: ["README.md", "RUNTIME-INTEGRATION.md", "CONTACT.md", "COURSE-MAP.md", "AGENTS.md", "EXAMPLES/fluxpedal-motors/README.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md"]
+related: ["README.md", "RUNTIME-INTEGRATION.md", "CONTACT.md", "COURSE-MAP.md", "AGENTS.md", "REFERENCES/ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json", "EXAMPLES/fluxpedal-motors/README.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "AI 第一次接手本子库，需要确认自身工具能力、当前账号和权限，并开始第一个最小样本时。"
@@ -16,6 +16,18 @@ keywords: ["AI execution", "start here", "tool preflight", "AllinCMS", "single s
 # AI 执行入口
 
 > **本页主要给 AI agent 读取和执行。** 人类用户不需要逐条操作，只需要说明目标、提供必要资料、在自己的浏览器中完成登录，并对上传、覆盖、删除或发布分别确认。不要向 AI 发送密码、Cookie、Token 或 Secret。
+
+## 遇到 AllinCMS 使用问题先查官方教程
+
+```bash
+node scripts/query-allincms-official-tutorial-index.mjs "用户的原始问题"
+```
+
+- 查询器读取 [AllinCMS 官方教程发现索引](REFERENCES/ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json)，按问题意图返回官方原页和本地 Adapter 路由；
+- 命中后仍要打开 `official_url` 实时核验，索引中的 `last_verified_at` 不能替代当前页面；
+- 用户问后台步骤、图片规范、页面、域名、SEO 或排错时，优先读取官方教程；
+- 用户问登录态、`user.id`、网站列表、字段、payload、Action ID 或真实接口写入时，教程只作 UI 旁证，继续读取 [AllinCMS AI 执行入口](ADAPTERS/cms/allincms/AI-START-HERE.md) 和 Interface Registry；
+- 查询结果标记 `official_tutorial_gap` 或 `api_or_internal_contract` 时，不得把相近教程猜成缺失合同。
 
 ## 开始前先声明能力
 

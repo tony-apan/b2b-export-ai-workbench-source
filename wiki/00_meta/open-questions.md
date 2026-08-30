@@ -5,9 +5,9 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
-sources: ["current-focus.md", "decision-log.md", "logs/2026/07/2026-07-summary.md"]
-related: ["current-focus.md", "decision-log.md", "logs/index.md"]
+last_updated: "2026-08-01"
+sources: ["current-focus.md", "decision-log.md", "logs/2026/07/2026-07-summary.md", "Tony preparation-only acceptance 2026-08-01"]
+related: ["current-focus.md", "decision-log.md", "logs/index.md", "logs/2026/08/2026-08-01.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 when_to_read: "需要判断当前还有哪些业务、课程、CMS 或正式发布问题未闭合，以及某项是否真正阻断下一步时。"
@@ -46,6 +46,17 @@ keywords: ["open questions", "blocked", "deferred", "owner", "evidence", "next a
 | `OQ-TOOL-0001` | deferred | 课程 R2 使用新建 bucket、现有空演示 bucket、自定义域名还是开发 URL？ | Tony | R2 演示 | 尚无批准 | Tony 选择无真实业务数据的演示资源。 |
 | `OQ-TOOL-0002` | deferred | 是否批准 Wrangler v4、PicGo R2/S3 adapter，以及 GUI/CLI 统一配置？ | Tony | PicGo/R2 执行 | 尚无批准 | 明确工具与配置保存边界后再安装。 |
 | `OQ-TOOL-0003` | open | 哪个真实但可安全操作的网站用于最终端到端验收？ | Tony | 真实验收 | 当前只有限定站点证据 | 指定站点、权限、可写范围和回滚责任人。 |
+
+## 多客户代运营运行区
+
+以下事项均为 **post-preparation deferred**：不阻断 `preparation_status: complete`，只在未来进入真实客户、恢复、远程 apply、聚合分析或发布 scope 时重新激活。
+
+| question_id | 状态 | 问题 | owner | 阻断 scope | 证据 | 下一步 |
+|---|---|---|---|---|---|---|
+| `OQ-AGENCY-0001` | deferred | 首批 3–5 个真实客户运行由谁、在哪个受控环境完成，如何证明没有跨客户读取？ | Tony / operations owner | real-customer readiness | 当前只有双客户 synthetic 对抗测试 | 冻结客户、运营人员、数据范围和验收脚本后逐次演练。 |
+| `OQ-AGENCY-0002` | deferred | 运行区备份、恢复、归档、删除和保留期限采用什么本地或加密存储方案？ | Tony / security owner | recovery and retention | 当前只有目录和 core lock 合同 | 选择存储介质，执行一次备份、破坏、恢复和 catalog 重建演练。 |
+| `OQ-AGENCY-0003` | deferred | 母库远程更新的可信 remote、签名、版本通道、schema migration 与 rollback 如何落地？ | Release owner | automatic core update apply | v1 `update-core.mjs` 只允许 `--check` | 先完成 fetch-only 候选验证和临时副本迁移，再单独批准 apply。 |
+| `OQ-AGENCY-0004` | deferred | 是否需要跨客户聚合报表；若需要，谁批准字段、匿名化阈值和输出位置？ | Tony / privacy owner | cross-client analytics | 默认命令完全禁止跨客户搜索 | 在出现明确业务需求前保持禁止，不预建全局搜索。 |
 
 ## 正式发布与审查证据
 

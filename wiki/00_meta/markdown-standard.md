@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
+last_updated: "2026-07-30"
 sources: ["User request", "Subagent adversarial review"]
 related: ["definition-of-done.md", "quality-checklist.md", "agent-handoff.md"]
 ---
@@ -22,7 +22,7 @@ related: ["definition-of-done.md", "quality-checklist.md", "agent-handoff.md"]
 ---
 title: "页面标题"
 description: "一句话说明这个页面负责什么，什么时候应该读它。"
-type: "adapter-index | adversarial-review | agent-protocol | audit | brand | business | changelog | channel | checklist | client | competitor | concept | contact | conversation-source | course-module | evidence | example-index | governance | guide | index | installation-guide | intake | legal-notice | log | log-summary | manifest | meta | metric | output | page | playbook | raw-guide | redirect | references-index | release-guide | review-record | skill | source | source-note | source-policy | sub-library | template | tooling | tooling-index | tooling-reference | verification-record | version | writeback | writeback-record"
+type: "adapter-index | adversarial-review | agent-protocol | audit | brand | business | changelog | channel | checklist | client | competitor | concept | contact | conversation-source | course-module | evidence | example | example-index | governance | guide | index | installation-guide | intake | legal-notice | log | log-summary | manifest | meta | metric | output | page | playbook | raw-guide | redirect | references-index | release-guide | review-record | skill | source | source-note | source-policy | sub-library | template | tooling | tooling-index | tooling-reference | verification-record | version | writeback | writeback-record"
 status: "Seed | Draft | Working | Verified | Canonical | Stale | Archived"
 owner: "AI | Human | Team"
 created: "YYYY-MM-DD"
@@ -60,6 +60,28 @@ tags: []
 | `review_after` | 推荐 | 需要复查的日期。 |
 | `when_to_read` | 条件必填 | 编号 durable page、canonical 入口和模板必须写具体任务触发条件；其他页面推荐填写。 |
 | `keywords` | 条件必填 | 编号 durable page、canonical 入口和模板必须有 3—8 个稳定检索词；其他页面推荐 2—8 个。不要写“关键词 1”之类占位词。 |
+
+## Mutable State Projection
+
+每个发布 scope 的 `MANIFEST.md` front matter 是当前可变状态的**唯一真源**。`VERSION.md`、`RELEASE.md`、`INSTALL.md`、`README.md`、`SKILL.md`、许可证说明等活动文档如果复述当前状态，必须显式声明状态投影；不要再建立 `STATE.json` 或手工维护第二张状态表。
+
+```yaml
+state_source: "MANIFEST.md"
+state_projection: ["release_status", "preview_publication_status"]
+release_status: "Preview"
+preview_publication_status: "Published"
+```
+
+约束：
+
+- `state_source` 必须是最终精确解析为当前文档所属发布 scope 根目录 `MANIFEST.md` 的可移植相对路径；绝对路径、`file:`、Windows 路径、越根路径和其他文件名全部阻断。
+- `state_projection` 必须是非空、无重复的 inline 字符串数组；列出的每个字段必须同时存在于来源 manifest 和当前文档，并逐值完全一致。
+- 每个 scope 的 validator 必须内置 required active documents 合同，明确哪些文件必须投影哪些字段。required 文档即使同时删除 `state_source` 和 `state_projection` 也不能退出检查，投影字段集合必须与合同精确一致，不能通过缩窄字段列表逃避校验；只有合同之外的 optional 文档才允许完全不声明投影。
+- 只给承担**当前状态展示或执行路由**的活动文档声明投影。历史日志、审查快照、decision log 和归档证据保存当时事实，不声明当前状态投影，避免被错误重写成今天的状态。
+- 正文不要重复维护可变状态的多个变体。需要精确机器判断时读 front matter；需要人类摘要时正文应引用本页投影字段或 `MANIFEST.md`，不要另写无法机械核对的同义状态表。
+- 修改 manifest 状态后，必须在同一改动中同步全部声明投影的文档，并运行母库/子库 validator。任何缺字段、空投影、错误来源或值漂移都 fail closed；CI 不允许带漂移合并或构建候选。
+
+当前校验解决的是**结构化状态漂移**。自然语言无法可靠靠正则理解；如果未来必须在多处展示完整状态句，应把正文状态区改为脚本生成的受控区，而不是继续手写。
 
 ## 模板和原始对话附加合同
 

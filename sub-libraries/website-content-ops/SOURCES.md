@@ -5,7 +5,7 @@ type: "source-policy"
 status: "Draft"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-31"
+last_updated: "2026-08-13"
 sources: ["AGENTS.md"]
 related: ["INTAKE.md", "QA-CHECKLIST.md", "REFERENCES/README.md", "ADAPTERS/cms/allincms-overview.md", "ADAPTERS/image-hosts/README.md"]
 visibility: "public"
@@ -40,13 +40,14 @@ redaction_status: "safe-to-publish"
 
 ## 官方工具来源
 
+- [AllinCMS 官方教程发现索引](REFERENCES/ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json)：按问题意图定位当前 36 个官方教程页，命中后仍需打开原页实时核验；
 - [AllinCMS 文档入口](https://www.allincms.com/docs)
 - [AllinCMS 新建站点](https://www.allincms.com/docs/quickstart/create-site)
 - [AllinCMS 图片规范与媒体库](https://www.allincms.com/docs/content/image-guidelines)
 - [AllinCMS 用 Codex 自动上传网站内容](https://www.allincms.com/docs/launch/codex-auto-content-upload)
 - [PicGo、R2、GitHub、COS、OSS 来源边界](ADAPTERS/image-hosts/README.md)
 
-官方 AllinCMS 页面证明产品支持相应 UI / Codex 工作流，不自动证明存在公开、稳定的开发者 API。登录后抓到的请求必须标记为观察型内部合同，并经过回放和真实结果验证。
+官方 AllinCMS 页面证明产品支持相应 UI / Codex 工作流，不自动证明存在公开、稳定的开发者 API。教程索引也只是发现层，不能覆盖 canonical Adapter、Interface Registry、当前部署 capability、授权和回读要求。登录后抓到的请求必须标记为观察型内部合同，并经过回放和真实结果验证。
 
 ## 虚拟示例
 

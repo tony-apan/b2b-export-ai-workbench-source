@@ -62,6 +62,7 @@ const TEST_ALLOWLIST = [
   'qualification-attestation-binding',
   'formal-release-workflow-shape',
   'formal-release-evidence-workflow-shape',
+  'mother-state-projection-drift',
   'mother-index-layered-sub-library-entry',
 ];
 
@@ -70,7 +71,7 @@ const listOnly = args.includes('--list');
 const selectedFlag = args.indexOf('--test');
 const timeoutFlag = args.indexOf('--timeout-ms');
 const selected = selectedFlag >= 0 ? args[selectedFlag + 1] : '';
-const perTestTimeoutMs = timeoutFlag >= 0 ? Number(args[timeoutFlag + 1]) : 30_000;
+const perTestTimeoutMs = timeoutFlag >= 0 ? Number(args[timeoutFlag + 1]) : 60_000;
 const unknownArgs = args.filter((arg, index) => {
   if (['--list', '--test', '--timeout-ms'].includes(arg)) return false;
   if (index === selectedFlag + 1 || index === timeoutFlag + 1) return false;

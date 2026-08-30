@@ -206,7 +206,7 @@ node scripts/validate-content-operation-plan.mjs path/to/content-operation-plan.
 - writeback targets；
 - 对 canonical plan projection 计算的 SHA-256；摘要排除 `plan_digest`、`plan_sha256` 和授权 actor/时间，只绑定不可变业务计划与精确站点/operation scope，避免自引用循环。
 
-用户授权必须绑定**同一计划摘要、同一 target scope/key 和同一 operation ID 列表**。Plan A 绑定账号，Plan B 绑定真实站点；二者不能共用摘要或授权。计划、资料字节、目标站点、操作顺序、字段或图片发生变化后，旧授权失效。计划结构 PASS 只证明本地合同；`authorization_scope.status=pending` 时不得执行。
+用户授权必须绑定**同一计划摘要、同一 target scope/key 和同一 operation ID 列表**。授权必须在**同一文件写入步骤**连同 `archived_at`(=approved_at) 落盘（冻结即归档）；验证器对 approved 计划强制归档字段，缺档 BLOCK。Plan A 绑定账号，Plan B 绑定真实站点；二者不能共用摘要或授权。计划、资料字节、目标站点、操作顺序、字段或图片发生变化后，旧授权失效。计划结构 PASS 只证明本地合同；`authorization_scope.status=pending` 时不得执行。
 
 ## 9. 接口优先与严格串行执行
 

@@ -5,9 +5,9 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-08-12"
+last_updated: "2026-08-13"
 sources: ["media-operations-contract.redacted.json", "article-image-binding-contract.json", "direct-delete-verification.redacted.md", "Observed signed-in upload and draft-binding runs 2026-07-27", "Local fault tests 2026-07-27", "Tony default browser, login handoff, site discovery, and interface fallback decision 2026-07-30"]
-related: ["README.md", "content-run-controller.mjs", "live-run-evidence.schema.json", "INTERFACE-INDEX.md", "interface-registry.json", "interface-registry.schema.json", "media-metadata-and-ai-vision-sop.md", "article-operations.md", "upload-media-browser.mjs", "article-image-binding.mjs", "article-operations.mjs", "article-operations-contract.json", "upload-media-browser.test.mjs", "article-image-binding.test.mjs", "article-operations.test.mjs", "interface-registry.test.mjs", "media-operations-contract.redacted.json", "article-image-binding-contract.json", "../../image-upload-routing.md"]
+related: ["../../../REFERENCES/ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json", "README.md", "content-run-controller.mjs", "live-run-evidence.schema.json", "INTERFACE-INDEX.md", "interface-registry.json", "interface-registry.schema.json", "media-metadata-and-ai-vision-sop.md", "article-operations.md", "upload-media-browser.mjs", "article-image-binding.mjs", "article-operations.mjs", "article-operations-contract.json", "upload-media-browser.test.mjs", "article-image-binding.test.mjs", "article-operations.test.mjs", "interface-registry.test.mjs", "media-operations-contract.redacted.json", "article-image-binding-contract.json", "../../image-upload-routing.md"]
 confidence: "high-for-observed-upload-contract-medium-for-new-local-recovery-layer"
 review_after: "2026-08-27"
 visibility: "public"
@@ -15,7 +15,9 @@ redaction_status: "safe-to-publish"
 ---
 # AI 唯一执行入口：AllinCMS API-first 网站与内容操作
 
-> **通用资料驱动前置门槛：** 若用户提供 PDF、DOCX、表格、网站、图片或 brief，并要求新建/更新网站、文章或产品，先执行 `<SUB_LIBRARY_ROOT>/PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md`：按宿主能力生成并校验私有 `TEMPLATES/source-extraction.md`，再生成并验证 `TEMPLATES/content-operation-plan.md`。本 Adapter 只消费已冻结、source-backed 的 desired state 和精确 operation；不得从历史示例写死站点、语言、taxonomy、CTA、字段、组件、产品结构或 Action ID。`upsert` 必须先只读解析为 `create/update/noop`；`update` 必须绑定 exact ID/站点内唯一 natural key 和 expected-current fingerprint。远程 mutation 只接受当前 deployment 的未过期 `live_verified_current_deployment` capability。产品能力当前仍按 `exploration_only` 处理，不能宣称稳定创建、更新或发布。
+> **教程查询路由：** 用户先问“后台怎么操作”时，运行 `node ../../../scripts/query-allincms-official-tutorial-index.mjs "用户问题"` 并打开命中的官方原页核验；用户问 API、字段、登录态或真实 mutation 时，教程不构成接口证据，继续按本页、[Interface Index](INTERFACE-INDEX.md) 和当前部署证据执行。
+
+> **通用资料驱动前置门槛：** 若用户提供 PDF、DOCX、表格、网站、图片或 brief，并要求新建/更新网站、文章或产品，先执行 `<SUB_LIBRARY_ROOT>/PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md`：按宿主能力生成并校验私有 `TEMPLATES/source-extraction.md`，再生成并验证 `TEMPLATES/content-operation-plan.md`。本 Adapter 只消费已冻结、source-backed 的 desired state 和精确 operation；不得从历史示例写死站点、语言、taxonomy、CTA、字段、组件、产品结构或 Action ID。`upsert` 必须先只读解析为 `create/update/noop`；`update` 必须绑定 exact ID/站点内唯一 natural key 和 expected-current fingerprint。远程 mutation 只接受当前 deployment 的未过期 `live_verified_current_deployment` capability。产品 create/update/publish 已注册 canonical 模块与路由，但仍受当前 deployment 的 `fresh_live_verified_current_deployment` 门禁，不能在缺少真实运行证据时宣称稳定创建、更新或发布。
 
 > **授权与执行口径：** 用户批准的是一份 digest 固定、站点固定、operation 顺序固定的计划，不是每个接口各问一次，也不是永久授权。调用 `content-run-controller.mjs`（仅完整源码 checkout） 后，Controller 会在每个 operation 前和请求真正发出前机器复核授权、capability、deployment、目标站点与依赖 readback；请求可能已发出时只允许只读 reconcile，结果仍不明即 `ambiguous/BLOCK`，禁止盲重试。发布只有在获批计划已明确包含 `publish` operation 时才能执行；否则生成新计划并重新授权。
 
@@ -52,7 +54,7 @@ checkAllinCmsMediaRuntime()
 
 ## 接口和能力路由查询
 
-先读取 [interface-registry.json](interface-registry.json) 的 22 条 `capability_routes` allowlist，按 `entity_type + action` 查当前默认接口、执行门禁、执行面、串行 Controller 和验收要求；人类视图见生成的 [INTERFACE-INDEX.md](INTERFACE-INDEX.md)。`canonical` 只表示 Adapter 默认路径，不表示当前登录态、deployment capability 或 mutation 授权已成立；`exploration_only` 只允许只读探索，`blocked` 不得执行。当前产品 discover/create/update/publish/delete 全部是 `exploration_only`；建站、文章创建和媒体元数据更新仍是 `blocked`；所有 delete 与 article unpublish 在通用 immutable plan / 薄 Skill 中同样 fail closed。底层 export 被 Registry 登记只解决“可查询”，绝不等于该动作已进入通用执行路由。
+先读取 [interface-registry.json](interface-registry.json) 的 22 条 `capability_routes` allowlist，按 `entity_type + action` 查当前默认接口、执行门禁、执行面、串行 Controller 和验收要求；人类视图见生成的 [INTERFACE-INDEX.md](INTERFACE-INDEX.md)。`canonical` 只表示 Adapter 默认路径，不表示当前登录态、deployment capability 或 mutation 授权已成立；`exploration_only` 只允许只读探索，`blocked` 不得执行。当前 `site:create` 与 `product:create/update/publish` 已注册 canonical 路由，但都受 `fresh_live_verified_current_deployment` 门禁；`product.discover/delete`、文章创建和媒体元数据更新仍不是通用 canonical 执行路由；所有 delete 与 article unpublish 在通用 immutable plan / 薄 Skill 中同样 fail closed。底层 export 被 Registry 登记只解决“可查询”，绝不等于该动作已进入通用执行路由。
 
 `content-run-controller.mjs` 是完整子库源码 checkout 的 canonical 串行 Controller，但未进入最小 npm adapter 包，因为它依赖子库上层 plan、runtime scope 和 schema helper。共享薄 Skill 必须先 resolver 到完整 canonical 子库；只有最小 npm 包时，不得声称跨对象 plan Controller 可执行。
 
@@ -120,7 +122,7 @@ pagination.* / canCreate
 
 `user.id / tenant / role` 由服务端 session 注入，不进入客户端 payload；站点 `id / slug / 默认域名 / 默认 setup` 由服务端生成。`Next-Action` 是 opaque runtime value，当前实测长度为 42 位，但实现只接受动态发现的 40–64 位十六进制值，绝不能永久硬编码。实际创建前还必须重新取得当前 `Next-Router-State-Tree` 和可选 `x-deployment-id`。
 
-`canCreate` 只表示当前列表响应声明的客户端可创建能力，不是 mutation 授权，也不是远程执行成熟度。新建站必须先生成 `site_bootstrap` Plan A：target 为当前 RSC 回读的 `user.id`，`site_key/site_id=null`，只含一个 `site:create`，`publication_effect=non_public_resource`。当前 Registry 中仅有本地测试的请求构造器，缺结构化发送 controller、before/after 唯一差集对账和歧义恢复，因此 **create-site remote capability 尚未达到 `live_verified_current_deployment`，Plan A 必须 BLOCK**；不得因已发现 Action 或 `canCreate=true` 放宽门槛。
+`canCreate` 只表示当前列表响应声明的客户端可创建能力，不是 mutation 授权，也不是远程执行成熟度。新建站必须先生成 `site_bootstrap` Plan A：target 为当前 RSC 回读的 `user.id`，`site_key/site_id=null`，只含一个 `site:create`，`publication_effect=non_public_resource`。当前源码已注册 `site-operations.mjs` 和 canonical `site:create` 路由；但仍必须以当前 deployment 的新鲜 `live_verified_current_deployment` capability 为准，不得因模块存在或历史运行就放宽门槛。
 
 未来 capability 经本次 deployment 的真实单样本升级后，Plan A 才可在精确 `name + description` 授权下严格调用一次。验收必须用完整网站列表 before/after 唯一 ID 差集证明只新增 1 个站点，并回读 `site_id / site_key(slug) / account owner / displayDomain / setupError`；HTTP 200 或 toast 不足以判定成功。然后停止 Plan A，以该私有 readback 和 Plan A digest 生成全新的 `site_operation` Plan B，重新发现 capability/current state 后才处理分类、标签、媒体、文章、产品或主题页。Adapter 不接受一个同时 create site + populate 的计划。
 
@@ -553,7 +555,7 @@ python3 -m json.tool media-operations-contract.redacted.json
 python3 -m json.tool article-image-binding-contract.json
 ```
 
-当前正式冻结的文章/媒体 runtime qualification profile 固定为四文件 158 项：45 项媒体测试、52 项文章图片测试、13 项正文格式测试、48 项文章生命周期与 taxonomy 测试。完整源码工作树的 `npm test` 另含 21 项 Workspace 登录/用户/站点/建站合同测试、58 项严格串行 Controller 测试和 11 项接口 Registry 测试，七文件当前全量为 248/248；正式 158 项 profile 与完整 248 项开发回归不得互相替代。全量共同覆盖严格串行、授权时效与 TOCTOU 边界、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、taxonomy route-scoped `contentType`、跨 realm JSON 语义比较、封面 canonical 持久化字段与非空封面 payload 请求前完整性、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
+当前正式冻结的文章/媒体 runtime qualification profile 固定为四文件 158 项：45 项媒体测试、52 项文章图片测试、13 项正文格式测试、48 项文章生命周期与 taxonomy 测试。完整源码工作树的 `npm test` 另含 21 项 Workspace 登录/用户/站点/建站合同测试、58 项严格串行 Controller 测试和 11 项接口 Registry 测试，七文件当前全量为 251/251；正式 158 项 profile 与完整 251 项开发回归不得互相替代。全量共同覆盖严格串行、授权时效与 TOCTOU 边界、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、taxonomy route-scoped `contentType`、跨 realm JSON 语义比较、封面 canonical 持久化字段与非空封面 payload 请求前完整性、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
 
 ## 当前边界
 

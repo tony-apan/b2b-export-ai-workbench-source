@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "core_commit": null,
+  "core_version": null,
+  "knowledge_revision": null,
+  "runtime_schema_version": 1,
+  "locked_at": null,
+  "modules": {
+    "agency-operations": "0.1.0-draft.1"
+  }
+}

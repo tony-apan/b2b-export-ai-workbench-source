@@ -18,10 +18,10 @@ test('Registry schema, references, safety declarations, source bindings, and pac
   assert.deepEqual(result.errors, []);
   assert.equal(result.ok, true);
   assert.deepEqual(result.summary, {
-    interfaces: 108,
-    esmBindings: 104,
-    cliBindings: 4,
-    canonical: 19,
+    interfaces: 132,
+    esmBindings: 128,
+    cliBindings: 5,
+    canonical: 24,
     blocked: 4,
     referenceScope: 'source',
   });
@@ -215,12 +215,15 @@ test('every current ESM export binding is registered exactly once and CLI is sep
     'npm run interfaces:index',
     'npm run interfaces:index:check',
     'npm run interfaces:validate',
+    'npm run scan:actions -- <chunks-text-file>',
   ]);
 });
 
 test('source-only controller bindings are registered without pretending to be in the minimal npm package', async () => {
   const [registry, pkg, exports] = await Promise.all([loadRegistry(), loadPackage(), extractEsmExportBindings()]);
-  assert.deepEqual(registry.source_only_modules, ['content-run-controller.mjs']);
+  // 2026-08-27: content-plan-host-driver.mjs added as a second source-only controller integration module (host wiring).
+  // order follows the sorted registry list (see registry source_only_modules)
+  assert.deepEqual(registry.source_only_modules, ['content-plan-host-driver.mjs', 'content-run-controller.mjs', 'host-run-template.mjs']);
   assert.deepEqual(pkg.source_only_modules, registry.source_only_modules);
   assert.ok(!pkg.files.includes('content-run-controller.mjs'));
   assert.ok(!pkg.files.includes('live-run-evidence.schema.json'));
@@ -231,10 +234,17 @@ test('source-only controller bindings are registered without pretending to be in
   assert.ok(runEntries.every((item) => item.bindings.every((binding) => binding.module === 'content-run-controller.mjs')));
   assert.ok(runEntries.every((item) => item.contract_refs.some((ref) => ref.availability === 'source_only')));
   assert.ok(runEntries.every((item) => item.runtime_availability === 'source_only'));
-  assert.ok(registry.interfaces.filter((item) => item.domain !== 'run').every((item) => item.runtime_availability === 'packaged'));
+  const sourceOnlyIntegrationIds = new Set([
+    'allincms.content-plan-host-driver.create-handler-set',
+    'allincms.content-plan-host-driver.authorization',
+    'allincms.content-plan-host-driver.evidence-helpers',
+    'allincms.host-run-template.transport',
+    'allincms.host-run-template.run-plan',
+  ]);
+  assert.ok(registry.interfaces.filter((item) => item.domain !== 'run').every((item) => item.runtime_availability === 'packaged' || sourceOnlyIntegrationIds.has(item.interface_id)));
 });
 
-test('capability routes are complete, executable routes use the serial controller, and product stays exploration-only', async () => {
+test('capability routes are complete, executable routes use the serial controller, and product mutations are canonical', async () => {
   const registry = await loadRegistry();
   const routes = new Map(registry.capability_routes.map((route) => [`${route.entity_type}:${route.action}`, route]));
   assert.equal(routes.size, 22);
@@ -249,7 +259,7 @@ test('capability routes are complete, executable routes use the serial controlle
   const controllerId = 'allincms.content-run-controller.run-allin-cms-content-plan';
   const exactDefaults = {
     'site:discover': 'allincms.workspace-preflight.run-allin-cms-workspace-preflight',
-    'site:create': 'allincms.workspace-preflight.build-allin-cms-create-site-action-request',
+    'site:create': 'allincms.site-operations.create-site',
     'category:create': 'allincms.article-operations.create-post-category',
     'category:update': 'allincms.article-operations.update-post-category',
     'tag:create': 'allincms.article-operations.create-post-tag',
@@ -259,6 +269,9 @@ test('capability routes are complete, executable routes use the serial controlle
     'article:create': 'allincms.article-operations.create-post-draft',
     'article:update': 'allincms.article-operations.save-post-draft',
     'article:publish': 'allincms.article-operations.publish-post',
+    'product:create': 'allincms.product-operations.create-product-draft',
+    'product:update': 'allincms.product-operations.save-product-draft',
+    'product:publish': 'allincms.product-operations.publish-product',
   };
   for (const [key, interfaceId] of Object.entries(exactDefaults)) assert.equal(routes.get(key).default_interface_id, interfaceId, key);
   for (const route of registry.capability_routes.filter((item) => item.execution_gate === 'fresh_live_verified_current_deployment')) {
@@ -267,7 +280,7 @@ test('capability routes are complete, executable routes use the serial controlle
     assert.equal(route.execution_surface, 'full_source_checkout', route.capability_id);
   }
   assert.equal(routes.get('site:discover').execution_surface, 'minimal_adapter');
-  assert.equal(routes.get('site:create').availability, 'blocked');
+  assert.equal(routes.get('site:create').availability, 'canonical');
   assert.equal(routes.get('article:create').availability, 'blocked');
   assert.equal(routes.get('media:update').availability, 'blocked');
   for (const key of ['site:delete', 'category:delete', 'tag:delete', 'media:delete', 'article:unpublish', 'article:delete']) {
@@ -278,11 +291,19 @@ test('capability routes are complete, executable routes use the serial controlle
     assert.equal(route.controller_interface_id, null, key);
   }
   for (const route of registry.capability_routes.filter((item) => item.entity_type === 'product')) {
-    assert.equal(route.availability, 'exploration_only');
-    assert.equal(route.execution_gate, 'exploration_only');
-    assert.equal(route.execution_surface, 'none');
-    assert.equal(route.default_interface_id, null);
-    assert.equal(route.controller_interface_id, null);
+    if (route.action === 'discover' || route.action === 'delete') {
+      assert.equal(route.availability, 'exploration_only');
+      assert.equal(route.execution_gate, 'exploration_only');
+      assert.equal(route.execution_surface, 'none');
+      assert.equal(route.default_interface_id, null);
+      assert.equal(route.controller_interface_id, null);
+    } else {
+      assert.equal(route.availability, 'canonical');
+      assert.equal(route.execution_gate, 'fresh_live_verified_current_deployment');
+      assert.equal(route.execution_surface, 'full_source_checkout');
+      assert.ok(route.default_interface_id);
+      assert.equal(route.controller_interface_id, controllerId);
+    }
   }
   for (const route of registry.capability_routes.filter((item) => ['blocked', 'exploration_only'].includes(item.availability))) {
     assert.equal(route.execution_surface, 'none', route.capability_id);
@@ -296,8 +317,8 @@ test('article format re-exports are explicit aliases and module-scoped _internal
   assert.ok(aliases.every((item) => item.bindings.every((binding) => binding.role === 'reexport')));
   assert.ok(aliases.every((item) => item.alias_of.startsWith('allincms.article-content-formats.')));
   const internals = registry.interfaces.filter((item) => item.bindings.some((binding) => binding.export_name === '_internal'));
-  assert.equal(internals.length, 2);
-  assert.equal(new Set(internals.map((item) => item.interface_id)).size, 2);
+  assert.equal(internals.length, 4);
+  assert.equal(new Set(internals.map((item) => item.interface_id)).size, 4);
   assert.ok(internals.every((item) => item.exposure === 'internal'));
 });
 

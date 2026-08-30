@@ -421,6 +421,8 @@ export function validateContentOperationPlan(plan, { now = new Date() } = {}) {
     if (auth.identity_status !== 'not_verified') add('authorization identity_status must remain not_verified');
     if (auth.status === 'approved') {
       if (!nonEmpty(auth.actor)) add('approved authorization requires named human-asserted actor');
+      if (!datePattern.test(auth.archived_at ?? '')) add('AUTHORIZATION_ARCHIVE_REQUIRED: approved authorization requires archived_at (freeze-and-archive discipline; archive the window in the same file-write step as approved_at)');
+      if (auth.archived_at !== auth.approved_at) add('AUTHORIZATION_ARCHIVE_MISMATCH: archived_at must equal approved_at (freeze step is the archive step)');
       if (!datePattern.test(auth.approved_at ?? '') || !datePattern.test(auth.expires_at ?? '')) add('approved authorization requires UTC approved_at and expires_at');
       const start = Date.parse(auth.approved_at); const end = Date.parse(auth.expires_at);
       if (!(end > start && end - start <= 30 * 60 * 1000)) add('authorization validity must be greater than zero and no more than 30 minutes');

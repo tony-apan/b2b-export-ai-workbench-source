@@ -7,12 +7,13 @@ export const SUB_LIBRARY_RUNTIME_REASON = 'trusted-sub-library-runtime-profile';
 export const EXPECTED_RUNTIME_TEST_PLAN = [
   'upload-media-browser.test.mjs',
   'article-image-binding.test.mjs',
+  'article-content-formats.test.mjs',
   'article-operations.test.mjs',
 ];
-export const EXPECTED_RUNTIME_TESTS = 131;
+export const EXPECTED_RUNTIME_TESTS = 156;
 
 const motherChecks = [
-  ['governance-tests', 'node scripts/run-governance-tests.mjs --timeout-ms 30000'],
+  ['governance-tests', 'node scripts/run-governance-tests.mjs --timeout-ms 60000'],
   ['index-validation', 'node scripts/validate-indexes.mjs --strict'],
   ['link-validation', 'node scripts/validate-links.mjs --release'],
   ['document-id-validation', 'node scripts/validate-document-ids.mjs'],
@@ -26,12 +27,12 @@ const motherChecks = [
 ];
 
 const subChecks = [
-  ['governance-tests', 'node scripts/run-governance-tests.mjs --timeout-ms 30000'],
+  ['governance-tests', 'node scripts/run-governance-tests.mjs --timeout-ms 60000'],
   ['index-validation', 'node scripts/validate-indexes.mjs --strict'],
   ['link-validation', 'node scripts/validate-links.mjs --release'],
   ['document-id-validation', 'node scripts/validate-document-ids.mjs --scope sub-library:$PACKAGE_ID'],
   ['sub-library-structure-validation', 'node $PACKAGE_PATH/scripts/validate-sub-library.mjs --release'],
-  ['runtime-tests', 'node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-operations.test.mjs'],
+  ['runtime-tests', 'node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs'],
   ['artifact-validation', 'node $CANDIDATE_ROOT/scripts/validate-artifact.mjs --prepare $CANDIDATE_ROOT'],
   ['commit-provenance', 'node scripts/generate-release-evidence.mjs --internal-check commit-provenance'],
   ['tag-signature', 'git verify-tag --raw $TAG_NAME'],

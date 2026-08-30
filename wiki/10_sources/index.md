@@ -5,7 +5,7 @@ type: "source"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
+last_updated: "2026-08-01"
 sources: []
 related: ["source-registry.md", "license-and-consent-register.md"]
 when_to_read: "需要登记来源、核对授权或沿 Source ID 追溯知识结论时，从本页进入对应 registry 与来源摘要。"
@@ -32,6 +32,7 @@ keywords: ["来源登记", "官方来源", "授权", "证据", "source registry"
 | — | [Source Note: AllinCMS Official Docs](SRC-20260727-ALLINCMS-OFFICIAL.md) | 登记 AllinCMS 建站、图片、Codex 内容上传公开文档，并界定公开 UI 教程与内部接口抓取证据的边界。 | source | Working / public | 核对 AllinCMS 建站、图片或 Codex 上传公开文档时读本页；内部接口观察不能冒充官方稳定 API。 | AllinCMS、建站文档、图片规范、Codex 上传、官方来源、接口边界 |
 | — | [Source Note: PicGo And Image Hosts](SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL.md) | 登记 PicGo、Cloudflare R2、GitHub、腾讯云 COS 和阿里云 OSS 的官方能力、课程适配边界与复查要求。 | source | Working / public | 选择 PicGo 或 R2、GitHub、COS、OSS 图床方案并核对限制时读本页；价格、配额和发布状态仍需临用前复查。 | PicGo、Cloudflare R2、GitHub Pages、腾讯云 COS、阿里云 OSS、图床 |
 | — | [Synthetic Structure Closure Fixture](SRC-20260728-0001.md) | 登记一个明确标记为 synthetic fixture 的知识库结构治理训练样本，追踪它如何从 raw 对话提炼为索引概念、Raw-to-Course playbook 和课程模块；不代表真实客户或市场证据。 | source-note | Working / public | 审查 Raw-to-Course 训练链或区分 synthetic fixture 与真实证据时读本页；不得把该样本解释成客户或市场事实。 | synthetic fixture、raw to course、来源登记、课程闭环、验证记录、非客户证据 |
+| — | [Source Note: B2B SEO Content Research](SRC-20260731-B2B-SEO-CONTENT-RESEARCH.md) | 登记用于 B2B 买家文章规范的 Google 官方原则与 Animalz、Ahrefs、CXL 公开方法，并限定其只能支持方法假设，不能证明本站排名、询盘或转化提升。 | source-note | Working / public | 制定或复查 B2B SEO 文章的搜索意图、客户语言、信息增益、内容层级、内链和 CTA 方法时读本页；临用前仍需核对来源是否更新。 | B2B SEO、helpful content、information gain、voice of customer、customer pain、internal links |
 
 <!-- INDEX:END -->
 

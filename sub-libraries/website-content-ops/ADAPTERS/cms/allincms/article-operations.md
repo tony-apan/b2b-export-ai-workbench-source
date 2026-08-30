@@ -44,6 +44,22 @@ AllinCMS 文章不是“填标题后点发布”这么简单，而是一个有�
 
 ## 2. 本轮现场核对与实测事实
 
+### 2.0 分类/标签创建：空字符串描述必须省略（2026-08-27 实测）
+
+当前部署（dpl `83eddf696484d494d59ae961cb4ded1d61d14b56`）上的真实行为：向 `createTagAction` / `createCategoryAction` 发送 `description: ""`（空字符串）时，服务端返回整页 flight 渲染且不落库——视为验证失败路径；`description` 为非空字符串时创建成功并回写精确 `{id, name, slug, description}`。因此 payload builder 现在对空/纯空白描述**省略字段**（与 UI 表单空文本域的行为一致），见 `buildTagPayload` / `buildCategoryPayload` 的 `description` 归一化规则与回归测试（`taxonomy payloads omit empty or whitespace descriptions`）。分类/标签前端 Zod 合同：`siteId` string、`contentType` enum(`posts`|`products`)、`name` 1–80、`slug` ≤100、`description` ≤500 可选。
+
+### 2.0b 传输执行教训（2026-08-27，同部署实测）
+
+- **App 自身 UI 流（弹窗/编辑器）是当前部署唯一经验证可靠的 mutation 通道**；直接 POST `next-action` 信封复现对 taxonomy 已通过（非空描述），对 media（`_1_files`+`0` 表单编码与真实 UI 的 `files` 字段不一致）与 product upsert（payload 猜测形状不符，真实 schema 要求 `description` min(1)）均失败。
+- media 真实 UI 合同（chunk 逐字）：`new FormData(); i.append("files", new File(...))` 后调用 `uploadMedia(siteId, formData)`（最大 5 MB，先压缩 1 MB WebP）。
+- product 真实 schema（chunk 逐字）：`name` 1–100、`slug` 用 `createContentSlugSchema`、`description` trim().min(1) **必填非空**、`categories`/`tags` 为 string 数组、`specifications` 为 `{key≤100, value≤200}` 数组；编辑保存入口为 `upsertProductAction`（而非 create*）。
+- 驱动陷阱：AppleScript `execute javascript` + `atob` 解码返回 Latin-1 字节串——**载荷内含 CJK 会被乱码化**（选择器/按钮文本匹配全部失效）；一切跨页 eval 必须纯 ASCII 或用 `\uXXXX` 转义。
+- 元数据写入已实测验证（2026-08-27）：`updateMediaAction` (id `7fa3dd…`) 输入 = `{id, siteId, title≤100?, alt≤200?, caption≤500?}`；GET 全页 flight 属成功重渲染（与产品更新同模式），write 后必须权威回读 alt/caption。`updateAllinCmsMediaMetadataDirect` 信封形状与当前部署一致，无需改动。上传直传 `files` 合同由 `assertAllinCmsUploadWireShape` 运行时守卫 + 已验证对话框驱动覆盖；产品发布/保存统一走 `upsertProductAction`（id `7f0d6a…`，媒体输入为 `discriminatedUnion(source)`，见 §2.0b 上方按产品章节）。
+- **#3 已闭环（2026-08-27，dpl `83eddf…`）**：产品媒体输入合同为
+  `discriminatedUnion('source')`：`url {name,alt?,type,source:'url',url(http)}` / `oss {name,alt?,type,source:'oss',path,size,mimeType}`。
+  `normalizeMediaUploadItem` 已按此重建（接受编辑态 `{type,value:{…}}`、顶层 url/oss、字符串 id 三种输入，统一输出规范形状）。
+  修复后 canonical `saveProductDraft`/`publishProduct` 真实持久化 verification 通过（specifications 精确回读、公网页面含规格行与媒体 URL）；`product-operations.test.mjs` 增至 9 项。
+
 ### 2.1 文章列表
 
 当前登录工作区的文章列表页为：
@@ -159,6 +175,15 @@ Slug              placeholder=post-slug
 ```
 
 不要盲点行级 `+`：它可能创建子分类。不要连续提交多个分类：此前观察到交易号不同步错误；正确恢复是停止重复提交、刷新分类页、核对已经落地的分类，再逐个继续。
+
+
+### 2.0c canonical 运行执行程序（2026-08-27 实测固化，供他 AI 复现）
+
+1. 冻结计划：`validate-content-operation-plan.mjs` 输出 `expected sha256:…` → 写入 `plan_digest` 与 `authorization_scope.plan_sha256` → 重跑至 `EXECUTION_READY`；**冻结时刻立即归档 approved/expires/digest**（本日教训：请求时机器验证存在但未归档 = 审计缺口）。
+2. 运行时合同：动作 ID 用「5th 参数字面捕获」（`createServerReference)("hex",…findSourceMapURL,"NAME")`）；router tree 执行时页面内取；dpl 指纹 = sha256(dpl chunk id)。
+3. 传输桥（AppleScript→Chrome 页内 XHR）必须 `new TextDecoder().decode(Uint8Array.from(atob(...)))`——`eval(atob())` 为 Latin-1，UTF-8/CJK 必坏（曾致公网页 `NÂ·m` 乱码，已修复并补公网复验）。
+4. update/publish/metadata 的「整页 flight」= 本部署成功重渲染模式；**任何成功必须权威回读（RSC 原文+精确值）且公开变更再做匿名公网验证**；HTTP 200/flight 单独不构成证据。
+5. 授权划分：product/taxonomy 走 `deriveAllinCmsMutationBinding` 结构化上下文；`updateMediaAction` 无 binding 分支 → 按「请求级/实证写入」标注，不得宣称结构化授权覆盖。
 
 ## 3. 文章字段合同
 
@@ -644,7 +669,7 @@ Markdown 转换只接受当前已验证的保守子集：
 - 分类与标签的主题稳定展示；
 - 正文图片 alt 已在 2026-07-31 的单篇现有文章实测中确认：Slate/CMS payload 保存非空 alt，但当前前端 renderer 输出空 alt；这是独立表现层 BLOCK，不再属于“尚未观察”。
 
-因此当前结论分层记录：**当前部署的字段、taxonomy、文章生命周期、11 篇历史串行接口长跑、2 篇真实全字段创建/发布与幂等 publish，以及 1 篇现有文章的单次优化/单次发布已有证据；文章/媒体四文件专项 profile 为 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期/taxonomy 48）；完整源码工作树另有 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11，当前 `npm test` 七文件全量为 248/248。媒体 caption 与 taxonomy 主题展示仍为 WARN；正文图片 alt renderer、正式技术 SEO、跨部署、失败注入的远程证据和任意大批量远程长跑继续 BLOCK。**
+因此当前结论分层记录：**当前部署的字段、taxonomy、文章生命周期、11 篇历史串行接口长跑、2 篇真实全字段创建/发布与幂等 publish，以及 1 篇现有文章的单次优化/单次发布已有证据；文章/媒体四文件专项 profile 为 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期/taxonomy 48）；完整源码工作树另有 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11，当前 `npm test` 七文件全量为 251/251。媒体 caption 与 taxonomy 主题展示仍为 WARN；正文图片 alt renderer、正式技术 SEO、跨部署、失败注入的远程证据和任意大批量远程长跑继续 BLOCK。**
 ## 10. Markdown 正文图片原位绑定合同（2026-07-27）
 
 文章正文图片已经形成独立 adapter，不再允许由执行 AI 临时拼 payload：
@@ -767,7 +792,7 @@ published_theme_alt_current_run: not_run_not_authorized
 
 | 范围 | 当前结论 | 证据 / 缺口 |
 |---|---|---|
-| 当前知识库 Adapter：文章字段、taxonomy、状态机、恢复和串行控制 | **PASS（本地控制器）** | 固定文章/媒体四文件专项 profile：158/158 通过；其中媒体 45/45、正文图片 52/52、正文格式 13/13、文章生命周期与 taxonomy 48/48；完整源码工作树再加 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11 后，`npm test` 七文件全量为 248/248，覆盖全字段、状态冲突、动态 action、`postCreate` 前后 ID snapshot 唯一差集、创建记录同站点归属、taxonomy route-scoped `contentType` 与显式冲突、跨 realm JSON 语义、封面 canonical 持久化字段、重复 slug、受控重试和人工介入 |
+| 当前知识库 Adapter：文章字段、taxonomy、状态机、恢复和串行控制 | **PASS（本地控制器）** | 固定文章/媒体四文件专项 profile：158/158 通过；其中媒体 45/45、正文图片 52/52、正文格式 13/13、文章生命周期与 taxonomy 48/48；完整源码工作树再加 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11 后，`npm test` 七文件全量为 251/251，覆盖全字段、状态冲突、动态 action、`postCreate` 前后 ID snapshot 唯一差集、创建记录同站点归属、taxonomy route-scoped `contentType` 与显式冲突、跨 realm JSON 语义、封面 canonical 持久化字段、重复 slug、受控重试和人工介入 |
 | 当前部署历史真实文章闭环 | **PASS（限定范围）** | 已有当前登录站点、动态捕获 action、严格串行 11 篇 `update → publish`、后台/前台/图片验收证据 |
 | `postCreate` API | **PASS（当前部署、限定本次授权）** | 2026-07-30 已在同一站点严格串行创建并发布 2 篇全字段文章；每次均重新捕获当前 action/router/deployment，并用创建前后完整 ID snapshot 证明差集恰好一个、创建记录 ID 与该差集一致且属于精确站点。此证据不放行其他站点或未来部署；后续运行仍须重新确认当前合同后才可传 `createContractConfirmed: true` |
 | 503、transaction mismatch、请求可能成功后的文章恢复 | **BLOCK** | 只有本地故障控制测试，没有文章级远程注入证据；状态不明时 adapter 只允许停下，不会盲重发 |

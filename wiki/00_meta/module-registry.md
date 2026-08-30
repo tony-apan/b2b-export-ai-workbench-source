@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-27"
+last_updated: "2026-08-01"
 sources: ["User request", "Adversarial structure review 2026-07-26"]
 related: ["current-focus.md", "module-expansion-sop.md", "../50_channels/index.md", "../30_playbooks/index.md"]
 ---
@@ -44,7 +44,8 @@ related: ["current-focus.md", "module-expansion-sop.md", "../50_channels/index.m
 
 | Module | Index | Main Playbook | Lifecycle | Focus | Execution | Owner | Evidence / next gate |
 |---|---|---|---|---|---|---|---|
-| Website Content Operations | [package](../../sub-libraries/website-content-ops/README.md) | [playbook](../../sub-libraries/website-content-ops/PLAYBOOK.md) | Draft | **Current** | **Blocked** | AI + Human | 虚拟实例、AllinCMS 单样本/10 张串行/文章与图片绑定证据已登记；当前部署范围内部分验证，跨部署、完整回滚和迁移仍待验证 |
+| Agency Operations | [package](../../sub-libraries/agency-operations/README.md) | [playbook](../../sub-libraries/agency-operations/PLAYBOOK.md) | Draft / Preparation Complete | **Current** | **Prepared locally / release blocked** | AI + Human | 本地结构、模板、工具、权限检查、索引和双客户 synthetic 已完成；本轮无真实 runtime，真实客户、多人权限、备份恢复、远程 apply 与发布属于后续 scope |
+| Website Content Operations | [package](../../sub-libraries/website-content-ops/README.md) | [playbook](../../sub-libraries/website-content-ops/PLAYBOOK.md) | Draft | — | **Blocked** | AI + Human | 虚拟实例、AllinCMS 单样本/10 张串行/文章与图片绑定证据已登记；当前部署范围内部分验证，跨部署、完整回滚和迁移仍待验证 |
 | Website | [index](../50_channels/website/index.md) | [playbook](../30_playbooks/website-build.md) | Seed | — | Dormant | AI | 主 playbook 仍为 Seed；作为当前焦点依赖时局部补充 |
 | LinkedIn | [index](../50_channels/linkedin/index.md) | [playbook](../30_playbooks/linkedin-content.md) | Working | — | Dormant | AI | 待未来独立运行与数据验证 |
 | Email Outreach | [index](../50_channels/email-outreach/index.md) | [playbook](../30_playbooks/cold-email.md) | Seed | — | Dormant | AI | playbook 仍为 Seed |

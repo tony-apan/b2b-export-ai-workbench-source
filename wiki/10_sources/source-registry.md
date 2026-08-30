@@ -5,7 +5,7 @@ type: "source"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
+last_updated: "2026-07-31"
 sources: []
 related: ["license-and-consent-register.md"]
 when_to_read: "新增来源、复查来源日期或反向追踪某个知识页由哪些 Source ID 派生时，先查本登记表。"
@@ -29,6 +29,7 @@ redaction_status: "safe-to-publish"
 | SRC-20260727-ALLINCMS-OFFICIAL | 2026-07-27 | Official AllinCMS docs and sitemap | tooling | official-docs, cms, allincms, media, article, codex | ingested | [SRC-20260727-ALLINCMS-OFFICIAL.md](SRC-20260727-ALLINCMS-OFFICIAL.md) | high | `sub-libraries/website-content-ops/TOOLS.md`, `sub-libraries/website-content-ops/ADAPTERS/cms/`, `sub-libraries/website-content-ops/ADAPTERS/cms/allincms/article-operations.md` | 2026-07-27 |
 | SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL | 2026-07-27 | Official PicGo / Cloudflare R2 / GitHub / Tencent COS / Alibaba OSS docs | tooling | official-docs, picgo, image-host, r2, github, cos, oss | ingested | [SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL.md](SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL.md) | high | `sub-libraries/website-content-ops/TOOLS.md`, `sub-libraries/website-content-ops/ADAPTERS/image-hosts/` | 2026-07-27 |
 | SRC-20260728-0001 | 2026-07-28 | `raw/10_conversations/src-20260728-0001-knowledge-base-structure-closure.md` | knowledge-base | virtual-fixture, course-pipeline, governance | ingested | [SRC-20260728-0001.md](SRC-20260728-0001.md) | medium | `ID-0002`, `ID-0003`, `ID-0004`, `VER-20260728-raw-course-closure`, `WB-20260728-raw-course-closure` | 2026-07-28 |
+| SRC-20260731-B2B-SEO-CONTENT-RESEARCH | 2026-07-31 | Google Search Central plus public Animalz, Ahrefs, and CXL articles | seo | official-docs, content-quality, information-gain, voice-of-customer, buyer-pain | ingested | [SRC-20260731-B2B-SEO-CONTENT-RESEARCH.md](SRC-20260731-B2B-SEO-CONTENT-RESEARCH.md) | medium | `sub-libraries/website-content-ops/PLAYBOOKS/ID-0001`, `sub-libraries/website-content-ops/PLAYBOOKS/ID-0003` | 2026-07-31 |
 | SRC-20260726-KARPATHY-LLM-WIKI | 2026-07-26 | Andrej Karpathy official GitHub Gist | knowledge-base | official-primary, llm-wiki, raw, wiki, agent-instructions | ingested | [SRC-20260726-KARPATHY-LLM-WIKI.md](SRC-20260726-KARPATHY-LLM-WIKI.md) | high | `wiki/00_meta/knowledge-compounding-system.md`, `wiki/00_meta/ai-operating-manual.md`, `wiki/50_channels/seo/index.md` | 2026-07-26 |
 
 ## Type Reference

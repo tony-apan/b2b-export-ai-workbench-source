@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
-import {
+import {assertAllinCmsUploadWireShape, uploadAllinCmsUploadViaDialog, 
   checkAllinCmsMediaRuntime,
   computeAllinCmsMediaUploadFileListDigest,
   createAllinCmsMediaUploadAuthorizationContext,
@@ -1470,3 +1470,29 @@ test('runtime preflight allows small WebP but blocks PNG when sharp is missing',
   assert.equal(result.files[1].ready, false);
   assert.equal(result.sharp.available, false);
 }));
+
+test('upload wire shape guard accepts current files contract and rejects stale template', () => {
+  assert.equal(assertAllinCmsUploadWireShape(['(0,x.createServerReference)("aaa","a","b","c","uploadMedia");var i=new FormData;i.append("files",new File([], "a.webp"))'], { siteKey: 's' }).wireShape, 'files+siteId-formdata');
+  assert.throws(() => assertAllinCmsUploadWireShape(['map(x,46);form.append("_1_files",file);form.append("0",JSON.stringify(["id","$K1"]))'], { siteKey: 's' }), /UPLOAD_WIRE_CONTRACT_DRIFT/);
+  assert.throws(() => assertAllinCmsUploadWireShape(['console.log("x")'], { siteKey: 's' }), /UPLOAD_WIRE_CONTRACT_DRIFT/);
+});
+
+test('dialog driver requires explicit approval and replays verified open/inject/submit/readback steps', async () => {
+  let step = 0;
+  const fake = async (js) => {
+    step += 1;
+    if (step === 1) return 'opened';
+    if (step === 2) return 'INJECTED';
+    if (step === 3) return 'SUBMITTED';
+    return JSON.stringify({ id: '00000000000000000000000a', url: 'https://assets.laicms.com/synthetic-site/synthetic.webp', title: 'synthetic-asset', filename: 'synthetic.webp', mimeType: 'image/webp', bytes: 24160 });
+  };
+  await assert.rejects(() => uploadAllinCmsUploadViaDialog({ runInTab: fake, expectedSiteKey: 's', file: { filename: 'a.webp', base64: 'AAAA' } }), /uiFallbackApproved/);
+  const result = await uploadAllinCmsUploadViaDialog({
+    runInTab: fake, expectedSiteKey: 's', uiFallbackApproved: true,
+    file: { filename: 'a.webp', base64: 'AAAA' }, pollTries: 1, pollDelayMs: 1, waitMs: 1,
+  });
+  assert.equal(result.status, 'uploaded_for_dialog_driver');
+  assert.equal(result.mediaId, '00000000000000000000000a');
+  assert.equal(result.url, 'https://assets.laicms.com/synthetic-site/synthetic.webp');
+  assert.equal(step, 4);
+});
