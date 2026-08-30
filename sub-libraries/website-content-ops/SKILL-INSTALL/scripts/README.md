@@ -1,3 +1,11 @@
+---
+title: "Scripts authority boundary"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # Scripts authority boundary
 
 Runtime routing entry:

@@ -1,3 +1,11 @@
+---
+title: "CLAUDE.md — allincms-bulk-content-upload"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # CLAUDE.md — allincms-bulk-content-upload
 
 Claude Code entry point:

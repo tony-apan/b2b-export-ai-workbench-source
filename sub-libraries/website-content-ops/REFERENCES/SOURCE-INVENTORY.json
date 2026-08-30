@@ -12,20 +12,20 @@
       "source_id": "SRC-20260727-ALLINCMS-OFFICIAL",
       "status": "active",
       "card_path": "REFERENCES/SRC-20260727-ALLINCMS-OFFICIAL.md",
-      "card_sha256": "e88797beaedbff35417545738691a5d051d81ba3c7fd22a6413457421390ef30",
+      "card_sha256": "83e5da70f20cba093d77079abd77f5ddc83cd99321b31bb76983f05e71b8da98",
       "publication_review_status": "pending",
       "publication_status": "BLOCK",
       "license_status": "pending",
       "derived_pages": [
         "ADAPTERS/cms/allincms/article-operations.md",
-        "TOOLS.md"
+        "TOOLS-INDEX.md"
       ]
     },
     {
       "source_id": "SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL",
       "status": "active",
       "card_path": "REFERENCES/SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL.md",
-      "card_sha256": "fd708e0477b949dc7e43b25b78fc468b10565fc2727ed54796701b6d83b2852e",
+      "card_sha256": "30bad853fe2916ff4aa2279c6b95f7ac0977845a321f54cfd69d26118ab260ce",
       "publication_review_status": "pending",
       "publication_status": "BLOCK",
       "license_status": "pending",
@@ -35,7 +35,7 @@
         "ADAPTERS/image-hosts/picgo-github.md",
         "ADAPTERS/image-hosts/picgo-oss.md",
         "ADAPTERS/image-hosts/picgo-r2.md",
-        "TOOLS.md"
+        "TOOLS-INDEX.md"
       ]
     },
     {

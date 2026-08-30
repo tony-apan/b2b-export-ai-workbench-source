@@ -6,7 +6,7 @@ status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
-sources: ["Example 全流程实战（set_home_page/update_page/delete_category 均为逆向发现）", "ISS-070/073/074/076"]
+sources: ["Example 全流程实战（set_home_page/update_page/delete_category 均为逆向发现）", "issues.tsv 条目 ISS-070、ISS-073、ISS-074、ISS-076"]
 related: ["RUNBOOK-ANYONE.md", "allincms_api.py", "scan/scan-actions.py"]
 ---
 

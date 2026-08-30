@@ -1,3 +1,11 @@
+---
+title: "旁观审查机制（OUTSIDER-REVIEW.md）—— 外部 AI 从旁观者角度审查完善"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 旁观审查机制（OUTSIDER-REVIEW.md）—— 外部 AI 从旁观者角度审查完善
 
 > 与双审（SOL/TERRA，审查"产物是否正确/安全"）互补：**旁观审查 = 无外部上下文的独立 AI，只看回落产物**（HANDOFF/TASK.json/索引/evidence），审查"回落与机制本身"（是否完整可接手/有无自说自话/是否夸大/流程是否闭环）。

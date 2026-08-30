@@ -1,3 +1,11 @@
+---
+title: "多客户 / 多站工作区约定"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 多客户 / 多站工作区约定
 
 把「用户发资料 → 提炼成 Karpathy 知识库 → 建多个站」这件事,组织成一个**私有工作区**。

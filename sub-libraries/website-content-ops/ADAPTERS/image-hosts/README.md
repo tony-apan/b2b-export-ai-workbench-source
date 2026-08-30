@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"
 sources: ["../../REFERENCES/SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL.md"]
-related: ["../../TOOLS.md", "../_template.md", "picgo-r2.md", "picgo-github.md", "picgo-cos.md", "picgo-oss.md"]
+related: ["../../TOOLS-INDEX.md", "../_template.md", "picgo-r2.md", "picgo-github.md", "picgo-cos.md", "picgo-oss.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"

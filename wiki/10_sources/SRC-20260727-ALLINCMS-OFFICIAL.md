@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-29"
 sources: ["https://www.allincms.com/docs", "https://www.allincms.com/docs/quickstart/create-site", "https://www.allincms.com/docs/content/image-guidelines", "https://www.allincms.com/docs/launch/codex-auto-content-upload", "https://www.allincms.com/sitemap.xml"]
-related: ["../../sub-libraries/website-content-ops/ADAPTERS/cms/allincms-overview.md", "../../sub-libraries/website-content-ops/ADAPTERS/cms/allincms/article-operations.md", "../../sub-libraries/website-content-ops/TOOLS.md"]
+related: ["../../sub-libraries/website-content-ops/ADAPTERS/cms/allincms-overview.md", "../../sub-libraries/website-content-ops/ADAPTERS/cms/allincms/article-operations.md", "../../sub-libraries/website-content-ops/TOOLS-INDEX.md"]
 confidence: "high"
 review_after: "2026-10-27"
 when_to_read: "核对 AllinCMS 建站、图片或 Codex 上传公开文档时读本页；内部接口观察不能冒充官方稳定 API。"

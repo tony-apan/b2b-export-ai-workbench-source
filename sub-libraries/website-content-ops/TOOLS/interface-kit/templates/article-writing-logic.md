@@ -1,3 +1,11 @@
+---
+title: "文章创作逻辑（通用方案）—— 软文大神文案逻辑总结 + 对抗升级"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 文章创作逻辑（通用方案）—— 软文大神文案逻辑总结 + 对抗升级
 
 > 定位：**创作侧**逻辑（怎么写）——与 ID-0001（审查合同：六槽 pain chain/证据/禁声明）和 article-adversarial-checklist（发布前检查）配合使用：  

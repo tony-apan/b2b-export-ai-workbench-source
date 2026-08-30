@@ -3,7 +3,7 @@
   "site": {"name": "站名", "slug": "小写横线slug", "description": "一句话描述（displayDomain 会自动生成）"},
   "brand": {"title": "品牌名（导航显示）", "tagline": "品牌标语", "cta": "按钮文案如 Get a Quote"},
   "contact": {
-    "email": "contact@example.com", "phone": "+86 138 0000 0000",
+    "email": "contact@example.com", "phone": "+86 138 xxxx xxxx",
     "address": "公司地址", "hours": "Mon-Fri 9:00-18:00",
     "whatsapp": "https://wa.me/86xxxxxxxxxxx"
   },

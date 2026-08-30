@@ -1,3 +1,11 @@
+---
+title: "品牌视觉规则（visual-design-rules.md）—— 网站审美执行准则"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 品牌视觉规则（visual-design-rules.md）—— 网站审美执行准则
 
 > 来源：第三方专业评审（2026-08-29）+ 平台能力边界适配。**平台 CSS 层不可注入**（className 固定），以下规则为目标态，能落地的落地（内容/结构/图片选择/CTA 模块），不能落地的记录为平台边界。

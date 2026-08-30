@@ -1,3 +1,11 @@
+---
+title: "安装与依赖指南（SETUP.md）—— 新电脑/新环境必读"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 安装与依赖指南（SETUP.md）—— 新电脑/新环境必读
 
 > 目标：**5 分钟到可用**。步骤 1-4 必做（约 3 分钟）；文档解析依赖按需；canonical 校验按需。

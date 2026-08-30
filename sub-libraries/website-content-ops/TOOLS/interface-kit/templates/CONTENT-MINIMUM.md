@@ -1,3 +1,11 @@
+---
+title: "内容数量标准（CONTENT-MINIMUM.md）—— 界面美观与用户提供基线"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 内容数量标准（CONTENT-MINIMUM.md）—— 界面美观与用户提供基线
 
 > 依据：AllinCMS 模板模块渲染行为实测（皮筏艇站走查 + 空态/推荐区观察，2026-08-29）。

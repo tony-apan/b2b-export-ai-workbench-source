@@ -1,3 +1,11 @@
+---
+title: "正文格式规范（FORMAT-SPEC.md）—— 单一真源，全部实测"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 正文格式规范（FORMAT-SPEC.md）—— 单一真源，全部实测
 
 > 来源：2026-08-29 编辑器截图+更新 payload 证据 + format-lab 1-6 轮实测。**凡本文档未列的格式，视为不支持（先 format-lab 验证再使用）**。

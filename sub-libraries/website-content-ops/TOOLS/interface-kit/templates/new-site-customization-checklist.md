@@ -5,8 +5,8 @@ status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
-sources: ["interface-kit/RUNBOOK-ANYONE.md", "interface-kit/MODULES.md", "interface-kit/templates/*.json|*.md", "interface-kit/allincms_api.py", "example-site-full-build-20260829（HANDOFF.md / 70_evidence / 20_work / scripts-20260830 / 公网实测抓取）"]
-related: ["RUNBOOK-ANYONE.md", "MODULES.md", "site-content-checklist.md", "client-input-checklist.md", "CONTENT-MINIMUM.md", "site-audit-config.template.json", "delivery-manifest.md", "allincms_api.py", "site_pipeline.py"]
+sources: ["../RUNBOOK-ANYONE.md", "../MODULES.md", "同目录 templates/ 的 *.json 与 *.md（字段样例真源）", "../allincms_api.py", "example-site-full-build-20260829（HANDOFF.md / 70_evidence / 20_work / scripts-20260830 / 公网实测抓取）"]
+related: ["../RUNBOOK-ANYONE.md", "../MODULES.md", "site-content-checklist.md", "client-input-checklist.md", "CONTENT-MINIMUM.md", "site-audit-config.template.json", "delivery-manifest.md", "allincms_api.py", "site_pipeline.py"]
 ---
 
 # 新站点改造清单（AllinCMS template → 客户内容）
@@ -521,8 +521,8 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 
 | 文件 | 用到的关键行 |
 |---|---|
-| interface-kit/RUNBOOK-ANYONE.md | L37-49（10 步）、L51-62（关键事实）、L64-93（§3 主题页）、L101-110（§5/§6）、L128-140（§8 审计）、L142-153（§9 BLOCK）、L155-161（§10 交付） |
-| interface-kit/MODULES.md | L4-7（element 结构 + 回填规则）、L9-10（37 块注册表）、L14-61（页面块字段）、L63-99（嵌套子结构）、L101-107（globals 块）、L109-124（Slate 矩阵）、L126-132（发布接口）、L141-143（模板词） |
+| ../RUNBOOK-ANYONE.md | L37-49（10 步）、L51-62（关键事实）、L64-93（§3 主题页）、L101-110（§5/§6）、L128-140（§8 审计）、L142-153（§9 BLOCK）、L155-161（§10 交付） |
+| ../MODULES.md | L4-7（element 结构 + 回填规则）、L9-10（37 块注册表）、L14-61（页面块字段）、L63-99（嵌套子结构）、L101-107（globals 块）、L109-124（Slate 矩阵）、L126-132（发布接口）、L141-143（模板词） |
 | interface-kit/templates/home-page-example.json | L10-22（children）、L25-504（11 块 props）、L506-690（globals） |
 | interface-kit/templates/about-page-example.json | L11-145（5 块 props） |
 | interface-kit/templates/contact-page-example.json | L11-112（4 块 props） |

@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-07-26"
 sources: ["README.md", "PLAYBOOK.md"]
-related: ["START-HERE.md", "TOOLS.md", "ADAPTERS/README.md", "QA-CHECKLIST.md"]
+related: ["START-HERE.md", "TOOLS-INDEX.md", "ADAPTERS/README.md", "QA-CHECKLIST.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

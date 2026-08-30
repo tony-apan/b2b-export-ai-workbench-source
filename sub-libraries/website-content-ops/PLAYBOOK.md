@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-02"
 sources: ["Tony conversation 2026-07-26"]
-related: ["COURSE-MAP.md", "MENTAL-MODEL.md", "INTAKE.md", "WORKSPACE-TEMPLATE/README.md", "TOOLS.md", "QA-CHECKLIST.md", "WRITEBACK.md"]
+related: ["COURSE-MAP.md", "MENTAL-MODEL.md", "INTAKE.md", "WORKSPACE-TEMPLATE/README.md", "TOOLS-INDEX.md", "QA-CHECKLIST.md", "WRITEBACK.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

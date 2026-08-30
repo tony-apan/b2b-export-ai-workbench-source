@@ -1,3 +1,11 @@
+---
+title: "写作模块（WRITING-INDEX.md）—— 独立可调用，入口在此"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 写作模块（WRITING-INDEX.md）—— 独立可调用，入口在此
 
 > 写文章 = 调用本模块。资产按"五步调用链"组织，每一步都有规范 + 检查 + 工具。**不要再散找规范。**

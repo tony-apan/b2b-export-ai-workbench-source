@@ -1,3 +1,11 @@
+---
+title: "AGENTS.md — allincms-bulk-content-upload"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # AGENTS.md — allincms-bulk-content-upload
 
 This directory (`SKILL-INSTALL/`) is the installable **portable router** merged into the mother library on 2026-08-30 (standalone repository archived); it is not the editable canonical Website Content Operations source — the sibling library root is.

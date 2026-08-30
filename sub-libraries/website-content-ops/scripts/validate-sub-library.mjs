@@ -69,7 +69,7 @@ const protectedSourceIds = Object.freeze([
 const requiredFiles = [
   'README.md', 'MANIFEST.md', 'AGENTS.md', 'START-HERE.md', 'COURSE-MAP.md',
   'LICENSE', 'LICENSE.md', 'NOTICE', 'THIRD-PARTY-NOTICES.md',
-  'MENTAL-MODEL.md', 'PLAYBOOK.md', 'TOOLS.md', 'TEMPLATES/README.md',
+  'MENTAL-MODEL.md', 'PLAYBOOK.md', 'TOOLS-INDEX.md', 'TEMPLATES/README.md',
   'EXAMPLES/README.md', 'ADAPTERS/README.md', 'ADAPTERS/_template.md',
   'QA-CHECKLIST.md', 'SOURCES.md', 'BRAND.md', 'CONTACT.md', 'VERSION.md',
   'WRITEBACK.md', 'CHANGELOG.md', 'RELEASE.md', 'INSTALL.md',
@@ -626,7 +626,7 @@ function validateDurableIds(durableRoots) {
 
 for (const path of textFiles) {
   const content = read(path);
-  for (const issue of scanPublishableContent(content)) fail(`content safety ${issue.code}: ${relative(libraryRoot, path)}`);
+  for (const issue of scanPublishableContent(content, relative(libraryRoot, path))) fail(`content safety ${issue.code}: ${relative(libraryRoot, path)}`);
   const staleAllinCmsPath = 'allincms' + '.md';
   if (path !== scriptPath && content.includes(staleAllinCmsPath)) fail(`stale AllinCMS path reference: ${relative(libraryRoot, path)}`);
 }

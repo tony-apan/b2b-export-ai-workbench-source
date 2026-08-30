@@ -1,3 +1,11 @@
+---
+title: "AllinCMS 建站上线 SOP（0 → 1 纯接口流水线）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # AllinCMS 建站上线 SOP（0 → 1 纯接口流水线）
 
 目标：拿到「公司/产品介绍文档」后，AI 按本文档直接执行，无需再摸索接口；一份资料 → 一个新站全量上线。

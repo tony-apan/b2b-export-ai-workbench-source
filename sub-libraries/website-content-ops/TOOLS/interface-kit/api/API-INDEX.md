@@ -1,3 +1,11 @@
+---
+title: "接口模块（API-INDEX.md）—— AllinCMS 纯接口 · 独立入口 · 快速调用"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 接口模块（API-INDEX.md）—— AllinCMS 纯接口 · 独立入口 · 快速调用
 
 > 模块组成：`allincms_api.py`（客户端本体，interface-kit 根，零依赖）+ 本目录：

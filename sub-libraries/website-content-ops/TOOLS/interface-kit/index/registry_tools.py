@@ -96,7 +96,15 @@ def verify():
 
 def gen():
     import datetime
-    L = ["# AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）",
+    L = ["---",
+         "title: \"AllinCMS 建站知识索引\"",
+         "type: \"index\"",
+         "status: \"Working\"",
+         "owner: \"AI\"",
+         "last_updated: \"" + datetime.date.today().isoformat() + "\"",
+         "---",
+         "",
+         "# AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）",
          "",
          f"> 生成时间：{datetime.date.today().isoformat()}｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`",
          "",

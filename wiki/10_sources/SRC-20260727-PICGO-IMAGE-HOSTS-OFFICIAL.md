@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-29"
 sources: ["https://picgo.github.io/PicGo-Doc/zh/guide/config.html", "https://github.com/Molunerfinn/PicGo/releases/tag/v3.0.1", "https://developers.cloudflare.com/r2/api/s3/api/", "https://developers.cloudflare.com/r2/buckets/public-buckets/", "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github", "https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits", "https://cloud.tencent.com/document/product/436/36638", "https://help.aliyun.com/zh/oss/user-guide/map-custom-domain-names-5"]
-related: ["../../sub-libraries/website-content-ops/TOOLS.md", "../../sub-libraries/website-content-ops/ADAPTERS/image-hosts/README.md"]
+related: ["../../sub-libraries/website-content-ops/TOOLS-INDEX.md", "../../sub-libraries/website-content-ops/ADAPTERS/image-hosts/README.md"]
 confidence: "high"
 review_after: "2026-10-27"
 when_to_read: "选择 PicGo 或 R2、GitHub、COS、OSS 图床方案并核对限制时读本页；价格、配额和发布状态仍需临用前复查。"

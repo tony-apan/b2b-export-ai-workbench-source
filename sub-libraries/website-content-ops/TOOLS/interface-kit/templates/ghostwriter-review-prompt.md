@@ -1,3 +1,11 @@
+---
+title: "空白子 agent 完善文章 prompt（ghostwriter-review-prompt.md）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 空白子 agent 完善文章 prompt（ghostwriter-review-prompt.md）
 
 > 用法：把下面【模板】整体复制给 subagent（run_in_background=true），把【文章】替换为待审稿原文。

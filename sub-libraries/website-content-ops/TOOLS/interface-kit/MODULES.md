@@ -1,3 +1,11 @@
+---
+title: "AllinCMS 单页模块规范（Blocks Library）—— 设计师用内容区块全集"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # AllinCMS 单页模块规范（Blocks Library）—— 设计师用内容区块全集
 
 来源：设计器 document.elements（实测抓取）+ 对抗验证（blocks 重建 == 线上 doc，结构同构） + 编辑器 chunk 注册表 + 多站模板文档并集 + **公网渲染截图核实（前端显示映射）**。

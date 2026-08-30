@@ -1,3 +1,11 @@
+---
+title: "图片对抗审查清单（美学 + 用户心理）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 图片对抗审查清单（美学 + 用户心理）
 
 > 用法：每张要上站的图发布前过一遍；配合 image-manifest（来源/许可/尺寸/alt 登记）使用。

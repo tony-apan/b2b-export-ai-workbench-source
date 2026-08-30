@@ -797,7 +797,11 @@
      "pattern": "^sha256:[a-f0-9]{64}$"
     },
     "archived_at": {
-     "$ref": "#/$defs/dateTime"
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "date-time"
     }
    }
   },

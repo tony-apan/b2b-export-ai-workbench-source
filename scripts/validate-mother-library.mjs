@@ -47,6 +47,11 @@ function walk(dir) {
     if (['.git', '.obsidian', 'node_modules', 'dist'].includes(entry.name)) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) result.push(...walk(path));
+    else if (entry.isSymbolicLink()) {
+      // 软链：目录软链（如 customer-runtime→运行区）不递归不读取；文件软链跟随 stat 判定
+      try { if (statSync(path).isDirectory()) continue; } catch { continue; }
+      result.push(path);
+    }
     else result.push(path);
   }
   return result;

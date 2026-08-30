@@ -8,7 +8,7 @@ owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-08-13"
 sources: ["https://www.allincms.com/docs", "https://www.allincms.com/docs/quickstart/create-site", "https://www.allincms.com/docs/content/image-guidelines", "https://www.allincms.com/docs/launch/codex-auto-content-upload", "https://www.allincms.com/sitemap.xml"]
-related: ["ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json", "../ADAPTERS/cms/allincms-overview.md", "../ADAPTERS/cms/allincms/article-operations.md", "../ADAPTERS/cms/allincms/INTERFACE-INDEX.md", "../TOOLS.md"]
+related: ["ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json", "../ADAPTERS/cms/allincms-overview.md", "../ADAPTERS/cms/allincms/article-operations.md", "../ADAPTERS/cms/allincms/INTERFACE-INDEX.md", "../TOOLS-INDEX.md"]
 confidence: "high"
 review_after: "2026-11-13"
 visibility: "public"

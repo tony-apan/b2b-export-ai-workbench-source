@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-31"
 sources: ["../../../REFERENCES/SRC-20260727-ALLINCMS-OFFICIAL.md", "../allincms-overview.md", "AI-START-HERE.md", "Observed signed-in AllinCMS read-only inspection 2026-07-27", "Observed redacted AllinCMS article write and frontend verification 2026-07-27", "Observed redacted AllinCMS field-complete article publish and frontend media verification 2026-07-27", "Observed redacted AllinCMS complex Slate capture and cleanup verification 2026-07-27", "direct-serial-11-article-verification.redacted.md", "Authorized redacted two-article API run and idempotent publish verification 2026-07-30", "Authorized redacted existing-article optimization and publish acceptance 2026-07-31"]
-related: ["README.md", "../allincms-overview.md", "AI-START-HERE.md", "article-image-binding.mjs", "article-image-binding-contract.json", "article-image-binding.test.mjs", "article-operations.mjs", "article-operations-contract.json", "article-operations.test.mjs", "../../../TOOLS.md", "../../../TEMPLATES/article-brief.md", "../../../TEMPLATES/image-manifest.md", "../../../TEMPLATES/publish-record.md"]
+related: ["README.md", "../allincms-overview.md", "AI-START-HERE.md", "article-image-binding.mjs", "article-image-binding-contract.json", "article-image-binding.test.mjs", "article-operations.mjs", "article-operations-contract.json", "article-operations.test.mjs", "../../../TOOLS-INDEX.md", "../../../TEMPLATES/article-brief.md", "../../../TEMPLATES/image-manifest.md", "../../../TEMPLATES/publish-record.md"]
 confidence: "medium-high"
 review_after: "2026-08-27"
 visibility: "public"

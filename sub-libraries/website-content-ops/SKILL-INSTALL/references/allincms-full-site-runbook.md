@@ -1,3 +1,11 @@
+---
+title: "AllinCMS 完整建站 runbook 路由（supplemental）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # AllinCMS 完整建站 runbook 路由（supplemental）
 
 > 分类：supplemental。本文件只做路由，不定义 payload/action/授权（权威仍在 canonical adapter 与本机 operational 工具包）。

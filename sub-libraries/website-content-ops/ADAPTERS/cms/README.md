@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"
 sources: ["../README.md", "allincms/article-operations.md"]
-related: ["allincms-overview.md", "allincms/article-operations.md", "../_template.md", "../../TOOLS.md"]
+related: ["allincms-overview.md", "allincms/article-operations.md", "../_template.md", "../../TOOLS-INDEX.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"

@@ -1,0 +1,13 @@
+# content-safety 人工复审豁免清单（code<TAB>相对路径<TAB>原因）
+# 登记纪律：每行须经 flash+TERRA 双审；检测器值不得改成真实格式以外的形态（会削弱 demo 检测）
+possible-phone-number	TOOLS/interface-kit/RUNBOOK-ANYONE.md	DEMO_CONTACTS 检测器值 +44-7911-123456（平台默认主题假 whatsapp，audit 靠它抓 demo 残留）
+possible-phone-number	TOOLS/interface-kit/NEW-SITE-ONEPASS.md	同上：检测器值文档化引用
+possible-phone-number	TOOLS/interface-kit/MODULES.md	同上：检测器值文档化引用
+possible-phone-number	TOOLS/interface-kit/index/INDEX.md	registry 生成镜像（doc-registry description 引用检测器值）
+possible-phone-number	TOOLS/interface-kit/templates/new-site-customization-checklist.md	字段对照表的 demo 值列（教学对照，非真实号码）
+possible-phone-number	TOOLS/interface-kit/templates/home-page-example.json	page-example 模板内 demo 检测值
+possible-phone-number	TOOLS/interface-kit/templates/contact-page-example.json	DEMO_CONTACTS 检测器值 +44-7911-123456（平台默认主题假 whatsapp，模板 demo 值）
+possible-non-example-email	TOOLS/interface-kit/MODULES.md	DEMO_CONTACTS 检测器值 hello@demo-demo.com（合成 demo 域，audit 检测用）
+possible-non-example-email	TOOLS/interface-kit/templates/contact-page-example.json	DEMO_CONTACTS 检测器值 hello@demo-demo.com（合成 demo 域，模板 demo 值）
+possible-non-example-email	TOOLS/interface-kit/templates/new-site-customization-checklist.md	同上：对照表 demo 列
+local-path-temp	SKILL-INSTALL/references/operational-findings.md	历史运维记录中的本机 /tmp 路径叙述（归档事实，非当前凭据）

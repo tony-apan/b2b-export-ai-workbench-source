@@ -1,3 +1,11 @@
+---
+title: "NEXT-SESSION（SKILL-INSTALL）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # NEXT-SESSION（SKILL-INSTALL）
 
 本目录是 allincms-bulk-content-upload 合并进母库后的唯一真源（2026-08-30；旧独立仓已封存 archived）。

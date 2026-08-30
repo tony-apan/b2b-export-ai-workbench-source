@@ -36,13 +36,8 @@ durable_roots: ["KNOWLEDGE", "PLAYBOOKS", "COURSES", "OUTPUTS"]
 external_dependencies: ["Node.js >=20.9.0", "npm", "sharp 0.35.3 (AllinCMS adapter only)"]
 source_package_only: true
 license_status: "pending"
-license_records:
-  - artifact: "TOOLS/interface-kit"
-    license: "Apache-2.0"
-    notice: "UNOFFICIAL THIRD-PARTY CLIENT for AllinCMS/LAICMS; action ids from public bundles, may change without notice"
-    recorded: "2026-08-30"
-    reviewer: "TERRA 69cf48a1 + flash 07ba67df"
-    caveat: "3 bundled source cards (AllinCMS official, PicGo image-host, B2B SEO research) clearance still open; status stays pending/BLOCK until closed"
+license_record: "see body table License Records (tools/interface-kit Apache-2.0 UNOFFICIAL, recorded 2026-08-30)"
+
 approval_required: true
 approval_status: "pending"
 approval_record: "RELEASE-APPROVAL.json (external sidecar)"
@@ -50,8 +45,8 @@ tag_namespace: "sub-library/website-content-ops"
 tag_prefix: "sub-library/website-content-ops/v"
 included_in_mother: "source-only"
   # SKILL-INSTALL/：allincms-bulk-content-upload 合并目录（2026-08-30），MIT，working-source、不做可安装宣称；vendor 快照退役待 dist 管线（id-0073）
-include: ["AGENTS.md", "LICENSE", "NOTICE", "THIRD-PARTY-NOTICES.md", "BRAND.md", "CHANGELOG.md", "CONTACT.md", "COURSE-MAP.md", "INSTALL.md", "INTAKE.md", "LICENSE.md", "MANIFEST.md", "MENTAL-MODEL.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "README.md", "RELEASE.md", "RUNTIME-INTEGRATION.md", "SKILL.md", "SOURCES.md", "START-HERE.md", "TOOLS.md", "VERSION.md", "WRITEBACK.md", ".gitignore", "RUNTIME-CONTRACT.json", "SCHEMAS/**", "REFERENCES/**", "PLAYBOOKS/**", "TEMPLATES/**", "EXAMPLES/**", "ADAPTERS/**", "WORKSPACE-TEMPLATE/**", "scripts/**"]
-exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**", "customer-runtime/**", "credentials/**", "secrets/**", "browser-profiles/**", ".env*", "**/.env*", "*.secret", "**/*.secret", "*.credentials", "**/*.credentials", "*.sqlite*", "**/*.sqlite*", "*.db", "**/*.db", "*.p12", "**/*.p12", "*.pfx", "**/*.pfx", "*.crt", "**/*.crt", "*.token", "**/*.token", "*.cookie", "**/*.cookie", "*.key", "**/*.key", "*.pem", "**/*.pem", "*.png", "**/*.png", "*.jpg", "**/*.jpg", "*.jpeg", "**/*.jpeg", "*.webp", "**/*.webp", "*.gif", "**/*.gif", "*.mp4", "**/*.mp4", "*.mov", "**/*.mov", "*.mp3", "**/*.mp3", "*.wav", "**/*.wav"]
+include: ["AGENTS.md", "LICENSE", "NOTICE", "THIRD-PARTY-NOTICES.md", "BRAND.md", "CHANGELOG.md", "CONTACT.md", "COURSE-MAP.md", "INSTALL.md", "INTAKE.md", "LICENSE.md", "MANIFEST.md", "MENTAL-MODEL.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "README.md", "RELEASE.md", "RUNTIME-INTEGRATION.md", "SKILL.md", "SOURCES.md", "START-HERE.md", "TOOLS-INDEX.md", "VERSION.md", "WRITEBACK.md", ".gitignore", "RUNTIME-CONTRACT.json", "SCHEMAS/**", "REFERENCES/**", "PLAYBOOKS/**", "TEMPLATES/**", "EXAMPLES/**", "ADAPTERS/**", "WORKSPACE-TEMPLATE/**", "SKILL-INSTALL/**", "TOOLS/**", "scripts/**", "content-safety.allowlist.tsv"]
+exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**", "customer-runtime/**", "credentials/**", "secrets/**", "browser-profiles/**", ".env*", "**/.env*", "*.secret", "**/*.secret", "*.credentials", "**/*.credentials", "*.sqlite*", "**/*.sqlite*", "*.db", "**/*.db", "*.p12", "**/*.p12", "*.pfx", "**/*.pfx", "*.crt", "**/*.crt", "*.token", "**/*.token", "*.cookie", "**/*.cookie", "*.key", "**/*.key", "*.pem", "**/*.pem", "*.png", "**/*.png", "*.jpg", "**/*.jpg", "*.jpeg", "**/*.jpeg", "*.webp", "**/*.webp", "*.gif", "**/*.gif", "*.mp4", "**/*.mp4", "*.mov", "**/*.mov", "*.mp3", "**/*.mp3", "*.wav", "**/*.wav"]
 ---
 # Package Manifest
 
@@ -63,7 +58,7 @@ exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**
 
 - Why：[README.md](README.md) 与 [COURSE-MAP.md](COURSE-MAP.md)；
 - Model：[MENTAL-MODEL.md](MENTAL-MODEL.md) 与 `TEMPLATES/`；
-- Reference implementation：[PLAYBOOK.md](PLAYBOOK.md)、[TOOLS.md](TOOLS.md) 与 `ADAPTERS/`；
+- Reference implementation：[PLAYBOOK.md](PLAYBOOK.md)、[TOOLS-INDEX.md](TOOLS-INDEX.md) 与 `ADAPTERS/`；
 - Transfer exercise：[TEMPLATES/transfer-exercise-record.md](TEMPLATES/transfer-exercise-record.md) 与 [QA-CHECKLIST.md](QA-CHECKLIST.md)。
 
 ## 源码包包含
@@ -123,3 +118,10 @@ exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "workspace/**
 ## 当前发布结论
 
 **当前源码候选：Public Preview publication / release `BLOCK`；Stable：`BLOCK`。** 既有 `v0.3.2-preview.1` 独立公开仓事实不被撤销，但 AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 完成前，当前源码候选只能用于内部方法研究和 Working artifact，不得宣称新的 Preview publication、Stable、Published、production-ready、课程效果或跨部署迁移能力。既有结构测试仍只证明其原有结构 scope。
+
+## License Records
+
+| artifact | license | notice | recorded | reviewer | caveat |
+|---|---|---|---|---|---|
+| TOOLS/interface-kit | Apache-2.0 | UNOFFICIAL THIRD-PARTY CLIENT for AllinCMS/LAICMS; action ids from public bundles, may change without notice | 2026-08-30 | TERRA 69cf48a1 + flash 07ba67df | 3 bundled source cards (AllinCMS official, PicGo image-host, B2B SEO research) clearance still open; status stays pending/BLOCK until closed |
+| SKILL-INSTALL/ | MIT（安装壳）/ 继承母库 source-only | 2026-08-30 合并；working-source 不做可安装宣称；vendor 退役待 dist 管线 | 2026-08-31 | TERRA 6afde8fc + flash b7baf83c | 3 张来源卡 clearance 未闭合前维持 pending/BLOCK |

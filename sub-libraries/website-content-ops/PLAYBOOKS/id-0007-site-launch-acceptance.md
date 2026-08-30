@@ -34,7 +34,7 @@ keywords: ["launch acceptance", "AllinCMS", "site audit", "Runtime Forms", "soft
 
 ### A3. demo 值替换清单（上线前必须核对，**联系方式必须由用户提供**）
 - 联系方式（邮箱/电话/WhatsApp）是**用户提供项**：缺失即索要，不得用 demo 值交付；站上出现 demo 联系方式 = 不开上线
-- 自动门：`python3 site_pipeline.py contact <slug> --real "user@real.com|+86 17x xxxx xxxx|wa.me/86xxxxxxxxx"` → 公网 demo 联系方式 0 才 PASS
+- 自动门：`python3 site_pipeline.py contact <slug> --real "<user@example.com>|<+86 17x xxxx xxxx>|<wa.me/86xxxxxxxxx>"` → 公网 demo 联系方式 0 才 PASS
 - 扫描范围覆盖全站 globals（WhatsApp 浮钮/联系弹窗）与每页 contact 模块（信息卡+表单双份字段）
 - 联系方式三件套：邮箱 / 电话+国际区号格式 / 地址（contact info、contact 表单卡、footer description 内嵌信息）；
 - WhatsApp/社媒浮钮 URL 是否真实可聊；

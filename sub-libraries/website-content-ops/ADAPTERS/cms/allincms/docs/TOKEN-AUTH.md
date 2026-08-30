@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
 sources: ["示例客户 全流程实战 2026-08-29/30（纯 API 登录成功+失败双路径实测）", "ISS-083"]
-related: ["RUNBOOK-ANYONE.md", "allincms_api.py"]
+related: ["../../../../TOOLS/interface-kit/RUNBOOK-ANYONE.md", "allincms_api.py"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---
@@ -23,7 +23,7 @@ redaction_status: "safe-to-publish"
 ```python
 from allincms_api import AllinCMS
 
-api = AllinCMS(email="user@example.com", password="your-password")
+api = AllinCMS(email="user@example.com", password="<your-password>")
 print(api.token)  # 357 字符 JWT——登录成功即自动提取
 ```
 

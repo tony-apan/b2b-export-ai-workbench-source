@@ -1,3 +1,11 @@
+---
+title: "会话回落模板（conversation-writeback.md）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 会话回落模板（conversation-writeback.md）
 
 > 规则：**问题即时回落**（遇到新坑 → 当天在 issues.tsv 加一行）；**会话收尾统一回落**（本模板追加到 HANDOFF.md）。

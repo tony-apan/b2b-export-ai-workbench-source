@@ -1,3 +1,11 @@
+---
+title: "交付清单模板（delivery-manifest.md）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 交付清单模板（delivery-manifest.md）
 
 > 用途：新建站全部核验通过后，按本节生成交付清单（链接+说明+核验表）。AI 交付时必须产出此文件（ID-0007 D 判定 + 本模板）。

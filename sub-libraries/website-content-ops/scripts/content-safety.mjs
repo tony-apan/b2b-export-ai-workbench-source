@@ -1,12 +1,26 @@
 // Content scanning is defense in depth only. The primary publication boundary
 // remains the explicit MANIFEST include allowlist plus human review.
+// Reviewed allowlist: content-safety.allowlist.tsv（code<TAB>相对路径<TAB>原因，人工双审后登记）
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const ALLOWED = new Set();
+try {
+  const tsvPath = join(dirname(fileURLToPath(import.meta.url)), '..', 'content-safety.allowlist.tsv');
+  for (const line of readFileSync(tsvPath, 'utf8').split('\n')) {
+    if (!line.trim() || line.startsWith('#') || line.startsWith('code\t')) continue;
+    const [code, rel, ...rest] = line.split('\t');
+    if (code && rel) ALLOWED.add(`${code}|${rel.trim()}`);
+  }
+} catch { /* 无清单 = 最严格模式 */ }
 
 const pathChecks = [
   ['local-path-macos-home', /\/Users\/[A-Za-z0-9._-]+\//],
   ['local-path-linux-home', /\/home\/[A-Za-z0-9._-]+\//],
   ['local-path-macos-volume', /\/Volumes\/[A-Za-z0-9._ -]+\//],
   ['local-path-macos-temp', /\/(?:private\/)?var\/folders\/[A-Za-z0-9._-]+\//],
-  ['local-path-temp', /\/tmp\/[A-Za-z0-9._-]+\//],
+  ['local-path-temp', /\/tmp\/(?=[A-Za-z0-9_-]*[A-Za-z0-9])[A-Za-z0-9._-]+\//], // 至少含一个字母数字，'...' 占位不命中
   ['local-path-windows-drive', /(?:^|[\s"'`(])(?:[A-Za-z]:[\\/](?:[^\s"'`<>|]+[\\/])+[^\s"'`<>|]*)/m],
   ['local-path-windows-unc', /(?:^|[\s"'`(])(?:\\\\[A-Za-z0-9._-]+\\[A-Za-z0-9$._ -]+(?:\\[^\s"'`<>|]+)*)/m],
   ['local-path-file-uri', /\bfile:\/\/(?:\/[A-Za-z0-9._~-]+|[A-Za-z]:[\\/])/i],
@@ -29,7 +43,7 @@ function addIssue(issues, code, match) {
   if (!issues.some((issue) => issue.code === code)) issues.push({ code, match: match.slice(0, 160) });
 }
 
-export function scanPublishableContent(content) {
+export function scanPublishableContent(content, relPath = '') {
   const issues = [];
   for (const [code, pattern] of pathChecks) {
     const match = content.match(pattern);
@@ -37,9 +51,14 @@ export function scanPublishableContent(content) {
   }
 
   const credential = content.match(credentialPattern);
-  const credentialValue = credential?.[1] ?? '';
-  const credentialLooksLikeCodeExpression = /^[A-Za-z_$][A-Za-z0-9_$]*\.[A-Za-z_$][A-Za-z0-9_$]*$/.test(credentialValue);
-  if (credential && !credentialLooksLikeCodeExpression) addIssue(issues, 'possible-credential-assignment', credential[0]);
+  const credentialValue = (credential?.[1] ?? '').replace(/[=._-]+$/, ''); // 剥尾部 =/-/.（捕获类含之；base64 垫符不影响 safe-form 判定）
+  const credentialSafe = [
+    /^[A-Za-z_$][A-Za-z0-9_$]*\.[A-Za-z_$][A-Za-z0-9_$]*$/, // foo.bar 代码表达式
+    /^\$[A-Za-z_][A-Za-z0-9_]*$/,                             // $TOKEN shell 变量
+    /^[a-z]+(?:-[a-z]+)+$/,                                    // 连字符散文词组（无数字）。已知限制：低熵纯小写连字符口令（password: hunter-twosecret）会放行——本层是 defense-in-depth，首边界仍是 MANIFEST include+人审（TERRA 2026-08-31）
+    /^(?:[a-z][a-z-]*-)?(?:key|token|cookie|secret|password|authorization)$/i, // 全值锚定且仅小写连字符词：payload-token 等 header 名误当值；含数字/大写随机串不豁免
+  ].some((re) => re.test(credentialValue));
+  if (credential && !credentialSafe) addIssue(issues, 'possible-credential-assignment', credential[0]);
 
   for (const match of content.matchAll(emailPattern)) {
     if (!isReservedExampleDomain(match[1])) addIssue(issues, 'possible-non-example-email', match[0]);
@@ -55,10 +74,10 @@ export function scanPublishableContent(content) {
     const assigned = assignedIdentifierPattern.exec(content);
     const assignedValue = assigned?.[1] ?? '';
     const assignedLooksLikeCodeExpression = /^[A-Za-z_$][A-Za-z0-9_$]*\.[A-Za-z_$][A-Za-z0-9_$]*$/.test(assignedValue);
-    if (assigned && !assignedLooksLikeCodeExpression && !/^(?:example|sample|synthetic|placeholder|missing|redacted)[._-]?/i.test(assignedValue)) {
+    if (assigned && !assignedLooksLikeCodeExpression && !/^(?:example|sample|synthetic|placeholder|missing|redacted)[._-]?/i.test(assignedValue) && !/[._-]synthetic$/i.test(assignedValue)) {
       addIssue(issues, 'possible-customer-identifier', `${match[0]}:${assignedValue}`);
     }
   }
 
-  return issues;
+  return issues.filter((issue) => !ALLOWED.has(`${issue.code}|${relPath}`));
 }

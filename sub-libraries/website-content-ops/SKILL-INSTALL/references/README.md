@@ -1,3 +1,11 @@
+---
+title: "References authority index"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # References authority index
 
 This directory contains mixed-age supporting material. It is **not** a second CMS execution contract.

@@ -1,3 +1,11 @@
+---
+title: "SEO 检查清单（每页发布前快速过）"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # SEO 检查清单（每页发布前快速过）
 
 > 平台边界见 ID-0007 C 表（og 缺失等平台行为，不误报）。本清单检查**内容侧可控项**。

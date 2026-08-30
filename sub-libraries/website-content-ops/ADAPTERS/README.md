@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-12"
 sources: ["../MENTAL-MODEL.md", "../PLAYBOOK.md"]
-related: ["_template.md", "image-upload-routing.md", "image-hosts/README.md", "cms/README.md", "cms/allincms/article-operations.md", "../TOOLS.md", "../TEMPLATES/tool-field-map.md", "../QA-CHECKLIST.md"]
+related: ["_template.md", "image-upload-routing.md", "image-hosts/README.md", "cms/README.md", "cms/allincms/article-operations.md", "../TOOLS-INDEX.md", "../TEMPLATES/tool-field-map.md", "../QA-CHECKLIST.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"

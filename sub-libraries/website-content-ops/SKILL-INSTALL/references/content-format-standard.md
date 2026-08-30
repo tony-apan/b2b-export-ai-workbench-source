@@ -1,3 +1,11 @@
+---
+title: "正文格式与信息架构规范(产品 / 文章正文怎么排成专业级)"
+type: "doc"
+status: "Working"
+owner: "AI"
+last_updated: "2026-08-31"
+---
+
 # 正文格式与信息架构规范(产品 / 文章正文怎么排成专业级)
 
 `source-material-norms.md` 定义「正文该供什么内容」(what / 差异点 / applications);本文定义
