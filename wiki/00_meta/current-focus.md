@@ -62,3 +62,4 @@ redaction_status: "safe-to-publish"
 4. 外部固定 workflow SHA、Protected Environment/ruleset、可信签名 annotated tag、包外 approval/evidence、课程真实提交和跨部署证据未齐备前，母库公开/Stable、子库 Stable 和课程 release 继续 `BLOCK`。
 5. 2026-08-30/31 治理批事实：skill 独立仓封存（archived）并合并进母库 `sub-libraries/website-content-ops/SKILL-INSTALL/`（唯一真源）；id-0073 真源管线已落地（`scripts/interface-kit-pipeline.py`，Adopted）——vendor 快照能力由 build-dist 承接；公开 git 历史中的既有客户标识按用户决策"直接推送去敏树"接受现状（HEAD 已清零）。
 6. 下一步（2026-08-31 建议批次）：validate-sub-library 存量失败修复（恢复发布门）；interface-kit install-from-dist 轻量安装；license 3 卡维持 BLOCK 按需通关。
+7. 课程线后续继续完善（用户指令 2026-08-31）：入口 [课程](../../wiki/90_outputs/courses/index.md) 与 OQ-COURSE-0001..0005（评分 rubric、复训触发、fixture 统一、真实样本边界、豁免 validator）——待真实学员样本，独立工作流推进。

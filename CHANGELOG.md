@@ -44,8 +44,8 @@ redaction_status: "private-source-reviewed"
 ### 第三轮对抗审查修复（flash×2 + TERRA，14 处）
 
 **PII/凭据清零**：
-- `xmc1204@qq.com` → `reviewer@example.com`（issues.tsv/INDEX.md）
-- `8617091913071` → `138-0000-0000`（真实格式中国手机号 → 假值）
+- 真实账号邮箱 → `reviewer@example.com`（issues.tsv/INDEX.md；原值见私有会话记录，不入公开文档）
+- 真实格式中国手机号 → `138-0000-0000`（原值同上，去敏记录本身不得携带被去敏值——2026-08-31 终检修正）
 - `wa.me/447762109411` → `wa.me/+44-7911-123456`（5 个文档全清）
 
 **代码/配置修复**：
