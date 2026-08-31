@@ -10,7 +10,9 @@ const scriptPath = fileURLToPath(import.meta.url);
 const root = resolve(dirname(scriptPath), '..');
 const releaseMode = process.argv.includes('--release');
 const prepareMode = process.argv.includes('--prepare');
-const GOVERNANCE_COMMAND_TIMEOUT_MS = 120_000;
+// 子库校验器在当前库容下实测约 106s（2026-09-01）；120s 曾两次在母库调用中超时击杀子进程，
+// 尾部输出（链接 WARN）被误当失败原因。升到 300s 留足余量，代价仅在真实挂死时更晚发现。
+const GOVERNANCE_COMMAND_TIMEOUT_MS = 300_000;
 const failures = [];
 const warnings = [];
 
