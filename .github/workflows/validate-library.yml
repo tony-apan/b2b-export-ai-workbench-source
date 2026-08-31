@@ -11,7 +11,15 @@ permissions:
 jobs:
   structure-and-artifacts:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    # CI structure opt-in: validator invocations skip the three heavyweight WCO
+    # regression suites (article-package alone runs ~91s locally / ~150s+ here
+    # and would otherwise execute ~8 times across mother structure, sub-library
+    # validation, builds, and artifact boundaries — far beyond any job budget).
+    # The suites still run exactly once below in the dedicated regression step;
+    # formal release/prepare validation always forces the full suites.
+    env:
+      WCO_CI_SKIP_REGRESSION_SUITES: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -23,6 +31,13 @@ jobs:
         with:
           node-version: 20
           cache-dependency-path: sub-libraries/website-content-ops/ADAPTERS/cms/allincms/package-lock.json
+
+      - name: Run WCO heavyweight regression suites once
+        working-directory: sub-libraries/website-content-ops
+        run: |
+          node --test scripts/sync-workspace-template.test.mjs
+          node --test scripts/content-operation-plan.test.mjs
+          node --test scripts/article-package.test.mjs
 
       - name: Run governance negative regression tests
         run: node scripts/run-governance-tests.mjs --timeout-ms 120000
@@ -77,7 +92,12 @@ jobs:
           const cp = require('node:child_process');
           const registry = JSON.parse(fs.readFileSync('sub-libraries/registry.json', 'utf8'));
           for (const entry of registry.entries) {
-            cp.execFileSync(process.execPath, [`${entry.path}/scripts/build-release.mjs`], { stdio: 'inherit', env: { ...process.env, SOURCE_DATE_EPOCH: '0' } });
+            const builder = `${entry.path}/scripts/build-release.mjs`;
+            // Sub-libraries without a dist pipeline yet (e.g. agency-operations,
+            // working-source) have no candidate builder; skip them instead of
+            // crashing the registry loop.
+            if (!fs.existsSync(builder)) continue;
+            cp.execFileSync(process.execPath, [builder], { stdio: 'inherit', env: { ...process.env, SOURCE_DATE_EPOCH: '0' } });
           }
           NODE
 
@@ -90,7 +110,9 @@ jobs:
           const cp = require('node:child_process');
           const registry = JSON.parse(fs.readFileSync('sub-libraries/registry.json', 'utf8'));
           for (const entry of registry.entries) {
-            cp.execFileSync(process.execPath, [`${entry.path}/scripts/validate-artifact.mjs`, `${entry.path}/dist/latest`], { stdio: 'inherit' });
+            const validator = `${entry.path}/scripts/validate-artifact.mjs`;
+            if (!fs.existsSync(validator)) continue;
+            cp.execFileSync(process.execPath, [validator, `${entry.path}/dist/latest`], { stdio: 'inherit' });
           }
           NODE
 

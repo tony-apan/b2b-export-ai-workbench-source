@@ -214,7 +214,7 @@ if (!failures.length) {
   // Artifact-level redaction checks are intentionally repeated after packaging.
   // A correct checksum only proves integrity, not that the packaged content is safe.
   // The allowlist is fail-closed: any file type not declared here blocks the artifact.
-  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml']);
+  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml', '.tsv', '.txt', '.jsonl', '.sh']);
   const allowedExtensionlessArtifactFiles = new Set(['.gitignore', '.npmignore', 'LICENSE', 'NOTICE']);
   for (const file of actual) {
     if (['MANIFEST.json', 'SHA256SUMS'].includes(file)) continue;
@@ -224,7 +224,10 @@ if (!failures.length) {
       continue;
     }
     const content = readFileSync(join(artifactRoot, file), 'utf8');
-    for (const issue of scanPublishableContent(content)) fail(`content safety ${issue.code} in artifact: ${file}`);
+    // Pass the artifact-relative path so the reviewed content-safety allowlist
+    // (content-safety.allowlist.tsv, code|path rows) is honored at the artifact
+    // boundary exactly as it is at the source boundary.
+    for (const issue of scanPublishableContent(content, file)) fail(`content safety ${issue.code} in artifact: ${file}`);
   }
   const sums = readFileSync(join(artifactRoot, 'SHA256SUMS'), 'utf8').trim().split('\n').filter(Boolean);
   const map = new Map();

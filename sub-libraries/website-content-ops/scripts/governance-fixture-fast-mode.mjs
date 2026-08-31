@@ -54,6 +54,14 @@ export function shouldUseGovernanceFixtureFastMode({
   releaseMode = false,
   prepareMode = false,
 }) {
-  if (env.WCO_GOVERNANCE_FIXTURE_FAST !== '1' || releaseMode || prepareMode) return false;
+  if (releaseMode || prepareMode) return false;
+  // CI structure-and-artifacts opt-in: the workflow sets this variable at the
+  // job level and runs the three heavyweight regression suites exactly once in
+  // a dedicated step, so the ~91s article-package suite is not re-executed by
+  // every validator invocation (mother structure, sub-library validation,
+  // mother/sub builds, artifact boundaries ≈ 8 invocations). Formal
+  // release/prepare modes above still force the full suites.
+  if (env.WCO_CI_SKIP_REGRESSION_SUITES === '1') return true;
+  if (env.WCO_GOVERNANCE_FIXTURE_FAST !== '1') return false;
   return classifyGovernanceFixtureRoot(libraryRoot, { tempRoot, env }) !== null;
 }

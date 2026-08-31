@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 // content-safety.allowlist.tsv 治理锁：digest 钉死——任何增删行都必须同步改此处的期望 digest（双审后），
 // 防止未审计的豁免行静默进入发布安全出口。
 const ALLOWLIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'content-safety.allowlist.tsv');
-const EXPECTED_DIGEST_PREFIX = 'ea4fc9d2538b2497';
+const EXPECTED_DIGEST_PREFIX = '451cca9d1e8cffb8';
 
 test('content-safety allowlist digest is pinned and audited', () => {
   assert.ok(existsSync(ALLOWLIST), 'allowlist 文件必须存在且 tracked');

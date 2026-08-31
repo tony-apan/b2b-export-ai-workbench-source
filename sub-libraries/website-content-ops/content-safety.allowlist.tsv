@@ -11,3 +11,6 @@ possible-non-example-email	TOOLS/interface-kit/MODULES.md	DEMO_CONTACTS 检测�
 possible-non-example-email	TOOLS/interface-kit/templates/contact-page-example.json	DEMO_CONTACTS 检测器值 hello@demo-demo.com（合成 demo 域，模板 demo 值）
 possible-non-example-email	TOOLS/interface-kit/templates/new-site-customization-checklist.md	同上：对照表 demo 列
 local-path-temp	SKILL-INSTALL/references/operational-findings.md	历史运维记录中的本机 /tmp 路径叙述（归档事实，非当前凭据）
+possible-phone-number	TOOLS/interface-kit/index/issues.tsv	issues 登记表文档化引用 DEMO_CONTACTS 检测器值 +44-7911-123456（与 INDEX.md 同源）
+possible-phone-number	content-safety.allowlist.tsv	豁免清单 reason 列引用检测器值本身（清单即文档）
+possible-non-example-email	content-safety.allowlist.tsv	豁免清单 reason 列引用检测器值 hello@demo-demo.com（清单即文档）
