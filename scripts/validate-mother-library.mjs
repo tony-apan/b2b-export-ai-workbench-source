@@ -449,8 +449,7 @@ for (const entry of subEntries) {
   const childValidator = join(subRoot, 'scripts/validate-sub-library.mjs');
   if (existsSync(childValidator)) {
     const motherGovernanceFixture = process.env.GOVERNANCE_TEST_FIXTURE === '1'
-      && root.startsWith(join(realpathSync(tmpdir()), '701-governance-'))
-      && root.endsWith(join('repo'))
+      && realpathSync(root).startsWith(join(realpathSync(tmpdir()), '701-governance-'))
       && !releaseMode
       && !prepareMode;
     const childModeArgs = [releaseMode ? '--release' : null, prepareMode ? '--prepare' : null].filter(Boolean);
