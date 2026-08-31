@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
+last_updated: "2026-09-01"
 sources: ["../10_sources/SRC-20260726-KARPATHY-LLM-WIKI.md"]
 related: ["knowledge-compounding-system.md", "../10_sources/SRC-20260726-KARPATHY-LLM-WIKI.md"]
 ---
@@ -147,13 +147,14 @@ sources: []
 2. 读业务底座：ICP、offer、messaging、pain map、objections。
 3. 读对应渠道或 playbook。
 4. 必要时回看来源文件。
-5. 输出时注明：
+5. 向用户索要任何输入（凭据、资料、决策）前：先检索该专题的全部文档（入口文档 + 专题真源 + registry/index），按文档标注的推荐顺序把选项列全；入口文档与专题真源不一致或选项不全时，以专题真源为准，事后回填入口文档（案例：2026-09-01 token 取法，见 [logs/2026/09/2026-09-01.md](logs/2026/09/2026-09-01.md)——入口文档只写 Cookie 一条路而 TOKEN-AUTH 三法齐全，导致向用户呈现残缺选项）。
+6. 输出时注明：
    - 目标对象
    - 使用场景
    - 依据
    - 假设
    - 下一步需要验证什么
-6. 若输出值得复用，沉淀到 `wiki/90_outputs/` 或更新 playbook。
+7. 若输出值得复用，沉淀到 `wiki/90_outputs/` 或更新 playbook。
 
 涉及 LinkedIn、Meta、TikTok、YouTube 等社媒账号动作时，必须先读 [social-account-safety.md](social-account-safety.md)。AI 只能准备草稿、策略、检查清单和复盘；不得用 Codex 浏览器或脚本直接登录、发布、互动、私信或批量浏览账号。
 

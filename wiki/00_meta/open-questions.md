@@ -46,6 +46,7 @@ keywords: ["open questions", "blocked", "deferred", "owner", "evidence", "next a
 | `OQ-TOOL-0001` | deferred | 课程 R2 使用新建 bucket、现有空演示 bucket、自定义域名还是开发 URL？ | Tony | R2 演示 | 尚无批准 | Tony 选择无真实业务数据的演示资源。 |
 | `OQ-TOOL-0002` | deferred | 是否批准 Wrangler v4、PicGo R2/S3 adapter，以及 GUI/CLI 统一配置？ | Tony | PicGo/R2 执行 | 尚无批准 | 明确工具与配置保存边界后再安装。 |
 | `OQ-TOOL-0003` | open | 哪个真实但可安全操作的网站用于最终端到端验收？ | Tony | 真实验收 | 当前只有限定站点证据 | 指定站点、权限、可写范围和回滚责任人。 |
+| `OQ-TOOL-0004` | open | AllinCMS/LAICMS 平台工单/反馈渠道是什么？（验收清单 BOUNDARY 三要件要求"渠道动作"，当前渠道未建立——lang=zh-CN、soft-404、og/canonical 缺失等平台边界项无处上报） | Tony | 平台边界项闭环 | acceptance-v2 L7 三要件；2026-09-01 弹窗问题曾按平台缺陷准备工单证据包（后定位为我方配置） | Tony 提供平台合同/支持渠道后登记；渠道建立前 BOUNDARY 项显式标注"渠道未建立"并知会 Tony。 |
 
 ## 多客户代运营运行区
 

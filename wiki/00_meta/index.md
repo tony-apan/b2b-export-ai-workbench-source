@@ -5,7 +5,7 @@ type: "index"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-08-31"
+last_updated: "2026-09-01"
 sources: ["User request"]
 related: ["../index.md"]
 visibility: "public"
