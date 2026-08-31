@@ -22,10 +22,10 @@ def _token_file():
     return os.path.join(tempfile.gettempdir(), "ws-token.txt")
 
 def _read_token():
-    """优先 WS_TOKEN 环境变量，回退 token 文件（POSIX 先查 /tmp 再查 %TEMP%；Windows 只查 %TEMP%）。"""
+    """优先 WS_TOKEN 环境变量，回退 token 文件（路径由 _token_file() 跨平台解析）。"""
     env = os.environ.get("WS_TOKEN")
     if env: return env
-    candidates = ["tempfile.gettempdir() + "/ws-token.txt", _token_file()] if os.name != "nt" else [_token_file()]
+    candidates = [_token_file()]
     for p in candidates:
         if os.path.exists(p):
             try: return open(p).read().strip()
