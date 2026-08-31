@@ -1,13 +1,13 @@
 ---
 title: "运行时文件夹结构 v2（四层物理分离）"
-description: "母库知识/工具代码/客户私有数据/会话 scratch 四层物理分离的结构约定；解决'每次清理'残留问题。"
+description: "母库 runtime 四层物理分离结构与 interface-kit 真源管线约定"
 type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-31"
 doc_id: "ID-0072"
-sources: ["用户结构诉求 2026-08-30", "残留实测（217 /tmp 文件 + 64 tracked 修改 + skill 仓 dirty）"]
+sources: ["用户结构诉求 2026-08-30", "残留实测（217 临时文件 + 64 tracked 修改 + skill 仓 dirty）"]
 keywords: ["runtime-folder", "interface-kit", "true-source", "pipeline", "migration"]
 when_to_read: "需要了解 runtime 迁移或 interface-kit 真源管线时"
 related: ["../../AGENTS.md", "in-repository-agency-runtime-model.md"]

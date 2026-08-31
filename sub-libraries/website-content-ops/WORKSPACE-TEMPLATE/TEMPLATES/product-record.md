@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "需要把产品规格、卖点、证据和禁止声明整理成可复用产品事实记录时。"
 keywords: ["product record", "product facts", "specifications", "proof", "claim boundary"]
 generated_from: "../../TEMPLATES/product-record.md"
-generated_source_sha256: "983ea9bba096897352a5352d533f070e15cdb7f198c202d06b208a800b66e4aa"
+generated_source_sha256: "927b7447046fe92d551722cc4e1e50ff102e786cbb76c4201f9976dde9d82737"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/product-record.md; do not hand-edit this copy in the source package. -->

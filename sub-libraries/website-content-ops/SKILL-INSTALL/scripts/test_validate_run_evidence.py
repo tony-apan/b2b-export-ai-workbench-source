@@ -437,7 +437,7 @@ def test_merge_created_site_readonly_refresh_adds_tracking_setup() -> None:
     refresh["siteIdentity"]["moduleRoutes"] = list(created["siteIdentity"]["moduleRoutes"])
     refresh["setupPages"]["tracking"] = ["tracking read-only inspected: add Google Tag ID visible"]
 
-    merged = merge_created_site_readonly_refresh(created, refresh, Path("/tmp/refresh-evidence.json"))
+    merged = merge_created_site_readonly_refresh(created, refresh, Path(f"{tempfile.gettempdir()}/refresh-evidence.json"))
     assert merged["siteCreation"]["status"] == "created_verified"
     assert merged["generatedAt"] == created["generatedAt"]
     assert merged["setupPages"]["tracking"] == refresh["setupPages"]["tracking"]
@@ -450,7 +450,7 @@ def test_merge_created_site_readonly_refresh_rejects_wrong_site() -> None:
     refresh = existing_site_selected_evidence()
     refresh["siteIdentity"]["siteKey"] = "othersite"
     try:
-        merge_created_site_readonly_refresh(created, refresh, Path("/tmp/refresh-evidence.json"))
+        merge_created_site_readonly_refresh(created, refresh, Path(f"{tempfile.gettempdir()}/refresh-evidence.json"))
     except ValueError as exc:
         assert "siteKey must match" in str(exc)
     else:
@@ -2045,7 +2045,7 @@ def final_frontend_audit_packet() -> dict:
                 "python3 skills/allincms-bulk-content-upload/scripts/apply_browser_stage_result.py "
                 "--ledger ~/allincms-projects/allincms-full-rehearsal/browser-execution-ledger.json "
                 "--packet ~/allincms-projects/allincms-full-rehearsal/next-browser-stage-packet.json "
-                "--result-json /tmp/allincms-stage-result.json "
+                f"--result-json {tempfile.gettempdir()}/allincms-stage-result.json "
                 "--output ~/allincms-projects/allincms-full-rehearsal/browser-execution-ledger.updated.json"
             ),
         },
@@ -2625,8 +2625,8 @@ def test_capture_authorization_package_for_product_probe_stage() -> None:
     stage = select_capture_stage(plan, "products", "create")
     package = build_capture_authorization_package(
         stage,
-        "/tmp/created-site-evidence.json",
-        "/tmp/create-product-auth.json",
+        f"{tempfile.gettempdir()}/created-site-evidence.json",
+        "<tmp>/create-product-auth.json",
     )
     assert package["authorizationAction"] == "create_product_probe"
     assert package["gateSupported"] is True
@@ -2650,7 +2650,7 @@ def test_capture_authorization_package_validator_rejects_target_drift() -> None:
     }
     plan = build_module_capture_plan(summary, "realsite01", None)
     stage = select_capture_stage(plan, "products", "create")
-    package = build_capture_authorization_package(stage, "/tmp/evidence.json", "/tmp/auth.json")
+    package = build_capture_authorization_package(stage, "<tmp>/evidence.json", "<tmp>/auth.json")
     package["target"] = "https://workspace.laicms.com/realsite01/posts"
     issues = validate_capture_authorization_package(package, plan)
 
@@ -2666,7 +2666,7 @@ def test_capture_authorization_package_validator_rejects_embedded_suggested_auth
     }
     plan = build_module_capture_plan(summary, "realsite01", None)
     stage = select_capture_stage(plan, "products", "create")
-    package = build_capture_authorization_package(stage, "/tmp/evidence.json", "/tmp/auth.json")
+    package = build_capture_authorization_package(stage, "<tmp>/evidence.json", "<tmp>/auth.json")
     package["authorizationRecordCommand"] = package["authorizationRecordCommand"].replace(
         AUTHORIZATION_SOURCE_PLACEHOLDER,
         package["suggestedAuthorizationText"],
@@ -2687,7 +2687,7 @@ def test_capture_authorization_package_marks_unsupported_gate() -> None:
     }
     plan = build_module_capture_plan(summary, "realsite01", None)
     stage = select_capture_stage(plan, "media", "upload")
-    package = build_capture_authorization_package(stage, "/tmp/evidence.json", "/tmp/auth.json")
+    package = build_capture_authorization_package(stage, "<tmp>/evidence.json", "<tmp>/auth.json")
     assert package["authorizationAction"] == "upload_media"
     assert package["gateSupported"] is False
     assert package["preMutationGateCommand"] is None
@@ -2704,13 +2704,13 @@ def test_capture_authorization_package_supports_domain_and_tracking_gates() -> N
     plan = build_module_capture_plan(summary, "realsite01", None)
     domain_package = build_capture_authorization_package(
         select_capture_stage(plan, "domains", "create"),
-        "/tmp/evidence.json",
-        "/tmp/auth-domain.json",
+        "<tmp>/evidence.json",
+        "<tmp>/auth-domain.json",
     )
     tracking_package = build_capture_authorization_package(
         select_capture_stage(plan, "tracking", "create"),
-        "/tmp/evidence.json",
-        "/tmp/auth-tracking.json",
+        "<tmp>/evidence.json",
+        "<tmp>/auth-tracking.json",
     )
     assert domain_package["authorizationAction"] == "add_domain"
     assert domain_package["gateSupported"] is True
@@ -2736,8 +2736,8 @@ def test_capture_authorization_package_suppresses_simulated_targets_by_default()
     plan = build_module_capture_plan(summary, "simsite01", None)
     package = build_capture_authorization_package(
         select_capture_stage(plan, "domains", "create"),
-        "/tmp/evidence.json",
-        "/tmp/auth-domain.json",
+        "<tmp>/evidence.json",
+        "<tmp>/auth-domain.json",
     )
     assert package["commandsSuppressed"] is True
     assert package["authorizationRecordCommand"] is None
@@ -2758,8 +2758,8 @@ def test_capture_authorization_package_can_allow_simulated_targets_for_local_tes
     plan = build_module_capture_plan(summary, "simsite01", None)
     package = build_capture_authorization_package(
         select_capture_stage(plan, "domains", "create"),
-        "/tmp/evidence.json",
-        "/tmp/auth-domain.json",
+        "<tmp>/evidence.json",
+        "<tmp>/auth-domain.json",
         allow_simulated_target=True,
     )
     assert package.get("commandsSuppressed") is not True
@@ -2780,7 +2780,7 @@ def test_all_capture_authorization_package_builder_writes_valid_package_set() ->
         output_dir = Path(tmp) / "packages"
         package_set = build_all_capture_authorization_packages(
             capture_plan=plan,
-            preflight_path="/tmp/evidence.json",
+            preflight_path="<tmp>/evidence.json",
             output_dir=output_dir,
         )
         assert package_set["valid"] is True
@@ -2811,7 +2811,7 @@ def test_all_capture_authorization_package_builder_suppresses_simulated_targets(
     with tempfile.TemporaryDirectory() as tmp:
         package_set = build_all_capture_authorization_packages(
             capture_plan=plan,
-            preflight_path="/tmp/evidence.json",
+            preflight_path="<tmp>/evidence.json",
             output_dir=Path(tmp),
         )
         item = package_set["items"][0]
@@ -2835,7 +2835,7 @@ def test_all_capture_authorization_package_validator_rejects_summary_drift() -> 
     with tempfile.TemporaryDirectory() as tmp:
         package_set = build_all_capture_authorization_packages(
             capture_plan=plan,
-            preflight_path="/tmp/evidence.json",
+            preflight_path="<tmp>/evidence.json",
             output_dir=Path(tmp),
         )
         package_set["items"][0]["target"] = "https://workspace.laicms.com/realsite01/posts"
@@ -3117,8 +3117,8 @@ def valid_batch_upload_publish_evidence() -> dict:
         "siteKey": "mysite01",
         "contentType": "products",
         "target": "https://workspace.laicms.com/mysite01/products",
-        "manifestPath": "/tmp/products-schema-verified-manifest.json",
-        "authorizationRecord": "/tmp/batch-auth.json",
+        "manifestPath": "<tmp>/products-schema-verified-manifest.json",
+        "authorizationRecord": "<tmp>/batch-auth.json",
         "preMutationGate": "passed",
         "action": "batch_upload",
         "schemaGatePass": True,
@@ -3201,7 +3201,7 @@ def launch_ready_run_evidence() -> dict:
 
 def launch_acceptance_args(**overrides: object) -> object:
     values = {
-        "run_evidence": "/tmp/run-evidence.json",
+        "run_evidence": "<tmp>/run-evidence.json",
         "module_coverage": "",
         "stage_coverage": "",
         "upload_readiness": "",
@@ -3228,7 +3228,7 @@ def launch_upload_readiness() -> dict:
         "overallStatus": "ready_for_sample_upload",
         "manifests": [
             {
-                "path": "/tmp/products.json",
+                "path": "<tmp>/products.json",
                 "contentType": "products",
                 "siteKey": "codex-test-site",
                 "schemaVerified": True,
@@ -3408,10 +3408,10 @@ def write_json(path: Path, data: object) -> str:
 def test_batch_upload_publish_runbook_builds_safe_browser_steps() -> None:
     runbook = build_batch_upload_publish_runbook(
         run_evidence=batch_ready_evidence(),
-        run_evidence_path="/tmp/batch-ready-run-evidence.json",
+        run_evidence_path="<tmp>/batch-ready-run-evidence.json",
         manifest=schema_verified_manifest_for_batch(),
-        manifest_path="/tmp/products-schema-verified-manifest.json",
-        authorization_output="/tmp/batch-auth.json",
+        manifest_path="<tmp>/products-schema-verified-manifest.json",
+        authorization_output="<tmp>/batch-auth.json",
         target="https://workspace.laicms.com/mysite01/products",
         target_identifier="products manifest batch",
         generated_at=RECENT_PREFLIGHT_AT,
@@ -4057,7 +4057,7 @@ def test_run_status_summary_matches_detail_probe_to_content_type() -> None:
 def test_run_status_summary_includes_create_site_next_action_details() -> None:
     summary = summarize_run_status(
         create_preflight_evidence(),
-        "/tmp/allincms-create-site-preflight.json",
+        "<tmp>/allincms-create-site-preflight.json",
         max_mutation_evidence_age_minutes=9999999,
     )
     assert summary["valid"] is True
@@ -4073,11 +4073,11 @@ def test_run_status_summary_includes_create_site_next_action_details() -> None:
     assert "https://workspace.laicms.com/sites" in detail["authorizationText"]
     assert "make_authorization_record.py --action create_site" in detail["authorizationRecordCommand"]
     assert "check_pre_mutation_gate.py --action create_site" in detail["preMutationGateCommand"]
-    assert "--preflight /tmp/allincms-create-site-preflight.json" in detail["preMutationGateCommand"]
+    assert "--preflight <tmp>/allincms-create-site-preflight.json" in detail["preMutationGateCommand"]
 
 
 def test_run_status_summary_warns_when_mutation_evidence_is_stale() -> None:
-    summary = summarize_run_status(create_preflight_evidence(), "/tmp/allincms-create-site-preflight.json")
+    summary = summarize_run_status(create_preflight_evidence(), "<tmp>/allincms-create-site-preflight.json")
     assert summary["evidenceFreshness"]["freshForMutation"] is False
     assert summary["nextActions"][0] == "refresh_readonly_evidence"
     assert summary["nextActionDetails"][0]["action"] == "refresh_readonly_evidence"
@@ -4289,7 +4289,7 @@ def test_probe_evidence_merge_rejects_wrong_site_url() -> None:
 def test_run_status_summary_suggests_save_probe_after_probe_creation() -> None:
     summary = summarize_run_status(
         mutating_probe_evidence_without_request_capture(),
-        "/tmp/preflight.json",
+        "<tmp>/preflight.json",
         max_mutation_evidence_age_minutes=9999999,
     )
     assert summary["valid"] is False
@@ -4302,13 +4302,13 @@ def test_run_status_summary_suggests_save_probe_after_probe_creation() -> None:
     assert "捕获" in detail["authorizationText"]
     assert "make_authorization_record.py --action save_probe" in detail["authorizationRecordCommand"]
     assert "check_pre_mutation_gate.py --action save_probe" in detail["preMutationGateCommand"]
-    assert "--preflight /tmp/preflight.json" in detail["preMutationGateCommand"]
+    assert "--preflight <tmp>/preflight.json" in detail["preMutationGateCommand"]
 
 
 def test_run_status_summary_suggests_publish_probe_after_request_capture() -> None:
     summary = summarize_run_status(
         mutating_probe_evidence_with_request_capture(),
-        "/tmp/preflight.json",
+        "<tmp>/preflight.json",
         max_mutation_evidence_age_minutes=9999999,
     )
     assert summary["valid"] is False
@@ -4326,7 +4326,7 @@ def test_run_status_summary_suggests_publish_probe_after_request_capture() -> No
 def test_run_status_summary_suggests_cleanup_probe_after_sample_verification() -> None:
     summary = summarize_run_status(
         mutating_probe_evidence_with_sample_verification(),
-        "/tmp/preflight.json",
+        "<tmp>/preflight.json",
         max_mutation_evidence_age_minutes=9999999,
     )
     assert summary["valid"] is True
@@ -4376,12 +4376,12 @@ def summary_with_product_probe_next_action() -> dict:
                 "--verification-plan 'verify backend product draft and capture save request before any publish' "
                 "--cleanup-plan 'no automatic cleanup; request separate cleanup authorization' "
                 "--authorization-source '<paste current user authorization text here>' "
-                "--output /tmp/allincms-mysite01-products-probe-authorization.json"
+                "--output <tmp>/allincms-mysite01-products-probe-authorization.json"
             ),
             "preMutationGateCommand": (
                 "python3 skills/allincms-bulk-content-upload/scripts/check_pre_mutation_gate.py "
-                "--action create_product_probe --preflight /tmp/preflight.json "
-                "--authorization /tmp/allincms-mysite01-products-probe-authorization.json"
+                "--action create_product_probe --preflight <tmp>/preflight.json "
+                "--authorization <tmp>/allincms-mysite01-products-probe-authorization.json"
             ),
         }
     ]
@@ -4391,7 +4391,7 @@ def summary_with_product_probe_next_action() -> dict:
 def test_next_action_authorization_package_is_preparatory_only() -> None:
     summary = summary_with_product_probe_next_action()
     detail = select_next_action_authorization_detail(summary, "create_product_probe")
-    package = build_next_action_authorization_package(summary, detail, "/tmp/preflight.json")
+    package = build_next_action_authorization_package(summary, detail, "<tmp>/preflight.json")
     assert package["preparedOnly"] is True
     assert package["isUserAuthorization"] is False
     assert package["action"] == "create_product_probe"
@@ -4408,7 +4408,7 @@ def test_next_action_authorization_package_requires_placeholder() -> None:
         "<paste current user authorization text here>",
         "current user authorizes create product probe",
     )
-    package = build_next_action_authorization_package(summary, detail, "/tmp/preflight.json")
+    package = build_next_action_authorization_package(summary, detail, "<tmp>/preflight.json")
     issues = validate_next_action_authorization_package(package)
     assert any("placeholder" in issue for issue in issues)
 
@@ -5429,12 +5429,12 @@ def valid_manifest_sample_upload_evidence() -> dict:
         "kind": "allincms_manifest_sample_upload_evidence",
         "siteKey": "mysite01",
         "contentType": "products",
-        "manifestPath": "/tmp/products-schema-verified-manifest.json",
+        "manifestPath": "<tmp>/products-schema-verified-manifest.json",
         "sampleSlug": "codex-probe-delete-me-product",
         "target": "https://workspace.laicms.com/mysite01/products",
         "backendUrl": "https://workspace.laicms.com/mysite01/products/product-id/update",
         "frontendUrl": "https://mysite01.web.allincms.com/products/codex-probe-delete-me-product",
-        "authorizationRecord": "/tmp/auth.json",
+        "authorizationRecord": "<tmp>/auth.json",
         "preMutationGate": "passed",
         "schemaGatePass": True,
         "saveStatus": "ok",
@@ -6604,15 +6604,15 @@ def test_browser_stage_authorization_package_for_create_site() -> None:
     packet = create_site_submit_packet()
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/allincms-create-site-preflight.json",
-        "/tmp/allincms-authorization-create-site.json",
+        "<tmp>/allincms-create-site-preflight.json",
+        "<tmp>/allincms-authorization-create-site.json",
     )
     assert package["stageId"] == "create_site_submit"
     assert package["gateSupported"] is True
     assert "创建站点" in package["suggestedAuthorizationText"]
     assert "make_authorization_record.py --action create_site" in package["authorizationRecordCommand"]
     assert "check_pre_mutation_gate.py --action create_site" in package["preMutationGateCommand"]
-    assert "--preflight /tmp/allincms-create-site-preflight.json" in package["preMutationGateCommand"]
+    assert "--preflight <tmp>/allincms-create-site-preflight.json" in package["preMutationGateCommand"]
     assert "<paste current user authorization text here>" in package["authorizationRecordCommand"]
     assert validate_browser_stage_authorization_package(package, packet, create_preflight_evidence(), now=GATE_NOW) == []
 
@@ -6621,8 +6621,8 @@ def test_browser_stage_authorization_package_validator_rejects_missing_user_auth
     packet = create_site_submit_packet()
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/allincms-create-site-preflight.json",
-        "/tmp/allincms-authorization-create-site.json",
+        "<tmp>/allincms-create-site-preflight.json",
+        "<tmp>/allincms-authorization-create-site.json",
     )
     package["authorizationRecordCommand"] = package["authorizationRecordCommand"].replace(
         "<paste current user authorization text here>",
@@ -6637,8 +6637,8 @@ def test_browser_stage_authorization_package_validator_rejects_missing_warning()
     packet = create_site_submit_packet()
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/allincms-create-site-preflight.json",
-        "/tmp/allincms-authorization-create-site.json",
+        "<tmp>/allincms-create-site-preflight.json",
+        "<tmp>/allincms-authorization-create-site.json",
     )
     package.pop("warning")
     issues = validate_browser_stage_authorization_package(package, packet, create_preflight_evidence(), now=GATE_NOW)
@@ -6650,8 +6650,8 @@ def test_browser_stage_authorization_package_validator_rejects_stale_preflight()
     packet = create_site_submit_packet()
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/allincms-create-site-preflight.json",
-        "/tmp/allincms-authorization-create-site.json",
+        "<tmp>/allincms-create-site-preflight.json",
+        "<tmp>/allincms-authorization-create-site.json",
     )
     preflight = create_preflight_evidence()
     preflight["generatedAt"] = STALE_AT
@@ -6694,7 +6694,7 @@ def test_browser_stage_authorization_package_marks_readonly_stage_unsupported() 
         },
         "warnings": ["local only"],
     }
-    package = build_browser_stage_authorization_package(packet, "/tmp/preflight.json", "/tmp/auth.json")
+    package = build_browser_stage_authorization_package(packet, "<tmp>/preflight.json", "<tmp>/auth.json")
     assert package["authorizationRequired"] is False
     assert package["gateSupported"] is False
     assert package["authorizationRecordCommand"] is None
@@ -6765,8 +6765,8 @@ def test_browser_stage_authorization_package_for_module_capture_uses_next_covera
         coverage_path.write_text(json.dumps(coverage, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         package = build_browser_stage_authorization_package(
             module_packet,
-            "/tmp/allincms-created-site-evidence.json",
-            "/tmp/allincms-authorization-module-capture.json",
+            "<tmp>/allincms-created-site-evidence.json",
+            "<tmp>/allincms-authorization-module-capture.json",
             str(paths["moduleCapturePlan"]),
             str(coverage_path),
         )
@@ -6838,8 +6838,8 @@ def test_browser_stage_authorization_package_for_module_capture_can_allow_simula
         plan_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         package = build_browser_stage_authorization_package(
             packet,
-            "/tmp/preflight.json",
-            "/tmp/auth.json",
+            "<tmp>/preflight.json",
+            "<tmp>/auth.json",
             str(plan_path),
             "",
             True,
@@ -6909,8 +6909,8 @@ def test_browser_stage_authorization_package_validator_rejects_module_capture_pl
         plan_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         package = build_browser_stage_authorization_package(
             packet,
-            "/tmp/preflight.json",
-            "/tmp/auth.json",
+            "<tmp>/preflight.json",
+            "<tmp>/auth.json",
             str(plan_path),
             "",
         )
@@ -6978,8 +6978,8 @@ def test_next_browser_action_handoff_wraps_valid_module_capture_package() -> Non
         plan_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         package = build_browser_stage_authorization_package(
             packet,
-            "/tmp/preflight.json",
-            "/tmp/auth.json",
+            "<tmp>/preflight.json",
+            "<tmp>/auth.json",
             str(plan_path),
             "",
             True,
@@ -6990,10 +6990,10 @@ def test_next_browser_action_handoff_wraps_valid_module_capture_package() -> Non
         packet=packet,
         preflight=preflight,
         capture_plan=plan,
-        package_path="/tmp/package.json",
-        packet_path="/tmp/packet.json",
-        preflight_path="/tmp/preflight.json",
-        capture_plan_path="/tmp/plan.json",
+        package_path="<tmp>/package.json",
+        packet_path="<tmp>/packet.json",
+        preflight_path="<tmp>/preflight.json",
+        capture_plan_path="<tmp>/plan.json",
         now=GATE_NOW,
     )
     assert handoff["kind"] == "allincms_next_browser_action_handoff"
@@ -7001,7 +7001,7 @@ def test_next_browser_action_handoff_wraps_valid_module_capture_package() -> Non
     assert handoff["isUserAuthorization"] is False
     assert handoff["remoteMutationsPerformed"] is False
     assert handoff["action"]["authorizationAction"] == "create_product_probe"
-    assert handoff["sourceFiles"]["authorizationPackage"] == "/tmp/package.json"
+    assert handoff["sourceFiles"]["authorizationPackage"] == "<tmp>/package.json"
     assert "not user authorization" in handoff["warning"]
 
 
@@ -7093,15 +7093,15 @@ def test_next_browser_action_handoff_validator_reopens_sources() -> None:
 
 def test_next_browser_action_handoff_validator_rejects_handoff_drift() -> None:
     packet = create_site_submit_packet()
-    package = build_browser_stage_authorization_package(packet, "/tmp/preflight.json", "/tmp/auth.json")
+    package = build_browser_stage_authorization_package(packet, "<tmp>/preflight.json", "<tmp>/auth.json")
     handoff = build_next_browser_action_handoff(
         package=package,
         packet=packet,
         preflight=create_preflight_evidence(),
         capture_plan=None,
-        package_path="/tmp/package.json",
-        packet_path="/tmp/packet.json",
-        preflight_path="/tmp/preflight.json",
+        package_path="<tmp>/package.json",
+        packet_path="<tmp>/packet.json",
+        preflight_path="<tmp>/preflight.json",
         capture_plan_path="",
         now=GATE_NOW,
     )
@@ -7119,7 +7119,7 @@ def test_next_browser_action_handoff_validator_rejects_handoff_drift() -> None:
 
 def test_next_browser_action_handoff_rejects_invalid_package() -> None:
     packet = create_site_submit_packet()
-    package = build_browser_stage_authorization_package(packet, "/tmp/preflight.json", "/tmp/auth.json")
+    package = build_browser_stage_authorization_package(packet, "<tmp>/preflight.json", "<tmp>/auth.json")
     package["stageId"] = "wrong_stage"
     try:
         build_next_browser_action_handoff(
@@ -7127,9 +7127,9 @@ def test_next_browser_action_handoff_rejects_invalid_package() -> None:
             packet=packet,
             preflight=create_preflight_evidence(),
             capture_plan=None,
-            package_path="/tmp/package.json",
-            packet_path="/tmp/packet.json",
-            preflight_path="/tmp/preflight.json",
+            package_path="<tmp>/package.json",
+            packet_path="<tmp>/packet.json",
+            preflight_path="<tmp>/preflight.json",
             capture_plan_path="",
             now=GATE_NOW,
         )
@@ -7327,7 +7327,7 @@ def upload_readiness_fixture() -> dict:
         "overallStatus": "blocked",
         "manifests": [
             {
-                "path": "/tmp/products.json",
+                "path": "<tmp>/products.json",
                 "contentType": "products",
                 "siteKey": "mysite01",
                 "schemaVerified": False,
@@ -7336,7 +7336,7 @@ def upload_readiness_fixture() -> dict:
                 "blockers": ["schema_gate_not_passed"],
             },
             {
-                "path": "/tmp/posts.json",
+                "path": "<tmp>/posts.json",
                 "contentType": "posts",
                 "siteKey": "mysite01",
                 "schemaVerified": False,
@@ -7407,9 +7407,9 @@ def test_browser_stage_queue_marks_only_product_probe_ready() -> None:
             readiness,
             upload_readiness_fixture(),
             readiness_path=str(handoff_path.with_name("readiness.json")),
-            upload_readiness_path="/tmp/upload-readiness.json",
-            products_manifest="/tmp/products.json",
-            posts_manifest="/tmp/posts.json",
+            upload_readiness_path="<tmp>/upload-readiness.json",
+            products_manifest="<tmp>/products.json",
+            posts_manifest="<tmp>/posts.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
 
@@ -7428,17 +7428,17 @@ def test_browser_stage_queue_can_be_built_from_run_summary_next_action() -> None
     queue = build_browser_stage_queue_from_summary(
         run_summary_next_action_fixture(),
         upload_readiness_fixture(),
-        summary_path="/tmp/run-summary.json",
-        upload_readiness_path="/tmp/upload-readiness.json",
-        products_manifest="/tmp/products.json",
-        posts_manifest="/tmp/posts.json",
+        summary_path="<tmp>/run-summary.json",
+        upload_readiness_path="<tmp>/upload-readiness.json",
+        products_manifest="<tmp>/products.json",
+        posts_manifest="<tmp>/posts.json",
     )
 
     errors = validate_browser_stage_queue(queue)
     assert not errors, "\n".join(errors)
     ready = [item["id"] for item in queue["queue"] if item["status"] == "ready_to_request_authorization"]
     assert ready == ["products_create_probe"]
-    assert queue["sourceArtifacts"]["runSummary"] == "/tmp/run-summary.json"
+    assert queue["sourceArtifacts"]["runSummary"] == "<tmp>/run-summary.json"
     assert queue["sourceArtifacts"]["summaryNextActionDetail"] == "create_product_probe"
     assert "保存和清理另行授权" in queue["queue"][0]["authorizationText"]
 
@@ -7456,7 +7456,7 @@ def test_browser_stage_queue_blocks_first_stage_when_readiness_is_stale() -> Non
             readiness,
             upload_readiness_fixture(),
             readiness_path=str(handoff_path.with_name("readiness.json")),
-            upload_readiness_path="/tmp/upload-readiness.json",
+            upload_readiness_path="<tmp>/upload-readiness.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
 
@@ -7477,9 +7477,9 @@ def test_e2e_gap_audit_reports_remaining_proof_after_stage_queue() -> None:
             readiness,
             upload_readiness,
             readiness_path=str(handoff_path.with_name("readiness.json")),
-            upload_readiness_path="/tmp/upload-readiness.json",
-            products_manifest="/tmp/products.json",
-            posts_manifest="/tmp/posts.json",
+            upload_readiness_path="<tmp>/upload-readiness.json",
+            products_manifest="<tmp>/products.json",
+            posts_manifest="<tmp>/posts.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
         evidence = recent_base_evidence()
@@ -7489,11 +7489,11 @@ def test_e2e_gap_audit_reports_remaining_proof_after_stage_queue() -> None:
             upload_readiness,
             queue,
             objective="simulate site-build and content upload",
-            evidence_path="/tmp/evidence.json",
-            upload_readiness_path="/tmp/upload-readiness.json",
-            queue_path="/tmp/queue.json",
+            evidence_path="<tmp>/evidence.json",
+            upload_readiness_path="<tmp>/upload-readiness.json",
+            queue_path="<tmp>/queue.json",
             source_input_requirements=source_input_requirements_fixture(),
-            source_input_requirements_path="/tmp/source-input-requirements.json",
+            source_input_requirements_path="<tmp>/source-input-requirements.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
 
@@ -7503,7 +7503,7 @@ def test_e2e_gap_audit_reports_remaining_proof_after_stage_queue() -> None:
     assert audit["completionVerdict"]["complete"] is False
     assert audit["nextAuthorizedActionNeeded"]["action"] == "create_product_probe"
     assert audit["site"]["siteCreationProofStatus"] == "existing-site continuation; not fresh proof of new site creation in this run"
-    assert audit["currentEvidence"]["sourceInputRequirements"] == "/tmp/source-input-requirements.json"
+    assert audit["currentEvidence"]["sourceInputRequirements"] == "<tmp>/source-input-requirements.json"
     assert audit["sourceInputRequirements"]["status"] == "blocked"
     assert audit["sourceInputRequirements"]["blockedUntilCount"] == 3
     assert any(
@@ -7530,10 +7530,10 @@ def test_probe_save_handoff_builds_non_authorizing_save_package() -> None:
     }
     handoff = build_probe_save_handoff(
         create_evidence=create_evidence,
-        create_evidence_path="/tmp/create-evidence.json",
-        preflight_path="/tmp/preflight.json",
+        create_evidence_path="<tmp>/create-evidence.json",
+        preflight_path="<tmp>/preflight.json",
         edit_url="https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
-        authorization_output="/tmp/save-auth.json",
+        authorization_output="<tmp>/save-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
 
@@ -7566,7 +7566,7 @@ def test_source_input_gap_ledger_records_blockers_and_user_inputs() -> None:
         Args.generation_rule = "Generate structured rows only after spec row schema capture."
         Args.current_evidence = "blocked"
         Args.decision_needed = "needs-schema-capture"
-        Args.evidence_pointer = "/tmp/redacted-product-edit-evidence.json"
+        Args.evidence_pointer = "<tmp>/redacted-product-edit-evidence.json"
         Args.operator_note = "Spec control visible but nested schema is not captured."
 
         ledger = record_source_input_gap.apply_action(Args())
@@ -7633,7 +7633,7 @@ def test_source_input_gap_ledger_requires_operator_note_for_claimed_proof() -> N
         Args.generation_rule = "Summarize into one plain-text product description."
         Args.current_evidence = "request-captured"
         Args.decision_needed = "can-infer-from-source"
-        Args.evidence_pointer = "/tmp/redacted-save-evidence.json"
+        Args.evidence_pointer = "<tmp>/redacted-save-evidence.json"
         Args.operator_note = ""
 
         try:
@@ -7658,7 +7658,7 @@ def test_source_input_gap_ledger_validate_ledger_accepts_complete_contract() -> 
         Args.generation_rule = "Normalize certification names only after target field/schema is captured."
         Args.current_evidence = "blocked"
         Args.decision_needed = "needs-schema-capture"
-        Args.evidence_pointer = "/tmp/redacted-product-field-evidence.json"
+        Args.evidence_pointer = "<tmp>/redacted-product-field-evidence.json"
         Args.operator_note = "Certification field is planned but no current request schema was captured."
 
         ledger = record_source_input_gap.apply_action(Args())
@@ -7680,7 +7680,7 @@ def test_source_input_gap_ledger_validate_ledger_rejects_merged_drift() -> None:
         Args.generation_rule = "Use only user-approved public destination after form submit schema capture."
         Args.current_evidence = "ui-only"
         Args.decision_needed = "needs-user-confirmation"
-        Args.evidence_pointer = "/tmp/redacted-form-editor-evidence.json"
+        Args.evidence_pointer = "<tmp>/redacted-form-editor-evidence.json"
         Args.operator_note = "Form editor showed submit controls but no request schema was captured."
 
         ledger = record_source_input_gap.apply_action(Args())
@@ -7707,7 +7707,7 @@ def test_source_input_requirements_merges_operation_gap_ledgers() -> None:
         GapArgs.generation_rule = "Use only user-approved public destination after form submit schema capture."
         GapArgs.current_evidence = "ui-only"
         GapArgs.decision_needed = "needs-user-confirmation"
-        GapArgs.evidence_pointer = "/tmp/redacted-form-editor-evidence.json"
+        GapArgs.evidence_pointer = "<tmp>/redacted-form-editor-evidence.json"
         GapArgs.operator_note = "Form editor showed submit controls but no request schema was captured."
         ledger = record_source_input_gap.apply_action(GapArgs())
         ledger_path.write_text(json.dumps(ledger, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -7748,7 +7748,7 @@ def test_source_input_requirements_filters_resolved_operation_gaps() -> None:
         GapArgs.generation_rule = "Generate structured spec rows after schema capture."
         GapArgs.current_evidence = "ui-only"
         GapArgs.decision_needed = "needs-schema-capture"
-        GapArgs.evidence_pointer = "/tmp/redacted-product-spec-ui.json"
+        GapArgs.evidence_pointer = "<tmp>/redacted-product-spec-ui.json"
         GapArgs.operator_note = "Product editor showed spec rows but save behavior was not captured yet."
         ledger = record_source_input_gap.apply_action(GapArgs())
         ledger_path.write_text(json.dumps(ledger, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -7761,7 +7761,7 @@ def test_source_input_requirements_filters_resolved_operation_gaps() -> None:
                     "resolvedGaps": [
                         {
                             "fieldLabel": "products.specifications",
-                            "proof": "/tmp/redacted-product-spec-final-audit.json",
+                            "proof": "<tmp>/redacted-product-spec-final-audit.json",
                             "note": "Later browser verification proved product specs rendered without old placeholder terms.",
                         }
                     ],
@@ -7826,10 +7826,10 @@ def test_existing_probe_save_handoff_builds_from_readonly_state() -> None:
     edit_url = "https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update"
     handoff = build_existing_probe_save_handoff(
         backend_state=existing_probe_backend_state(),
-        backend_state_path="/tmp/backend-readonly.json",
+        backend_state_path="<tmp>/backend-readonly.json",
         edit_url=edit_url,
-        preflight_path="/tmp/preflight.json",
-        authorization_output="/tmp/save-auth.json",
+        preflight_path="<tmp>/preflight.json",
+        authorization_output="<tmp>/save-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
 
@@ -7853,10 +7853,10 @@ def test_existing_probe_save_handoff_rejects_non_placeholder_body() -> None:
     try:
         build_existing_probe_save_handoff(
             backend_state=state,
-            backend_state_path="/tmp/backend-readonly.json",
+            backend_state_path="<tmp>/backend-readonly.json",
             edit_url="https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
-            preflight_path="/tmp/preflight.json",
-            authorization_output="/tmp/save-auth.json",
+            preflight_path="<tmp>/preflight.json",
+            authorization_output="<tmp>/save-auth.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
     except ValueError as exc:
@@ -7883,10 +7883,10 @@ def test_probe_save_handoff_rejects_create_evidence_with_prior_save() -> None:
     try:
         build_probe_save_handoff(
             create_evidence=create_evidence,
-            create_evidence_path="/tmp/create-evidence.json",
-            preflight_path="/tmp/preflight.json",
+            create_evidence_path="<tmp>/create-evidence.json",
+            preflight_path="<tmp>/preflight.json",
             edit_url="https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
-            authorization_output="/tmp/save-auth.json",
+            authorization_output="<tmp>/save-auth.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
     except ValueError as exc:
@@ -7912,13 +7912,13 @@ def test_probe_save_runbook_builds_browser_capture_steps() -> None:
     }
     handoff = build_probe_save_handoff(
         create_evidence=create_evidence,
-        create_evidence_path="/tmp/create-evidence.json",
-        preflight_path="/tmp/preflight.json",
+        create_evidence_path="<tmp>/create-evidence.json",
+        preflight_path="<tmp>/preflight.json",
         edit_url="https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
-        authorization_output="/tmp/save-auth.json",
+        authorization_output="<tmp>/save-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
-    runbook = build_probe_save_runbook(handoff, handoff_path="/tmp/save-handoff.json", generated_at=RECENT_PREFLIGHT_AT)
+    runbook = build_probe_save_runbook(handoff, handoff_path="<tmp>/save-handoff.json", generated_at=RECENT_PREFLIGHT_AT)
 
     errors = validate_probe_save_runbook(runbook)
     assert not errors, "\n".join(errors)
@@ -7939,13 +7939,13 @@ def test_probe_save_runbook_builds_browser_capture_steps() -> None:
 def test_probe_save_runbook_accepts_existing_probe_handoff() -> None:
     handoff = build_existing_probe_save_handoff(
         backend_state=existing_probe_backend_state(),
-        backend_state_path="/tmp/backend-readonly.json",
+        backend_state_path="<tmp>/backend-readonly.json",
         edit_url="https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
-        preflight_path="/tmp/preflight.json",
-        authorization_output="/tmp/save-auth.json",
+        preflight_path="<tmp>/preflight.json",
+        authorization_output="<tmp>/save-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
-    runbook = build_probe_save_runbook(handoff, handoff_path="/tmp/existing-save-handoff.json", generated_at=RECENT_PREFLIGHT_AT)
+    runbook = build_probe_save_runbook(handoff, handoff_path="<tmp>/existing-save-handoff.json", generated_at=RECENT_PREFLIGHT_AT)
 
     errors = validate_probe_save_runbook(runbook)
     assert not errors, "\n".join(errors)
@@ -7970,12 +7970,12 @@ def test_probe_save_runbook_rejects_authorizing_handoff() -> None:
         "authorizationRecordCommand": "python3 x --authorization-source '<paste current user authorization text here>'",
         "authorizationRecordCommandHasPlaceholder": True,
         "preMutationGateCommand": "python3 gate --action save_probe",
-        "sourceFiles": {"createEvidence": "/tmp/create.json", "preflight": "/tmp/preflight.json"},
+        "sourceFiles": {"createEvidence": "<tmp>/create.json", "preflight": "<tmp>/preflight.json"},
         "automationPreference": {"doesNotAuthorize": ["saving the probe"], "rule": "requires action-time authorization"},
         "warning": "This is not user authorization",
     }
     try:
-        build_probe_save_runbook(handoff, handoff_path="/tmp/save-handoff.json", generated_at=RECENT_PREFLIGHT_AT)
+        build_probe_save_runbook(handoff, handoff_path="<tmp>/save-handoff.json", generated_at=RECENT_PREFLIGHT_AT)
     except ValueError as exc:
         assert "isUserAuthorization must be false" in str(exc)
     else:
@@ -8045,7 +8045,7 @@ def test_probe_save_runbook_validation_accepts_existing_probe_handoff_missing_au
         preflight_path.write_text(json.dumps(preflight), encoding="utf-8")
         handoff = build_existing_probe_save_handoff(
             backend_state=existing_probe_backend_state(),
-            backend_state_path="/tmp/backend-readonly.json",
+            backend_state_path="<tmp>/backend-readonly.json",
             edit_url="https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
             preflight_path=str(preflight_path),
             authorization_output=str(authorization_path),
@@ -8172,7 +8172,7 @@ def valid_probe_save_capture_evidence() -> dict:
         "kind": "allincms_probe_save_capture_evidence",
         "contentType": "products",
         "target": "https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
-        "authorizationRecord": "/tmp/save-auth.json",
+        "authorizationRecord": "<tmp>/save-auth.json",
         "preMutationGate": "passed",
         "savedOnce": True,
         "published": False,
@@ -8263,8 +8263,8 @@ def test_probe_publish_runbook_builds_browser_verification_steps() -> None:
     evidence = run_evidence_after_request_capture()
     runbook = build_probe_publish_runbook(
         run_evidence=evidence,
-        run_evidence_path="/tmp/request-captured.json",
-        authorization_output="/tmp/publish-auth.json",
+        run_evidence_path="<tmp>/request-captured.json",
+        authorization_output="<tmp>/publish-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
     errors = validate_probe_publish_runbook(runbook)
@@ -8286,7 +8286,7 @@ def valid_probe_publish_sample_evidence() -> dict:
         "target": "https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
         "backendUrl": "https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
         "frontendUrl": "https://mysite01.web.allincms.com/products/codex-probe-delete-me-product",
-        "authorizationRecord": "/tmp/publish-auth.json",
+        "authorizationRecord": "<tmp>/publish-auth.json",
         "preMutationGate": "passed",
         "publishedOnce": True,
         "publishRequestCaptured": True,
@@ -8336,8 +8336,8 @@ def run_evidence_after_publish_sample() -> dict:
 def test_probe_cleanup_runbook_builds_cleanup_steps() -> None:
     runbook = build_probe_cleanup_runbook(
         run_evidence=run_evidence_after_publish_sample(),
-        run_evidence_path="/tmp/published-sample.json",
-        authorization_output="/tmp/cleanup-auth.json",
+        run_evidence_path="<tmp>/published-sample.json",
+        authorization_output="<tmp>/cleanup-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
     errors = validate_probe_cleanup_runbook(runbook)
@@ -8389,13 +8389,13 @@ def test_existing_probe_cleanup_handoff_builds_from_readonly_state() -> None:
     edit_url = "https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update"
     handoff = build_existing_probe_cleanup_handoff(
         backend_state=existing_probe_backend_state(),
-        backend_state_path="/tmp/backend-readonly.json",
+        backend_state_path="<tmp>/backend-readonly.json",
         frontend_audit=existing_probe_frontend_audit(),
-        frontend_audit_path="/tmp/frontend-audit.json",
+        frontend_audit_path="<tmp>/frontend-audit.json",
         edit_url=edit_url,
         frontend_url="https://mysite01.web.allincms.com/products/codex-probe-delete-me",
-        preflight_path="/tmp/preflight.json",
-        authorization_output="/tmp/cleanup-auth.json",
+        preflight_path="<tmp>/preflight.json",
+        authorization_output="<tmp>/cleanup-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
 
@@ -8417,13 +8417,13 @@ def test_existing_probe_cleanup_handoff_rejects_non_public_frontend() -> None:
     try:
         build_existing_probe_cleanup_handoff(
             backend_state=existing_probe_backend_state(),
-            backend_state_path="/tmp/backend-readonly.json",
+            backend_state_path="<tmp>/backend-readonly.json",
             frontend_audit=audit,
-            frontend_audit_path="/tmp/frontend-audit.json",
+            frontend_audit_path="<tmp>/frontend-audit.json",
             edit_url="https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update",
             frontend_url="https://mysite01.web.allincms.com/products/codex-probe-delete-me",
-            preflight_path="/tmp/preflight.json",
-            authorization_output="/tmp/cleanup-auth.json",
+            preflight_path="<tmp>/preflight.json",
+            authorization_output="<tmp>/cleanup-auth.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
     except ValueError as exc:
@@ -8436,18 +8436,18 @@ def test_existing_probe_cleanup_runbook_builds_from_handoff_without_authorizing(
     edit_url = "https://workspace.laicms.com/mysite01/products/6a4357aa8081156046558032/update"
     handoff = build_existing_probe_cleanup_handoff(
         backend_state=existing_probe_backend_state(),
-        backend_state_path="/tmp/backend-readonly.json",
+        backend_state_path="<tmp>/backend-readonly.json",
         frontend_audit=existing_probe_frontend_audit(),
-        frontend_audit_path="/tmp/frontend-audit.json",
+        frontend_audit_path="<tmp>/frontend-audit.json",
         edit_url=edit_url,
         frontend_url="https://mysite01.web.allincms.com/products/codex-probe-delete-me",
-        preflight_path="/tmp/preflight.json",
-        authorization_output="/tmp/cleanup-auth.json",
+        preflight_path="<tmp>/preflight.json",
+        authorization_output="<tmp>/cleanup-auth.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
     runbook = build_existing_probe_cleanup_runbook(
         handoff=handoff,
-        handoff_path="/tmp/existing-probe-cleanup-handoff.json",
+        handoff_path="<tmp>/existing-probe-cleanup-handoff.json",
         generated_at=RECENT_PREFLIGHT_AT,
     )
 
@@ -8467,7 +8467,7 @@ def test_existing_probe_cleanup_runbook_rejects_invalid_handoff() -> None:
     try:
         build_existing_probe_cleanup_runbook(
             handoff=handoff,
-            handoff_path="/tmp/bad-existing-probe-cleanup-handoff.json",
+            handoff_path="<tmp>/bad-existing-probe-cleanup-handoff.json",
             generated_at=RECENT_PREFLIGHT_AT,
         )
     except ValueError as exc:
@@ -8482,7 +8482,7 @@ def valid_probe_cleanup_evidence() -> dict:
         "kind": "allincms_probe_cleanup_evidence",
         "contentType": "products",
         "target": target,
-        "authorizationRecord": "/tmp/cleanup-auth.json",
+        "authorizationRecord": "<tmp>/cleanup-auth.json",
         "preMutationGate": "passed",
         "cleanupAction": "delete",
         "cleanedCandidates": [
@@ -8565,7 +8565,7 @@ def test_browser_stage_authorization_package_for_module_capture_requires_plan() 
         "warnings": ["local only"],
     }
     try:
-        build_browser_stage_authorization_package(packet, "/tmp/preflight.json", "/tmp/auth.json")
+        build_browser_stage_authorization_package(packet, "<tmp>/preflight.json", "<tmp>/auth.json")
     except ValueError as exc:
         assert "--capture-plan" in str(exc)
     else:
@@ -8651,8 +8651,8 @@ def test_browser_stage_authorization_package_for_theme_launch_requires_granular_
     try:
         build_browser_stage_authorization_package(
             theme_launch_packet(),
-            "/tmp/allincms-created-site-evidence.json",
-            "/tmp/allincms-authorization-launch.json",
+            "<tmp>/allincms-created-site-evidence.json",
+            "<tmp>/allincms-authorization-launch.json",
         )
     except ValueError as exc:
         assert "--launch-action" in str(exc)
@@ -8664,8 +8664,8 @@ def test_browser_stage_authorization_package_for_theme_launch_requires_granular_
 def test_browser_stage_authorization_package_for_theme_launch_suppresses_templated_target_commands() -> None:
     package = build_browser_stage_authorization_package(
         theme_launch_packet(),
-        "/tmp/allincms-created-site-evidence.json",
-        "/tmp/allincms-authorization-launch.json",
+        "<tmp>/allincms-created-site-evidence.json",
+        "<tmp>/allincms-authorization-launch.json",
         launch_action="save_design",
     )
     assert package["stageId"] == "theme_page_route_launch"
@@ -8682,8 +8682,8 @@ def test_browser_stage_authorization_package_for_theme_launch_suppresses_templat
 def test_browser_stage_authorization_package_for_theme_launch_real_target_emits_site_action_gate() -> None:
     package = build_browser_stage_authorization_package(
         theme_launch_packet(),
-        "/tmp/allincms-created-site-evidence.json",
-        "/tmp/allincms-authorization-launch.json",
+        "<tmp>/allincms-created-site-evidence.json",
+        "<tmp>/allincms-authorization-launch.json",
         launch_action="save_design",
         launch_target="https://workspace.laicms.com/mysite01/themes/theme-id/page-id/design",
         launch_target_identifier="theme-id/page-id design",
@@ -8696,14 +8696,14 @@ def test_browser_stage_authorization_package_for_theme_launch_real_target_emits_
     assert "<paste current user authorization text here>" in package["authorizationRecordCommand"]
     assert "授权 Codex" not in package["authorizationRecordCommand"]
     assert "check_pre_mutation_gate.py --action save_design" in package["preMutationGateCommand"]
-    assert "--preflight /tmp/allincms-created-site-evidence.json" in package["preMutationGateCommand"]
+    assert "--preflight <tmp>/allincms-created-site-evidence.json" in package["preMutationGateCommand"]
 
 
 def test_browser_stage_authorization_package_for_create_theme_page_real_target() -> None:
     package = build_browser_stage_authorization_package(
         theme_launch_packet(),
-        "/tmp/allincms-created-site-evidence.json",
-        "/tmp/allincms-authorization-create-theme-page.json",
+        "<tmp>/allincms-created-site-evidence.json",
+        "<tmp>/allincms-authorization-create-theme-page.json",
         launch_action="create_theme_page",
         launch_target="https://workspace.laicms.com/mysite01/themes/theme-id",
         launch_target_identifier="theme-id /products/{product} page",
@@ -8722,8 +8722,8 @@ def test_browser_stage_authorization_package_for_create_theme_page_real_target()
 def valid_create_theme_page_package() -> dict:
     return build_browser_stage_authorization_package(
         theme_launch_packet(),
-        "/tmp/allincms-created-site-evidence.json",
-        "/tmp/allincms-authorization-create-theme-page.json",
+        "<tmp>/allincms-created-site-evidence.json",
+        "<tmp>/allincms-authorization-create-theme-page.json",
         launch_action="create_theme_page",
         launch_target="https://workspace.laicms.com/mysite01/themes/theme-id",
         launch_target_identifier="theme-id /products/{product} theme page",
@@ -8735,11 +8735,11 @@ def test_theme_page_create_runbook_stays_preparation_only() -> None:
     preflight["generatedAt"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     runbook = build_theme_page_create_runbook(
         valid_create_theme_page_package(),
-        package_path="/tmp/create-theme-page-package.json",
+        package_path="<tmp>/create-theme-page-package.json",
         packet=theme_launch_packet(),
-        packet_path="/tmp/theme-launch-packet.json",
+        packet_path="<tmp>/theme-launch-packet.json",
         preflight=preflight,
-        preflight_path="/tmp/preflight.json",
+        preflight_path="<tmp>/preflight.json",
         page_name="Product Detail",
         route_path="/products/{product}",
         description="Dynamic product detail page for product routes.",
@@ -8809,7 +8809,7 @@ def test_theme_page_create_evidence_validator_rejects_static_route() -> None:
 def test_browser_stage_authorization_package_for_content_probe_requires_content_type() -> None:
     packet = browser_stage_packet("content_probe_create", "https://workspace.laicms.com/{realSiteKey}/{contentType}")
     try:
-        build_browser_stage_authorization_package(packet, "/tmp/preflight.json", "/tmp/auth.json")
+        build_browser_stage_authorization_package(packet, "<tmp>/preflight.json", "<tmp>/auth.json")
     except ValueError as exc:
         assert "--content-type" in str(exc)
         assert "do not infer" in str(exc)
@@ -8821,8 +8821,8 @@ def test_browser_stage_authorization_package_for_content_probe_suppresses_templa
     packet = browser_stage_packet("content_probe_create", "https://workspace.laicms.com/{realSiteKey}/{contentType}")
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/preflight.json",
-        "/tmp/auth.json",
+        "<tmp>/preflight.json",
+        "<tmp>/auth.json",
         content_type="products",
     )
     assert package["stageId"] == "content_probe_create"
@@ -8846,8 +8846,8 @@ def test_content_probe_authorization_text_uses_chinese_content_type_labels() -> 
     for content_type, expected_text, rejected_text in cases:
         package = build_browser_stage_authorization_package(
             packet,
-            "/tmp/preflight.json",
-            "/tmp/auth.json",
+            "<tmp>/preflight.json",
+            "<tmp>/auth.json",
             content_type=content_type,
         )
         assert expected_text in package["suggestedAuthorizationText"]
@@ -8858,8 +8858,8 @@ def test_browser_stage_authorization_package_for_content_probe_real_target_emits
     packet = browser_stage_packet("content_probe_create", "https://workspace.laicms.com/{realSiteKey}/{contentType}")
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/allincms-created-site-evidence.json",
-        "/tmp/allincms-authorization-product-probe.json",
+        "<tmp>/allincms-created-site-evidence.json",
+        "<tmp>/allincms-authorization-product-probe.json",
         content_type="products",
         content_target="https://workspace.laicms.com/mysite01/products",
         content_target_identifier="Codex Probe - Delete Me product draft",
@@ -8887,8 +8887,8 @@ def test_browser_stage_authorization_package_for_save_publish_cleanup_probe_real
         )
         package = build_browser_stage_authorization_package(
             packet,
-            "/tmp/allincms-created-site-evidence.json",
-            f"/tmp/allincms-authorization-{action}.json",
+            "<tmp>/allincms-created-site-evidence.json",
+            f"<tmp>/allincms-authorization-{action}.json",
             content_type="products",
             content_target="https://workspace.laicms.com/mysite01/products/product-id/update",
             content_target_identifier="Codex Probe - Delete Me product draft",
@@ -8904,7 +8904,7 @@ def test_browser_stage_authorization_package_for_save_publish_cleanup_probe_real
 def test_browser_stage_authorization_package_for_batch_requires_content_type() -> None:
     packet = browser_stage_packet("batch_upload_publish", "https://workspace.laicms.com/{realSiteKey}/{contentType}")
     try:
-        build_browser_stage_authorization_package(packet, "/tmp/preflight.json", "/tmp/auth.json")
+        build_browser_stage_authorization_package(packet, "<tmp>/preflight.json", "<tmp>/auth.json")
     except ValueError as exc:
         assert "--content-type" in str(exc)
         assert "do not infer" in str(exc)
@@ -8916,8 +8916,8 @@ def test_browser_stage_authorization_package_for_batch_suppresses_templated_targ
     packet = browser_stage_packet("batch_upload_publish", "https://workspace.laicms.com/{realSiteKey}/{contentType}")
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/preflight.json",
-        "/tmp/auth.json",
+        "<tmp>/preflight.json",
+        "<tmp>/auth.json",
         content_type="products",
     )
     assert package["stageId"] == "batch_upload_publish"
@@ -8937,8 +8937,8 @@ def test_browser_stage_authorization_package_for_batch_real_target_emits_batch_g
     packet = browser_stage_packet("batch_upload_publish", "https://workspace.laicms.com/{realSiteKey}/{contentType}")
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/allincms-created-site-evidence.json",
-        "/tmp/allincms-authorization-batch-upload.json",
+        "<tmp>/allincms-created-site-evidence.json",
+        "<tmp>/allincms-authorization-batch-upload.json",
         content_type="products",
         content_target="https://workspace.laicms.com/mysite01/products",
         content_target_identifier="products manifest batch",
@@ -8955,7 +8955,7 @@ def test_browser_stage_authorization_package_for_batch_real_target_emits_batch_g
 def test_browser_stage_authorization_package_for_forms_media_settings_requires_granular_action() -> None:
     packet = browser_stage_packet("forms_media_settings", "https://workspace.laicms.com/{realSiteKey}/{module}")
     try:
-        build_browser_stage_authorization_package(packet, "/tmp/preflight.json", "/tmp/auth.json")
+        build_browser_stage_authorization_package(packet, "<tmp>/preflight.json", "<tmp>/auth.json")
     except ValueError as exc:
         assert "--settings-action" in str(exc)
         assert "aggregate stage" in str(exc)
@@ -8967,8 +8967,8 @@ def test_browser_stage_authorization_package_for_forms_media_settings_suppresses
     packet = browser_stage_packet("forms_media_settings", "https://workspace.laicms.com/{realSiteKey}/{module}")
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/preflight.json",
-        "/tmp/auth.json",
+        "<tmp>/preflight.json",
+        "<tmp>/auth.json",
         settings_action="save_site_settings",
     )
     assert package["stageId"] == "forms_media_settings"
@@ -9017,8 +9017,8 @@ def test_browser_stage_authorization_package_for_forms_media_settings_real_targe
     for action, target, identifier, target_type, fields in cases:
         package = build_browser_stage_authorization_package(
             packet,
-            "/tmp/allincms-created-site-evidence.json",
-            f"/tmp/allincms-authorization-{action}.json",
+            "<tmp>/allincms-created-site-evidence.json",
+            f"<tmp>/allincms-authorization-{action}.json",
             settings_action=action,
             settings_target=target,
             settings_target_identifier=identifier,
@@ -9038,8 +9038,8 @@ def test_browser_stage_authorization_package_for_upload_media_stays_ungated_ui_f
     packet = browser_stage_packet("forms_media_settings", "https://workspace.laicms.com/{realSiteKey}/media")
     package = build_browser_stage_authorization_package(
         packet,
-        "/tmp/allincms-created-site-evidence.json",
-        "/tmp/allincms-authorization-upload-media.json",
+        "<tmp>/allincms-created-site-evidence.json",
+        "<tmp>/allincms-authorization-upload-media.json",
         settings_action="upload_media",
         settings_target="https://workspace.laicms.com/mysite01/media",
         settings_target_identifier="test media upload",
@@ -9064,8 +9064,8 @@ def test_browser_stage_authorization_package_for_forms_media_settings_rejects_in
     try:
         build_browser_stage_authorization_package(
             packet,
-            "/tmp/preflight.json",
-            "/tmp/auth.json",
+            "<tmp>/preflight.json",
+            "<tmp>/auth.json",
             settings_action="save_everything",
         )
     except ValueError as exc:
@@ -9242,7 +9242,7 @@ def test_existing_site_ledger_branch_skips_create_site_submit() -> None:
         branched = branch_existing_site_ledger(
             after_refresh,
             existing_site_selected_evidence(),
-            "/tmp/allincms-existing-site-readonly-evidence.json",
+            "<tmp>/allincms-existing-site-readonly-evidence.json",
         )
         assert branched["nextStageId"] == "setup_pages_inspection"
         assert branched["existingSiteContinuation"]["enabled"] is True
@@ -9299,7 +9299,7 @@ def test_existing_site_ledger_branch_rejects_create_preflight_evidence() -> None
         after_refresh = apply_stage_result(ledger, refresh_packet, refresh_result)
         preflight = build_create_preflight_from_existing(existing_site_selected_evidence())
         try:
-            branch_existing_site_ledger(after_refresh, preflight, "/tmp/allincms-create-preflight.json")
+            branch_existing_site_ledger(after_refresh, preflight, "<tmp>/allincms-create-preflight.json")
         except ValueError as exc:
             assert "existing_site_selected" in str(exc)
         else:
@@ -11803,7 +11803,7 @@ def test_full_rehearsal_validator_rejects_packet_command_path_drift() -> None:
             "python3 skills/allincms-bulk-content-upload/scripts/apply_browser_stage_result.py "
             "--ledger ~/allincms-projects/allincms-full-rehearsal/browser-execution-ledger.json "
             "--packet ~/allincms-projects/allincms-full-rehearsal/next-browser-stage-packet.json "
-            "--result-json /tmp/allincms-stage-result.json "
+            f"--result-json {tempfile.gettempdir()}/allincms-stage-result.json "
             "--output ~/allincms-projects/allincms-full-rehearsal/browser-execution-ledger.updated.json"
         )
         packet_path.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -11936,16 +11936,16 @@ def test_browser_runbook_summary_reports_blocked_when_rehearsal_invalid() -> Non
 def test_browser_runbook_summary_extracts_ledger_expected_stage_result_path() -> None:
     command = (
         "python3 skills/allincms-bulk-content-upload/scripts/apply_browser_stage_result.py "
-        "--ledger /tmp/run/browser-execution-ledger.json "
-        "--packet /tmp/run/next-browser-stage-packet.json "
-        "--result-json /tmp/run/current-stage-result.json "
-        "--output /tmp/run/browser-execution-ledger.after-stage.json"
+        "--ledger <tmp>/run/browser-execution-ledger.json "
+        "--packet <tmp>/run/next-browser-stage-packet.json "
+        "--result-json <tmp>/run/current-stage-result.json "
+        "--output <tmp>/run/browser-execution-ledger.after-stage.json"
     )
-    assert ledger_expected_stage_result_path("/tmp/run/next-browser-stage-packet.json", command) == (
-        "/tmp/run/current-stage-result.json"
+    assert ledger_expected_stage_result_path("<tmp>/run/next-browser-stage-packet.json", command) == (
+        "<tmp>/run/current-stage-result.json"
     )
-    assert ledger_expected_stage_result_path("/tmp/run/next-browser-stage-packet.json", "") == (
-        "/tmp/run/next-browser-stage-packet-stage-result.json"
+    assert ledger_expected_stage_result_path("<tmp>/run/next-browser-stage-packet.json", "") == (
+        "<tmp>/run/next-browser-stage-packet-stage-result.json"
     )
 
 

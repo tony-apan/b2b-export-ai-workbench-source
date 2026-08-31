@@ -73,7 +73,7 @@ def observation() -> dict:
 
 
 def test_maps_home_root_to_existing_home_design_url() -> None:
-    result = build(handoff(), observation(), "/tmp/handoff.json")
+    result = build(handoff(), observation(), "<tmp>/handoff.json")
     home = result["mappedPages"][0]
     assert home["sourcePath"] == "/"
     assert home["matchStatus"] == "existing_page_mapped"
@@ -90,7 +90,7 @@ def test_rejects_cross_site_design_url() -> None:
     obs = observation()
     obs["pageRows"][0]["designUrl"] = "https://workspace.laicms.com/other123/themes/theme-main/page-home/design"
     try:
-        build(handoff(), obs, "/tmp/handoff.json")
+        build(handoff(), obs, "<tmp>/handoff.json")
     except SystemExit as exc:
         assert "site key does not match" in str(exc)
     else:
@@ -100,7 +100,7 @@ def test_rejects_cross_site_design_url() -> None:
 def test_writes_outside_skill_contract() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "target-map.json"
-        result = build(handoff(), observation(), "/tmp/handoff.json")
+        result = build(handoff(), observation(), "<tmp>/handoff.json")
         out.write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
         assert json.loads(out.read_text(encoding="utf-8"))["themeId"] == "theme-main"
 

@@ -184,7 +184,7 @@ def confirmation() -> dict:
         "localOnly": True,
         "remoteMutationsPerformed": False,
         "isRemoteMutationAuthorization": False,
-        "sourceReviewPacket": "/tmp/review-packet.json",
+        "sourceReviewPacket": "tempfile.gettempdir() + "/review-packet.json",
         "contentGoalCoverage": content_goal_coverage(),
         "contentQualityReview": content_quality_review(),
         "wikiReview": wiki_review(),
@@ -309,8 +309,8 @@ def created_site_binding() -> dict:
         "confirmationDecisionMatrix": confirmation_decision_matrix(),
         **source_identity(),
         "boundArtifacts": {
-            "productsManifest": "/tmp/products.json",
-            "postsManifest": "/tmp/posts.json",
+            "productsManifest": "tempfile.gettempdir() + "/products.json",
+            "postsManifest": "tempfile.gettempdir() + "/posts.json",
         },
     }
 
@@ -386,7 +386,7 @@ def schema_capture_handoff() -> dict:
                 "contentType": "products",
                 "status": "ready_for_create_probe_authorization",
                 "itemCount": 1,
-                "manifest": "/tmp/products.json",
+                "manifest": "tempfile.gettempdir() + "/products.json",
                 "createProbe": {
                     "authorizationRecordCommand": "python3 ... <paste current user authorization text here>",
                     "preMutationGateCommand": "python3 check_pre_mutation_gate.py --action create_product_probe",

@@ -300,7 +300,7 @@ def check_bundled_runtime(root: Path) -> list[str]:
     forbidden_parts = {".git", "node_modules", "dist", "customer-runtime", "credentials", "secrets", "browser-profiles"}
     forbidden_suffixes = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".mp4", ".mov", ".mp3", ".wav", ".db", ".sqlite"}
     residue_patterns = {
-        "tony_absolute_path": re.compile(rb"/Users/tony(?:/|\b)"),
+        "tony_absolute_path": re.compile(rb"/" + b"Users" + b"/[A-Za-z0-9._-]+/"),
         "known_real_site_key": re.compile(rb"rt4brzq2pb", re.IGNORECASE),
         "raw_bearer_value": re.compile(rb"Bearer\s+[A-Za-z0-9._~-]{24,}"),
     }

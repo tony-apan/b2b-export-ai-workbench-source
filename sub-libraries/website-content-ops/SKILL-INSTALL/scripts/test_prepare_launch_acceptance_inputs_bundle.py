@@ -107,23 +107,23 @@ def test_launch_acceptance_inputs_bundle_rejects_wrong_stage() -> None:
 def test_launch_acceptance_inputs_validation_requires_final_inputs() -> None:
     inputs = {
         "kind": "allincms_launch_acceptance_inputs",
-        "runEvidence": "/tmp/run-evidence.json",
-        "moduleCoverage": "/tmp/module-coverage.json",
-        "finalFrontendAudit": "/tmp/final-frontend-audit.json",
-        "cleanupEvidence": "/tmp/cleanup-evidence.json",
-        "formsMediaSettings": "/tmp/forms-media-settings.json",
+        "runEvidence": "<tmp>/run-evidence.json",
+        "moduleCoverage": "<tmp>/module-coverage.json",
+        "finalFrontendAudit": "<tmp>/final-frontend-audit.json",
+        "cleanupEvidence": "<tmp>/cleanup-evidence.json",
+        "formsMediaSettings": "<tmp>/forms-media-settings.json",
         "roundCloseout": "",
         "autoFinalCloseout": True,
         "finalCloseoutSedimentation": "updated",
         "finalCloseoutSedimentationNote": "Recorded final launch proof.",
-        "uploadReadiness": ["/tmp/upload-readiness.json"],
-        "sampleEvidence": ["/tmp/products-sample.json"],
-        "batchValidation": ["/tmp/products-batch-validation.json"],
-        "package": "/tmp/package.json",
-        "confirmation": "/tmp/confirmation.json",
-        "executionPlan": "/tmp/execution-plan.json",
-        "artifactReadiness": "/tmp/artifact-readiness.json",
-        "createdSiteBinding": "/tmp/created-site-binding.json",
+        "uploadReadiness": ["<tmp>/upload-readiness.json"],
+        "sampleEvidence": ["<tmp>/products-sample.json"],
+        "batchValidation": ["<tmp>/products-batch-validation.json"],
+        "package": "<tmp>/package.json",
+        "confirmation": "<tmp>/confirmation.json",
+        "executionPlan": "<tmp>/execution-plan.json",
+        "artifactReadiness": "<tmp>/artifact-readiness.json",
+        "createdSiteBinding": "<tmp>/created-site-binding.json",
     }
     assert not validate_inputs(inputs)
     inputs["createdSiteSubmittedValues"] = created_site_submitted_values()
@@ -133,7 +133,7 @@ def test_launch_acceptance_inputs_validation_requires_final_inputs() -> None:
     inputs["contentCounts"] = {"pages": 1, "products": 1, "posts": 0}
     inputs["contentQualityReview"] = overage_quality()
     inputs["contentGoalOverages"] = content_goal_overages()
-    inputs["wikiReview"] = {"sourceWikiMarkdownIndex": "/tmp/wiki/index.md"}
+    inputs["wikiReview"] = {"sourceWikiMarkdownIndex": "<tmp>/index.md"}
     inputs["confirmationDecisionMatrix"] = [
         {"field": "siteProposal.siteName", "decision": "accept", "blocksRemoteMutation": False}
     ]
@@ -155,23 +155,23 @@ def test_launch_acceptance_inputs_validation_requires_final_inputs() -> None:
 def test_launch_acceptance_inputs_validation_rejects_placeholder_paths() -> None:
     inputs = {
         "kind": "allincms_launch_acceptance_inputs",
-        "runEvidence": "/tmp/run-evidence.json",
-        "moduleCoverage": "/tmp/module-coverage.json",
-        "finalFrontendAudit": "/tmp/final-frontend-audit.json",
-        "cleanupEvidence": "/tmp/cleanup-evidence.json",
-        "formsMediaSettings": "/tmp/forms-media-settings.json",
+        "runEvidence": "<tmp>/run-evidence.json",
+        "moduleCoverage": "<tmp>/module-coverage.json",
+        "finalFrontendAudit": "<tmp>/final-frontend-audit.json",
+        "cleanupEvidence": "<tmp>/cleanup-evidence.json",
+        "formsMediaSettings": "<tmp>/forms-media-settings.json",
         "roundCloseout": "",
         "autoFinalCloseout": True,
         "finalCloseoutSedimentation": "updated",
         "finalCloseoutSedimentationNote": "Recorded final launch proof.",
-        "uploadReadiness": ["/tmp/upload-readiness.json"],
-        "sampleEvidence": ["/tmp/products-sample.json"],
-        "batchValidation": ["/tmp/products-batch-validation.json"],
-        "package": "/tmp/package.json",
-        "confirmation": "/tmp/confirmation.json",
-        "executionPlan": "/tmp/execution-plan.json",
-        "artifactReadiness": "/tmp/artifact-readiness.json",
-        "createdSiteBinding": "/tmp/created-site-binding.json",
+        "uploadReadiness": ["<tmp>/upload-readiness.json"],
+        "sampleEvidence": ["<tmp>/products-sample.json"],
+        "batchValidation": ["<tmp>/products-batch-validation.json"],
+        "package": "<tmp>/package.json",
+        "confirmation": "<tmp>/confirmation.json",
+        "executionPlan": "<tmp>/execution-plan.json",
+        "artifactReadiness": "<tmp>/artifact-readiness.json",
+        "createdSiteBinding": "<tmp>/created-site-binding.json",
     }
     bad = dict(inputs)
     bad["runEvidence"] = "<final-run-evidence.json>"
@@ -194,29 +194,29 @@ def test_launch_acceptance_inputs_validation_requires_per_content_type_sample_an
         posts_batch = write_json(root / "posts-batch-validation.json", {"contentType": "posts"})
         inputs = {
             "kind": "allincms_launch_acceptance_inputs",
-            "runEvidence": "/tmp/run-evidence.json",
-            "moduleCoverage": "/tmp/module-coverage.json",
-            "finalFrontendAudit": "/tmp/final-frontend-audit.json",
-            "cleanupEvidence": "/tmp/cleanup-evidence.json",
-            "formsMediaSettings": "/tmp/forms-media-settings.json",
+            "runEvidence": "<tmp>/run-evidence.json",
+            "moduleCoverage": "<tmp>/module-coverage.json",
+            "finalFrontendAudit": "<tmp>/final-frontend-audit.json",
+            "cleanupEvidence": "<tmp>/cleanup-evidence.json",
+            "formsMediaSettings": "<tmp>/forms-media-settings.json",
             "roundCloseout": "",
             "autoFinalCloseout": True,
             "finalCloseoutSedimentation": "updated",
             "finalCloseoutSedimentationNote": "Recorded final launch proof.",
-            "uploadReadiness": ["/tmp/upload-readiness.json"],
+            "uploadReadiness": ["<tmp>/upload-readiness.json"],
             "sampleEvidence": [products_sample],
             "batchValidation": [products_batch],
-            "package": "/tmp/package.json",
-            "confirmation": "/tmp/confirmation.json",
-            "executionPlan": "/tmp/execution-plan.json",
-            "artifactReadiness": "/tmp/artifact-readiness.json",
-            "createdSiteBinding": "/tmp/created-site-binding.json",
+            "package": "<tmp>/package.json",
+            "confirmation": "<tmp>/confirmation.json",
+            "executionPlan": "<tmp>/execution-plan.json",
+            "artifactReadiness": "<tmp>/artifact-readiness.json",
+            "createdSiteBinding": "<tmp>/created-site-binding.json",
             "sourcePackageSha256": "a" * 64,
             "sourceReviewPacketSha256": "b" * 64,
             "contentGoalCoverage": {"complete": True},
             "contentCounts": {"pages": 3, "products": 2, "posts": 3},
             "contentQualityReview": {"warnings": [], "reviewRequired": False},
-            "wikiReview": {"sourceWikiMarkdownIndex": "/tmp/wiki/index.md"},
+            "wikiReview": {"sourceWikiMarkdownIndex": "<tmp>/index.md"},
             "confirmationDecisionMatrix": [{"field": "siteName", "decision": "accept", "blocksRemoteMutation": False}],
         }
         issues = validate_inputs(inputs)

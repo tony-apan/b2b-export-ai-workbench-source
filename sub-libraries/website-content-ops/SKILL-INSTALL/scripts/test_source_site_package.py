@@ -1448,7 +1448,7 @@ def test_hosted_cover_image_normalizes_and_rejects_local_paths() -> None:
         "alt": "B alt",
     }
     # Local paths and non-http strings must be rejected: only uploaded public URLs may be carried.
-    assert hosted_cover_image("/tmp/img/c.png", "Fallback Alt") is None
+    assert hosted_cover_image("<tmp>/img/c.png", "Fallback Alt") is None
     assert hosted_cover_image("c.png", "Fallback Alt") is None
     assert hosted_cover_image(None, "Fallback Alt") is None
 

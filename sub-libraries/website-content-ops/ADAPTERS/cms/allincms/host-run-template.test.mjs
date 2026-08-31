@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { tmpdir } from 'node:os';
 import { readFileSync } from 'node:fs';
 import { createAllinCmsChromeAppleScriptTransport } from './host-run-template.mjs';
 
@@ -12,7 +13,7 @@ test('transport bridge is UTF-8 safe and never uses eval(atob)', async () => {
   assert.doesNotMatch(bridge, /eval\(atob\(/);
   await t.runInTab('1+1');
   assert.equal(calls.length, 1);
-  const scriptFile = readFileSync('/tmp/allincms-host-drive.applescript', 'utf8');
+  const scriptFile = readFileSync(join(tmpdir(), 'allincms-host-drive.applescript'), 'utf8');
   assert.match(scriptFile, /synthetic-site/);
   assert.match(scriptFile, /new TextDecoder\(\)\.decode/);
 });

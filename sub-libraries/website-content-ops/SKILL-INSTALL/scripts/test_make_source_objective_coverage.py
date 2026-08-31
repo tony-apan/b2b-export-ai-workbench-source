@@ -43,7 +43,7 @@ def acceptance_report(root: Path, *, omit_batch: bool = False) -> dict:
 def test_objective_coverage_complete_when_acceptance_passes() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         report = acceptance_report(Path(tmp))
-        coverage = build_coverage(report, acceptance_report_path="/tmp/acceptance.json")
+        coverage = build_coverage(report, acceptance_report_path="<tmp>/acceptance.json")
         assert report["accepted"] is True
         assert coverage["complete"] is True
         assert coverage["acceptedByFinalGate"] is True
@@ -59,7 +59,7 @@ def test_objective_coverage_complete_when_acceptance_passes() -> None:
 def test_objective_coverage_blocks_when_batch_validation_missing() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         report = acceptance_report(Path(tmp), omit_batch=True)
-        coverage = build_coverage(report, acceptance_report_path="/tmp/acceptance.json")
+        coverage = build_coverage(report, acceptance_report_path="<tmp>/acceptance.json")
         assert report["accepted"] is False
         assert coverage["complete"] is False
         assert "products_posts_uploaded" in coverage["missingRequiredIds"]
@@ -76,7 +76,7 @@ def test_objective_coverage_blocks_when_adversarial_checks_missing() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         report = acceptance_report(Path(tmp))
         report["adversarialChecks"] = []
-        coverage = build_coverage(report, acceptance_report_path="/tmp/acceptance.json")
+        coverage = build_coverage(report, acceptance_report_path="<tmp>/acceptance.json")
         assert report["accepted"] is True
         assert coverage["complete"] is False
         assert "adversarial_checks_completed" in coverage["missingRequiredIds"]

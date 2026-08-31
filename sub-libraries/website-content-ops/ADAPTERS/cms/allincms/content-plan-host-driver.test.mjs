@@ -23,6 +23,7 @@ function reseal(plan) {
   return plan;
 }
 function makePlan() {
+  const AUTH_AT = new Date(Date.now() - 60000).toISOString();
   const plan = {
     schema_version: '1.1', plan_id: 'COP-host-driver-001', plan_digest: H('0'),
     client_id: 'fluxpedal-synthetic', company_id: 'fluxpedal-motors-synthetic', task_id: 'synthetic-task',
@@ -34,7 +35,7 @@ function makePlan() {
       source_id: 'SRC-001', kind: 'brief', location: runtimePath('10_sources/brief.md'), digest: H('b'), authority: 'primary', owner: 'synthetic-owner', rights_status: 'owned', method_use_clearance: 'approved', publication_clearance: 'approved', source_date: '2026-08-27T00:00:00Z', review_after: null, source_scope: 'fluxpedal-synthetic/fluxpedal-motors-synthetic/synthetic-task',
       extractions: [{ extraction_id: 'SX-001', artifact_ref: runtimePath('20_work/sx.json'), source_digest: H('b'), captured_at: new Date().toISOString(), status: 'complete', units: [{ unit_id: 'UNIT-1', locator: 'x', extraction_digest: H('u') }] }], publication_clearance: 'approved' }] },
     claim_ledger: ['Qualification Guides', 'FP-QC60', 'fp-qc60', 'Fixture description non-empty.'].map((v, i) => ({ claim_id: `CLAIM-${i + 1}`, status: 'confirmed', source_refs: ['SRC-001'], evidence_refs: [{ source_id: 'SRC-001', source_digest: H('b'), extraction_id: 'SX-001', unit_id: 'UNIT-1', locator: 'x', extraction_digest: H('u') }], value: v, notes: '' })),
-    capability_snapshot: { captured_at: new Date(Date.now() - 60000).toISOString(), expires_at: new Date(Date.now() + 29 * 60000).toISOString(), deployment_fingerprint: H('dep'), capabilities: [
+    capability_snapshot: { captured_at: new Date(Date.now() - 60000).toISOString(), expires_at: new Date(Date.now() + 28 * 60000).toISOString(), deployment_fingerprint: H('dep'), capabilities: [
       { capability_id: 'CAP-category-readback', entity_type: 'category', action: 'readback', maturity: 'local_tested', evidence_refs: [runtimePath('70_evidence/read.json')] },
       { capability_id: 'allincms.product.publish', entity_type: 'product', action: 'publish', maturity: 'live_verified_current_deployment', evidence_refs: [runtimePath('70_evidence/basis.json')] }] },
     desired_state: [
@@ -50,7 +51,7 @@ function makePlan() {
     operations: [
       { operation_id: 'OP-001', entity_ref: 'category:existing', entity_type: 'category', intent: 'noop', identity: { id: 'cat-1', natural_key: {}, match_strategy: 'exact_id' }, field_refs: [], capability_ref: 'CAP-category-readback', expected_current_fingerprint: null, dependencies: [], mutation: false, publication_effect: 'none', readback_requirements: ['read_only.authoritative_noop_readback', 'scope.exact_site_binding'] },
       { operation_id: 'OP-002', entity_ref: 'product:fp-qc60', entity_type: 'product', intent: 'publish', identity: { id: 'prd-1', natural_key: {}, match_strategy: 'exact_id' }, field_refs: [], capability_ref: 'allincms.product.publish', expected_current_fingerprint: null, dependencies: ['OP-001'], mutation: true, publication_effect: 'publish_transition', readback_requirements: ['product.backend_published_state', 'product.editor_reopen_health', 'product.public_url', 'product.anonymous_frontend_detail', 'product.visible_content_and_media'] }],
-    authorization_scope: { status: 'approved', actor: 'Test Human', identity_status: 'not_verified', target_scope: 'site', target_key: 'synthetic-site', operation_ids: ['OP-001', 'OP-002'], approved_at: AUTH_AT, archived_at: AUTH_AT, expires_at: new Date(Date.now() + 29 * 60000).toISOString(), plan_sha256: null },
+    authorization_scope: { status: 'approved', actor: 'Test Human', identity_status: 'not_verified', target_scope: 'site', target_key: 'synthetic-site', operation_ids: ['OP-001', 'OP-002'], approved_at: AUTH_AT, archived_at: AUTH_AT, expires_at: new Date(Date.now() + 28 * 60000).toISOString(), plan_sha256: null },
     reconciliation_policy: { ambiguous_write: 'read-only-reconcile-before-any-retry', automatic_retry_after_request_started: false, identity_rule: 'exact-id-or-site-scoped-natural-key' },
     verification_plan: { backend_readback: true, editor_reopen: true, frontend: true, evidence_targets: [runtimePath('70_evidence/run.json')] },
     writeback_targets: [{ kind: 'evidence', path: runtimePath('70_evidence/run.json'), visibility: 'private-runtime' }],
@@ -61,7 +62,6 @@ function makePlan() {
 test('host driver wires controller: noop + product publish completes with valid evidence', async () => {
   const tmp = mkdtempSync(join(tmpdir(), 'acrun-'));
   mkdirSync(join(tmp, '70_evidence'), { recursive: true });
-  const AUTH_AT = new Date(Date.now() - 60000).toISOString();
   const plan = reseal(makePlan());
   const SITE_KEY = plan.site_selector.site_key;
   const SITE_ID = plan.site_selector.site_id;

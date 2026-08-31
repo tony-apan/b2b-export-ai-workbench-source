@@ -68,7 +68,7 @@ def packet() -> dict:
             "afterStageCompletes": "Apply a completed, partial, or blocked stage result after redacted evidence is recorded.",
             "expectedCompletedStageIdsAfterApply": ["final_frontend_audit"],
             "stageResultRequired": True,
-            "commandTemplate": "python3 apply_browser_stage_result.py --ledger /tmp/ledger.json --packet /tmp/packet.json --result-json /tmp/result.json --output /tmp/ledger.updated.json",
+            "commandTemplate": "python3 apply_browser_stage_result.py --ledger <tmp> --packet <tmp> --result-json <tmp> --output <tmp>",
         },
         "warnings": ["This packet is local-only and does not authorize remote LAICMS mutation."],
     }

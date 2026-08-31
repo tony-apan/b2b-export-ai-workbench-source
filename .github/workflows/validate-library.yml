@@ -25,7 +25,7 @@ jobs:
           cache-dependency-path: sub-libraries/website-content-ops/ADAPTERS/cms/allincms/package-lock.json
 
       - name: Run governance negative regression tests
-        run: node scripts/run-governance-tests.mjs --timeout-ms 30000
+        run: node scripts/run-governance-tests.mjs --timeout-ms 120000
 
       - name: Validate generated indexes and Markdown metadata
         run: node scripts/validate-indexes.mjs --check

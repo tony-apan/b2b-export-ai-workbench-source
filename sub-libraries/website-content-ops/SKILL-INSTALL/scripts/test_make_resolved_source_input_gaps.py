@@ -28,7 +28,7 @@ def write_gap_ledger(path: Path) -> None:
     Args.generation_rule = "Verify linked detail route before claiming post upload complete."
     Args.current_evidence = "ui-only"
     Args.decision_needed = "needs-schema-capture"
-    Args.evidence_pointer = "/tmp/redacted-post-route-evidence.json"
+    Args.evidence_pointer = "<tmp>/redacted-post-route-evidence.json"
     Args.operator_note = "Initial public detail route returned 404."
     ledger = record_source_input_gap.apply_action(Args())
     path.write_text(json.dumps(ledger, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -48,7 +48,7 @@ def test_make_resolved_gap_filters_requirement_gap() -> None:
         Args.output = str(resolved_path)
         Args.json = False
         Args.resolved_gap = [
-            "fieldLabel=posts.post-detail-route|proof=/tmp/redacted-post-detail-recheck.json|note=Bounded frontend recheck rendered the new detail route, so this route blocker is superseded."
+            "fieldLabel=posts.post-detail-route|proof=<tmp>|note=Bounded frontend recheck rendered the new detail route, so this route blocker is superseded."
         ]
         report = make_resolved_source_input_gaps.build_report(Args())
         assert report["kind"] == "allincms_resolved_source_input_gaps"
@@ -84,7 +84,7 @@ def test_make_resolved_gap_rejects_unknown_gap_label() -> None:
         Args.site_key = "mysite01"
         Args.gap_ledger = str(ledger_path)
         Args.resolved_gap = [
-            "fieldLabel=posts.post-body|proof=/tmp/redacted-post-body.json|note=This field is not in the supplied ledger."
+            "fieldLabel=posts.post-body|proof=<tmp>|note=This field is not in the supplied ledger."
         ]
 
         try:
@@ -100,7 +100,7 @@ def test_make_resolved_gap_rejects_sensitive_proof_path() -> None:
     Args.site_key = "mysite01"
     Args.gap_ledger = ""
     Args.resolved_gap = [
-        "fieldLabel=posts.post-detail-route|proof=/tmp/authorization-post-route.json|note=Later public proof superseded this route issue."
+        "fieldLabel=posts.post-detail-route|proof=<tmp>|note=Later public proof superseded this route issue."
     ]
 
     try:
@@ -122,7 +122,7 @@ def test_requirements_rejects_sensitive_handwritten_resolved_gap() -> None:
                     "resolvedGaps": [
                         {
                             "fieldLabel": "posts.post-detail-route",
-                            "proof": "/tmp/authorization-post-route.json",
+                            "proof": "<tmp>/authorization-post-route.json",
                             "note": "Later public proof superseded this route issue.",
                         }
                     ],

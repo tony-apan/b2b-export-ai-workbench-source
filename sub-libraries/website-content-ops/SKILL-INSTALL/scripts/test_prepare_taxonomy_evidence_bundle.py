@@ -29,9 +29,9 @@ def add_source_context(handoff: dict) -> dict:
     }
     handoff["contentQualityReview"] = {"warnings": [], "reviewRequired": False}
     handoff["wikiReview"] = {
-        "sourceWiki": "/tmp/source-wiki.json",
-        "sourceWikiMarkdown": "/tmp/wiki",
-        "sourceWikiMarkdownIndex": "/tmp/wiki/index.md",
+        "sourceWiki": "<tmp>/source-wiki.json",
+        "sourceWikiMarkdown": "<tmp>/wiki",
+        "sourceWikiMarkdownIndex": "<tmp>/wiki/index.md",
     }
     handoff["confirmationDecisionMatrix"] = [
         {"field": "contentPlan.taxonomyPlan", "decision": "accept", "blocksRemoteMutation": False}

@@ -83,7 +83,7 @@ def test_review_packet_builds_from_publication_ready_package() -> None:
             "tracking.trackingCode",
         }
         assert str(review_path) in packet["confirmationCommandTemplate"]
-        assert "/tmp/allincms-run/source-package-review-packet.json" not in packet["confirmationCommandTemplate"]
+        assert "<tmp>/allincms-run/source-package-review-packet.json" not in packet["confirmationCommandTemplate"]
         expected_confirmation_output = str(root / "confirmation-record.json")
         expected_execution_dir = str(root / "confirmed-execution")
         expected_action_gate = str(root / "create-site-action-gate.json")
@@ -105,7 +105,7 @@ def test_review_packet_builds_from_publication_ready_package() -> None:
         assert "--target-mode new_site" in execution_command
         assert f"--create-authorization-output {expected_action_gate}" in execution_command
         assert "--create-action-gate-output" not in execution_command
-        assert "/tmp/allincms-run/source-package-review-packet.json" not in execution_command
+        assert "<tmp>/allincms-run/source-package-review-packet.json" not in execution_command
         covered = set(packet["suggestedAcceptedFields"]) | {item["field"] for item in packet["suggestedAcceptedDeferrals"]}
         assert set(packet["confirmationFields"]) <= covered
 

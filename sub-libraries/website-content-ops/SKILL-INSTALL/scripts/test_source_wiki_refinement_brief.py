@@ -18,8 +18,8 @@ def source_wiki() -> dict:
         "localOnly": True,
         "remoteMutationsPerformed": False,
         "sourceSet": {
-            "inputFiles": [{"path": "/tmp/catalog.txt", "type": "text", "sourceRef": "src-001"}],
-            "wikiRefs": ["/tmp/wiki/index.md"],
+            "inputFiles": [{"path": "<tmp>/catalog.txt", "type": "text", "sourceRef": "src-001"}],
+            "wikiRefs": ["<tmp>/wiki/index.md"],
         },
         "site": {"siteName": "Example Site", "siteDescription": "Draft source-backed example site."},
         "pages": [{"title": "Home", "path": "/", "sections": [{"heading": "Home", "body": "Draft copy"}], "sourceRefs": ["src-001"]}],

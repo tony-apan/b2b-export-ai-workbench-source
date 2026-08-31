@@ -190,7 +190,7 @@ def test_validate_rejects_unhosted_after_real_upload() -> None:
         "dryRun": False,
         "imageHostIsExternal": True,
         "allincmsRemoteMutationsPerformed": False,
-        "images": [{"localPath": "/tmp/a.png", "hostedUrl": "/tmp/a.png", "uploaded": True, "sha256": "0" * 64}],
+        "images": [{"localPath": "<tmp>/a.png", "hostedUrl": "<tmp>/a.png", "uploaded": True, "sha256": "0" * 64}],
     }
     issues = validate_upload_map(bad)
     assert any("hostedUrl must be an http(s) URL" in i for i in issues), issues

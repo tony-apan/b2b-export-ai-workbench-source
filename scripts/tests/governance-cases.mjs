@@ -3,6 +3,18 @@ import { cpSync, mkdirSync, readFileSync, renameSync, rmSync, symlinkSync, write
 import { basename, dirname, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+// 动态读当前母库版本（避免硬编码漂移）
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+const _caseRoot = _fileURLToPath(new URL('.', import.meta.url)).replace(/\/scripts\/tests\/$/, '/');
+const currentMotherVersion = (() => {
+  try {
+    const vm = readFileSync(join(_caseRoot, 'VERSION.md'), 'utf8');
+    const m = vm.match(/Version[：:]\s*`?([0-9][0-9a-z.-]+)`?/);
+    return m ? m[1] : '0.0.0-working';
+  } catch { return '0.0.0-working'; }
+})();
+
+
 const sha256Buffer = (value) => createHash('sha256').update(value).digest('hex');
 const sha256File = (path) => sha256Buffer(readFileSync(path));
 function canonicalJson(value) {
@@ -657,10 +669,10 @@ export const governanceCases = new Map([
       const artifact = join(root, '.governance-fixtures/artifact-unknown-extension');
       writeArtifact(artifact, { embeddedValidators: ['validate-mother-library.mjs'] });
       assertValidatorBaseline(root, 'scripts/validate-artifact.mjs', [artifact], /ARTIFACT_PASS:/, 'mother artifact boundary', timeoutMs);
-      writeFileSync(join(artifact, 'unexpected.txt'), 'registered but forbidden\n');
-      rewriteArtifactManifest(artifact, (manifest) => { manifest.files.push('unexpected.txt'); manifest.files.sort(); });
+      writeFileSync(join(artifact, 'unexpected.exe'), 'registered but forbidden\n');
+      rewriteArtifactManifest(artifact, (manifest) => { manifest.files.push('unexpected.exe'); manifest.files.sort(); });
       const result = run(root, 'scripts/validate-artifact.mjs', [artifact], { timeoutMs });
-      assertRejected(result, /FAIL: unsupported artifact file extension: unexpected\.txt/, 'artifact extension allowlist');
+      assertRejected(result, /FAIL: unsupported artifact file extension: unexpected\.exe/, 'artifact extension allowlist');
     },
   }],
   ['artifact-local-absolute-path', {
@@ -1094,19 +1106,19 @@ export const governanceCases = new Map([
         throw new Error(`ordinary mother provenance build did not prove embedded artifact validation\n${shortOutput(ordinaryBuild)}`);
       }
       const artifactRoot = join(root, 'dist/mother/latest');
-      const toolsPath = join(artifactRoot, 'sub-libraries/website-content-ops/TOOLS.md');
+      const toolsPath = join(artifactRoot, 'sub-libraries/website-content-ops/TOOLS-INDEX.md');
       writeFileSync(toolsPath, `${readFileSync(toolsPath, 'utf8')}\n<!-- safe artifact provenance mutation -->\n`);
       rewriteArtifactManifest(artifactRoot, () => {});
       const staleReceipt = run(root, 'scripts/validate-artifact.mjs', [artifactRoot], { timeoutMs });
-      assertRejected(staleReceipt, /source provenance file SHA mismatch: sub-libraries\/website-content-ops\/TOOLS\.md/, 'ordinary mother artifact stale provenance receipt');
+      assertRejected(staleReceipt, /source provenance file SHA mismatch: sub-libraries\/website-content-ops\/TOOLS-INDEX\.md/, 'ordinary mother artifact stale provenance receipt');
 
       rewriteArtifactManifest(artifactRoot, (manifest) => {
-        const record = manifest.source_provenance.files.find((item) => item.path === 'sub-libraries/website-content-ops/TOOLS.md');
+        const record = manifest.source_provenance.files.find((item) => item.path === 'sub-libraries/website-content-ops/TOOLS-INDEX.md');
         if (!record) throw new Error('TOOLS.md provenance record missing');
         record.sha256 = sha256File(toolsPath);
       });
       const forgedReceipt = run(root, 'scripts/validate-artifact.mjs', [artifactRoot], { timeoutMs });
-      assertRejected(forgedReceipt, /source provenance commit SHA-256 mismatch: sub-libraries\/website-content-ops\/TOOLS\.md/, 'ordinary mother artifact forged candidate provenance digest');
+      assertRejected(forgedReceipt, /source provenance commit SHA-256 mismatch: sub-libraries\/website-content-ops\/TOOLS-INDEX\.md/, 'ordinary mother artifact forged candidate provenance digest');
     },
   }],
   ['release-artifact-dirty-source', {
@@ -1194,7 +1206,7 @@ export const governanceCases = new Map([
     expected: 'reject',
     run({ root, timeoutMs }) {
       const result = run(root, 'scripts/resolve-release-scope.mjs', ['mother/v9.9.9'], { timeoutMs });
-      assertRejected(result, /BLOCK: mother tag version mismatch: expected mother\/v0\.2\.0-working, got mother\/v9\.9\.9/, 'mother release version route');
+      assertRejected(result, new RegExp(`BLOCK: mother tag version mismatch: expected mother\\/v${currentMotherVersion}, got mother\\/v9\\.9\\.9`), 'mother release version route');
     },
   }],
   ['release-router-unregistered-sub-library', {
@@ -1211,10 +1223,10 @@ export const governanceCases = new Map([
     run({ root, timeoutMs }) {
       const outputPath = join(root, '.governance-fixtures/router-mother-output.txt');
       mkdirSync(dirname(outputPath), { recursive: true });
-      const result = run(root, 'scripts/resolve-release-scope.mjs', ['mother/v0.2.0-working'], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
-      assertAccepted(result, /RELEASE_SCOPE_PASS: mother-library mother\/v0\.2\.0-working/, 'mother release route');
+      const result = run(root, 'scripts/resolve-release-scope.mjs', [`mother/v${currentMotherVersion}`], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
+      assertAccepted(result, new RegExp(`RELEASE_SCOPE_PASS: mother-library mother\\/v${currentMotherVersion}`), 'mother release route');
       const output = readFileSync(outputPath, 'utf8');
-      if (!/^scope=mother-library\npackage_id=b2b-export-ai-workbench-mother-library\npath=\.\nversion=0\.2\.0-working\nrelease_tag=mother\/v0\.2\.0-working\n$/.test(output)) {
+      if (!new RegExp(`^scope=mother-library\npackage_id=b2b-export-ai-workbench-mother-library\npath=\\.\nversion=${currentMotherVersion}\nrelease_tag=mother\\/v${currentMotherVersion}\n$`).test(output)) {
         throw new Error(`mother route emitted unexpected or multiple scope outputs:
 ${output}`);
       }

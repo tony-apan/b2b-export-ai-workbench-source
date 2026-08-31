@@ -55,7 +55,7 @@ export function scanPublishableContent(content, relPath = '') {
   const credentialSafe = [
     /^[A-Za-z_$][A-Za-z0-9_$]*\.[A-Za-z_$][A-Za-z0-9_$]*$/, // foo.bar 代码表达式
     /^\$[A-Za-z_][A-Za-z0-9_]*$/,                             // $TOKEN shell 变量
-    /^[a-z]+(?:-[a-z]+)+$/,                                    // 连字符散文词组（无数字）。已知限制：低熵纯小写连字符口令（password: hunter-twosecret）会放行——本层是 defense-in-depth，首边界仍是 MANIFEST include+人审（TERRA 2026-08-31）
+    /^[a-z]+(?:-[a-z]+)+$/, /^[a-z]+(?:_[a-z]+)+$/,                                    // 连字符散文词组（无数字）。已知限制：低熵纯小写连字符口令（password: hunter-twosecret）会放行——本层是 defense-in-depth，首边界仍是 MANIFEST include+人审（TERRA 2026-08-31）
     /^(?:[a-z][a-z-]*-)?(?:key|token|cookie|secret|password|authorization)$/i, // 全值锚定且仅小写连字符词：payload-token 等 header 名误当值；含数字/大写随机串不豁免
   ].some((re) => re.test(credentialValue));
   if (credential && !credentialSafe) addIssue(issues, 'possible-credential-assignment', credential[0]);

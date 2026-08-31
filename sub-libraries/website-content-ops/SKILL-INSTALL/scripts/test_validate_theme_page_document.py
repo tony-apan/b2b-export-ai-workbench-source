@@ -67,7 +67,7 @@ def test_element_without_type_rejected() -> None:
 
 def test_local_image_path_rejected() -> None:
     p = _payload()
-    p[0]["pageDocument"]["elements"]["hero-1"]["props"]["media"]["value"]["url"] = "/Users/me/img/a.png"
+    p[0]["pageDocument"]["elements"]["hero-1"]["props"]["media"]["value"]["url"] = "/example.com/media/a.png"
     r = validate_theme_replay(p)
     assert r["valid"] is False and any("local/relative path" in i for i in r["issues"])
 

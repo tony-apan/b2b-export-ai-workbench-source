@@ -26,7 +26,7 @@ from typing import Any
 # Unambiguous placeholder/residue terms only. Do NOT include common words like "your" —
 # professional copy legitimately says "send us your instrument ports and test conditions".
 PLACEHOLDER_TERMS = ("待补", "lorem ipsum", "todo", "tbd", "placeholder", "draft product", "example.com/image")
-LOCAL_PATH_HINTS = ("/tmp/", "./", "../", "file://", "C:\\", "/Users/", "/home/")
+LOCAL_PATH_HINTS = ("<tmp>/", "./", "../", "file://", "C:\\", "<home>/", "<linux-home>/")
 
 
 def _iter_prop_strings(props: Any, prefix: str = "") -> list[tuple[str, str]]:

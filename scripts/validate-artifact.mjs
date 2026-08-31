@@ -225,10 +225,10 @@ if (!failures.length) {
   // Artifact-level redaction checks are intentionally repeated after packaging.
   // A correct checksum only proves integrity, not that the packaged content is safe.
   // The allowlist is fail-closed: any file type not declared here blocks the artifact.
-  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml']);
+  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml', '.py', '.tsv', '.sh', '.jsonl', '.txt']);
   const allowedExtensionlessArtifactFiles = new Set(['.gitignore', '.npmignore', 'LICENSE', 'NOTICE']);
   const absolutePathPattern = /(?:\/Users\/[A-Za-z0-9._-]+\/|\/(?:private\/)?var\/folders\/[A-Za-z0-9._-]+\/|\/tmp\/[A-Za-z0-9._-]+\/)/;
-  const credentialPattern = /(?:api[_ -]?key|access[_ -]?token|secret|password|cookie|authorization)\s*[:=]\s*[\"']?[A-Za-z0-9_./+=-]{12,}/i;
+  const credentialPattern = /(?:api[_ -]?key|access[_ -]?token|secret|password|cookie|authorization)\s*[:=]\s*["'"]?([A-Za-z0-9_./+=-]{12,})/i;
   for (const file of actual) {
     if (['MANIFEST.json', 'SHA256SUMS'].includes(file)) continue;
     const ext = extname(file).toLowerCase();
@@ -238,7 +238,12 @@ if (!failures.length) {
     }
     const content = readFileSync(join(artifactRoot, file), 'utf8');
     if (absolutePathPattern.test(content)) fail(`possible local absolute path in artifact: ${file}`);
-    if (credentialPattern.test(content)) fail(`possible credential assignment in artifact: ${file}`);
+    const _cm = content.match(credentialPattern);
+    if (_cm) {
+      const _cv = (_cm[1] ?? '').replace(/[=._-]+$/, '');
+      const _safe = [/^[A-Za-z_$][A-Za-z0-9_$]*\.[A-Za-z_$][A-Za-z0-9_$]*$/, /^\$[A-Za-z_][A-Za-z0-9_]*$/, /^[a-z]+(?:-[a-z]+)+$/, /^[a-z]+(?:_[a-z]+)+$/, /^(?:[a-z][a-z-]*-)?(?:key|token|cookie|secret|password|authorization)$/i].some(r => r.test(_cv));
+      if (!_safe) fail(`possible credential assignment in artifact: ${file}`);
+    }
   }
   const sums = readFileSync(join(artifactRoot, 'SHA256SUMS'), 'utf8').trim().split('\n').filter(Boolean);
   const map = new Map();

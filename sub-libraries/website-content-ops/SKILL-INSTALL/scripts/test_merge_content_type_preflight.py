@@ -66,7 +66,7 @@ def test_merge_rejects_wrong_content_type() -> None:
         merge_content_preflight(
             created,
             refresh,
-            refresh_path=Path("/tmp/products-refresh.json"),
+            refresh_path=Path("<tmp>/products-refresh.json"),
             content_type="posts",
         )
     except ValueError as exc:
@@ -83,7 +83,7 @@ def test_merge_rejects_mutated_created_evidence() -> None:
         merge_content_preflight(
             created,
             refresh,
-            refresh_path=Path("/tmp/refresh.json"),
+            refresh_path=Path("<tmp>/refresh.json"),
             content_type="products",
         )
     except ValueError as exc:

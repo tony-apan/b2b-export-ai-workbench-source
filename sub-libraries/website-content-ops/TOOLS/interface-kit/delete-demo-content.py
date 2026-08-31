@@ -4,7 +4,7 @@
 说明：createTheme(preset='default') 会在站点级重新种入 3 个 demo 产品 + 3 个 demo 文章，
       以及 demo 分类/标签（分类名随 preset 固定，id 每站不同——按名字删）。
       audit 的 count 项（基线=该站实建数）会直接暴露；上线前必跑本脚本。
-依赖：同目录 allincms_api.py + /tmp/ws-token.txt（或 WS_TOKEN 环境变量）。
+依赖：同目录 allincms_api.py + 平台临时目录的 ws-token.txt（或 WS_TOKEN 环境变量）。
 """
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +21,7 @@ def _read_token():
     """优先 WS_TOKEN 环境变量，回退 token 文件（POSIX 先查 /tmp 再查 %TEMP%；Windows 只查 %TEMP%）。"""
     env = os.environ.get("WS_TOKEN")
     if env: return env
-    candidates = ["/tmp/ws-token.txt", _token_file()] if os.name != "nt" else [_token_file()]
+    candidates = ["tempfile.gettempdir() + "/ws-token.txt", _token_file()] if os.name != "nt" else [_token_file()]
     for p in candidates:
         if os.path.exists(p):
             try: return open(p).read().strip()
@@ -52,7 +52,7 @@ def main():
     slug = sys.argv[1]
     token = _read_token()
     if not token:
-        print("无 token：请把 payload-token 放 /tmp/ws-token.txt 或设 WS_TOKEN"); sys.exit(1)
+        print("无 token：请把 payload-token 写平台临时目录 ws-token.txt 或设 WS_TOKEN"); sys.exit(1)
     api = AllinCMS(token=token)
     site_id = find_site_id(api, slug)
     if not site_id:

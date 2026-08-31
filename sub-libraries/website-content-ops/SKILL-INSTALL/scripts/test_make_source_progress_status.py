@@ -38,7 +38,7 @@ def test_progress_from_rehearsal_waits_for_user_confirmation() -> None:
         args = rehearsal_base_args(root, source)
         args.refined_source_wiki = write_rehearsal_json(refined_target(root), wiki_for_rehearsal_inventory())
         summary = build_rehearsal(args)
-        progress = rehearsal_progress(summary, source_path="/tmp/source-file-rehearsal-summary.json", objective="files to site")
+        progress = rehearsal_progress(summary, source_path="<tmp>/source-file-rehearsal-summary.json", objective="files to site")
         assert progress["complete"] is False
         assert progress["reviewReady"] is True
         assert progress["confirmationPrepared"] is False
@@ -67,7 +67,7 @@ def test_progress_from_status_reports_batch_ready_after_samples() -> None:
             write_json(root / "posts-sample.json", sample_evidence("posts")),
         ]
         status = summarize(args)
-        progress = status_progress(status, source_path="/tmp/source-execution-status.json", objective="files to site")
+        progress = status_progress(status, source_path="<tmp>/source-execution-status.json", objective="files to site")
         assert progress["complete"] is False
         assert progress["currentStage"] == "batch_upload"
         assert progress["nextBlockingId"] == "batch_upload"
@@ -87,7 +87,7 @@ def test_progress_from_rehearsal_create_site_preflight_requires_readonly_browser
         args.refined_source_wiki = write_rehearsal_json(refined_target(root), wiki_for_rehearsal_inventory())
         args.user_confirmation_text = "I confirm this source package content intent for a temporary demo site."
         summary = build_rehearsal(args)
-        progress = rehearsal_progress(summary, source_path="/tmp/source-file-rehearsal-summary.json", objective="files to site")
+        progress = rehearsal_progress(summary, source_path="<tmp>/source-file-rehearsal-summary.json", objective="files to site")
         assert progress["readyForBrowserStage"] == "needs_create_site_preflight"
         assert progress["nextActionGate"]["remoteMutationAllowed"] is False
         assert progress["nextActionGate"]["requiresReadOnlyBrowserEvidence"] is True
@@ -117,7 +117,7 @@ def test_progress_from_complete_status_is_not_objective_complete_without_final_a
         args.forms_media_settings = write_json(root / "forms-media-settings.json", forms_media_settings())
         args.launch_acceptance = write_json(root / "launch.json", launch_acceptance())
         status = summarize(args)
-        progress = status_progress(status, source_path="/tmp/source-execution-status.json", objective="files to site")
+        progress = status_progress(status, source_path="<tmp>/source-execution-status.json", objective="files to site")
         assert status["complete"] is True
         assert progress["sourceStatusComplete"] is True
         assert progress["finalAcceptanceAccepted"] is False
@@ -135,7 +135,7 @@ def test_progress_complete_only_with_accepted_final_acceptance() -> None:
             "currentStage": "complete",
             "passedCount": 17,
             "stageCount": 17,
-            "stages": {stage_id: {"status": "passed", "evidence": f"/tmp/{stage_id}.json", "blockers": [], "nextAction": ""} for stage_id in (
+            "stages": {stage_id: {"status": "passed", "evidence": f"<tmp>/{stage_id}.json", "blockers": [], "nextAction": ""} for stage_id in (
                 "source_package",
                 "review_packet",
                 "confirmation",
@@ -154,10 +154,10 @@ def test_progress_complete_only_with_accepted_final_acceptance() -> None:
         }
         progress = status_progress(
             status,
-            source_path="/tmp/source-execution-status.json",
+            source_path="<tmp>/source-execution-status.json",
             objective="files to site",
             final_acceptance=report,
-            final_acceptance_path="/tmp/source-run-acceptance-validation.json",
+            final_acceptance_path="<tmp>/source-run-acceptance-validation.json",
         )
         assert report["accepted"] is True
         assert progress["sourceStatusComplete"] is True

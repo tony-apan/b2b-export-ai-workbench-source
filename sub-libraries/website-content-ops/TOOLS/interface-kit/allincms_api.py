@@ -33,7 +33,7 @@ def _read_token():
     """优先 WS_TOKEN 环境变量，回退 token 文件（POSIX 先查 /tmp 再查 %TEMP%；Windows 只查 %TEMP%）。"""
     env = os.environ.get("WS_TOKEN")
     if env: return env
-    candidates = ["/tmp/ws-token.txt", _token_file()] if os.name != "nt" else [_token_file()]
+    candidates = [_token_file()]
     for p in candidates:
         if os.path.exists(p):
             try: return open(p).read().strip()
@@ -181,7 +181,7 @@ class AllinCMS:
         """纯 API 账号密码登录（无浏览器）：POST sign-in action → 从响应 Set-Cookie 提取 payload-token（Payload 标准）。
         成功：self.token 生效并返回 token；失败：抛 RuntimeError。
         注意（ISS-083）：成功路径按 Payload 标准实现（Set-Cookie: payload-token=...），但无真实凭据未实测成功分支；
-        错误凭据路径已实测（干净报错）。token 仍可走浏览器 Cookie 手动路径（/tmp/ws-token.txt）作为兜底。"""
+        错误凭据路径已实测（干净报错）。token 仍可走浏览器 Cookie 手动路径（写入平台临时目录的 ws-token.txt）作为兜底。"""
         s, t = self._req("/sign-in", SIGNIN_A, [{"email": email, "password": password, "rememberMe": remember}])
         res = self._flight(t)
         if res and isinstance(res, dict) and "serverError" in res:
@@ -199,7 +199,7 @@ class AllinCMS:
         if tok:
             self.token = tok
             return tok
-        raise RuntimeError("login: 响应无 payload-token（Set-Cookie 与响应体均无）——改用浏览器 Cookie 手动路径：登录 workspace.laicms.com → DevTools→Cookies→payload-token → 写 /tmp/ws-token.txt")
+        raise RuntimeError("login: 响应无 payload-token（Set-Cookie 与响应体均无）——改用浏览器 Cookie 手动路径：登录 workspace.laicms.com → DevTools→Cookies→payload-token → 写入平台临时目录的 ws-token.txt")
 
     # ---------- RSC 读（纯接口：GET path?_rsc + RSC:1 header，无需浏览器） ----------
     def get_page(self, path, referer=None, timeout=60):

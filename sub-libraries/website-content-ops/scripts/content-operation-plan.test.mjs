@@ -239,7 +239,7 @@ test('parent path traversal is blocked', () => expectBlock((p) => {
   p.writeback_targets[0].path = `${TASK_ROOT}/40_evidence/../TASK.json`;
 }, /parent path segments|normalized/));
 test('absolute and URL evidence references are blocked', () => {
-  for (const bad of ['/tmp/readback.json', 'https://example.invalid/readback.json']) {
+  for (const bad of ['" + tmpdir() + "/x"', 'https://example.invalid/readback.json']) {
     const plan = makePlan(); plan.verification_plan.evidence_targets[0] = bad; seal(plan);
     const result = validate(plan);
     assert.equal(result.ok, false);

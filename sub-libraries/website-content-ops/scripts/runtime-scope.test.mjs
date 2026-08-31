@@ -29,7 +29,7 @@ test('only normalized descendants of the task root pass', () => {
     `${expected.task_root}/40_evidence\\file.json`,
     `${expected.task_root}/40_evidence/file.json?x=1`,
     `${expected.task_root}/40_evidence/%2e%2e/file.json`,
-    '/tmp/file.json',
+    '<tmp>/file.json',
     'https://example.invalid/file.json',
     'customer-runtime/10_clients/other/30_tasks/synthetic-task-a/file.json',
   ]) assert.notEqual(validateTaskRuntimePath(bad, expected.task_root, '$.ref').length, 0, bad);

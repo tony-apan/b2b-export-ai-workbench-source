@@ -87,7 +87,7 @@ def test_progress_reaches_save_capture_after_runbook() -> None:
         save_handoff = build_save_handoff(
             create_evidence=create_evidence(),
             create_evidence_path=str(create_path),
-            preflight_path="/tmp/products-preflight.json",
+            preflight_path="<tmp>/products-preflight.json",
             edit_url="https://workspace.laicms.com/demo123/products/fake-product-probe/update",
             authorization_output=str(root / "products-save-authorization.json"),
             generated_at="2026-07-01T00:00:00+00:00",
@@ -113,7 +113,7 @@ def test_progress_reaches_schema_manifest_ready() -> None:
         save_handoff = build_save_handoff(
             create_evidence=create_evidence(),
             create_evidence_path=str(create_path),
-            preflight_path="/tmp/products-preflight.json",
+            preflight_path="<tmp>/products-preflight.json",
             edit_url="https://workspace.laicms.com/demo123/products/fake-product-probe/update",
             authorization_output=str(root / "products-save-authorization.json"),
             generated_at="2026-07-01T00:00:00+00:00",

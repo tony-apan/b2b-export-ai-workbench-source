@@ -12,6 +12,7 @@
  *   substitute for an archived window.
  * - readback `passed` MUST come from real comparisons; never hardcode true.
  */
+import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 
@@ -32,8 +33,8 @@ export function createAllinCmsChromeAppleScriptTransport({ siteKey, exec = execF
 	return "::NO_TAB"
 end tell`;
     try {
-      writeFileSync('/tmp/allincms-host-drive.applescript', script);
-      return exec('osascript', ['/tmp/allincms-host-drive.applescript'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+      writeFileSync(join(tmpdir(), 'allincms-host-drive.applescript'), script);
+      return exec('osascript', [join(tmpdir(), 'allincms-host-drive.applescript')], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
     } catch (error) {
       return '::ERR::' + String(error.stdout || error.message).slice(0, 240);
     }

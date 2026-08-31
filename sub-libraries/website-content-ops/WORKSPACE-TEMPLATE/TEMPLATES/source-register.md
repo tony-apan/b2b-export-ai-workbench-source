@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "需要登记原始来源、授权、日期、可信边界和派生内容时。"
 keywords: ["source register", "provenance", "consent", "source date", "derived content"]
 generated_from: "../../TEMPLATES/source-register.md"
-generated_source_sha256: "c5f0439083e057b1fc130a96f4898bbbab670b4f3a885aa7cbdf87a9e35b4e2c"
+generated_source_sha256: "86942bd463c127d6317280a176bc27d3cae3ceb1ca1db43bf416cd2b5f08f1a6"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/source-register.md; do not hand-edit this copy in the source package. -->

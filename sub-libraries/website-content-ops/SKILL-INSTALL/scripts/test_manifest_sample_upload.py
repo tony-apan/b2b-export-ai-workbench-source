@@ -94,9 +94,9 @@ def overage_quality() -> dict:
 
 def wiki_review() -> dict:
     return {
-        "sourceWiki": "/tmp/source-wiki.json",
-        "sourceWikiMarkdown": "/tmp/wiki/manifest.json",
-        "sourceWikiMarkdownIndex": "/tmp/wiki/index.md",
+        "sourceWiki": "<tmp>/source-wiki.json",
+        "sourceWikiMarkdown": "<tmp>/manifest.json",
+        "sourceWikiMarkdownIndex": "<tmp>/index.md",
     }
 
 
@@ -134,12 +134,12 @@ def sample_evidence(slug: str = "industrial-demo-product") -> dict:
         "kind": "allincms_manifest_sample_upload_evidence",
         "siteKey": "demo123",
         "contentType": "products",
-        "manifestPath": "/tmp/products-schema-verified-manifest.json",
+        "manifestPath": "<tmp>/products-schema-verified-manifest.json",
         "sampleSlug": slug,
         "target": "https://workspace.laicms.com/demo123/products",
         "backendUrl": "https://workspace.laicms.com/demo123/products/redacted/update",
         "frontendUrl": f"https://demo123.web.allincms.com/products/{slug}",
-        "authorizationRecord": "/tmp/auth.json",
+        "authorizationRecord": "<tmp>/auth.json",
         "preMutationGate": "passed",
         "schemaGatePass": True,
         "saveStatus": "ok",
@@ -160,9 +160,9 @@ def test_sample_runbook_and_evidence() -> None:
     manifest = schema_manifest()
     runbook = build_sample_runbook(
         manifest=manifest,
-        manifest_path="/tmp/products-schema-verified-manifest.json",
+        manifest_path="<tmp>/products-schema-verified-manifest.json",
         target="https://workspace.laicms.com/demo123/products",
-        authorization_output="/tmp/auth-sample.json",
+        authorization_output="<tmp>/auth-sample.json",
     )
     assert runbook["sampleSlug"] == "industrial-demo-product"
     assert runbook["browserStepsExecutable"] is False
@@ -184,9 +184,9 @@ def test_sample_runbook_preserves_manifest_source_context() -> None:
     manifest.update(source_identity())
     runbook = build_sample_runbook(
         manifest=manifest,
-        manifest_path="/tmp/products-schema-verified-manifest.json",
+        manifest_path="<tmp>/products-schema-verified-manifest.json",
         target="https://workspace.laicms.com/demo123/products",
-        authorization_output="/tmp/auth-sample.json",
+        authorization_output="<tmp>/auth-sample.json",
     )
     for key in (
         "sourcePackageSha256",
@@ -207,16 +207,16 @@ def test_batch_runbook_accepts_sample_evidence() -> None:
     manifest = schema_manifest()
     runbook = build_batch_runbook(
         run_evidence=base_run_evidence(),
-        run_evidence_path="/tmp/run-evidence.json",
+        run_evidence_path="<tmp>/run-evidence.json",
         manifest=manifest,
-        manifest_path="/tmp/products-schema-verified-manifest.json",
+        manifest_path="<tmp>/products-schema-verified-manifest.json",
         sample_evidence=sample_evidence(),
-        sample_evidence_path="/tmp/sample-evidence.json",
-        authorization_output="/tmp/auth-batch.json",
+        sample_evidence_path="<tmp>/sample-evidence.json",
+        authorization_output="<tmp>/auth-batch.json",
         target="https://workspace.laicms.com/demo123/products",
         target_identifier="products manifest batch",
     )
-    assert runbook["sourceSampleEvidence"] == "/tmp/sample-evidence.json"
+    assert runbook["sourceSampleEvidence"] == "<tmp>/sample-evidence.json"
     assert runbook["browserStepsExecutable"] is False
 
 
@@ -233,12 +233,12 @@ def test_batch_runbook_preserves_content_counts() -> None:
     }
     runbook = build_batch_runbook(
         run_evidence={**base_run_evidence(), **context},
-        run_evidence_path="/tmp/run-evidence.json",
+        run_evidence_path="<tmp>/run-evidence.json",
         manifest={**schema_manifest(), **context},
-        manifest_path="/tmp/products-schema-verified-manifest.json",
+        manifest_path="<tmp>/products-schema-verified-manifest.json",
         sample_evidence={**sample_evidence(), **context},
-        sample_evidence_path="/tmp/sample-evidence.json",
-        authorization_output="/tmp/auth-batch.json",
+        sample_evidence_path="<tmp>/sample-evidence.json",
+        authorization_output="<tmp>/auth-batch.json",
         target="https://workspace.laicms.com/demo123/products",
         target_identifier="products manifest batch",
     )

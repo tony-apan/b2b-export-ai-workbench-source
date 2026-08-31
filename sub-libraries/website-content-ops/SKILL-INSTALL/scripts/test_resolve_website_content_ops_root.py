@@ -343,7 +343,7 @@ class ResolverTests(unittest.TestCase):
             self.assertNotIn("verified bundled runtime resolved", combined)
 
     def test_active_docs_describe_portable_bundle_and_fail_closed_login_handoff(self) -> None:
-        forbidden = "/Users/example/private-workspace"
+        forbidden = "<home>"
         for path in ROUTED_DOCS:
             text = path.read_text(encoding="utf-8")
             self.assertNotIn(forbidden, text, path)

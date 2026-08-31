@@ -13,7 +13,7 @@ redaction_status: "safe-to-publish"
 keywords: ["manifest", "Draft", "BLOCK", "runtime contract"]
 package_id: "agency-operations"
 version: "0.1.0-draft.1"
-maturity_status: "Working"
+maturity_status: "draft"
 verification_status: "structure-pass"
 preparation_status: "complete"
 preparation_scope: "local-structure-and-synthetic"
@@ -32,6 +32,8 @@ delivery_modes: ["human-playbook", "toolkit", "template-pack"]
 skill_entrypoint: null
 canonical_entry: "README.md"
 included_in_mother: "source-only"
+include: ["AGENTS.md", "BRAND.md", "CHANGELOG.md", "CONTACT.md", "COURSE-MAP.md", "INSTALL.md", "INTAKE.md", "LICENSE.md", "MANIFEST.md", "MENTAL-MODEL.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "README.md", "RELEASE.md", "RUNTIME-CONTRACT.json", "SOURCES.md", "START-HERE.md", "TOOLS.md", "VERSION.md", "WRITEBACK.md", "ADAPTERS/**", "EXAMPLES/**", "TEMPLATES/**", "WORKSPACE-TEMPLATE/**", "migrations/**", "scripts/**"]
+exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", ".DS_Store", "**/.DS_Store"]
 durable_roots: ["KNOWLEDGE", "PLAYBOOKS", "COURSES", "OUTPUTS"]
 ---
 # Manifest

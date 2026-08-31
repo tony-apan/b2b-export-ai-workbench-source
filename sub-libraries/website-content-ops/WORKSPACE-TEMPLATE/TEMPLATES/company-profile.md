@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "需要从官网和资料提炼公司事实、能力、证据边界与缺口时。"
 keywords: ["company profile", "business facts", "proof assets", "claim boundary", "intake"]
 generated_from: "../../TEMPLATES/company-profile.md"
-generated_source_sha256: "ab5949e995a84a7aa2d4ffe837ea0c0969953735d18ee7b7fb91f49943de1b23"
+generated_source_sha256: "c5873025cdde0db90ff3190791771f0a3f408a7ed1ec9c0833a8aa49a3a4ceea"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/company-profile.md; do not hand-edit this copy in the source package. -->

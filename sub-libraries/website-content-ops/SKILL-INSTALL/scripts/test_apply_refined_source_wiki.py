@@ -44,9 +44,9 @@ def refined_wiki() -> dict:
         "localOnly": True,
         "remoteMutationsPerformed": False,
         "sourceSet": {
-            "inputFiles": [{"path": "/tmp/example-brief.txt", "type": "txt", "sourceRef": "src-example-brief"}],
-            "rawExtractionRefs": ["/tmp/raw-extraction/summary.json"],
-            "wikiRefs": ["/tmp/wiki/example-product-family.md"],
+            "inputFiles": [{"path": "<tmp>/example-brief.txt", "type": "txt", "sourceRef": "src-example-brief"}],
+            "rawExtractionRefs": ["<tmp>/summary.json"],
+            "wikiRefs": ["<tmp>/example-product-family.md"],
         },
         "site": {
             "siteName": "Example Product Demo",

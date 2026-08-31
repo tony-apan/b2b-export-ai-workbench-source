@@ -44,9 +44,9 @@ def warning_quality() -> dict:
 
 def wiki_review() -> dict:
     return {
-        "sourceWiki": "/tmp/source-wiki.json",
-        "sourceWikiMarkdown": "/tmp/wiki/manifest.json",
-        "sourceWikiMarkdownIndex": "/tmp/wiki/index.md",
+        "sourceWiki": "<tmp>/source-wiki.json",
+        "sourceWikiMarkdown": "<tmp>/manifest.json",
+        "sourceWikiMarkdownIndex": "<tmp>/index.md",
     }
 
 
@@ -84,7 +84,7 @@ def save_capture(content_type: str = "products") -> dict:
         "kind": "allincms_probe_save_capture_evidence",
         "contentType": content_type,
         "target": f"https://workspace.laicms.com/demo123/{content_type}/redacted/update",
-        "authorizationRecord": "/tmp/auth.json",
+        "authorizationRecord": "<tmp>/auth.json",
         "preMutationGate": "passed",
         "savedOnce": True,
         "published": False,
@@ -135,9 +135,9 @@ def test_apply_capture_to_manifest() -> None:
     upgraded = build_schema_verified_manifest(
         manifest=draft_manifest("products"),
         capture=save_capture("products"),
-        capture_path="/tmp/save-capture.json",
+        capture_path="<tmp>/save-capture.json",
         base_run_evidence=base_run_evidence("products"),
-        base_run_evidence_path="/tmp/base-run-evidence.json",
+        base_run_evidence_path="<tmp>/base-run-evidence.json",
     )
     assert upgraded["siteKey"] == "demo123"
     assert upgraded["frontendBaseUrl"] == "https://demo123.web.allincms.com"
@@ -164,9 +164,9 @@ def test_apply_capture_preserves_source_context() -> None:
     upgraded = build_schema_verified_manifest(
         manifest=manifest,
         capture=save_capture("products"),
-        capture_path="/tmp/save-capture.json",
+        capture_path="<tmp>/save-capture.json",
         base_run_evidence=base_run_evidence("products"),
-        base_run_evidence_path="/tmp/base-run-evidence.json",
+        base_run_evidence_path="<tmp>/base-run-evidence.json",
     )
     assert upgraded["contentGoalCoverage"] == manifest["contentGoalCoverage"]
     assert upgraded["contentCounts"] == manifest["contentCounts"]
@@ -183,9 +183,9 @@ def test_rejects_content_type_mismatch() -> None:
         build_schema_verified_manifest(
             manifest=draft_manifest("posts"),
             capture=save_capture("products"),
-            capture_path="/tmp/save-capture.json",
+            capture_path="<tmp>/save-capture.json",
             base_run_evidence=base_run_evidence("posts"),
-            base_run_evidence_path="/tmp/base-run-evidence.json",
+            base_run_evidence_path="<tmp>/base-run-evidence.json",
         )
     except ValueError as exc:
         assert "contentType" in str(exc)

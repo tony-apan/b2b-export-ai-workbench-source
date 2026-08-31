@@ -13,7 +13,7 @@ redaction_status: "private-source-reviewed"
 repository_status: "private-source"
 repository_sync_status: "Synced"
 release_status: "BLOCK"
-maturity_status: "Working"
+maturity_status: "draft"
 verification_status: "evidence-partial"
 release_scope: "standalone-mother-library"
 package_id: "b2b-export-ai-workbench-mother-library"
@@ -27,7 +27,7 @@ tag_prefix: "mother/v"
 runtime_applicability: "none"
 runtime_contract: null
 include: [".gitignore", ".github/**", "README.md", "CONTEXT.md", "AGENTS.md", "CLAUDE.md", "MANIFEST.md", "RELEASE.md", "VERSION.md", "CHANGELOG.md", "LICENSE.md", "REVIEW-RECORDS/**", "wiki/**", "sub-libraries/**", "scripts/**", "raw/index.md", "raw/00_inbox/index.md", "raw/10_conversations/index.md", "raw/10_conversations/src-20260728-0001-knowledge-base-structure-closure.md", "raw/20_web/index.md", "raw/30_documents/index.md", "raw/40_media/index.md", "raw/50_exports/index.md", "raw/90_archive/index.md", "raw/_templates/index.md", "raw/_templates/conversation-source.md"]
-exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "customer-runtime/**", "credentials/**", "raw/**", ".env*", "*.secret", "*.credentials", "*.sqlite*", "*.db", "*.p12", "*.pfx", "*.crt", "*.token", "*.cookie", "*.key", "*.pem", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif", "*.mp4", "*.mov", "*.mp3", "*.wav"]
+exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "customer-runtime/**", "credentials/**", "raw/**", "**/client-ids.local.txt", ".env*", "*.secret", "*.credentials", "*.sqlite*", "*.db", "*.p12", "*.pfx", "*.crt", "*.token", "*.cookie", "*.key", "*.pem", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif", "*.mp4", "*.mov", "*.mp3", "*.wav"]
 raw_fixture_digests: ["raw/10_conversations/src-20260728-0001-knowledge-base-structure-closure.md=3adeb6144f626ea99eb5a8bcf74518016dd4000464806f11438029fea4331180"]
 ---
 # Mother Library Manifest

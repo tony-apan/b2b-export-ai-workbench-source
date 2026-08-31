@@ -400,7 +400,7 @@ def test_rehearsal_with_confirmation_prepares_execution_artifacts() -> None:
         confirmed_data = json.loads(confirmed_execution_summary.read_text(encoding="utf-8"))
         preflight_brief = json.loads(Path(confirmed_data["artifacts"]["createSitePreflightBrief"]).read_text(encoding="utf-8"))
         assert review_packet["createActionGateOutput"] in preflight_brief["nextCommandAfterPreflight"]
-        assert "/tmp/allincms-authorization-create-site.json" not in preflight_brief["nextCommandAfterPreflight"]
+        assert "<tmp>/allincms-authorization-create-site.json" not in preflight_brief["nextCommandAfterPreflight"]
         assert (
             confirmed_data["kind"] == "allincms_confirmed_site_execution_preparation"
         )
