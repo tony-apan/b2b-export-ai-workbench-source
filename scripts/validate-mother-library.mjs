@@ -222,6 +222,8 @@ for (const path of files) {
     const description = fieldValue(front, 'description');
     if (!description) fail(`missing description: ${relative(root, path)}`);
     else if (/^(文档说明|页面说明|资料索引|索引|document|documentation|page|file|placeholder)$/i.test(description)) fail(`generic placeholder description: ${relative(root, path)}`);
+    // 扫描面是 walk() 覆盖的全部 markdown（含未跟踪目录），启发式拦截生成器未求值占位符（如 `{d.split(...)}`、`${...}`）；合法模板占位（`{{title}}` 无调用括号）不命中。
+    if (/\$\{|\{[^}\n]{0,120}\(/.test(front ?? '')) fail(`unresolved template placeholder in front matter: ${relative(root, path)}`);
     for (const field of ['sources', 'related']) for (const value of fieldArray(front, field)) checkLocalReference(path, value, `${field} reference`);
   }
   if (/\/Users\/|\/var\/folders\/|\/private\/var\/folders\/|\/tmp\//.test(content)) fail(`machine-local path pattern found: ${relative(root, path)}`);

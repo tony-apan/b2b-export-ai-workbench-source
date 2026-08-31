@@ -14,6 +14,7 @@ const TEST_ALLOWLIST = [
   'frontmatter-missing-sources',
   'frontmatter-sources-scalar',
   'frontmatter-duplicate-key',
+  'frontmatter-template-leak',
   'frontmatter-related-missing-path',
   'frontmatter-unknown-type',
   'index-grandchild-entry',

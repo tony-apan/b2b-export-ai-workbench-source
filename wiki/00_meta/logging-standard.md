@@ -5,7 +5,7 @@ type: "governance"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-29"
+last_updated: "2026-08-31"
 sources: ["Tony structure upgrade decision 2026-07-28", "G5 adversarial remediation 2026-07-29"]
 related: ["logs/index.md", "logs/_templates/daily-log.md", "logs/_templates/monthly-summary.md", "agent-handoff.md", "definition-of-done.md", "open-questions.md"]
 visibility: "public"
@@ -81,14 +81,24 @@ Canonical evidence bundle：每项仅保留 `{kind, locator, sha256}`，按三�
 
 ## 空日志
 
-Daily log 不能只是模板或空壳。确实没有事件时，front matter 必须同时声明：
+Daily log 不能只是模板或空壳。`no_events` 的语义锚定是"本页没有 `EVT-` 事件卡"，而非"当天没有发生任何事"：确实没有事件卡时，front matter 必须同时声明：
 
 ```yaml
 no_events: true
 no_events_reason: "当天仅做只读观察，未发生需要记录的仓库或外部状态变化。"
 ```
 
-有事件时不得声明 `no_events: true`，也不得保留孤立的 `no_events_reason`。`none`、`n/a`、`todo`、`tbd` 不是有效理由。
+出现 `EVT-` 事件卡的日志不得声明 `no_events: true`，也不得保留孤立的 `no_events_reason`。`none`、`n/a`、`todo`、`tbd` 不是有效理由。记录了实际治理工作但不使用事件卡的日志，适用下方"叙述式治理日志"豁免。
+
+## 叙述式治理日志（2026-08-31 起）
+
+治理批按日日志允许以叙述小节（`##` 标题 + bullet）记录当批执行与证据指针，并声明 `no_events: true` + `no_events_reason: "治理批叙述性日志"`，前提是：
+
+- 全文不得出现 `EVT-` 事件卡标题；一旦需要 digest 级防伪证据，必须转正式 v2 事件卡并移除 `no_events` 声明。
+- 叙述小节只承载执行留痕与 durable 指针（commit、run、OQ/CQ ID）；叙述行不受 `event_digest` 防伪保护、不构成资格证据，canonical 状态变更仍必须落 OQ/CQ/CHANGELOG/current-focus。
+- front matter 必须通过 7 步校验与模板泄漏闸（未求值生成占位符 FAIL）。
+
+该豁免不降低事件卡合同：凡涉及发布资格、凭据或跨客户边界的证据，仍必须使用 v2 事件卡。
 
 ## 字段唯一性与 alias
 

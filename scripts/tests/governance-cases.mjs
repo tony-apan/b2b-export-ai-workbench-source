@@ -535,6 +535,17 @@ export const governanceCases = new Map([
       assertRejected(result, /BLOCK: duplicate metadata key owner: wiki\/20_concepts\/id-0001-search-intent\.md/, 'duplicate front matter key gate');
     },
   }],
+  ['frontmatter-template-leak', {
+    title: 'Unresolved generator template placeholders in front matter are rejected',
+    expected: 'reject',
+    run({ root, timeoutMs }) {
+      assertValidatorBaseline(root, 'scripts/validate-mother-library.mjs', [], /STRUCTURE_PASS:/, 'mother library structure', timeoutMs);
+      const path = join(root, 'wiki/20_concepts/id-0001-search-intent.md');
+      replaceExact(path, 'title: "Search Intent"', 'title: "{d.split("/")[1].replace(".md","")} 日志"');
+      const result = run(root, 'scripts/validate-mother-library.mjs', [], { timeoutMs });
+      assertRejected(result, /unresolved template placeholder in front matter: wiki\/20_concepts\/id-0001-search-intent\.md/, 'front matter template leak gate');
+    },
+  }],
   ['frontmatter-related-missing-path', {
     title: 'Related metadata paths must resolve inside the repository',
     expected: 'reject',
