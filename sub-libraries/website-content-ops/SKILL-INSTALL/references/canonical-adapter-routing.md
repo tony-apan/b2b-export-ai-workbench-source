@@ -3,7 +3,7 @@ doc_id: allincms-canonical-adapter-routing
 title: Canonical Website Content Operations Adapter Routing
 description: Resolve the portable Website Content Operations source root and preserve the authorization boundary between this orchestration Skill and the canonical AllinCMS Adapter.
 layer: ops
-status: working
+status: "Working"
 created: 2026-07-30
 updated: 2026-08-12
 last_updated: 2026-08-31

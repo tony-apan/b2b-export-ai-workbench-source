@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-11"
+last_updated: "2026-08-31"
 sources: ["../../../AGENTS.md", "../knowledge-compounding-system.md"]
 related: ["../conversation-log.md", "../decision-log.md", "../ingestion-log.md", "_templates/daily-log.md", "_templates/monthly-summary.md"]
 visibility: "public"

@@ -1,14 +1,16 @@
 ---
-name: allincms-bulk-content-upload
-description: Source-driven AllinCMS / LAICMS website content operations for creating or updating sites, articles, products, taxonomy, media, and theme pages from user-provided PDFs, DOCX files, spreadsheets, websites, images, briefs, or existing CMS records. Use when an AI must resolve a verified Website Content Operations runtime, extract traceable claims, discover the current logged-in CMS and field/capability contracts, build an exact create/update/noop plan, execute approved API or Server Action mutations strictly serially, and verify backend/editor/frontend persistence. The Skill resolves a complete canonical source checkout (mother library sub-libraries/website-content-ops) as its primary runtime and is distributed from SKILL-INSTALL/ inside that library; the digest-verified runtime snapshot is retired pending the dist pipeline. It must not invent client facts or reuse sample payloads as current contracts.
-created: 2026-08-31
-last_updated: 2026-08-31
+title: "AllinCMS Bulk Content Upload Skill"
+status: "Working"
+owner: "AI"
+created: "2026-08-30"
+last_updated: "2026-08-31"
+type: "skill"
+sources: ["self"]
+related: ["README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
-sources: ["self"]
-related: ["../README.md"]
-owner: "AI"
-type: "doc"
+name: allincms-bulk-content-upload
+description: Source-driven AllinCMS / LAICMS website content operations for creating or updating sites, articles, products, taxonomy, media, and theme pages from user-provided PDFs, DOCX files, spreadsheets, websites, images, briefs, or existing CMS records. Use when an AI must resolve a verified Website Content Operations runtime, extract traceable claims, discover the current logged-in CMS and field/capability contracts, build an exact create/update/noop plan, execute approved API or Server Action mutations strictly serially, and verify backend/editor/frontend persistence. The Skill resolves a complete canonical source checkout (mother library sub-libraries/website-content-ops) as its primary runtime and is distributed from SKILL-INSTALL/ inside that library; the digest-verified runtime snapshot is retired pending the dist pipeline. It must not invent client facts or reuse sample payloads as current contracts.
 ---
 
 # AllinCMS Bulk Content Upload

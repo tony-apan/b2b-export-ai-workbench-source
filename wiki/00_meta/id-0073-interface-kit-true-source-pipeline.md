@@ -10,7 +10,7 @@ doc_id: "ID-0073"
 visibility: "public"
 redaction_status: "safe-to-publish"
 sources: ["id-0072 迁移绑定条款（TERRA X3）", "迁移执行授权 2026-08-30"]
-keywords: ["interface-kit;pipeline;dist;digest;sync;stale-guard"]
+keywords: ["interface-kit", "pipeline", "dist", "digest", "sync", "stale-guard"]
 when_to_read: "需要了解 runtime 迁移或 interface-kit 真源管线时"
 related: ["id-0072-runtime-folder-structure-v2.md"]
 ---

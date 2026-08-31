@@ -10,7 +10,7 @@ description: AllinCMS 建站工具包文档（README.md）
 visibility: "public"
 redaction_status: "safe-to-publish"
 sources: ["self"]
-related: ["../README.md"]
+related: ["README.md"]
 ---
 
 # AllinCMS 纯接口工具包（跨平台：macOS / Windows / Linux）

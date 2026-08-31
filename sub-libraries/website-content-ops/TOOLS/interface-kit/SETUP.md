@@ -9,7 +9,7 @@ created: 2026-08-31
 visibility: "public"
 redaction_status: "safe-to-publish"
 sources: ["self"]
-related: ["../README.md"]
+related: ["README.md"]
 ---
 
 # 安装与依赖指南（SETUP.md）—— 新电脑/新环境必读

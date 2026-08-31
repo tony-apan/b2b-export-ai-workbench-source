@@ -8,9 +8,9 @@ created: "2026-08-30"
 last_updated: "2026-08-31"
 doc_id: "ID-0072"
 sources: ["用户结构诉求 2026-08-30", "残留实测（217 /tmp 文件 + 64 tracked 修改 + skill 仓 dirty）"]
-keywords: ["runtime-folder;interface-kit;true-source;pipeline;migration"]
+keywords: ["runtime-folder", "interface-kit", "true-source", "pipeline", "migration"]
 when_to_read: "需要了解 runtime 迁移或 interface-kit 真源管线时"
-related: ["../AGENTS.md", "in-repository-agency-runtime-model.md"]
+related: ["../../AGENTS.md", "in-repository-agency-runtime-model.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 redaction_note: "仅结构规则与统计数，无凭据/客户数据；fluxpedal 为 allowlist synthetic 示例品牌"
@@ -46,19 +46,19 @@ redaction_note: "仅结构规则与统计数，无凭据/客户数据；fluxpeda
    ① 先修 .gitignore：加无斜杠行 `/customer-runtime`（实证：尾斜杠模式不匹配软链，软链会被 git add -A 误提交为 symlink blob）——**已修 2026-08-30**。
    ② 整目录**相对**软链（标记为 legacy shim 过渡层）：`ln -s ../701_runtime <母库根>/customer-runtime`（相对链以链接所在目录为锚，整树搬迁仍有效；**禁用 00_shared 变体**——运行区内部绝对引用指向 10_clients，只链 00_shared 会全断）。同时 `mv tmp/fluxpedal-site ../701_runtime/10_clients/fluxpedal-site/`（静态站产物归客户区）。
    ③ **顺序敏感（先 mv 后 mkdir）**：`ls ../701_runtime` 必须不存在 → **先** `mv customer-runtime ../701_runtime/`（整目录改名，此时 10_clients/00_shared 已就位）→ **再** `mkdir -p ../701_runtime/20_scratch ../701_runtime/99_tmp` → 再 `mv tmp/fluxpedal-site ../701_runtime/10_clients/fluxpedal-site/`（此时目标父目录已存在）。**若先 mkdir ../701_runtime 再 mv，customer-runtime 会被套成 701_runtime/customer-runtime/ 子目录**。同卷 rename 原子，无需备份副本。
-   ④ 迁后验证（**绝对路径**，避免 cwd 依赖）：`python3 -c "import os;print(os.path.realpath('/Users/tony/Work/01_Data/701_kecheng/customer-runtime'))"` 必须输出 `/Users/tony/Work/01_Data/701_runtime`；`ls /Users/tony/Work/01_Data/701_kecheng/customer-runtime/00_shared/interface-kit/site_pipeline.py` 经软链可达；`git -C /Users/tony/Work/01_Data/701_kecheng status --short | grep customer-runtime` 必须为空。
+   ④ 迁后验证（**绝对路径**，避免 cwd 依赖）：`python3 -c "import os;print(os.path.realpath('<home>'))"` 必须输出 `<home>`；`ls <home>` 经软链可达；`git -C <home> status --short | grep customer-runtime` 必须为空。
    ⑤ 64 tracked 修改全为知识升级（TERRA 8 文件抽查 0 客户残留）→ 走 release 分拣（需用户授权，不裸 push）；untracked 剔除 `.tmp-dbg.mjs`/`tmp/`/`.DS_Store`。
    ⑥ skill 仓 3 文件 commit；本文档入库。（后续 2026-08-30：skill 仓整体封存，安装壳合并进母库 SKILL-INSTALL/，见当日日志与母库 CHANGELOG。）
    **执行序（显式，一次复制可跑；在母库根执行）**：
    ```bash
-   cd /Users/tony/Work/01_Data/701_kecheng
+   cd <home>
    ls ../701_runtime 2>/dev/null && { echo "目标已存在，中止"; exit 1; }   # 前置闸门 A1
-   [ "$(df /Users/tony/Work/01_Data/701_kecheng | tail -1 | awk '{print $1}')" = "$(df /Users/tony/Work/01_Data | tail -1 | awk '{print $1}')" ] || { echo "跨设备，mv 非原子，中止"; exit 1; }  # 闸门 A2 同卷断言
+   [ "$(df <home> | tail -1 | awk '{print $1}')" = "$(df <home> | tail -1 | awk '{print $1}')" ] || { echo "跨设备，mv 非原子，中止"; exit 1; }  # 闸门 A2 同卷断言
    mv customer-runtime ../701_runtime                                        # ① 整目录改名（原子）
    mkdir -p ../701_runtime/20_scratch ../701_runtime/99_tmp                  # ② 再建 scratch（顺序！）
    mv tmp/fluxpedal-site ../701_runtime/10_clients/fluxpedal-site            # ③ 静态站归客户区
    [ ! -e customer-runtime ] && ln -s ../701_runtime customer-runtime        # ④ 前置闸门 B：原目录必须已不存在
-   python3 -c "import os;print(os.path.realpath('/Users/tony/Work/01_Data/701_kecheng/customer-runtime'))"  # ⑤ = /Users/tony/Work/01_Data/701_runtime
+   python3 -c "import os;print(os.path.realpath('<home>'))"  # ⑤ = <home>
    ls customer-runtime/00_shared/interface-kit/site_pipeline.py              # ⑥ 经软链可达
    git status --short | grep customer-runtime || echo "OK: git 无条目"       # ⑦ 无输出=通过
    ```

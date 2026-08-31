@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-08-01"
-last_updated: "2026-08-11"
+last_updated: "2026-08-31"
 sources: ["../../../../../AGENTS.md"]
 related: ["2026-08-01.md"]
 visibility: "public"
@@ -24,7 +24,7 @@ keywords: ["2026-08", "agency operations", "customer runtime", "AI handoff", "up
 |---|---|---|---|---|---|---|
 | — | [Daily Operations Log 2026-08-01](2026-08-01.md) | 记录多客户代运营 runtime、AI 续接索引、事务回滚、单写者锁、任务实体 scope 和母库更新 fail-closed 验证。 | log | Working / public | 需要追溯多客户代运营 runtime 的结构、AI 续接、索引隔离、更新 preflight、synthetic 对抗结果和未证明边界时。 | agency operations、customer runtime、ACTIVE-CONTEXT、HANDOFF、transaction rollback、single writer lock、update preflight |
 | — | [Daily Operations Log 2026-08-11](2026-08-11.md) | 记录 website-content-ops B2B SEO 文章规范 F23 收口，以及 AllinCMS Adapter 全接口 Registry、最小 npm 包和双 reviewer 终审。 | log | Working / public | 需要追溯 B2B SEO 文章规范 F23，或 AllinCMS Adapter 接口 Registry、最小包闭包、双 reviewer 结论和未验证边界时。 | B2B SEO、search intent、buyer pain、F23、AllinCMS、interface registry、npm package、adversarial review |
-| — | [2026-08-30 建站工具包治理批](2026-08-30.md) | 未填写 | log | Working | 需要处理本目录对应主题时 | — |
-| — | [2026-08-31 治理批与管线日](2026-08-31.md) | 未填写 | log | Working | 需要处理本目录对应主题时 | — |
+| — | [{d.split("/")[1].replace(".md","")} 日志](2026-08-30.md) | 治理批与管线执行记录 | log | Working / public | 需要处理本目录对应主题时 | — |
+| — | [{d.split("/")[1].replace(".md","")} 日志](2026-08-31.md) | 治理批与管线执行记录 | log | Working / public | 需要处理本目录对应主题时 | — |
 
 <!-- INDEX:END -->
