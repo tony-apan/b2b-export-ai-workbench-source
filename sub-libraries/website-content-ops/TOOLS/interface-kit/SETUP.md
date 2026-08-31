@@ -3,7 +3,7 @@ title: "安装与依赖指南（SETUP.md）—— 新电脑/新环境必读"
 type: "doc"
 status: "Working"
 owner: "AI"
-last_updated: "2026-08-31"
+last_updated: "2026-09-01"
 description: AllinCMS 建站工具包文档（SETUP.md）
 created: 2026-08-31
 visibility: "public"
@@ -56,7 +56,7 @@ python3 allincms_api.py <token> read-sites    # 预期：站点列表 JSON
 - **pip 安装权限**：用 `--user`（install-deps.py 已带）；公司镜像慢可加 `-i https://pypi.tuna.tsinghua.edu.cn/simple`
 - **macOS 系统 Python 受限**：装 `python3-docx` 失败时先 `python3 -m ensurepip` 再重试
 - **Node 不想装**：跳过 ④ 的 canonical 校验即可；界面校验不影响建站工具
-- **token 从哪来**：工作台登录 → DevTools → Application → Cookies → `payload-token`（**推荐 `export WS_TOKEN=<token>` 环境变量**；或 token 文件 chmod 600 后传路径，**不要提交到 git/公开目录**）
+- **token 从哪来**（三种取法，推荐①，真源 [TOKEN-AUTH.md](../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md)）：① `AllinCMS(email, password)` 纯 API 登录自动提取；② 工作台登录 → DevTools → Application → Cookies → `payload-token`（兜底）；③ 浏览器配置文件提取（未实测）。取到后**推荐 `export WS_TOKEN=<token>` 环境变量**；或 token 文件 chmod 600 后传路径，**不要提交到 git/公开目录**
 
 ## 安装后顺序（每次干活前）
 

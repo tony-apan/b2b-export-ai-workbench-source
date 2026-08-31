@@ -4,7 +4,7 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-08-30"
+last_updated: "2026-09-01"
 sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30"]
 related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-customization-checklist.md", "MODULES.md", "writing/WRITING-INDEX.md"]
 description: AllinCMS 建站工具包文档（NEW-SITE-ONEPASS.md）
@@ -58,7 +58,11 @@ redaction_status: "safe-to-publish"
 
 ### 步骤 0 — 索引 find/verify（开工硬 gate，ISS-065）
 
-- **输入**：客户资料已到达（拿到任务关键词）+ **凭据就绪**：用户登录 workspace.laicms.com 后取 Cookie `payload-token` → **`export WS_TOKEN=<token>`（跨平台推荐）**；或 token 文件（chmod 600）传路径。无 token = 全链路不可用。
+- **输入**：客户资料已到达（拿到任务关键词）+ **凭据就绪**——token 三种取法，按推荐顺序（专题真源：[TOKEN-AUTH.md](../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md)，向用户索要凭据前必读）：
+  1. **纯 API 登录（推荐，零浏览器；2026-08-30 双路径实测）**：邮箱+密码（对话直发，或用户自写临时文件）→ `AllinCMS(email, password)` 登录一次提取 token；密码即弃，临时文件用完即删。
+  2. **浏览器手动取 Cookie（兜底，已验证）**：用户登录 workspace.laicms.com → DevTools → Cookies → 复制 `payload-token`。
+  3. **浏览器配置文件提取（方向指引，未实测）**：详见 TOKEN-AUTH.md 方式三；优先 1/2。
+  取到后 **`export WS_TOKEN=<token>`（跨平台推荐）**；或 token 文件（chmod 600）传路径。无 token = 全链路不可用。
 - **动作**：
   ```bash
   cd <IFK>
@@ -241,8 +245,8 @@ redaction_status: "safe-to-publish"
   # DELIVERY：templates/delivery-manifest.md → 70_evidence/DELIVERY-<slug>-<date>.md（链接表每行核验 200 + 已知事项照抄 RUNBOOK §9）
   # 收尾：70_evidence/HANDOFF.md + 新坑回填 issues.tsv（fixed/boundary/pending）+ registry_tools.py verify + gen
   ```
-- **验收判据**：audit 13 项站内检查全 PASS（范围以 site_pipeline.py 为真源）；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**。
-- **产物**：`<slug>-audit-config.json`、`audit-report.json`、`DELIVERY-<slug>-<date>.md`、`HANDOFF.md`（详见 §4）。
+- **验收判据**：audit 13 项站内检查全 PASS（范围以 site_pipeline.py 为真源）；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**。三门通过后、DELIVERY 签发前，另按 [templates/site-acceptance-v2.md](templates/site-acceptance-v2.md)（TPL-023，7 层 59 项 + 四轮对抗流程）逐项验收——判据="陌生买家能否完成询盘"，证据落盘 `70_evidence/acceptance-v2.md`。
+- **产物**：`<slug>-audit-config.json`、`audit-report.json`、`acceptance-v2.md`、`DELIVERY-<slug>-<date>.md`、`HANDOFF.md`（详见 §4）。
 - **坑**：没有 `--config` 的 audit 会用 Demo 基线误判新站（ISS-063）；公网 CDN 缓存 publish 后 5–10s 生效，验收以列表页数据源 + counter 为准。
 
 ---

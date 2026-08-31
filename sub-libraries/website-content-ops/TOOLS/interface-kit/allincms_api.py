@@ -9,8 +9,8 @@ AllinCMS / LAICMS 纯接口客户端（跨平台：macOS / Windows / Linux，Pyt
 
 用法示例（真实签名，2026-08-30 核对）：
     from allincms_api import AllinCMS
-    api = AllinCMS(token=open(_token_file()).read().strip())  # 推荐：浏览器登录后取 Cookie payload-token
-    # api.login(email, password) 仅在有账号密码时用；成功与否取决于 Set-Cookie 提取，无 token 一律走手动 Cookie
+    api = AllinCMS(email="...", password="...")  # 推荐（方式一）：纯 API 登录，token 自动提取（ISS-083 双路径实测）
+    # 无账号密码时兜底（方式二）：浏览器登录后取 Cookie payload-token → AllinCMS(token=...)；三法详见 ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md
     api.create_category2(site_slug, site_id, name, slug, "posts")      # 分类（cover 显式传 None）
     api.create_category2(site_slug, site_id, name, slug, "products")
     api.upload_media(site_slug, site_id, "photo.jpg", title="...", alt="...")

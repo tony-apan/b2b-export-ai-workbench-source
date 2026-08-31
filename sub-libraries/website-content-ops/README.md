@@ -5,7 +5,7 @@ type: "sub-library"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-08-11"
+last_updated: "2026-09-01"
 sources: ["Tony conversation 2026-07-26", "Tony README and AI onboarding decision 2026-07-30"]
 related: ["START-HERE.md", "CONTACT.md", "COURSE-MAP.md", "MENTAL-MODEL.md", "AGENTS.md", "PLAYBOOK.md", "MANIFEST.md", "RUNTIME-CONTRACT.json", "RUNTIME-INTEGRATION.md", "SKILL.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md", "ADAPTERS/cms/allincms/INTERFACE-INDEX.md", "ADAPTERS/cms/allincms/interface-registry.json"]
 visibility: "public"
@@ -56,7 +56,7 @@ license_status: "pending"
 2. 工具包自检（应输出 VERIFY PASS；可能出现 remote refs 缺失的 WARN，属正常）：cd sub-libraries/website-content-ops/TOOLS/interface-kit && python3 index/registry_tools.py verify
 3. 真源管线检查（应输出 CHECK PASS；出现任何 WARN/FAIL 都停下向我报告，唯一例外：与步骤 2 同类的 remote refs 缺失 WARN）：cd ../../scripts && python3 interface-kit-pipeline.py check
 4. 选装依赖（仅 PDF/DOCX 解析需要）：cd ../TOOLS/interface-kit && python3 install-deps.py --yes
-5. 凭据：向我要 payload-token（我登录 workspace.laicms.com 后从浏览器 Cookie 复制给你），然后 export WS_TOKEN=<token>；我不给就停在这里，不要猜、不要碰远程。该 token 等于我的登录态（约 30 天有效且无法提前吊销），只放进环境变量（若你手敲 export，先 set +o history 防落入 shell 历史），不要写文件、不要入日志；用完提醒我在平台退出登录，或到期前轮换/改密作废
+5. 凭据：token 三种取法（推荐①，专题真源：仓库内 sub-libraries/website-content-ops/ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md）——① 纯 API 登录：我把邮箱+密码直接发你（或我自己 printf 'email\npassword' > <tmp>/ws-creds.txt 后告诉你路径），你登录一次换 token，密码即弃、该临时文件你用完即删，事后提醒我改密；② 兜底：我登录 workspace.laicms.com 后从浏览器 Cookie 复制 payload-token 发你；③ 你从我本地浏览器配置文件提取（方向指引，未实测）。任一方式取到后 export WS_TOKEN=<token>；我一样都不给就停在这里，不要猜、不要碰远程。该 token 等于我的登录态（约 30 天有效且无法提前吊销），只放进环境变量（若你手敲 export，先 set +o history 防落入 shell 历史），不要写 token 文件、不要入日志（方式①的密码临时文件是唯一例外，用完即删）；用完提醒我在平台退出登录，或到期前轮换/改密作废
 6. 就绪后：先向我要客户资料（PDF/DOCX/表格/网站/图片均可）与 site-key 偏好（不给则按 ONEPASS 规则生成）；然后读当前目录的 NEW-SITE-ONEPASS.md，按其 13 步建完整站点；事实与坑查同目录 RUNBOOK-ANYONE.md
 7. 批准粒度：13 步内的上传/发布类操作，首次执行前把整批计划列给我批一次即可；删除类（站点/产品/文章/分类/标签/主题/媒体，含 delete-demo-content 与任何 --force/--confirm 批量写）永远逐条列目标等我确认；未经批准不覆盖
 （Windows 同样适用：WS_TOKEN 环境变量跨平台；若你的执行环境每条命令独立 shell，cd 不持久，请自行换算为绝对路径）

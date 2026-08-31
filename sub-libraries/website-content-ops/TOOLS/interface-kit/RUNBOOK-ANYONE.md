@@ -4,7 +4,7 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-08-30"
+last_updated: "2026-09-01"
 sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..065"]
 related: ["ONBOARDING-PIPELINE.md", "writing/WRITING-INDEX.md", "MODULES.md"]
 description: AllinCMS 建站工具包文档（RUNBOOK-ANYONE.md）
@@ -18,7 +18,7 @@ redaction_status: "safe-to-publish"
 
 > 本手册是**零上下文总入口**。不假设你见过 Demo/Example/保温杯任何先例。
 >
-> **⛔ 永久禁令（用户指令 2026-08-30）**：lang / canonical / JSON-LD / img-attrs 这 4 项**禁止检查、禁止报告、禁止讨论**。它们是平台层行为，不属站内职责——审计已永久移除，文档已永久清除。任何 AI 不得以任何理由重新加回或提及。
+> **平台前端审计项（lang / canonical / JSON-LD / img-attrs）——收窄令（用户指令 2026-09-01"可"，取代 2026-08-30 永久禁令）**：这 4 项**允许检查并登记**（结果记 BOUNDARY/验收清单项，出证据），但**平台修复前不阻断交付**；它们是平台层行为，不属站内修复职责。检查判据与登记口径以 [templates/site-acceptance-v2.md](templates/site-acceptance-v2.md) 为准；对应平台缺陷走 BOUNDARY 三要件（OQ-TOOL-0004 渠道）。不得写成 FAIL 拦截交付，也不得重新当作站内待修项。
 > 铁律：**先读 §0（index-first），踩坑先 `find`，新坑必须回填**。任何"我猜平台支持"的字段先查 MODULES.md 与 `templates/*.json` 实测样例。
 
 ## §0 前置（一次性，5 分钟）
@@ -32,9 +32,10 @@ WS_TOKEN=<token> python3 scan/scan-actions.py - /<site_key>/themes   # 部署更
 python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/drift 守卫（id-0073；WARN/FAIL 先处理）
 ```
 
-- 凭据：`payload-token` JWT **优先 `export WS_TOKEN=<token>` 环境变量（跨平台推荐）**；或写 token 文件（chmod 600）后传路径。获取方法（二选一）：
-  1. **纯 API（ISS-083）**：`api = AllinCMS(email=..., password=...)`——login() 会 POST sign-in 并从响应 Set-Cookie 提取 token**（成功+失败路径均实测 2026-08-30：email/password → Set-Cookie 提取 token → 读写全权限验证通过）**。
+- 凭据：`payload-token` JWT **优先 `export WS_TOKEN=<token>` 环境变量（跨平台推荐）**；或写 token 文件（chmod 600）后传路径。获取方法（三种，专题真源 [TOKEN-AUTH.md](../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md)；③ 为方向指引未实测）：
+  1. **纯 API（ISS-083，推荐）**：`api = AllinCMS(email=..., password=...)`——login() 会 POST sign-in 并从响应 Set-Cookie 提取 token**（成功+失败路径均实测 2026-08-30：email/password → Set-Cookie 提取 token → 读写全权限验证通过）**。
   2. **浏览器 Cookie（兜底，已验证）**：用户登录 `workspace.laicms.com` → DevTools → Cookies → 复制 `payload-token` → `export WS_TOKEN=<token>`。
+  3. **浏览器配置文件提取（方向指引，未实测）**：AI 从用户已登录浏览器的 Cookie 存储自动提取；详见 TOKEN-AUTH.md 方式三，优先 1/2。
   **拿 token 是唯一可能碰浏览器的环节；拿到后全程纯接口**（操作矩阵 10/10 实测：读 8 + 幂等写 2 + 媒体 multipart + 公开站表单 submit，零浏览器）。
 - 目标：工作台 `workspace.laicms.com`，公开站 `https://<site_key>.web.allincms.com`。
 - 路径约定：本文内 runtime 相关路径相对于**运行时根 `$RUNTIME_ROOT`**（独立 runtime 目录；母库内经 `customer-runtime/` 软链可达）；`templates/...`、`writing/...`、`index/...` 相对于 interface-kit 目录。

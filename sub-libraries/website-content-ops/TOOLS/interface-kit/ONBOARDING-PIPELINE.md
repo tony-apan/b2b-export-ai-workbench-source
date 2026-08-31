@@ -3,7 +3,7 @@ title: "AllinCMS 建站上线 SOP（0 → 1 纯接口流水线）"
 type: "doc"
 status: "Working"
 owner: "AI"
-last_updated: "2026-08-31"
+last_updated: "2026-09-01"
 description: AllinCMS 建站工具包文档（ONBOARDING-PIPELINE.md）
 created: 2026-08-31
 visibility: "public"
@@ -47,7 +47,7 @@ python3 index/registry_tools.py verify        # 索引完整性
 ```bash
 # 0.1 环境
 #  - Python 3（mac/win/linux 均可），本目录 interface-kit 完整复制即用
-#  - token：工作台登录后 Cookie payload-token（JWT），推荐存 WS_TOKEN 环境变量（跨平台）；或 chmod 600 文件
+#  - token 三种取法（推荐①，真源 ../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md）：① AllinCMS(email, password) 纯 API 登录（零浏览器）② 浏览器 Cookie payload-token（兜底）③ 浏览器配置提取（未实测）；取到后推荐 WS_TOKEN 环境变量（跨平台）或 chmod 600 文件
 
 # 0.2 校验部署 id 与 action id（同一部署不重扫；换部署/升级必扫）
 python3 scan/scan-actions.py <token> /sites            # 输出当前部署所有 action id
