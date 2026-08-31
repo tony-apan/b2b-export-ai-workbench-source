@@ -2,7 +2,7 @@
 title: "FluxPedal Motors Synthetic B2B Content Example"
 description: "English-only synthetic example package showing how a United States validate-stage B2B engineering article connects search intent, buyer pain, product decisions, progressive CTAs, qualification, and evidence boundaries."
 type: "index"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-08-11"

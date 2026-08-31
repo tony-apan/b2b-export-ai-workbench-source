@@ -2,11 +2,11 @@
 title: "Workspace Outputs"
 description: "保存文章 brief、产品内容、图片清单、CMS 草稿、发布 URL 和验收证据。"
 type: "index"
-status: "Draft"
+status: "Working"
 owner: "Team"
 created: "2026-07-26"
 last_updated: "2026-07-26"
-sources: []
+sources: ["self"]
 related: ["../30_tasks/index.md", "../TEMPLATES/article-brief.md", "../TEMPLATES/publish-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

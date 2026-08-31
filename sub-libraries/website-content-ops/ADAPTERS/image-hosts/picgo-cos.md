@@ -2,7 +2,7 @@
 title: "PicGo Adapter: Tencent Cloud COS"
 description: "使用 PicGo 腾讯云 COS uploader 完成图片上传、公开 URL 和自定义域名验证的合同。"
 type: "tooling"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

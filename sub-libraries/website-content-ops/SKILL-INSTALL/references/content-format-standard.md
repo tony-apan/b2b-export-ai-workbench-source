@@ -4,6 +4,12 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（content-format-standard.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # 正文格式与信息架构规范(产品 / 文章正文怎么排成专业级)

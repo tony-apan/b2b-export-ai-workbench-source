@@ -3,12 +3,18 @@ doc_id: allincms-source-files-to-site-package
 title: AllinCMS 源文件到站点内容包
 description: 将用户文件提炼为 wiki 层、站点内容包、确认门禁和后续 AllinCMS 上传 manifest 的流程
 layer: ops
-status: draft
+status: "Working"
 created: 2026-07-01
 updated: 2026-07-30
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Source Files To Site Package
@@ -119,7 +125,7 @@ After AI/user refinement, rerun with `--refined-source-wiki ~/allincms-projects/
 
 The lower-level confirmation and confirmed-execution helpers follow the same default. If `--accepted-fields` and repeated `--accepted-deferral` flags are omitted, they inherit the current review packet's suggested accepted fields and suggested deferrals. This makes resumed runs safe when the user has already accepted the review packet and only the current confirmation text is being supplied. Do not hand-invent acceptance fields from memory; use explicit flags only when the user overrides the review packet's suggestions.
 
-On macOS, `/tmp/...` and `/private/tmp/...` may point to the same artifact. Validators should compare resolved file paths plus sha256 identity for source package / review packet bindings, not fail only because one artifact records `/private/tmp` while a resumed command passes `/tmp`. Treat content hash mismatch as a blocker, but path spelling aliases alone are not drift.
+On macOS, `<tmp>/...` and `/private<tmp>/...` may point to the same artifact. Validators should compare resolved file paths plus sha256 identity for source package / review packet bindings, not fail only because one artifact records `/private/tmp` while a resumed command passes `/tmp`. Treat content hash mismatch as a blocker, but path spelling aliases alone are not drift.
 
 For `target-mode=new_site`, confirmation without fresh create-site preflight must stop at `readyForBrowserStage=needs_create_site_preflight`. The next-stage handoff should expose `needsCreateSitePreflight=true`, `browserWorkRequired=false`, and a preflight blocker. Do not treat `currentStage=create_site_handoff` as permission to open the browser mutation path until the `/sites` preflight has been collected and the confirmed create-site handoff/runbook exist.
 The top-level `run_source_file_rehearsal.py` summary must echo the confirmed execution helper's `nextAction` at this boundary. If `readyForBrowserStage=needs_create_site_preflight`, the summary should direct the operator to `create-site-preflight-brief.json`, not to the browser create/select-site stage.
@@ -1374,7 +1380,7 @@ Is business copy kept in runtime artifacts, not inside the skill?
 
 If any answer is weak, update the wiki layer or package before moving to site creation.
 
-On macOS, confirmation handoff artifacts may record the source package as `/tmp/...` or `/private/tmp/...`. Review-packet command-template validation should accept those two spellings only when they resolve to the same file path; it must still require the source package hash and review packet hash to match before confirmation or execution preparation. Do not hand-edit paths in the review packet just to satisfy a string check.
+On macOS, confirmation handoff artifacts may record the source package as `<tmp>/...` or `/private<tmp>/...`. Review-packet command-template validation should accept those two spellings only when they resolve to the same file path; it must still require the source package hash and review packet hash to match before confirmation or execution preparation. Do not hand-edit paths in the review packet just to satisfy a string check.
 
 ## Execution Handoff
 

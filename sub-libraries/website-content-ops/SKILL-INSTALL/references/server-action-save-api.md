@@ -3,12 +3,18 @@ doc_id: allincms-bulk-server-action-save-api
 title: AllinCMS Server Action 保存契约
 description: LAICMS / AllinCMS 产品/文章/分类/发布/删除的 Next.js Server Action 请求形状、字段契约、发布语义与重试规则(中性模板,不含任何站点专属值)
 layer: ops
-status: draft
+status: "Working"
 created: 2026-07-03
 updated: 2026-07-30
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Server Action Save API 契约(中性模板)

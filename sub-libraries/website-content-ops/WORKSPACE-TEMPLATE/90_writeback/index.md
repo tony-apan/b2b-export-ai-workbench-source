@@ -2,11 +2,11 @@
 title: "Workspace Writeback"
 description: "分开记录客户专属学习和可申请写回私有母库的通用方法、模板缺口与失败模式。"
 type: "index"
-status: "Draft"
+status: "Working"
 owner: "Team"
 created: "2026-07-26"
 last_updated: "2026-07-26"
-sources: []
+sources: ["self"]
 related: ["../50_metrics/index.md", "../TEMPLATES/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

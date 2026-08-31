@@ -2,7 +2,7 @@
 title: "Website Content Operations Mental Model"
 description: "解释建站内容运营中不随工具变化的业务模型、数据对象、接口、验证和迁移方法。"
 type: "concept"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-07-26"

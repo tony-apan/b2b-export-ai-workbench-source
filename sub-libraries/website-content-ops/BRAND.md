@@ -2,7 +2,7 @@
 title: "Brand Settings"
 description: "以 FluxPedal Motors 虚拟品牌演示子库品牌、Logo、署名和使用限制。"
 type: "brand"
-status: "Draft"
+status: "Working"
 owner: "Human"
 created: "2026-07-26"
 last_updated: "2026-07-27"

@@ -2,7 +2,7 @@
 title: "PicGo Image Host Adapters"
 description: "为 Cloudflare R2、GitHub、腾讯云 COS 和阿里云 OSS 提供统一选择、单图验证和迁移合同。"
 type: "adapter-index"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

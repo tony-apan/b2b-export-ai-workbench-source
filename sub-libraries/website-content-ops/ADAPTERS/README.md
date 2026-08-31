@@ -2,7 +2,7 @@
 title: "Adapters"
 description: "把稳定业务对象映射到具体图床、CMS 或平台的统一 adapter 合同、模板和发布闸。"
 type: "adapter-index"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-12"

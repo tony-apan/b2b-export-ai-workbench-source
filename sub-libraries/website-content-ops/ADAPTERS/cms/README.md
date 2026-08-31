@@ -2,7 +2,7 @@
 title: "CMS Adapters"
 description: "CMS adapter 入口，封装站点发现、媒体、内容、草稿、发布、验证和接口漂移。"
 type: "adapter-index"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

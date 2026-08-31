@@ -3,12 +3,18 @@ doc_id: allincms-bulk-launch-acceptance
 title: AllinCMS 上线验收契约
 description: 从创建站点到可上线网站的完整验收门槛、证据和阻塞条件
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-30
 updated: 2026-07-02
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Launch Acceptance

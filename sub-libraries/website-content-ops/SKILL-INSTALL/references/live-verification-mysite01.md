@@ -3,12 +3,18 @@ doc_id: allincms-bulk-live-verification-mysite01
 title: AllinCMS 现场核验记录 mysite01
 description: 2026-06-29 对 mysite01 站点的 LAICMS / AllinCMS 字段、路由和渲染行为脱敏核验记录
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-04
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Live Verification: mysite01

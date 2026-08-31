@@ -34,7 +34,7 @@ redaction_status: "private-source-reviewed"
 - 根 README 拆除 Quick Start 建站段（根页只做总导航）；建站入口 + mermaid 流程图移入 WCO README"建站一条龙"。
 - WCO 子库完成禁令全仓清扫（id-0002 退役、frontend_deferred_blocks 空集化、schema/验证器/负回归测试同步、去敏 30+ 处），逐项对比表见子库 CHANGELOG 2026-08-30。
 - skill 仓 allincms-bulk-content-upload 已转 private；3 个脏文件去敏后本地 commit 598b970（未 push，待授权）。
-- /tmp/ws-token.txt 明文 token 删除；文档与 scan-actions.py 全面改 WS_TOKEN 环境变量优先。
+- <tmp>/ws-token.txt 明文 token 删除；文档与 scan-actions.py 全面改 WS_TOKEN 环境变量优先。
 - KIT registry 登记 DOC-035/036/037 + verify 未登记覆盖检查；id-0072 待办区两处履约勾选。
 - 待用户：CMS 密码轮换（OQ-AUTH-0001）、维持 private 确认（OQ-AUTH-0002）、5-commit 切分提交授权（OQ-COMMIT-0001）。
 - skill 仓合并（2026-08-30 用户决策"合并进母库"）：独立仓 tony-apan/allincms-bulk-content-upload 封存（archived，保留历史）；tracked 树（除 vendor 33MB 与 _archive）导入 `sub-libraries/website-content-ops/SKILL-INSTALL/`（6.6MB）；合并前清理母库实名×2 与客户名大小写变形×2（skill 仓 00da9e0/31191ea）；~/.agents|claude|codex 三软链重指母库目录。OQ-AUTH-0002（维持 private 确认）由此**作废**。
@@ -63,7 +63,7 @@ redaction_status: "private-source-reviewed"
 - README:27 THERMOS 死链 → 改指 MODULES.md / api/API-INDEX.md
 
 **安全硬化**：
-- /tmp/ws-token.txt 补 `chmod 600` 建议（或 WS_TOKEN 环境变量优先）
+- <tmp>/ws-token.txt 补 `chmod 600` 建议（或 WS_TOKEN 环境变量优先）
 - MANIFEST 增 kit 级 Apache-2.0 license 记录（3 张 source card 未闭合，状态保持 pending/BLOCK）
 - 分发文件 chmod 644（防打包带 600）
 

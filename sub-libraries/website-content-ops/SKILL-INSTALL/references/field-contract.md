@@ -3,12 +3,18 @@ doc_id: allincms-bulk-field-contract
 title: AllinCMS 字段契约
 description: LAICMS / AllinCMS 批量上传 manifest 和 payload 常见字段含义、风险和核验方法
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-06-29
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Field Contract

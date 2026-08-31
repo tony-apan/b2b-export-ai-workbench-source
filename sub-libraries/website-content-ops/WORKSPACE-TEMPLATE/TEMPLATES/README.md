@@ -2,11 +2,11 @@
 title: "Customer Workspace Template Runtime Templates"
 description: "客户运行区内可直接复制的最小模板集合，覆盖来源登记、公司与产品事实、内容 brief、图片、发布、字段映射和失败诊断。"
 type: "index"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-28"
 last_updated: "2026-07-31"
-sources: []
+sources: ["self"]
 related: ["../00_intake/index.md", "../10_sources/index.md", "../20_knowledge/index.md", "../30_tasks/index.md", "../40_outputs/index.md", "../90_writeback/index.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

@@ -2,7 +2,7 @@
 title: "FluxPedal Motors Product Cards"
 description: "虚拟电动自行车轮毂和中置电机产品线，用于内容与上传教学。"
 type: "business"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

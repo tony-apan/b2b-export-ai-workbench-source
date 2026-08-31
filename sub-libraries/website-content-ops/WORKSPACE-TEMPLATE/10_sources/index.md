@@ -2,11 +2,11 @@
 title: "Workspace Sources"
 description: "登记网站、文档、聊天、询盘、导出、图片和工具说明，确保每条知识可追溯。"
 type: "index"
-status: "Draft"
+status: "Working"
 owner: "Team"
 created: "2026-07-26"
 last_updated: "2026-07-26"
-sources: []
+sources: ["self"]
 related: ["../20_knowledge/index.md", "../TEMPLATES/source-register.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

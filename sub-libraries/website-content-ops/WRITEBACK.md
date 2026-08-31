@@ -2,7 +2,7 @@
 title: "Website Content Operations Writeback"
 description: "规定建站任务完成后事实、结果、失败和通用改进分别写到哪里。"
 type: "writeback"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-07-26"

@@ -4,6 +4,12 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（WRITING-INDEX.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # 写作模块（WRITING-INDEX.md）—— 独立可调用，入口在此
@@ -50,9 +56,9 @@ last_updated: "2026-08-31"
 
 ```bash
 # 骨架生成（从 brief 提取产品/文章字段 → 输出 JSON 骨架 + 渐进提示）
-python3 writing/writing-module.py outline /tmp/kayak-article.json
+python3 writing/writing-module.py outline <tmp>/kayak-article.json
 # 渐进机器检查（阶段顺序/承上启下/术语/边界/CTA 时机）
-python3 writing/writing-module.py check /tmp/kayak-article.json
+python3 writing/writing-module.py check <tmp>/kayak-article.json
 # 空白 agent 评审（5 维）
 #   复制 templates/ghostwriter-review-prompt.md 填入文章，派 subagent
 # 发布前综合门

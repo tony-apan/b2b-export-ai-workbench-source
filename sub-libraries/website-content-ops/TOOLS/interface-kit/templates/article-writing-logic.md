@@ -4,6 +4,12 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（article-writing-logic.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # 文章创作逻辑（通用方案）—— 软文大神文案逻辑总结 + 对抗升级

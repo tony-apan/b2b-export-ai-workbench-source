@@ -2,7 +2,7 @@
 title: "Website Content Operations QA Checklist"
 description: "分别检查源码包、客户任务、发布制品和迁移能力，避免用文件齐全冒充可执行通过。"
 type: "checklist"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-03"

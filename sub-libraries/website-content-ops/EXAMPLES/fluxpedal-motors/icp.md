@@ -2,7 +2,7 @@
 title: "FluxPedal Motors ICP Card"
 description: "虚拟电机出口商的目标客户、购买角色、触发事件和排除边界。"
 type: "business"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

@@ -2,7 +2,7 @@
 title: "Website Content Operations Installation"
 description: "复制、安装、升级和卸载 website-content-ops 独立发布包的最小说明。"
 type: "installation-guide"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-28"
 last_updated: "2026-07-31"

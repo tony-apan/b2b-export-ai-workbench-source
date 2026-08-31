@@ -22,7 +22,7 @@ related: ["definition-of-done.md", "quality-checklist.md", "agent-handoff.md"]
 ---
 title: "页面标题"
 description: "一句话说明这个页面负责什么，什么时候应该读它。"
-type: "adapter-index | adversarial-review | agent-protocol | audit | brand | business | changelog | channel | checklist | client | competitor | concept | contact | conversation-source | course-module | evidence | example | example-index | governance | guide | index | installation-guide | intake | legal-notice | log | log-summary | manifest | meta | metric | output | page | playbook | raw-guide | redirect | references-index | release-guide | review-record | skill | source | source-note | source-policy | sub-library | template | tooling | tooling-index | tooling-reference | verification-record | version | writeback | writeback-record"
+type: "adapter-index | adversarial-review | agent-protocol | audit | brand | business | changelog | channel | checklist | client | competitor | concept | contact | conversation-source | course-module | evidence | example | example-index | governance | guide | index | installation-guide | intake | legal-notice | log | log-summary | manifest | meta | metric | output | page | playbook | raw-guide | redirect | references-index | release-guide | review-record | skill | source | source-note | source-policy | sub-library | template | tooling | tooling-index | tooling-reference | verification-record | version | writeback | writeback-record | doc | runbook"
 status: "Seed | Draft | Working | Verified | Canonical | Stale | Archived"
 owner: "AI | Human | Team"
 created: "YYYY-MM-DD"
@@ -262,3 +262,4 @@ raw 页面只能保留原文、转写、采集上下文和来源指针；AI 总�
 ## Logs and traceability
 
 运行日志写入 [logs/index.md](logs/index.md)。默认每天追加一份日期日志、每月生成摘要；日志事件只保存短事实卡和证据路径，不复制 raw 内容。长期稳定结论必须回写知识页，不能要求未来 AI 阅读所有日志才能知道当前规则。
+| runbook | doc |

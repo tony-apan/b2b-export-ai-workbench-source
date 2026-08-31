@@ -2,7 +2,7 @@
 title: "FluxPedal Motors Customer Voice"
 description: "用虚拟采购聊天演示痛点、客户语言、搜索意图假设和待验证边界。"
 type: "business"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

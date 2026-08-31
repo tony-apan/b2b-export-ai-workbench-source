@@ -4,6 +4,12 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（CONTENT-MINIMUM.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # 内容数量标准（CONTENT-MINIMUM.md）—— 界面美观与用户提供基线

@@ -6,6 +6,13 @@ layer: ops
 status: working
 created: 2026-07-30
 updated: 2026-08-12
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 # Canonical Adapter Routing
 

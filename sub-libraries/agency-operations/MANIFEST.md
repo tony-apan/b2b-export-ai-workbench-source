@@ -13,7 +13,7 @@ redaction_status: "safe-to-publish"
 keywords: ["manifest", "Draft", "BLOCK", "runtime contract"]
 package_id: "agency-operations"
 version: "0.1.0-draft.1"
-maturity_status: "draft"
+maturity_status: "Working"
 verification_status: "structure-pass"
 preparation_status: "complete"
 preparation_scope: "local-structure-and-synthetic"

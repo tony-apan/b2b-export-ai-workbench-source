@@ -3,12 +3,18 @@ doc_id: allincms-bulk-operational-findings
 title: AllinCMS 实操问题沉淀
 description: LAICMS / AllinCMS 操作中发现的可复用问题、失败模式和收尾沉淀规则
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-30
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Operational Findings
@@ -147,7 +153,7 @@ For a reusable problem, record the smallest neutral lesson that prevents future 
 
 - Context: estimating remaining time after a source-file rehearsal summary had already been produced and the run was blocked on create-site read-only preflight.
 - Symptom: `summarize_source_execution_status.py` was easy to misuse as if it accepted an existing top-level rehearsal summary as a positional input. The helper actually requires explicit source artifacts such as `--package`, `--review-packet`, `--confirmation`, `--execution-plan`, and a required `--output` path.
-- Evidence: running `python3 skills/allincms-bulk-content-upload/scripts/summarize_source_execution_status.py /tmp/.../source-file-rehearsal-summary.json` returned an argparse error requiring `--output`. The valid continuation surface for a confirmed source rehearsal is the current rehearsal summary plus the stage-specific apply or next-stage helper, not a positional status refresh.
+- Evidence: running `python3 skills/allincms-bulk-content-upload/scripts/summarize_source_execution_status.py <tmp>/<token-file>/source-file-rehearsal-summary.json` returned an argparse error requiring `--output`. The valid continuation surface for a confirmed source rehearsal is the current rehearsal summary plus the stage-specific apply or next-stage helper, not a positional status refresh.
 - Risk: after context compaction, an operator can waste time retrying a status helper with the wrong contract, or hand-derive stage readiness from memory instead of using the indexed continuation artifacts in the rehearsal summary.
 - Rule: do not use `summarize_source_execution_status.py` as a generic summary reader. For quick progress reports, inspect the top-level rehearsal summary fields or use a stage-specific helper such as `apply_create_preflight_to_source_rehearsal.py`; use `summarize_source_execution_status.py` only when rebuilding a status file from explicit artifact paths and an explicit `--output`.
 
@@ -1089,7 +1095,7 @@ Do not keep raw run logs here. Compress the evidence into reusable platform beha
 
 ## Fast Function Pass Record Contract
 
-When the user asks to quickly run through many AllinCMS pages or functions, keep a per-run ledger outside the skill package, such as `/tmp/allincms-{siteKey}-fast-page-function-run-record-{date}.json`. Use the ledger for operational detail, then copy only reusable platform lessons into this skill.
+When the user asks to quickly run through many AllinCMS pages or functions, keep a per-run ledger outside the skill package, such as `<tmp>/allincms-{siteKey}-fast-page-function-run-record-{date}.json`. Use the ledger for operational detail, then copy only reusable platform lessons into this skill.
 
 Each module/action row should include:
 
@@ -1881,7 +1887,7 @@ Do not store account labels, private site copy, raw IDs, cookies, tokens, or bus
 - Rule: run `scripts/validate_full_e2e_simulation.py` after `scripts/simulate_full_e2e_chain.py` before using the rehearsal as handoff evidence.
 - Follow-up: validate top-level `localOnly`, `remoteMutationsPerformed`, phase directory paths, site/probe evidence validity, module `jsonReplayReady`, capture stage count, and capture groups.
 - Context: path comparison inside the full E2E validator on macOS.
-- Symptom: validating `/tmp/allincms-full-e2e-simulation-v2` failed because Python resolved the root as `/private/tmp/...`, while `full-e2e-summary.json` stored `/tmp/...`.
+- Symptom: validating `<tmp>/allincms-full-e2e-simulation-v2` failed because Python resolved the root as `/private<tmp>/...`, while `full-e2e-summary.json` stored `<tmp>/...`.
 - Evidence: the same physical directory was represented by two equivalent absolute paths.
 - Risk: validators that compare raw path strings can reject valid artifacts on systems where `/tmp` is a symlink or alias.
 - Rule: compare filesystem paths after `Path(...).resolve()` when validating generated artifact directories.
@@ -2088,7 +2094,7 @@ Do not store account labels, private site copy, raw IDs, cookies, tokens, or bus
 - Symptom: a stage result could require non-empty `redactedEvidencePointers`, but the pointer format itself was not constrained.
 - Evidence: free-text values such as `done` or `verified` can satisfy a non-empty string check while pointing to no inspectable artifact, URL, or run-evidence file.
 - Risk: an operator could advance the ledger from a browser stage without leaving an auditable proof trail, making later launch, upload, or cleanup claims impossible to verify.
-- Rule: stage result evidence pointers must be inspectable references such as `local://...`, `https://...`, `/tmp/...`, `./...`, or `../...`; status words belong in `operatorNote` or `proofRecorded`, not in evidence pointers.
+- Rule: stage result evidence pointers must be inspectable references such as `local://...`, `https://...`, `<tmp>/...`, `./...`, or `../...`; status words belong in `operatorNote` or `proofRecorded`, not in evidence pointers.
 - Follow-up: `validate_browser_stage_result.py` now rejects unauditable evidence pointer text, and the rehearsal/test suite covers the constraint.
 
 ## 2026-06-30 Partial Stage Recovery Findings
@@ -2313,7 +2319,7 @@ Do not store account labels, private site copy, raw IDs, cookies, tokens, or bus
 ## 2026-06-30 Packet Command Path Findings
 
 - Context: local-only hardening of staged real-browser packets before using them as the operator's immediate instruction for site creation, request capture, launch work, and cleanup.
-- Symptom: `ledgerUpdate.commandTemplate` used a fixed `/tmp/allincms-full-rehearsal/...` example path even when the packet was generated under a different run directory.
+- Symptom: `ledgerUpdate.commandTemplate` used a fixed `<tmp>/<token-file>/...` example path even when the packet was generated under a different run directory.
 - Evidence: the packet carried correct stage id, proof, and result-json workflow, but the copyable command could still point at the wrong ledger, packet, result, or updated-ledger path.
 - Risk: a real-browser operator could apply a stage result to a stale rehearsal ledger, validate against a different packet, overwrite another run's ledger, or lose same-stage recovery proof by copying the static example command.
 - Rule: packet update commands must either contain explicit current-run paths for the generated ledger, packet, stage-result, and updated-ledger output, or use visible placeholders such as `{ledgerPath}` that cannot be mistaken for executable paths.
@@ -2371,7 +2377,7 @@ Do not store account labels, private site copy, raw IDs, cookies, tokens, or bus
 
 - Context: real read-only create-site preflight after the browser stage ledger advanced to `create_site_submit`.
 - Symptom: the browser-stage authorization helper can emit a package with suggested text and command templates, but the pre-mutation gate must still fail until an actual user authorization record exists.
-- Evidence: `prepare_browser_stage_authorization.py` wrote a `create_site_submit` package with `gateSupported: true`; running `check_pre_mutation_gate.py` immediately after failed because `/tmp/allincms-authorization-create-site-next.json` did not exist.
+- Evidence: `prepare_browser_stage_authorization.py` wrote a `create_site_submit` package with `gateSupported: true`; running `check_pre_mutation_gate.py` immediately after failed because `<tmp>/allincms-authorization-create-site-next.json` did not exist.
 - Risk: an operator could mistake a generated authorization package for action-time permission and submit the create-site form without a current user instruction naming the target and fields.
 - Rule: authorization packages are preparation artifacts only. The mutation gate may pass only after `make_authorization_record.py` validates current user authorization text and writes the authorization JSON.
 - Follow-up: keep the failed missing-authorization gate as the expected stop condition before real create-site submit.
@@ -2992,11 +2998,11 @@ Do not store account labels, private site copy, raw IDs, cookies, tokens, or bus
 - Evidence: backend read-only scan covered dashboard, products, posts, media, themes, routes, forms, site-info, tracking, and domains; run evidence validated as existing-site phase proof. Source-input requirements stayed blocked because no current save request, media proof, form schema, or theme/page payload schema was captured. A cleanup handoff could be prepared from current backend/frontend proof, while save handoff should not be forced against a non-placeholder body state.
 - Risk: an operator could trust stale queues and create another probe, attempt a save-capture run with the wrong precondition, or leave a public probe/detail route in place while claiming launch progress.
 - Rule: on resume, live browser state overrides stale queue stage assumptions. If an existing probe is already public, prepare cleanup first from current read-only backend state and frontend 200 proof. Only prepare existing-probe save capture when its validator preconditions match the page; otherwise refresh the handoff model or choose a new authorized stage.
-- Follow-up: current run artifacts live under `/tmp/allincms-mysite03-*2026-06-30*`; no remote mutation was performed in this read-only refresh.
+- Follow-up: current run artifacts live under `<tmp>/allincms-mysite03-*2026-06-30*`; no remote mutation was performed in this read-only refresh.
 
 - Context: operation-time source-input gap recording during the same read-only refresh.
 - Symptom: two local `record_source_input_gap.py` commands were run in parallel against the same ledger path. The resulting ledger remained intact in this run, but concurrent append/write to one JSON file is a race-prone pattern.
-- Evidence: final ledger contained four entries and validated structurally by inspection, but both commands opened and rewrote the same `/tmp/...source-input-gap-ledger...json` file concurrently.
+- Evidence: final ledger contained four entries and validated structurally by inspection, but both commands opened and rewrote the same `<tmp>/...source-input-gap-ledger...json` file concurrently.
 - Risk: future runs could lose a gap row or corrupt the ledger if two parallel writers target the same JSON file.
 - Rule: source-input gap ledger appends must be serialized per output file. Parallel agents may discover fields independently, but the controller should merge their findings by running `record_source_input_gap.py` one row at a time or by writing per-agent ledgers and merging later.
 - Follow-up: update helper or docs if this pattern recurs; for now, treat it as an operator rule in this findings file.
@@ -3035,7 +3041,7 @@ Do not store account labels, private site copy, raw IDs, cookies, tokens, or bus
 
 - Context: rerunning the from-scratch local full rehearsal after adding `--gap-ledger` support.
 - Symptom: the standalone requirements helper could merge gap ledgers, but the full site-build rehearsal still produced `operationGaps.entryCount: 0`.
-- Evidence: `/tmp/.../04-manifest-rehearsal/source-input-requirements.json` showed `operationGaps.sourceLedgers: []` even though the workflow goal requires operation records to drive future PDF/catalog field generation.
+- Evidence: `<tmp>/<token-file>/04-manifest-rehearsal/source-input-requirements.json` showed `operationGaps.sourceLedgers: []` even though the workflow goal requires operation records to drive future PDF/catalog field generation.
 - Risk: a green full rehearsal could miss the exact source-intake behavior needed for future user uploads, leaving the feature tested only in a helper-level path.
 - Rule: manifest rehearsal and full rehearsal must generate a neutral local `source-input-gap-ledger.json`, pass it into source-input requirements, and validate positive `operationGaps.entryCount`. The simulated ledger must stay local-only and contain no business copy, raw IDs, cookies, or real account data.
 - Follow-up: `simulate_manifest_rehearsal.py`, `validate_manifest_rehearsal.py`, `validate_full_e2e_simulation.py`, `validate_full_rehearsal.py`, `SKILL.md`, `e2e-simulation.md`, and regression tests now enforce gap-ledger coverage inside the full rehearsal chain.
@@ -3115,9 +3121,9 @@ Do not store account labels, private site copy, raw IDs, cookies, tokens, or bus
 
 - Context: running Python compile checks in the managed workspace sandbox.
 - Symptom: `python3 -m py_compile ...` tried to write bytecode into `~/Library/Caches/com.apple.python/...` and failed with `PermissionError` even though the source compiled under a writable cache prefix.
-- Evidence: rerunning with `PYTHONPYCACHEPREFIX=/tmp/allincms-pycache` completed successfully.
+- Evidence: rerunning with `PYTHONPYCACHEPREFIX=<tmp>/allincms-pycache` completed successfully.
 - Risk: a sandbox bytecode-cache write failure can be mistaken for a code syntax failure or cause operators to skip compilation.
-- Rule: in restricted sandboxes, run py_compile with `PYTHONPYCACHEPREFIX=/tmp/allincms-pycache` or another writable temporary cache.
+- Rule: in restricted sandboxes, run py_compile with `PYTHONPYCACHEPREFIX=<tmp>/allincms-pycache` or another writable temporary cache.
 - Follow-up: `SKILL.md` now documents the sandbox-safe compile command.
 
 ## 2026-06-30 Test-Site Session Policy and Demo Product Findings

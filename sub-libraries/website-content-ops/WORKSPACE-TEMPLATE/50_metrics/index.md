@@ -2,11 +2,11 @@
 title: "Workspace Metrics"
 description: "记录内容从抓取、索引、展示、点击到询盘、引用和成交的反馈，区分假设和结果。"
 type: "metric"
-status: "Draft"
+status: "Working"
 owner: "Team"
 created: "2026-07-26"
 last_updated: "2026-07-26"
-sources: []
+sources: ["self"]
 related: ["../40_outputs/index.md", "../90_writeback/index.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

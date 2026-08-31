@@ -6,7 +6,7 @@ status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-01"
-sources: []
+sources: ["self"]
 related: ["CONTACT.md", "MANIFEST.md", "MENTAL-MODEL.md", "CHANGELOG.md", "RELEASE.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

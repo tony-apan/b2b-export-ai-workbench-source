@@ -4,6 +4,12 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（API-INDEX.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # 接口模块（API-INDEX.md）—— AllinCMS 纯接口 · 独立入口 · 快速调用

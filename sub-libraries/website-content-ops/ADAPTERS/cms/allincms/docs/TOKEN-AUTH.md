@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
 sources: ["示例客户 全流程实战 2026-08-29/30（纯 API 登录成功+失败双路径实测）", "ISS-083"]
-related: ["../../../../TOOLS/interface-kit/RUNBOOK-ANYONE.md", "allincms_api.py"]
+related: ["../../../../TOOLS/interface-kit/RUNBOOK-ANYONE.md", "../allincms_api.py"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---
@@ -38,14 +38,14 @@ print(api.token)  # 357 字符 JWT——登录成功即自动提取
 | 方法 | 操作 | 适用 |
 |---|---|---|
 | A. 直接提供 | 用户在对话/工单里给 AI 邮箱+密码 | 信任环境、快速验证 |
-| B. 文件传递 | 用户自己执行 `printf 'email\npassword' > /tmp/ws-creds.txt`，AI 读取后删除 | 密码不想出现在对话记录里 |
+| B. 文件传递 | 用户自己执行 `printf 'email\npassword' > <tmp>/ws-creds.txt`，AI 读取后删除 | 密码不想出现在对话记录里 |
 
 **AI 拿到凭据后的标准动作**：
 
 ```python
 api = AllinCMS(email=..., password=...)
 # 推荐：export WS_TOKEN=<token>（跨平台）；或写 token 文件（chmod 600）后传路径，后续工具复用
-import os; os.remove("/tmp/ws-creds.txt")          # 如果用了方式 B，用完即删
+import os; os.remove("<tmp>/ws-creds.txt")          # 如果用了方式 B，用完即删
 ```
 
 **注意事项**：
@@ -82,14 +82,14 @@ import os; os.remove("/tmp/ws-creds.txt")          # 如果用了方式 B，用�
 
 ```bash
 # 1. 定位 Cookie 数据库
-cp ~/Library/Application\ Support/Google/Chrome/Default/Cookies /tmp/chrome-cookies.db
+cp ~/Library/Application\ Support/Google/Chrome/Default/Cookies <tmp>/chrome-cookies.db
 
 # 2. 用 Python 解密提取（Chrome Safe Storage key 在 Keychain）
 python3 - <<'EOF'
 import sqlite3, subprocess, base64
 # Chrome v10+ 加密：Keychain 取 "Chrome Safe Storage" 密钥 → PBKDF2 派生 → AES-CBC 解密
 # （此路径依赖本机 Keychain 权限，可能弹窗要求授权）
-db = sqlite3.connect('/tmp/chrome-cookies.db')
+db = sqlite3.connect('<tmp>/chrome-cookies.db')
 row = db.execute(
     "SELECT encrypted_value FROM cookies WHERE host_key LIKE '%workspace.laicms.com%' AND name='payload-token'"
 ).fetchone()

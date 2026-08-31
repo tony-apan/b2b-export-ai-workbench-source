@@ -2,7 +2,7 @@
 title: "AI Execution Start"
 description: "给可读取本地文件并在用户授权后调用浏览器或脚本的 AI agent 使用的执行入口；按工具检查、知识建卡、单样本和验证写回四步推进，并在无账号、权限不清或结果不明确时停止。"
 type: "guide"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-13"

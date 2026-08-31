@@ -3,11 +3,11 @@ title: "Workspace Intake"
 description: "记录本次网站内容运营的业务目标、范围、权限、工具、审批人和阻断。"
 type: "template"
 template_usage: "manual-copy"
-status: "Draft"
+status: "Working"
 owner: "Human"
 created: "2026-07-26"
 last_updated: "2026-07-29"
-sources: []
+sources: ["self"]
 related: ["../10_sources/index.md", "../TEMPLATES/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

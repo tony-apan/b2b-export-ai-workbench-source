@@ -4,12 +4,17 @@ title: 新建网站信息完整性与美观规范
 description: 从用户资料建一个 AllinCMS 站点前，必须收齐哪些信息、每类内容的字段与质量下限、以及贯穿主题/图片/排版的美观标准
 layer: ops
 page_type: reference
-status: draft
+status: "Working"
 created: 2026-07-03
 updated: 2026-07-03
-sources: []
+sources: ["self"]
 confidence: medium
-owner: Tony
+owner: "AI"
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+type: "doc"
 ---
 
 # Site Content & Aesthetics Spec

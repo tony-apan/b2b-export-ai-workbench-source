@@ -4,6 +4,12 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（ONBOARDING-PIPELINE.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["README.md"]
 ---
 
 # AllinCMS 建站上线 SOP（0 → 1 纯接口流水线）

@@ -2,7 +2,7 @@
 title: "FluxPedal Motors Company Card"
 description: "虚拟电动自行车电机出口商的最小公司知识卡和事实状态示例。"
 type: "business"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

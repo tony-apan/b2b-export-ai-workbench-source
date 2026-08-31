@@ -2,7 +2,7 @@
 title: "PicGo Adapter: GitHub"
 description: "使用 PicGo GitHub uploader 完成无敏感、小规模图片演示的配置字段和使用边界。"
 type: "tooling"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

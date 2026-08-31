@@ -7,6 +7,9 @@ created: "2026-08-30"
 last_updated: "2026-08-30"
 sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..065"]
 related: ["ONBOARDING-PIPELINE.md", "allincms_api.py", "site_pipeline.py", "allincms_blocks.py", "writing/WRITING-INDEX.md", "MODULES.md"]
+description: AllinCMS 建站工具包文档（RUNBOOK-ANYONE.md）
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # RUNBOOK：任何人拿到 interface-kit 即可建一个完整 AllinCMS 站

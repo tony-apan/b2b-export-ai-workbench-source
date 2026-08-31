@@ -2,7 +2,7 @@
 title: "Agency Operations Course Map"
 description: "从边界模型到单客户闭环、双客户隔离、AI 续接和安全更新的学习与演练顺序。"
 type: "course-module"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-08-01"
 last_updated: "2026-08-01"

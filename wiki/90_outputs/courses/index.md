@@ -34,7 +34,7 @@ keywords: ["课程模块", "raw to course", "学习目标", "课程练习", "验
 
 | ID | 入口 | 内容说明（description） | 类型 | 状态 / 可见性 | 什么时候读 | 检索词 |
 |---|---|---|---|---|---|---|
-| ID-0004 | [Structure to Course Closure](id-0004-structure-to-course-closure.md) | 面向知识库维护者和 AI，训练如何把一个去敏结构治理案例转换为来源、概念、playbook、课程练习、验收和写回记录，帮助复用完整闭环；不证明真实客户或生产发布能力。 | course-module | Draft / public | 当需要学习或演练一条完整的 raw 到课程知识闭环时，先读本页；如果要发布真实客户课程或外部产品能力，还必须另行完成授权和运行验证。 | course module、raw to course、index governance、exercise、verification、writeback |
+| ID-0004 | [Structure to Course Closure](id-0004-structure-to-course-closure.md) | 面向知识库维护者和 AI，训练如何把一个去敏结构治理案例转换为来源、概念、playbook、课程练习、验收和写回记录，帮助复用完整闭环；不证明真实客户或生产发布能力。 | course-module | Working / public | 当需要学习或演练一条完整的 raw 到课程知识闭环时，先读本页；如果要发布真实客户课程或外部产品能力，还必须另行完成授权和运行验证。 | course module、raw to course、index governance、exercise、verification、writeback |
 | — | [Course Verification Records](verification/index.md) | 课程练习和课程流水线的范围化验证记录入口，说明证明了什么、没有证明什么、证据在哪里以及下一步如何复现；不替代母库或子库发布审批。 | index | Working / public | 需要判断课程练习或 raw-to-course 闭环是否在声明范围内通过时，先读对应验证记录。 | verification、验收、证据、scope、课程练习 |
 | — | [Course Writeback Records](writeback/index.md) | 导航课程练习和知识提炼的写回记录，追踪事实、推断、开放问题、知识页更新和下一轮动作，帮助形成闭环；不把一次性练习结果当作稳定结论。 | index | Working / public | 需要把课程练习、验证结果或执行反馈回写到知识库时，先读对应写回记录。 | writeback、写回、复盘、open questions、知识复利 |
 

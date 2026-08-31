@@ -2,7 +2,7 @@
 title: "Website Content Operations Course Map"
 description: "把原有十一课收束为工具、知识、小样、验证写回四个可执行阶段。"
 type: "index"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-07-27"

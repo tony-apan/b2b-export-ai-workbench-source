@@ -3,12 +3,18 @@ doc_id: allincms-bulk-script-index
 title: AllinCMS 脚本索引
 description: allincms-bulk-content-upload skill 全部辅助脚本的用途索引(从 SKILL.md 外移);手工调用命令在 SKILL.md Workflow 各步
 layer: ops
-status: draft
+status: "Working"
 created: 2026-07-04
 updated: 2026-07-30
 page_type: index
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # 脚本索引

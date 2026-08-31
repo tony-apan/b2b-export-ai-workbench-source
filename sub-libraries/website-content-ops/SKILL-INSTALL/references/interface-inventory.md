@@ -3,12 +3,18 @@ doc_id: allincms-bulk-interface-inventory
 title: AllinCMS 模块接口矩阵
 description: LAICMS / AllinCMS 各后台模块接口检测、JSON 化判断和验证要求
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-05
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Interface Inventory

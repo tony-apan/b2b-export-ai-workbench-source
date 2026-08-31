@@ -4,6 +4,12 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（OUTSIDER-REVIEW.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["README.md"]
 ---
 
 # 旁观审查机制（OUTSIDER-REVIEW.md）—— 外部 AI 从旁观者角度审查完善

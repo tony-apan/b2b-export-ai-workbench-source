@@ -3,12 +3,18 @@ doc_id: allincms-bulk-create-flows
 title: AllinCMS 创建流程核验
 description: LAICMS / AllinCMS 各模块创建入口的副作用、字段预览和授权边界
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-30
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Create Flows
@@ -547,7 +553,7 @@ payload: [{
   name,
   slug,
   description,
-  _status: "draft" | "published",
+  _status: "Working" | "published",
   schema: { fields: [...] },
   submit: { label, successMessage }
 }]

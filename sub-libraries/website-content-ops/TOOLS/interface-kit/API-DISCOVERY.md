@@ -8,6 +8,8 @@ created: "2026-08-30"
 last_updated: "2026-08-30"
 sources: ["Example 全流程实战（set_home_page/update_page/delete_category 均为逆向发现）", "issues.tsv 条目 ISS-070、ISS-073、ISS-074、ISS-076"]
 related: ["RUNBOOK-ANYONE.md", "allincms_api.py", "scan/scan-actions.py"]
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 
 # API-DISCOVERY：AllinCMS 平台更新后的接口摸索流程
@@ -140,7 +142,7 @@ curl -s -H "Cookie: payload-token=$TOKEN" "https://workspace.laicms.com/<slug>/t
   grep -oE '/_next/static/chunks/[a-zA-Z0-9_.-]+\.js' | sort -u
 
 # 下载可疑 chunk（通常新功能的 chunk 只在特定页面加载）
-curl -s "https://workspace.laicms.com/_next/static/chunks/<chunk_name>.js" -o /tmp/chunk.js
+curl -s "https://workspace.laicms.com/_next/static/chunks/<chunk_name>.js" -o <tmp>/chunk.js
 ```
 
 ### 3.2 提取关键信息
@@ -148,7 +150,7 @@ curl -s "https://workspace.laicms.com/_next/static/chunks/<chunk_name>.js" -o /t
 ```python
 # 三类必提信息：
 import re
-s = open('/tmp/chunk.js', encoding='utf-8', errors='replace').read()
+s = open('<tmp>/chunk.js', encoding='utf-8', errors='replace').read()
 
 # ① action id + 名字
 for m in re.finditer(r'createServerReference\)\("([0-9a-f]{42})",[^)]{0,160}?,"([A-Za-z0-9_$.]{4,100})"', s):

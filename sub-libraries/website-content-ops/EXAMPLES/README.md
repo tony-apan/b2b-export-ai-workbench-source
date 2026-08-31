@@ -2,7 +2,7 @@
 title: "Virtual Examples"
 description: "建站内容运营子库的虚拟公司、产品、聊天和上传演示入口。"
 type: "example-index"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-11"

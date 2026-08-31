@@ -2,7 +2,7 @@
 title: "FluxPedal Motors First Closed Loop"
 description: "把虚拟客户聊天转成 SEO/GEO 文章、图片、PicGo、CMS 草稿、验证和写回的首个跟做任务。"
 type: "playbook"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

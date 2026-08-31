@@ -3,11 +3,11 @@ title: "Product Record Template"
 description: "支持产品知识、网站产品页、SEO/GEO 和上传字段映射的产品记录模板。"
 type: "template"
 template_usage: "manual-copy"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-02"
-sources: []
+sources: ["self"]
 related: ["../00_intake/index.md", "article-brief.md", "image-manifest.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

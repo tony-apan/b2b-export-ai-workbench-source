@@ -2,7 +2,7 @@
 title: "Website Content Operations Agent Protocol"
 description: "AI 在建站内容运营子库中的渐进读取、来源、权限、执行、验证和写回规则。"
 type: "agent-protocol"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-07-30"

@@ -2,7 +2,7 @@
 title: "Website Content Operations Intake"
 description: "AI 从网站和资料自动盘点公司、产品、客户、内容、图片、CMS 和权限缺口。"
 type: "intake"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-12"

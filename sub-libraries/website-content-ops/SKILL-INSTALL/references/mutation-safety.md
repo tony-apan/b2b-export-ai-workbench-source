@@ -3,12 +3,18 @@ doc_id: allincms-bulk-mutation-safety
 title: AllinCMS 远程变更授权
 description: LAICMS / AllinCMS 建站、创建草稿、保存、发布、上传和清理删除前的动作级授权与记录规则
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-05
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Mutation Safety

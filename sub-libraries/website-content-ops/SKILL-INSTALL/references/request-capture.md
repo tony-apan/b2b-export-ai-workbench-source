@@ -3,12 +3,18 @@ doc_id: allincms-bulk-request-capture
 title: AllinCMS 保存请求捕获
 description: LAICMS / AllinCMS 探针内容、保存请求捕获、持久化证明和回放安全规则
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-05
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Request Capture

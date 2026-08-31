@@ -2,7 +2,7 @@
 title: "PicGo Adapter: Cloudflare R2"
 description: "使用 PicGo 的 S3 兼容接入方式把虚拟演示图片上传到 Cloudflare R2 的调查和验收合同。"
 type: "tooling"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-27"
 last_updated: "2026-07-27"

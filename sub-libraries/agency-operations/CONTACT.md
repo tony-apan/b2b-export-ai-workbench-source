@@ -2,7 +2,7 @@
 title: "Agency Operations Contact"
 description: "声明支持、维护者和安全报告渠道尚待人工填充，AI 不得编造联系信息。"
 type: "contact"
-status: "Draft"
+status: "Working"
 owner: "Human"
 created: "2026-08-01"
 last_updated: "2026-08-01"

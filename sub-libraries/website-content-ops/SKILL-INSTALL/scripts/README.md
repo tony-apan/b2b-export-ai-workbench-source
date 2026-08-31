@@ -4,6 +4,13 @@ type: "doc"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（README.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+canonical_entry: "README.md"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # Scripts authority boundary

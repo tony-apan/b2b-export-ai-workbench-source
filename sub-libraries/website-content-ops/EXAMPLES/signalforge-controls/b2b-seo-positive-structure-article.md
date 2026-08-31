@@ -25,6 +25,8 @@ first_round_expected_output: "packet completeness, missing-evidence list, and ne
 candidate_decision_required_gates: ["complete-second-round-package", "named-technical-owner-review"]
 production_readiness: "block"
 production_block_reason: "Synthetic structure fixture; no real site, endpoint, CMS, renderer, market, search-demand, ranking, inquiry, or conversion evidence."
+visibility: "public"
+redaction_status: "safe-to-publish"
 ---
 <!-- PUBLISHABLE_BODY_START -->
 

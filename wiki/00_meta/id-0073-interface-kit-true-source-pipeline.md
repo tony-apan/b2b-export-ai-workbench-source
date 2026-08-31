@@ -2,14 +2,16 @@
 title: "任务卡：interface-kit 真源管线（迁移绑定条款）"
 description: "把 runtime 权威的 interface-kit 纳入母库 tracked + dist 同步管线，消除长期悬空。"
 type: "meta"
-status: "Adopted（DoD ①-④ 全部完成 2026-08-31，期限 2026-09-06 前达成；release 随子库流程）"
+status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-31"
-doc_id: "id-0073"
+doc_id: "ID-0073"
 visibility: "public"
 redaction_status: "safe-to-publish"
 sources: ["id-0072 迁移绑定条款（TERRA X3）", "迁移执行授权 2026-08-30"]
+keywords: ["interface-kit;pipeline;dist;digest;sync;stale-guard"]
+when_to_read: "需要了解 runtime 迁移或 interface-kit 真源管线时"
 related: ["id-0072-runtime-folder-structure-v2.md"]
 ---
 

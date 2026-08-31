@@ -2,13 +2,15 @@
 title: "运行时文件夹结构 v2（四层物理分离）"
 description: "母库知识/工具代码/客户私有数据/会话 scratch 四层物理分离的结构约定；解决'每次清理'残留问题。"
 type: "meta"
-status: "Adopted（迁移执行 2026-08-30；绑定卡 id-0073 已 Adopted 2026-08-31；全部待办收口）"
+status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-31"
-doc_id: "id-0072"
+doc_id: "ID-0072"
 sources: ["用户结构诉求 2026-08-30", "残留实测（217 /tmp 文件 + 64 tracked 修改 + skill 仓 dirty）"]
-related: ["AGENTS.md", "in-repository-agency-runtime-model.md"]
+keywords: ["runtime-folder;interface-kit;true-source;pipeline;migration"]
+when_to_read: "需要了解 runtime 迁移或 interface-kit 真源管线时"
+related: ["../AGENTS.md", "in-repository-agency-runtime-model.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 redaction_note: "仅结构规则与统计数，无凭据/客户数据；fluxpedal 为 allowlist synthetic 示例品牌"
@@ -23,7 +25,7 @@ redaction_note: "仅结构规则与统计数，无凭据/客户数据；fluxpeda
 
 ## 目标结构（四层物理分离）
 ```
-~/Work/01_Data/
+<workspace>/
 ├── 701_kecheng/            # 母库=纯可发布知识+工具（git；保持干净）
 ├── 701_runtime/            # 客户运行区（独立物理根；本地私有；不进公开仓）
 │   ├── 00_shared/interface-kit/   # 工具包**当前权威副本就在 runtime**（母库 tracked 无 interface-kit、dist/ 无同步源——"母库 dist 同步"是待建管线，见待办①）

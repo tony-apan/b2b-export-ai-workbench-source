@@ -3,12 +3,18 @@ doc_id: allincms-bulk-batch-verification
 title: AllinCMS 批量上传验证
 description: LAICMS / AllinCMS 样本上传、批量发布、前台渲染检查和清理验收流程
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-03
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Batch Verification

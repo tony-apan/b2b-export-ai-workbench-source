@@ -1,11 +1,16 @@
 ---
 title: "AllinCMS 纯接口工具包（跨平台：macOS / Windows / Linux）"
-type: "toolkit"
+type: "doc"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
 canonical_entry: "README.md"
+description: AllinCMS 建站工具包文档（README.md）
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # AllinCMS 纯接口工具包（跨平台：macOS / Windows / Linux）

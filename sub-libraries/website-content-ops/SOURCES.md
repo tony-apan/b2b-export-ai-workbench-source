@@ -2,7 +2,7 @@
 title: "Website Content Operations Source Policy"
 description: "规定公司事实、公开网页、聊天、课程和第三方资料的来源与版权边界。"
 type: "source-policy"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-13"

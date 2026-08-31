@@ -3,11 +3,11 @@ title: "Customer Voice To Content Template"
 description: "把客户聊天、询盘和销售异议转成痛点、搜索意图假设和网站内容任务。"
 type: "template"
 template_usage: "manual-copy"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-07-29"
-sources: []
+sources: ["self"]
 related: ["article-brief.md", "product-record.md", "../PLAYBOOK.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

@@ -8,7 +8,7 @@ owner: AI
 created: '2026-07-31'
 last_updated: "2026-08-11"
 sources: ["b2b-seo-article-brief.md", "b2b-seo-article-draft.md", "b2b-seo-article-review.md", "search-evidence.md"]
-related: ["README.md"]
+related: ["../README.md"]
 visibility: public
 redaction_status: safe-to-publish
 when_to_read: "Use this canonical synthetic fail-closed publish record to inspect blocked publication, blocked conversion completion, intake routing, and deferred frontend boundaries."

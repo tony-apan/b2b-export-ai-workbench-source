@@ -3,11 +3,11 @@ title: "Source Register Template"
 description: "登记网站、文档、聊天、图片、导出和工具资料的所有权、授权、日期、范围与提炼状态。"
 type: "template"
 template_usage: "manual-copy"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-02"
-sources: []
+sources: ["self"]
 related: ["../SOURCES.md", "../WORKSPACE-TEMPLATE/10_sources/index.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

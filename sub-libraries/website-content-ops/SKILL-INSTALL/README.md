@@ -1,12 +1,16 @@
 ---
 title: "AllinCMS Skill 安装壳（合并进母库）"
 description: "allincms-bulk-content-upload 的安装壳与运维参考；2026-08-30 起独立仓封存，本目录为唯一真源。"
-type: "skill-install"
+type: "doc"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
 canonical_entry: "README.md"
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # allincms-bulk-content-upload

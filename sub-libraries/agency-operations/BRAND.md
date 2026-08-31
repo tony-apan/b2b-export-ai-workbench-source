@@ -2,7 +2,7 @@
 title: "Agency Operations Brand"
 description: "声明 Draft 子库尚无获批品牌名、Logo、商标使用和对外宣传资格。"
 type: "brand"
-status: "Draft"
+status: "Working"
 owner: "Human"
 created: "2026-08-01"
 last_updated: "2026-08-01"

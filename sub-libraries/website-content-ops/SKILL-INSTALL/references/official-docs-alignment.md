@@ -3,12 +3,18 @@ doc_id: allincms-official-docs-alignment
 title: AllinCMS 官方教程对齐
 description: 按 AllinCMS 官方教程执行建站、内容、首页模块和上线检查的主流程
 layer: ops
-status: draft
+status: "Working"
 created: 2026-07-01
 updated: 2026-07-03
 page_type: reference
 sources: ["https://www.allincms.com/docs", "https://www.allincms.com/docs/quickstart/create-site", "https://www.allincms.com/docs/quickstart/site-build-flow", "https://www.allincms.com/docs/quickstart/site-settings", "https://www.allincms.com/docs/content/product-categories", "https://www.allincms.com/docs/content/add-products", "https://www.allincms.com/docs/content/add-posts", "https://www.allincms.com/docs/pages/homepage-basics", "https://www.allincms.com/docs/pages/create-page", "https://www.allincms.com/docs/content/product-module", "https://www.allincms.com/docs/content/homepage-featured-products", "https://www.allincms.com/docs/launch/launch-checklist"]
 confidence: high
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # Official Docs Alignment

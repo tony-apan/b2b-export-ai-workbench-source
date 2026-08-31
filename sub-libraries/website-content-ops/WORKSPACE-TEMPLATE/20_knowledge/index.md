@@ -2,11 +2,11 @@
 title: "Workspace Knowledge"
 description: "承载从来源提取并标注状态的公司、产品、客户语言、痛点、搜索意图和证据知识。"
 type: "index"
-status: "Draft"
+status: "Working"
 owner: "Team"
 created: "2026-07-26"
 last_updated: "2026-07-26"
-sources: []
+sources: ["self"]
 related: ["../10_sources/index.md", "../TEMPLATES/company-profile.md", "../TEMPLATES/product-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

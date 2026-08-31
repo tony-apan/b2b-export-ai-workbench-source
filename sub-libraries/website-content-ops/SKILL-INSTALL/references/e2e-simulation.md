@@ -3,12 +3,18 @@ doc_id: allincms-bulk-e2e-simulation
 title: AllinCMS 端到端模拟实操
 description: LAICMS / AllinCMS 从建站入口到内容上传、发布、前台核验和清理的端到端模拟检查清单
 layer: ops
-status: draft
+status: "Working"
 created: 2026-06-29
 updated: 2026-07-03
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+owner: "AI"
+type: "doc"
 ---
 
 # E2E Simulation

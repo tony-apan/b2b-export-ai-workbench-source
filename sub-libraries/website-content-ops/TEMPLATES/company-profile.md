@@ -3,11 +3,11 @@ title: "Company Profile Template"
 description: "从官网和资料提取公司事实、能力、证据、禁用声明和缺口的模板。"
 type: "template"
 template_usage: "manual-copy"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-02"
-sources: []
+sources: ["self"]
 related: ["../INTAKE.md", "product-record.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"

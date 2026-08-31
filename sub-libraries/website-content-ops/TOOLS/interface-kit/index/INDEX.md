@@ -4,6 +4,12 @@ type: "index"
 status: "Working"
 owner: "AI"
 last_updated: "2026-08-31"
+description: AllinCMS 建站工具包文档（INDEX.md）
+created: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+sources: ["self"]
+related: ["../README.md"]
 ---
 
 # AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）

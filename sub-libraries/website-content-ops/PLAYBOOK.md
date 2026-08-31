@@ -2,7 +2,7 @@
 title: "Website Content Operations Playbook"
 description: "从底层模型、资料盘点到工具映射、单样本、批量发布、迁移验收和写回的端到端流程。"
 type: "playbook"
-status: "Draft"
+status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-02"

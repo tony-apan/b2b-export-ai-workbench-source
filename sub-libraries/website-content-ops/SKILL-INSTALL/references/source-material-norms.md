@@ -3,13 +3,18 @@ doc_id: allincms-source-material-norms
 title: 产品与文章资料规范（以访问者为中心）
 description: 从用户资料建站前，单个产品/文章的原始资料必须供给什么、达到什么规范，才能让访问者在页面上完成决策——按访问者决策旅程反推的上游规范，下游 floors/校验器是执行
 layer: ops
-status: draft
+status: "Working"
 created: 2026-07-04
 updated: 2026-07-04
 page_type: reference
-sources: []
+sources: ["self"]
 confidence: medium
-owner: Tony
+owner: "AI"
+last_updated: 2026-08-31
+visibility: "public"
+redaction_status: "safe-to-publish"
+related: ["../README.md"]
+type: "doc"
 ---
 
 # 产品与文章资料规范（以访问者为中心）
