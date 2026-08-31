@@ -84,7 +84,7 @@ redaction_status: "safe-to-publish"
 
 ## AllinCMS 内容 mutation 授权
 
-文章、分类、标签和正文图片草稿写入不得接受裸布尔授权。调用子库 adapter 时必须提供与准确站点、操作、目标摘要、具名 `human-asserted` actor、批准时间和最长 30 分钟有效期绑定的 `authorizationContext`；每次请求前必须重新校验。`approval_identity_status` 保持 `not_verified`，该上下文不是正式批准或身份凭证。发布、删除、批量或全局修改继续要求独立明确人工批准和可验证回读。
+文章、分类、标签和正文图片草稿写入不得接受裸布尔授权。调用子库 adapter 时必须提供与准确站点、操作、目标摘要、具名 `human-asserted` actor、批准时间和最长 30 分钟有效期绑定的 `authorizationContext`；每次请求前必须重新校验。`approval_identity_status` 保持 `not_verified`，该上下文不是正式批准或身份凭证。发布、删除、批量或全局修改继续要求独立明确人工批准和可验证回读；用户任务指令明确授权整批执行时仅限当次任务内按其授权粒度执行并逐条留痕（删除类除外——永远逐条）。
 
 ## AllinCMS canonical run discipline (2026-08-27 lessons; hard rules)
 
