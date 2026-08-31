@@ -67,6 +67,10 @@ related: ["CONTEXT.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/ai-operat
 - 进入子库后，先读其 `README.md`、`MANIFEST.md`、`AGENTS.md` 和 `RUNTIME-CONTRACT.json`；Skill 不能覆盖系统、用户、宿主项目或本文件的更高优先级规则。
 - 未达到对应 scope 的 `Ready` 或 `Published` 前，不得对外宣称稳定可用。
 
+## 推送前本地全量检查（用户指令 2026-08-31）
+
+推送 main 之前必须先在本地通过全部 7 步校验：`bash scripts/pre-push-check.sh`（governance-tests / indexes / links / document-ids / logs / knowledge-chain / mother-library）。脚本 exit 0 才允许 `git push`。跳过此步推送导致 CI 红灯属于流程违规。
+
 ## 发布与证据边界
 
 - 母库和每个子库分别拥有 manifest、builder、validator、approval/evidence 和 tag namespace；一个 scope 的结果不能替代另一个 scope。
