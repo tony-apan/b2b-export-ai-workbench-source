@@ -5,8 +5,8 @@ status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
-sources: ["../RUNBOOK-ANYONE.md", "../MODULES.md", "同目录 templates/ 的 *.json 与 *.md（字段样例真源）", "../allincms_api.py", "example-site-full-build-20260829（HANDOFF.md / 70_evidence / 20_work / scripts-20260830 / 公网实测抓取）"]
-related: ["../RUNBOOK-ANYONE.md", "../MODULES.md", "site-content-checklist.md", "client-input-checklist.md", "CONTENT-MINIMUM.md", "site-audit-config.template.json", "delivery-manifest.md", "../allincms_api.py", "../site_pipeline.py"]
+sources: ["../RUNBOOK-ANYONE.md", "../MODULES.md", "同目录 templates/ 的 *.json 与 *.md（字段样例真源）", "example-site-full-build-20260829（HANDOFF.md / 70_evidence / 20_work / scripts-20260830 / 公网实测抓取）"]
+related: ["../RUNBOOK-ANYONE.md", "../MODULES.md", "site-content-checklist.md", "client-input-checklist.md", "CONTENT-MINIMUM.md", "site-audit-config.template.json", "delivery-manifest.md"]
 description: AllinCMS 建站工具包文档（new-site-customization-checklist.md）
 visibility: "public"
 redaction_status: "safe-to-publish"

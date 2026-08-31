@@ -143,8 +143,7 @@ doc = page_document([
     ("features-1", feature_grid(...)), ("products-1", product_showcase(...)),
     ("materials-1", material_split(...)), ("proof-1", proof_quotes(...)),
     ("news-1", news_list(...)), ("faq-accordion-1", faq(...)),
-    ("newsletter-inline-1", newsletter(...)), ("contact-1", contact_split(...)),
-])
+    ("newsletter-inline-1", newsletter(...)), ("contact-1", contact_split(...))])
 # 公司页：breadcrumb/about_intro/company_story/company_stats/company_values/company_team
 # 联系页：breadcrumb/contact_header/contact_info(social_links=[]!)/location_map/contact_split
 # 关键：所有可显示字段显式传（见 MODULES.md 服务端回填坑）

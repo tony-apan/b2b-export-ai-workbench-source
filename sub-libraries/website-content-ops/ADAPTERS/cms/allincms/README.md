@@ -214,8 +214,7 @@ const localFiles = [
     alt: "Rear hub motor for commuter e-bike",
     notes: "用于产品页和后续 SEO 内容",
   },
-  "/absolute/private-runtime/source/02.webp",
-];
+  "/absolute/private-runtime/source/02.webp"];
 
 const readiness = await adapter.checkAllinCmsMediaRuntime({
   tab,
@@ -272,8 +271,7 @@ result.items.every((item) => [
   "uploaded_and_indexed",
   "reconciled_and_indexed",
   "reconciled_existing",
-  "reused_verified_mapping",
-].includes(item.status));
+  "reused_verified_mapping"].includes(item.status));
 ```
 
 同一源文件以 SHA-256 为主键；即使改名，只要私有索引已有 verified 映射，默认复用而不重复上传。索引分别保存源 MD5 / SHA-256、规范化上传 MD5 / SHA-256、media ID、URL、远端 MD5 / SHA-256、说明、alt 和用途备注。平台可能重编码图片，三组哈希不得互相代填。
@@ -308,8 +306,7 @@ result.items.every((item) => [
 ```js
 const localFiles = [
   "/absolute/path/to/01.png",
-  "/absolute/path/to/02.png",
-];
+  "/absolute/path/to/02.png"];
 const authorizationContext = await adapter.createAllinCmsMediaUploadAuthorizationContext({
   localFiles,
   expectedSiteKey: "用户确认的 site_key",

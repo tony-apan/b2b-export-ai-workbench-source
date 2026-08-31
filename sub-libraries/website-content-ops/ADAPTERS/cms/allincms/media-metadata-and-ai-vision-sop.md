@@ -155,8 +155,7 @@ const localFiles = [
       fact_basis: ["image_observation", "product_knowledge_base"],
       uncertain_claims: [],
     },
-  },
-];
+  }];
 
 const authorizationContext = await adapter.createAllinCmsMediaUploadAuthorizationContext({
   localFiles,

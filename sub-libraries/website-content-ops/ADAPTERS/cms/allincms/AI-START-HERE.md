@@ -256,8 +256,7 @@ const readiness = await adapter.checkAllinCmsMediaRuntime({
   expectedSiteKey: "用户确认的 site_key",
   localFiles: [
     "/absolute/private-runtime/images/01.webp",
-    "/absolute/private-runtime/images/02.png",
-  ],
+    "/absolute/private-runtime/images/02.png"],
 });
 ```
 
@@ -292,8 +291,7 @@ const localFiles = [
     },
     notes: "产品详情页候选",
   },
-  "/absolute/private-runtime/images/02.webp",
-];
+  "/absolute/private-runtime/images/02.webp"];
 
 const authorizationContext = await adapter.createAllinCmsMediaUploadAuthorizationContext({
   localFiles,

@@ -7,7 +7,7 @@ owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
 sources: ["示例客户 全流程实战 2026-08-29/30（纯 API 登录成功+失败双路径实测）", "ISS-083"]
-related: ["../../../../TOOLS/interface-kit/RUNBOOK-ANYONE.md", "../../../../TOOLS/interface-kit/allincms_api.py"]
+related: ["../../../../TOOLS/interface-kit/RUNBOOK-ANYONE.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---

@@ -5,7 +5,7 @@ status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-08-30"
-sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "index/registry_tools.py", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30"]
+sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30"]
 related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-customization-checklist.md", "MODULES.md", "writing/WRITING-INDEX.md"]
 description: AllinCMS 建站工具包文档（NEW-SITE-ONEPASS.md）
 visibility: "public"
