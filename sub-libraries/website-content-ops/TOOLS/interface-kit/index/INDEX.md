@@ -124,7 +124,7 @@ last_updated: "2026-08-31"
 | ISS-036 | fixed | copywriting | meta/流程备注泄漏进读者正文（(Guide is synthetic...)）；footer demo 标注在正式站亦伤信任 | 创作与审核未区分内部备注与读者可见文本 | 正文删除内部备注（移入交付/元数据）；正式站 footer copyright/systemNote 的 Demo/qualification 声明必须替换为真实版权 | 写作六段式不放 meta 备注；正式站发布前扫 footer 声明 | TPL-020 |
 | ISS-037 | fixed | copywriting | 文章缺层次/钩子/CTA（子 agent 评审 2/2/2/3 分 NEEDS_REWRITE） | 未按六段式逻辑写作 | 按 article-writing-logic 六段式重写（标题钩+场景引言+痛点代价+阶梯+CTA）并发布 | 出稿必按六段式；发布前跑 ghostwriter 评审 | TPL-020 |
 | ISS-038 | fixed | format | Slate heading 实际不渲染 h2（此前矩阵误判：页面唯一 h2 是 footer 品牌区） | 矩阵验证用全局 tag 计数，未做正文区定位 | format-lab 逐 marker 精查；MODULES 矩阵改正（heading❌）；改用加粗段首做视觉标题；格式判定改动前必须重测 | 正文视觉层=加粗段首+数字加粗；任何矩阵结论改动先 format-lab | TPL-020 |
-| ISS-039 | fixed | format | CTA 用 Markdown `[text](url)` 渲染成纯文本（用户截图暴露） | 文案层误用 Markdown 而 Slate 不支持 | 正文禁 Markdown（[]()/#/**）；CTA 自然语言；链接只进模块字段；写作逻辑加格式规则节 | 出稿自检无 Markdown 残留；ghostwriter 3 项新检查之一 | TPL-020 |
+| ISS-039 | fixed | format | CTA 用 Markdown [text]\(url\) 语法渲染成纯文本（用户截图暴露） | 文案层误用 Markdown 而 Slate 不支持 | 正文禁 Markdown（方括号圆括号/#/** 语法）；CTA 自然语言；链接只进模块字段；写作逻辑加格式规则节 | 出稿自检无 Markdown 残留；ghostwriter 3 项新检查之一 | TPL-020 |
 | ISS-040 | fixed | frontend | 正文排版难受（段落无间距/无标题/内链丢失） | Slate 正文无间距 CSS 且 heading 不渲染；related 模块曾被删（防空态） | 空段落分隔+段首加粗+恢复 related（数据足后）+禁 Markdown；CSS 层平台边界记录（ID-0007 C8） | 写文章按五·五格式规则；数据 ≥3 时保留 related | TPL-020 |
 | ISS-042 | fixed | seo-copy | 第三方评审55分：CTA非真链接/正文缺语义层/数据绝对化/Quick Answer缺失/标题意图不稳 | 正文 CTA 只有文字；参数绝对化；未用 callout 做决策模块 | 详情页模板加产品推荐模块(真链接)；Quick Answer+承重公式+边界声明+图片来源callout；标题SEO化；五·四规则固化 | 专业决策页五件套：Quick Answer/公式/边界/来源/真链接CTA | TPL-020 |
 | ISS-043 | boundary | platform | 文档语言层平台边界（⛔ 禁令范围，不展开） | 平台行为（第三方评审 2026-08-29 P0 实锤） | ⛔ 禁令：不检查、不报告 | 不参与站内可修判定 | ID-0007 A6 |

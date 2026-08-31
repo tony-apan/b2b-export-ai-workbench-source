@@ -37,6 +37,24 @@ license_status: "pending"
 
 ## 最快开始
 
+### 从零安装（把这段整体复制给你的 AI）
+
+```text
+请为我安装并启动 B2B 建站工具包，逐步执行并在每步后报告实际输出：
+1. 克隆：git clone https://github.com/tony-apan/b2b-export-ai-workbench-source.git && cd b2b-export-ai-workbench-source
+2. 工具包自检（应输出 VERIFY PASS；可能出现 remote refs 缺失的 WARN，属正常）：cd sub-libraries/website-content-ops/TOOLS/interface-kit && python3 index/registry_tools.py verify
+3. 真源管线检查（应输出 CHECK PASS；WARN/FAIL 就停下向我报告，不要继续）：cd ../../scripts && python3 interface-kit-pipeline.py check
+4. 选装依赖（仅 PDF/DOCX 解析需要）：cd ../TOOLS/interface-kit && python3 install-deps.py --yes
+5. 凭据：向我要 payload-token（我登录 workspace.laicms.com 后从浏览器 Cookie 复制给你），然后 export WS_TOKEN=<token>；我不给就停在这里，不要猜、不要碰远程。该 token 等于我的登录态（约 30 天有效且无法提前吊销），只放进环境变量（若你手敲 export，先 set +o history 防落入 shell 历史），不要写文件、不要入日志；用完提醒我在平台退出登录，或到期前轮换/改密作废
+6. 就绪后读 NEW-SITE-ONEPASS.md，按其 13 步从客户资料建一个完整站点；事实与坑查 RUNBOOK-ANYONE.md
+7. 红线：删除类操作（站点/产品/文章/分类/标签/主题/媒体，含 delete-demo-content 清理与任何 --force/--confirm 批量写）必须逐条列目标等我确认；未经我明确批准不上传、不覆盖、不发布
+（Windows 同样适用：WS_TOKEN 环境变量跨平台；命令用正斜杠路径）
+```
+
+> 已经在用 AI 技能生态（Claude/Codex skills）？把 `sub-libraries/website-content-ops/SKILL-INSTALL/` 软链到你的 skills 目录即可注册本能力（详见 [SKILL-INSTALL/README](SKILL-INSTALL/README.md) 的安装段与双真源警示）。
+
+### 已经把工作包交给 AI 了？（原有定位提示）
+
 ```mermaid
 flowchart LR
   A["告诉 AI 你的目标"] --> B["AI 读取 START-HERE"]
