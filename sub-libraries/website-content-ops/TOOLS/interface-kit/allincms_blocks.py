@@ -184,9 +184,13 @@ def footer(brand,kicker,description,columns,social_links=None,copyright="",syste
         "socialLinks":[{"label":l,"target":target_custom(u)} for (l,u) in (social_links or [])],
         "copyright":copyright,"systemNote":system_note})
 
-def contact_dialog(title,description,eyebrow="Product support",form_slug="contact-inquiry",close_label="Close contact dialog"):
-    return el("contact-dialog-form-modal",{"title":title,"description":description,"eyebrow":eyebrow,
+def contact_dialog(title,description,eyebrow="Product support",form_slug="contact-inquiry",close_label="Close contact dialog",anchor_id="contact-form-dialog"):
+    """anchor_id 必须与 header() 的 cta_anchor 一致：anchorId 为 null 时公开站渲染器
+    静默丢弃整个弹窗元素（CTA 点击只改 URL hash，零报错）——ISS-094 实证 2026-09-01。"""
+    e = el("contact-dialog-form-modal",{"title":title,"description":description,"eyebrow":eyebrow,
         "closeLabel":close_label,"formSlug":form_slug})
+    e["anchorId"] = anchor_id
+    return e
 
 def social_float(url,label="WhatsApp",brand="whatsapp"):
     return el("social-floating-button",{"brand":brand,"url":url,"label":label,"showLabel":False,"position":"bottom-right"})

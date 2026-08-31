@@ -66,3 +66,4 @@ DOC-033	script	current	demo 种子清理脚本	../delete-demo-content.py	current
 DOC-034	doc	current	API 摸索流程（平台更新后 7 步重发现）	../API-DISCOVERY.md	current	-	api;discovery;action-id;scan;platform-update;reverse-engineer	部署升级导致 action id/schema/模板变化时，AI 按此流程系统性重新摸索	接口不工作/新 action/新字段/平台升级时读本文
 DOC-035	doc	kit	RUNBOOK：任何人零上下文建站手册	../RUNBOOK-ANYONE.md	current	allincms_api.py;site_pipeline.py	runbook;zero-context;fallback;坑回填	实测事实与回落库；⛔ 禁令横幅；13 项审计口径；新坑回填流程	读完 ONEPASS 后查事实与回落时
 DOC-036	doc	kit	NEW-SITE-ONEPASS 13 步一条龙	../NEW-SITE-ONEPASS.md	current	site_pipeline.py	onepass;13-step;delivery	资料→brief→COP→建站→内容→主题→审计→交付 13 步全流程	建一个完整新站时
+TPL-023	template	kit	建站交付全量验收清单 v2	../templates/site-acceptance-v2.md	current	-	acceptance;checklist;adversarial;forms;cta;seo	7 层 61 项逐项验收（逐页/模块/表单端到端/转化/视口/SEO/平台边界）+四轮对抗流程+F1-F9 模块表单摸索计划；判据=陌生买家能否完成询盘	步骤 12 三门通过后、DELIVERY 签发前逐项执行；巡检复用子集

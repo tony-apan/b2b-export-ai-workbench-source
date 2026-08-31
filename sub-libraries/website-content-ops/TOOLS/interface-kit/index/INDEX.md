@@ -3,7 +3,7 @@ title: "AllinCMS 建站知识索引"
 type: "index"
 status: "Working"
 owner: "AI"
-last_updated: "2026-08-31"
+last_updated: "2026-09-01"
 description: AllinCMS 建站工具包文档（INDEX.md）
 created: 2026-08-31
 visibility: "public"
@@ -14,7 +14,7 @@ related: ["../README.md"]
 
 # AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）
 
-> 生成时间：2026-08-31｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
+> 生成时间：2026-09-01｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
 
 ## 1. 文档 / 脚本 / 模板（doc-registry.tsv）
 
@@ -87,6 +87,7 @@ related: ["../README.md"]
 | DOC-034 | doc | API 摸索流程（平台更新后 7 步重发现） | `../API-DISCOVERY.md` | current | 部署升级导致 action id/schema/模板变化时，AI 按此流程系统性重新摸索 |
 | DOC-035 | doc | RUNBOOK：任何人零上下文建站手册 | `../RUNBOOK-ANYONE.md` | current | 实测事实与回落库；⛔ 禁令横幅；13 项审计口径；新坑回填流程 |
 | DOC-036 | doc | NEW-SITE-ONEPASS 13 步一条龙 | `../NEW-SITE-ONEPASS.md` | current | 资料→brief→COP→建站→内容→主题→审计→交付 13 步全流程 |
+| TPL-023 | template | 建站交付全量验收清单 v2 | `../templates/site-acceptance-v2.md` | current | 7 层 61 项逐项验收（逐页/模块/表单端到端/转化/视口/SEO/平台边界）+四轮对抗流程+F1-F9 模块表单摸索计划；判据=陌生买家能否完成询盘 |
 
 ## 2. 问题 / 教训（issues.tsv）
 
@@ -172,6 +173,18 @@ related: ["../README.md"]
 | ISS-081 | fixed | structure | flash-1 结构方案审查（2d5a5ecf）需补漏后执行：①根因未隔离——64 tracked 修改主体在 sub-libraries/ADAPTERS（tracked 且客户活必改），mv customer-runtime 不解决'母库被改脏'复发 ②事实虚构——'母库 dist 同步 interface-kit'无源（母库 tracked 0 命中、dist 无），真实权威副本在 runtime ③TTL 会删证据（fluxpedal HANDOFF 引 8/12 artifacts 14+ 天基线 + 5 客户状态文件引 chunk//tmp 路径）④残留误判——REVIEW-RECORDS 实为 tracked、tmp/fluxpedal-site 无去向、.DS_Store 未 ignore、26 untracked 未分拣 ⑤flash-1 误报 1 处：'skill 无 git 仓'——.git 目录实证存在、TERRA 已核 3 脏文件合规 | 方案只迁移不动因；TTL 一刀切；部分残留分类未实测 | id-0072 全部修订：REVIEW-RECORDS 归 tracked 不迁；'dist 同步'改'runtime 权威（现状）+dist 管线待建'置顶待办①；TTL 加 promote-to-70_evidence 豁免闸门+引用检查；规则区加 adapter 脏源承认（当日 release 快速通道/runtime-override）；迁移节补 fluxpedal-site 归客户区+legacy shim 标注；待办补 .DS_Store ignore 与 RUNTIME_ROOT 约定；flash-1 误报核销 | 结构方案每个'事实性主张'（同步源存在/某目录是残留/某仓不存在）必须实测核验再写；TTL 必须有引用豁免 | wiki/00_meta/id-0072-runtime-folder-structure-v2.md |
 | ISS-082 | fixed | structure | 第 2 轮结构对抗（flash 8a53f97a 复核修订 + TERRA ff467d52 干跑演练）：flash 判 6/6 修订落地达标可执行（建议执行序显式化+ln 前置闸门——已补 7 步执行序含闸门 A1/A2/B）；TERRA 判先修 3 条：X1 realpath 相对路径 cwd 依赖（实测错误 cwd 输出'看似成功'的错值）X2 缺显式 mv 步骤+无 mkdir+先 ln 会静默嵌套软链（10_clients 其实随树搬不存在缺失问题——用户前提不成立但顺序风险真实）X3 整树搬迁断 11 文件绝对引用+待办①应与迁移绑定授权；另 df 同卷断言+redaction_status 纯枚举化 | 第 1 轮修订后文档仍无显式执行序；验证命令相对路径；警告只覆盖删链漏了搬家 | 全部修复：7 步显式执行序（闸门 A1 目标不存在+A2 df 同卷断言+B ln 前置原目录不存在）一次复制可跑；realpath 绝对路径+断言期望值；警告 2 整树搬迁断 11 处绝对引用（列代表文件）+迁后改 $RUNTIME_ROOT 批次；绑定条款=授权迁移同时立项 interface-kit 真源；redaction_status 拆纯枚举+redaction_note | 迁移类方案的验证命令必须绝对路径+断言期望值（防'看似成功'）；执行序必须显式编号含全部前置闸门；'删链'与'搬家'两种断链场景都要警告 | wiki/00_meta/id-0072-runtime-folder-structure-v2.md |
 | ISS-083 | fixed | boundary | 对抗审查'能否完全不依赖浏览器纯 cookie 接口操作'：操作矩阵 10/10 全通（读 8+幂等写 2，全 API 无浏览器）；唯一浏览器依赖=首次取 token（login() 曾丢弃 Set-Cookie 响应头，机制上不可能拿 token） | _req 只返回 (status, body)，响应头全丢；Payload 标准 sign-in 会回 Set-Cookie: payload-token | login() 升级纯 API：_req 捕获 Set-Cookie 列表 → login 从中提取 payload-token（成功+失败双路径实测通过：错误凭据干净报错；真实凭据（用户提供）→ Set-Cookie 提取 357 字符 JWT → read_sites 返回 2 站 + set_home_page 写权限验证通过——浏览器依赖归零，全链路纯 API） | 声明'不支持'前先查客户端是否丢弃了关键响应头；登录类能力分级=错误路径实测✓/成功路径标准实现未实测 | RUNBOOK-ANYONE §0 |
+| ISS-084 | fixed | api-contract | 产品 slug 与同站产品分类 slug 同名时 publish_product 报 validation.slug.duplicate（create 成功） | 平台 slug 唯一域覆盖产品与 taxonomy | 产品 slug 加后缀差异化（microwave-adaptors→microwave-adaptor-series）后 publish 成功 | 产品 slug 避免与分类/tag slug 同名；brief 阶段即检查 | NEW-SITE-ONEPASS 步骤7 |
+| ISS-085 | fixed | api-contract | publish_post 报 zod validationErrors：siteId undefined / excerpt>200 / order undefined / coverImage undefined（products 流程无此约束） | posts publish 校验必填 siteId+order+coverImage 且 excerpt ≤200 字符 | payload 补 siteId/order/coverImage，excerpt 截断 ≤200 后 publish 成功 | 写文章 excerpt 控制 ≤200；payload 模板对照 post-payload-example 全字段 | NEW-SITE-ONEPASS 步骤8 |
+| ISS-086 | fixed | api-flaky | 首次 create_category/create_tag 后紧邻动作撞 transaction mismatch（Given transaction number X...）且 create 响应 {} 无 id，易误判成功 | 切资源域后首个 server action 的事务号与服务端活动事务不匹配 | GET 对应 tab 页刷新 router tree 后重发；回读用 label/value 对提取 id；字符串 grep RSC 原文核对存在性 | taxonomy 创建后必须回读验证；解析 id 用 'label':'name','value':'id' 正则对 | NEW-SITE-ONEPASS 步骤6 |
+| ISS-087 | fixed | api-flaky | posts publish 偶发 serverError Not Found（草稿仍在列表），重试同 payload 即成功 | 疑似瞬时事务/路由状态 | 读列表拿草稿真 id 重发一次 | publish 报 Not Found 时先回读草稿再重试一次，勿重建 | NEW-SITE-ONEPASS 步骤8 |
+| ISS-088 | fixed | builder-api | hero() 的 actions/service_items/campaign_pills 传 dict 会被解包成键名字符串（按钮渲染为字面量 label/value） | 构建器签名是元组列表 [(label,href,variant)]，dict 解包产出键名 | 改传元组重交，回读零差异 | 用 allincms_blocks 构建器前先读其 docstring 签名；回读 diff 必查 actions 文本 | MODULES 一/A |
+| ISS-089 | fixed | server-backfill | page-header-card 未传 stats 时服务端回填模板假政策（Catalog/Updated weekly + Support/Simple returns） | 模块默认值回填（ISS-001 同类新字段） | stats 显式传真值（Catalogue/客户画册版本 + Contact/邮箱） | 可显示字段全显式传的清单须随模块库更新补充 stats | MODULES 六 |
+| ISS-090 | fixed | audit-config | audit 的 units 是违规单位黑名单（demo 放 kayak 数值）误当白名单填合法单位→误报；faq-answer 只扫 primary_article 一页（跨篇短语必 miss） | config 语义：units=deny-list；faq 以主文章 raw 文本为单一检查对象 | units 改英制残留黑名单；faq_answers 收敛为主文章实际 SSR 措辞（含 °C→degrees Celsius 写法差异） | 写 audit-config 前读 site_pipeline 对应检查实现；短语以公网 SSR 原文为准 | SCRIPT-003 |
+| ISS-091 | fixed | kit-defect | a867865 治理批把 site_pipeline.py:28 与 delete-demo-content.py:24 的 token 候选行改出引号嵌套语法错误（CI 无 Python 语法检查未拦，SyntaxError 直至 import 才爆） | 跨文件批量改写 /tmp 路径为平台临时目录时的机械替换事故 | 两处按 allincms_api.py 收敛写法修为 candidates=[_token_file()]（工作树修复，commit 待授权） | 治理批改动应过 py_compile 全量；建议 CI 加 python -m py_compile 步骤 | - |
+| ISS-092 | boundary | platform-render | 英文交付站 <html lang> 输出 zh-CN（内容全英文） | 站点语言控制旋钮未知（站点 locale/主题/平台层） | 待摸索（F7）；旋钮确认前按 BOUNDARY 登记+工单证据 | lang 检查纳入 acceptance-v2 L1.4（⛔ 禁令范围待确认） | ../templates/site-acceptance-v2.md |
+| ISS-093 | boundary | platform-render | 静态顶层页（home/products/posts/about/contact）meta description 为主题模板默认文案（A complete home page 等）；动态详情页被服务端回退模板值（ISS-073 同域） | 建站流程未覆盖页面级 meta 定制；动态页属平台限制 | 静态页 update_page 配方补定制描述（最后一次 publish 后复测防 ISS-073 重置）；动态页 BOUNDARY | acceptance-v2 L1.3 黑名单比对 | ../templates/site-acceptance-v2.md |
+| ISS-094 | fixed | kit-defect | 全局 contact-dialog-form-modal 弹窗公开站不挂载：CTA 点击仅改 URL hash、零报错；对照厂商演示站发现其弹窗元素带 anchorId 且 SSR 出锚点壳 <div id=contact-form-dialog>，我站弹窗元素 anchorId=null | 根因=builder contact_dialog() 建元素漏设 anchorId（header() 的 CTA 硬编码指向该锚点）；公开站渲染器对 anchorId=null 的弹窗全局元素整树静默丢弃——非平台缺陷、非表单配置问题 | 补 anchorId=contact-form-dialog 后 save+publish（发布时平台自动同步 globals 至全部 7 页）；builder 已修复为自动携带 anchorId；全站验证：锚点壳 7/7 页 + 产品详情页真浏览器开/填/Esc 关全过 | anchorId 必须与 header cta_anchor 一致；验收判据=acceptance-v2 L2.8 点击实证（href 有效≠可用） | ../templates/site-acceptance-v2.md |
+| ISS-095 | pending | conversion | B2B 交付站 WhatsApp 浮钮（social-floating-button）未配置，即时询盘通道缺失 | 需客户提供 WhatsApp 号码 | 号码到位后配置全局模块（7 页重交）；未配置期间 DELIVERY 登记决策行 | acceptance-v2 L2.9/L4.4 | ../templates/site-acceptance-v2.md |
 
 ## 3. 模块库（modules.tsv）
 

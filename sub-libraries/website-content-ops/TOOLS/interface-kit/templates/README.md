@@ -25,6 +25,7 @@ related: ["../README.md"]
 | `home-page-example.json` | 首页三件套 `{pageDoc, globals, themeConfig}` | 首页骨架：11 模块真实结构 + 全站 globals + 主题配置 |
 | `about-page-example.json` | 公司页三件套 | 公司介绍页骨架（story/stats/values/team 模块真实结构） |
 | `about-page-example.json` 备注 | 同 above | - |
+| `site-acceptance-v2.md` | 建站交付全量验收清单 v2：7 层 61 项 + 四轮对抗流程 + F1-F9 模块/表单摸索计划（TPL-023） | 步骤 12 三门通过后、DELIVERY 签发前逐项执行；巡检复用子集 |
 
 ## 用法（对新站）
 1. 新站建好后，产品/文章 payload 以 example 为字段骨架，替换文本/ID（分类 id 用新站建分类返回的 id）。

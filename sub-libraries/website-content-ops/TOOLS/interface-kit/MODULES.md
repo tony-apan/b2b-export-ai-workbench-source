@@ -117,7 +117,7 @@ related: ["README.md"]
 |---|---|---|---|
 | header-dropdown | 站点头部导航 | siteTitle, tagline, logoMedia, logoFit, logoTarget, navigation[{label,target,children[]}], ctaLabel, ctaTarget | 顶栏：品牌+导航（可下拉）+CTA 按钮 |
 | footer-columns | 页脚 | brand, kicker, description, columns[{title,links[{label,target}]}], socialLinks[{label,target}], copyright, systemNote | 品牌区+N 列链接+版权细则；socialLinks 空则社交区留白 |
-| contact-dialog-form-modal | 联系弹窗 | title, description, eyebrow, closeLabel, formSlug:"contact-inquiry" | 全站 CTA 弹出表单 |
+| contact-dialog-form-modal | 联系弹窗 | title, description, eyebrow, closeLabel, formSlug:"contact-inquiry", **anchorId（必须设置且与 header 的 cta_anchor 一致，null 时公开站静默丢弃整树——ISS-094）** | 全站 CTA 弹出表单 |
 | social-floating-button | 社交悬浮钮 | brand:"whatsapp", url, label, showLabel, position:"bottom-right" | 右下角绿色浮钮 |
 
 ## 三·五、正文富文本支持矩阵（Slate，2026-08-29 终版 —— article 区精确检测法；2026-08-30 词法统一）
