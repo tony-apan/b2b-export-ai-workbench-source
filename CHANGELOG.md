@@ -5,7 +5,7 @@ type: "changelog"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-30"
+last_updated: "2026-08-31"
 sources: ["Mother-library and sub-library release architecture decision 2026-07-28", "Repository routing synchronization 2026-07-29"]
 related: ["README.md", "MANIFEST.md", "RELEASE.md", "VERSION.md", "wiki/00_meta/current-focus.md"]
 visibility: "private"
@@ -25,7 +25,8 @@ redaction_status: "private-source-reviewed"
 | 提交纪律 | 工作树长期 dirty | C1-C6 分批 commit+push（禁 squash 保持） |
 
 - 详细逐项对比见子库 CHANGELOG 2026-08-30 三列表与本文 0.3.2-working 治理批小节。
-- 已知边界不变：license 3 卡 BLOCK（按需通关）、公开 git 历史既有标识维持接受现状、validate-sub-library 存量失败修复立项中。
+- 治理收尾批次（2026-08-31）：validate-sub-library 存量 390 失败修复至 STRUCTURE_PASS（`1e976bd`）；interface-kit install 轻量安装（`192da25`）；governance tests 8→0（`a867865`）——截至 `289e974` 远端 CI run `33396415381` 与本地 pre-push-check 7/7 全绿，OQ-MOTHER-0001 关闭。
+- 已知边界（2026-08-31 对抗修正批更新）：license 3 卡 BLOCK（按需通关）、公开 git 历史既有标识维持接受现状。（原"validate-sub-library 存量失败修复立项中"已由上条收口。）
 
 ## 0.3.2-working — 2026-08-30
 

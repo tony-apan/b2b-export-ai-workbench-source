@@ -6,7 +6,7 @@ status: "Working"
 owner: "AI"
 created: "2026-07-26"
 last_updated: "2026-08-31"
-sources: ["Tony conversation 2026-07-26", "Tony decisions 2026-07-27", "Local repository evidence 2026-07-29", "Tony publication authorization 2026-07-30", "GitHub remote verification 2026-07-30", "Local B2B SEO adversarial evidence 2026-07-31", "Authorized redacted existing-article optimization and publish acceptance 2026-07-31", "Tony preparation-only acceptance 2026-08-01", "F23 local immutable review and four-reviewer closure 2026-08-11", "Governance batch dual-reviews 2026-08-30/31", "skill merge + id-0073 pipeline closure 2026-08-31"]
+sources: ["Tony conversation 2026-07-26", "Tony decisions 2026-07-27", "Local repository evidence 2026-07-29", "Tony publication authorization 2026-07-30", "GitHub remote verification 2026-07-30", "Local B2B SEO adversarial evidence 2026-07-31", "Authorized redacted existing-article optimization and publish acceptance 2026-07-31", "Tony preparation-only acceptance 2026-08-01", "F23 local immutable review and four-reviewer closure 2026-08-11", "Governance batch dual-reviews 2026-08-30/31", "skill merge + id-0073 pipeline closure 2026-08-31", "CI green closure evidence 2026-08-31"]
 related: ["current-focus-history-2026-07.md", "check-mechanism-map.md", "open-questions.md", "in-repository-agency-runtime-model.md", "../../MANIFEST.md", "../../sub-libraries/agency-operations/README.md", "../../sub-libraries/website-content-ops/README.md", "logs/2026/07/2026-07-30.md", "logs/2026/07/2026-07-31.md", "logs/2026/08/2026-08-01.md", "logs/2026/08/2026-08-11.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
@@ -15,7 +15,7 @@ redaction_status: "safe-to-publish"
 
 ## Current Focus
 
-**建站工具包治理批与真源管线已全部收口（2026-08-30/31）**：四项平台审计禁令全仓清扫、id-0002 退役、skill 独立仓封存并合并进母库 `SKILL-INSTALL/`、id-0073 真源管线落地（四子命令+四守卫+双机器闸）、客户标识去敏体系（含 verify FAIL 闸）。当前收尾焦点：validate-sub-library 存量 ~390 失败修复立项（恢复发布门判别力）与 interface-kit 轻量安装能力（install-from-dist）。
+**建站工具包治理批与真源管线已全部收口（2026-08-30/31）**：四项平台审计禁令全仓清扫、id-0002 退役、skill 独立仓封存并合并进母库 `SKILL-INSTALL/`、id-0073 真源管线落地（四子命令+四守卫+双机器闸）、客户标识去敏体系（含 verify FAIL 闸）。收尾批次亦已落地（2026-08-31）：validate-sub-library 存量 390 失败修复（`1e976bd`，STRUCTURE_PASS）与 interface-kit install 轻量安装（`192da25`）；governance tests 8→0（`a867865`），截至 `289e974` 远端 CI 与本地 7 步校验全绿。下一阶段重点：课程线完善（用户指令 2026-08-31；仍待真实学员样本与课程 release 证据，不改变课程证据 BLOCK）；license 3 卡维持 BLOCK 按需通关。
 
 当前入口：建站走 [WCO README 建站一条龙](../../sub-libraries/website-content-ops/README.md) → [NEW-SITE-ONEPASS](../../sub-libraries/website-content-ops/TOOLS/interface-kit/NEW-SITE-ONEPASS.md)；管线与真源约定见 [scripts/README](../../sub-libraries/website-content-ops/scripts/README.md)；运行模型与 Agency Operations 入口不变。
 
@@ -45,6 +45,7 @@ redaction_status: "safe-to-publish"
 - 母库与子库分别使用独立 manifest、builder、validator、approval/evidence 与 tag namespace；一个 scope 的结论不可替代另一个 scope。
 - `raw/`、课程和日志已有独立入口与验证规则；真实客户、凭据和经营数据不得进入公开子库，也不得把 private Git 仓误当客户运行区。
 - 子库不自动等于 Skill；当前 `SKILL.md` 是 Preview 条件入口，不是一键安装或跨平台稳定 Skill。
+- 2026-08-31 收尾批次：validate-sub-library 存量 390 失败修复至 STRUCTURE_PASS（`1e976bd`，级联根因清除+安全扫描器升级）；interface-kit install 轻量安装命令落地（`192da25`，批次3 双审条件 GO）；governance tests 8→0（`a867865`，54/54 真修 fixture，无跳过或删除测试）。截至 `289e974`（=origin/main HEAD，含 `a867865`）：远端 CI run `33396415381`（workflow 含 run-governance-tests 步骤）success，本地 `pre-push-check` 7/7 exit 0；OQ-MOTHER-0001 据此关闭，后续 CI 红灯属新事件另立 OQ。
 
 ## Current BLOCK
 
@@ -61,5 +62,5 @@ redaction_status: "safe-to-publish"
 3. 收集真实新手冷启动、跨部署和失败恢复证据；涉及远程 CMS mutation 时继续逐次获得明确授权。
 4. 外部固定 workflow SHA、Protected Environment/ruleset、可信签名 annotated tag、包外 approval/evidence、课程真实提交和跨部署证据未齐备前，母库公开/Stable、子库 Stable 和课程 release 继续 `BLOCK`。
 5. 2026-08-30/31 治理批事实：skill 独立仓封存（archived）并合并进母库 `sub-libraries/website-content-ops/SKILL-INSTALL/`（唯一真源）；id-0073 真源管线已落地（`scripts/interface-kit-pipeline.py`，Adopted）——vendor 快照能力由 build-dist 承接；公开 git 历史中的既有客户标识按用户决策"直接推送去敏树"接受现状（HEAD 已清零）。
-6. 下一步（2026-08-31 建议批次）：validate-sub-library 存量失败修复（恢复发布门）；interface-kit install-from-dist 轻量安装；license 3 卡维持 BLOCK 按需通关。
+6. license 3 卡维持 BLOCK 按需通关（2026-08-31 建议批次的 validate 存量失败修复与 install-from-dist 已落地，见"已验证事实"2026-08-31 收尾批次条目）。
 7. 课程线后续继续完善（用户指令 2026-08-31）：入口 [课程](../../wiki/90_outputs/courses/index.md) 与 OQ-COURSE-0001..0005（评分 rubric、复训触发、fixture 统一、真实样本边界、豁免 validator）——待真实学员样本，独立工作流推进。

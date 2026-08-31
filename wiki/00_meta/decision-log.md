@@ -5,7 +5,7 @@ type: "meta"
 status: "Archived"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-07-29"
+last_updated: "2026-08-31"
 sources: []
 related: ["logs/index.md", "open-questions.md", "current-focus-history-2026-07.md"]
 ---
@@ -25,6 +25,11 @@ related: ["logs/index.md", "open-questions.md", "current-focus-history-2026-07.m
 | `CQ-20260727-0004` | 11 篇文章串行 update/publish/验收 | `ingestion-log.md` 的 `ALLINCMS-ARTICLE-SERIAL-11` 历史记录 | closed-current-deployment-only |
 | `CQ-20260728-0001` | synthetic raw → course 结构闭环 | `logs/2026/07/2026-07-28.md` 的 `EVT-20260728-0007` | closed-structure-only |
 | `CQ-20260729-0001` | manifest、builder、validator 和敏感检查是否存在 | `current-focus.md`、根 `MANIFEST.md`、`scripts/`；正式 release 资格仍 blocked | closed-mechanism-only |
+| `CQ-20260830-0001` | OQ-AUTH-0002：skill 仓"维持 private"被用户"合并进母库"决策取代 | `logs/2026/08/2026-08-30.md`；母库 CHANGELOG `0.3.2-working` skill 合并条 | closed |
+| `CQ-20260831-0001` | OQ-BAN-0001：四项禁令机器侧残留按建议 C 定性收口（字段名豁免+日志横幅化） | `logs/2026/08/2026-08-31.md`；用户确认建议清单 + `1e976bd`（含 4 处禁词句横幅化）+ `0ed3aef`（OQ 行关闭） | closed-exempted |
+| `CQ-20260831-0002` | OQ-COMMIT-0001：5-commit 切分授权履行完毕（C1-C6+收口全部推送 main） | git log origin/main（`c8b1849..30c71f9`）；`logs/2026/08/2026-08-31.md` | closed |
+| `CQ-20260831-0003` | OQ-MOTHER-0001：governance tests 8 项预存失败修复，母库 CI 恢复全绿 | 截至 `289e974`（含 `a867865`）远端 CI run `33396415381` success + 本地 pre-push-check 7/7 | closed-mechanism-only |
+
 记录会影响长期策略的决策。普通想法不要放这里，只有“以后要按这个方向做”的内容才写入。
 
 ## 格式
