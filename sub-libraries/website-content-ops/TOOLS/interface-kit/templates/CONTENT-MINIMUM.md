@@ -38,12 +38,12 @@ related: ["../README.md"]
 4. **转化路径**：买家进入列表页是想"选"，≥3 才有比较对象；单件页没有可比性（buyer decision 需要对比）
 
 ## 三、用户沟通话术（要求提供时）
-> "为了保证首页/列表页/关联推荐区显示美观（不留白、不出'暂无内容'），请至少提供 **3 个产品（每个一句话说明+规格+图片）** 和 **4 篇文章主题（选题参考：选购指南/材质保养/使用技巧/公司动态）**；如果暂时没有，我可以用演示内容占位（会标注 demo），或按你现有资料先做骨架"
+> "为了保证首页/列表页/关联推荐区显示美观（不留白、不出'暂无内容'），请至少提供 **3 个产品（每个一句话说明+规格+图片）** 和 **4 篇文章主题/本地草稿（选题参考：选购指南/材质保养/使用技巧/公司动态）**；如果暂时没有，我可以用演示内容占位（会标注 demo），或按你现有资料先做骨架"
 > 图片：每产品 1 张主图（无图请告知，我按 CC 素材代找并记录许可）
 
 ## 四、流程挂载位置
 - 前置收集（client-input-checklist.md）：必填项第五条"资料文件"注明 **最低 3 产品/4 文章**
-- brief validate（site_pipeline.py）：products<3 或 posts<4 → INVALID + 缺项提示
+- brief validate（site_pipeline.py）：products<3 或本地文章计划 posts<4 → INVALID + 缺项提示；此门不授权远程 article.create（canonical Registry 当前 BLOCK）
 - 验收（ONBOARDING 2.9 / ID-0007 B6）：`python3 site_pipeline.py gate <slug>` 数量门 + 空态 + 模板词 + 200 一键检查，任一不过 = 不开上线
 - 交付清单（delivery-manifest）：生成时先过 gate；不过则清单标记 "BLOCK: 数量不足（产品 N/文章 M）"
 

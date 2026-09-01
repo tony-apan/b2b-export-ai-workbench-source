@@ -14,8 +14,9 @@ AllinCMS / LAICMS 纯接口客户端（跨平台：macOS / Windows / Linux，Pyt
     api.create_category2(site_slug, site_id, name, slug, "posts")      # 分类（cover 显式传 None）
     api.create_category2(site_slug, site_id, name, slug, "products")
     api.upload_media(site_slug, site_id, "photo.jpg", title="...", alt="...")
-    api.create_product(site_slug, site_id, {...}); api.publish_product(site_slug, site_id, product_id, {...})
-    api.create_post(site_slug, site_id, {...});    api.publish_post(site_slug, site_id, post_id, {...})
+    api.mutate_reviewed_product(site_slug, site_id, final_payload, review_json, capability_context, target_id=None_or_exact_id)
+    api.mutate_reviewed_post(site_slug, site_id, final_payload, review_json, capability_context, target_id=exact_existing_id)  # article.create BLOCK
+    # 裸 create_*/publish_* 为 fail-closed 兼容壳；低层 _*transport 仅内部调用（ISS-102）
     api.save_home(site_slug, theme_id, page_id, site_id, doc, globals, cfg, intent="save"|"publish")
     api.create_theme(site_slug, site_id, name, preset="default"); api.set_theme_active(...); api.apply_theme_routes(...)
 零上下文建站总入口见 interface-kit/RUNBOOK-ANYONE.md。
@@ -128,7 +129,7 @@ class AllinCMS:
         if not self.token:
             raise ValueError("需要 token（payload-token JWT）或 email+password")
     # ---------- 基础 ----------
-    def _req(self, path, action=None, payload=None, method="POST", form=None, timeout=40):
+    def _req(self, path, action=None, payload=None, method="POST", form=None, timeout=40, raw_data=None):
         url = ORIGIN + path
         headers = {"Accept": "text/x-component", "User-Agent": "Mozilla/5.0"}
         if self.token: headers["Cookie"] = "payload-token=" + self.token
@@ -138,7 +139,12 @@ class AllinCMS:
             headers["Origin"] = ORIGIN
             headers["Referer"] = ORIGIN + path
         data = None
-        if form is not None:
+        if raw_data is not None:
+            if payload is not None or form is not None:
+                raise ValueError("raw_data cannot be combined with payload/form")
+            headers["Content-Type"] = "text/plain;charset=UTF-8"
+            data = raw_data
+        elif form is not None:
             # multipart/form-data（媒体上传）: form[name] = (fname, bytes, ctype)；fname 为 None → 普通字段
             boundary = "----AllinCMSBoundary" + os.urandom(8).hex()
             body = b""
@@ -333,36 +339,123 @@ class AllinCMS:
     def update_media(self, site_slug, media_id, site_id, title, alt="", caption=""):
         s, t = self._req(f"/{site_slug}/media", UPDATE_MEDIA, [{"id": media_id, "siteId": site_id, "title": title, "alt": alt, "caption": caption}])
         return self._flight(t)
-    # ---------- 产品 ----------
-    def create_product(self, site_slug, site_id, product_payload):
-        """product_payload 含 name,slug,description,order,media,mediaList,categories:[idStr],tags:[],specifications,productId,mode='update'
-        siteId 注入内部副本（action 校验必填），不污染调用方待存证 payload。"""
-        payload = dict(product_payload)
-        payload.setdefault("siteId", site_id)
-        s, t = self._req(f"/{site_slug}/products", CREATE_PRODUCT, [payload])
-        return self._flight(t)
-    def publish_product(self, site_slug, site_id, product_id, product_payload):
-        """发布/更新产品：siteId 自动注入；media update schema 只接受 oss+path；
-        categories/tags 必须是 id 字符串数组（readback 对象数组不可原样回传）；content 应为非空 Slate 块。
-        见 ISS-097/098。"""
-        payload = dict(product_payload)
-        payload["siteId"] = site_id
-        payload["productId"] = product_id; payload["mode"] = "publish"
-        s, t = self._req(f"/{site_slug}/products/{product_id}/update", UPSERT_PRODUCT, [payload])
-        return self._flight(t)
+    # ---------- 产品（受支持内容 mutation 只允许 reviewed + fresh capability 入口） ----------
+    def _send_content_transport(self, path, action, envelope):
+        """Freeze one HTTP body, digest it, then send the exact same bytes."""
+        import content_review_gate as _review
+        body = json.dumps([envelope], ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
+        pre = _review.request_evidence(path, action, body)
+        try:
+            status, text = self._req(path, action, raw_data=body)
+        except Exception as exc:
+            evidence = dict(pre)
+            evidence.update({"response_status": None, "transport_error": f"{type(exc).__name__}: {exc}",
+                             "request_may_have_succeeded": True})
+            evidence["request_evidence_digest"] = _review.payload_digest(evidence)
+            return None, evidence
+        evidence = _review.request_evidence(path, action, body, status=status, response_text=text)
+        if evidence["request_body_digest"] != pre["request_body_digest"]:
+            raise RuntimeError("REQUEST_BODY_DIGEST_DRIFT")
+        return self._flight(text), evidence
+    def _create_product_transport(self, site_slug, site_id, product_payload):
+        import content_review_gate as _review
+        payload = _review.project_wire_payload(product_payload, object_type="product", site_id=site_id,
+                                               target_id=None, wire_phase="create_draft")
+        return self._send_content_transport(f"/{site_slug}/products", CREATE_PRODUCT, payload)
+    def _publish_product_transport(self, site_slug, site_id, product_id, product_payload):
+        import content_review_gate as _review
+        payload = _review.project_wire_payload(product_payload, object_type="product", site_id=site_id,
+                                               target_id=product_id, wire_phase="publish_update")
+        return self._send_content_transport(f"/{site_slug}/products/{product_id}/update", UPSERT_PRODUCT, payload)
+    def create_product(self, *args, **kwargs):
+        raise RuntimeError("CONTENT_REVIEW_CONTEXT_REQUIRED: use mutate_reviewed_product")
+    def publish_product(self, *args, **kwargs):
+        raise RuntimeError("CONTENT_REVIEW_CONTEXT_REQUIRED: use mutate_reviewed_product")
+    def mutate_reviewed_product(self, site_slug, site_id, business_payload, review_record_path,
+                                capability_context, target_id=None):
+        """受支持产品 create/update 入口；合作式流程门，不是对恶意 token 持有者的安全沙箱。"""
+        import content_review_gate as _review
+        operation = "update" if target_id else "create"
+        required_ops = ({"allincms.product.update", "allincms.product.publish"} if target_id else
+                        {"allincms.product.create", "allincms.product.publish"})
+        rc, ctx = _review.verify_payload_record(
+            business_payload, review_record_path, expected_object_type="product",
+            expected_operation=operation, expected_site_key=site_slug, expected_site_id=site_id,
+            expected_target_id=target_id)
+        if rc: raise RuntimeError("CONTENT_REVIEW_REQUIRED_OR_STALE")
+        cap_rc, cap_problems = _review.verify_live_capability(
+            capability_context, deployment_id=DEPLOY, site_key=site_slug, site_id=site_id,
+            required_operations=required_ops, expected_runtime_scope_root=ctx["runtime_scope_root"],
+            expected_client_id=ctx["client_id"], expected_task_id=ctx["task_id"])
+        if cap_rc: raise RuntimeError("FRESH_LIVE_CAPABILITY_REQUIRED: " + "; ".join(cap_problems))
+        evidence = {"review_context": ctx, "capability_context": capability_context,
+                    "wire_projection_version": _review.PROJECTION_VERSION, "automatic_retry": False}
+        if not target_id:
+            created, create_request = self._create_product_transport(site_slug, site_id, business_payload)
+            evidence["create_request"] = create_request
+            new_id = ((created or {}).get("data") or {}).get("id")
+            if not new_id:
+                return {"result": created, "evidence": evidence, "request_may_have_succeeded": True,
+                        "reconcile_required": True, "reconcile": {"resource":"products", "site_key":site_slug,
+                        "natural_key":{"slug":business_payload.get("slug")}, "before_after_unique_id_delta":True}}
+            evidence["target_id"] = new_id
+            published, publish_request = self._publish_product_transport(site_slug, site_id, new_id, business_payload)
+            evidence["publish_request"] = publish_request
+            if ((published or {}).get("data") or {}).get("status") != "published":
+                return {"result": published, "evidence": evidence, "request_may_have_succeeded": True,
+                        "reconcile_required": True, "reconcile": {"resource":"products", "site_key":site_slug,
+                        "target_id":new_id, "expected_slug":business_payload.get("slug"), "readback_required":True}}
+            return {"result": published, "evidence": evidence, "reconcile_required": False}
+        published, request_evidence = self._publish_product_transport(site_slug, site_id, target_id, business_payload)
+        evidence.update({"target_id": target_id, "publish_request": request_evidence})
+        if ((published or {}).get("data") or {}).get("status") != "published":
+            return {"result": published, "evidence": evidence, "request_may_have_succeeded": True,
+                    "reconcile_required": True, "reconcile": {"resource":"products", "site_key":site_slug,
+                    "target_id":target_id, "expected_slug":business_payload.get("slug"), "readback_required":True}}
+        return {"result": published, "evidence": evidence, "reconcile_required": False}
     def delete_product(self, site_slug, site_id, product_id):
         """⚠️ 破坏性/不可逆：删除产品记录。先 read_product/read_lists 核对目标；必须取得用户明确授权后再调。"""
         s, t = self._req(f"/{site_slug}/products", DELETE_PRODUCT, [{"id": product_id, "siteId": site_id}])
         return self._flight(t)
-    # ---------- 文章 ----------
-    def create_post(self, site_slug, site_id, post_payload):
-        post_payload.setdefault("siteId", site_id)
-        s, t = self._req(f"/{site_slug}/posts", CREATE_POST, [post_payload])
-        return self._flight(t)
-    def publish_post(self, site_slug, site_id, post_id, post_payload):
-        post_payload["postId"] = post_id; post_payload["mode"] = "publish"
-        s, t = self._req(f"/{site_slug}/posts/{post_id}/update", UPSERT_POST, [post_payload])
-        return self._flight(t)
+    # ---------- 文章（article.create 权威 registry BLOCK；update 需 reviewed + fresh capability） ----------
+    def _create_post_transport(self, site_slug, site_id, post_payload):
+        raise RuntimeError("ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY")
+    def _publish_post_transport(self, site_slug, site_id, post_id, post_payload):
+        import content_review_gate as _review
+        payload = _review.project_wire_payload(post_payload, object_type="article", site_id=site_id,
+                                               target_id=post_id, wire_phase="publish_update")
+        return self._send_content_transport(f"/{site_slug}/posts/{post_id}/update", UPSERT_POST, payload)
+    def create_post(self, *args, **kwargs):
+        raise RuntimeError("CONTENT_REVIEW_CONTEXT_REQUIRED: use mutate_reviewed_post")
+    def publish_post(self, *args, **kwargs):
+        raise RuntimeError("CONTENT_REVIEW_CONTEXT_REQUIRED: use mutate_reviewed_post")
+    def mutate_reviewed_post(self, site_slug, site_id, business_payload, review_record_path,
+                             capability_context, target_id=None):
+        """受支持文章 update 入口；article.create 依权威 registry 保持 BLOCK。"""
+        import content_review_gate as _review
+        if not target_id:
+            raise RuntimeError("ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY")
+        rc, ctx = _review.verify_payload_record(
+            business_payload, review_record_path, expected_object_type="article",
+            expected_operation="update", expected_site_key=site_slug, expected_site_id=site_id,
+            expected_target_id=target_id)
+        if rc: raise RuntimeError("CONTENT_REVIEW_REQUIRED_OR_STALE")
+        cap_rc, cap_problems = _review.verify_live_capability(
+            capability_context, deployment_id=DEPLOY, site_key=site_slug, site_id=site_id,
+            required_operations={"allincms.article.update", "allincms.article.publish"},
+            expected_runtime_scope_root=ctx["runtime_scope_root"], expected_client_id=ctx["client_id"],
+            expected_task_id=ctx["task_id"])
+        if cap_rc: raise RuntimeError("FRESH_LIVE_CAPABILITY_REQUIRED: " + "; ".join(cap_problems))
+        evidence = {"review_context": ctx, "capability_context": capability_context,
+                    "wire_projection_version": _review.PROJECTION_VERSION, "automatic_retry": False,
+                    "target_id": target_id}
+        published, request_evidence = self._publish_post_transport(site_slug, site_id, target_id, business_payload)
+        evidence["publish_request"] = request_evidence
+        if ((published or {}).get("data") or {}).get("status") != "published":
+            return {"result": published, "evidence": evidence, "request_may_have_succeeded": True,
+                    "reconcile_required": True, "reconcile": {"resource":"posts", "site_key":site_slug,
+                    "target_id":target_id, "expected_slug":business_payload.get("slug"), "readback_required":True}}
+        return {"result": published, "evidence": evidence, "reconcile_required": False}
     def delete_post(self, site_slug, site_id, post_id):
         """⚠️ 破坏性/不可逆：删除文章记录。先 read_post/read_lists 核对目标；必须取得用户明确授权后再调。"""
         s, t = self._req(f"/{site_slug}/posts", DELETE_POST, [{"id": post_id, "siteId": site_id}])

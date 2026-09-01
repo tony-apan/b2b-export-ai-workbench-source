@@ -45,7 +45,7 @@ redaction_status: "safe-to-publish"
 | Q1 | **公司/品牌名 + 目标市场语言**（含标语、品牌一句介绍） | 站名/slug/导航/SEO title 前缀全部依赖 |
 | Q2 | **真实联系方式**：邮箱（**必须真实可收件**）+ 电话 + WhatsApp + 地址/营业时间 | 表单链路与联系页、全站 globals 浮钮 |
 | Q3 | **产品/公司资料文件**（PDF/DOCX/网页/口述） | 唯一事实源；没有它只能全 demo，不可发布 |
-| Q4 | **首批内容范围确认**：产品 ≥3（名+一句话+规格+图）、文章主题 ≥4（或接受 demo 占位） | 数量门：products<3 或 posts<4 时 validate 直接 INVALID |
+| Q4 | **首批内容范围确认**：产品 ≥3（名+一句话+规格+图）、文章主题/本地草稿 ≥4（或接受 demo 占位；**不等于允许远程新建**） | 本地内容计划门：products<3 或 posts<4 时 validate INVALID；remote article.create 仍由 Registry BLOCK |
 | Q5 | **写作素材 + 图片授权**：客户原话/询盘片段 ≥3 条、每文章 2-3 个真实数据、图片自有或同意代找 CC | 缺 Q5 文章只能写通用介绍且必须标注 demo |
 
 动工前用户确认点（client-input-checklist 第四节）：站点名/slug 偏好、demo 值是否可接受、图片授权方式、首批内容范围。
@@ -85,7 +85,7 @@ redaction_status: "safe-to-publish"
   1. 解析 → Markdown（保留来源定位）→ 事实抽取（confirmed/inferred/missing）；
   2. 对照 [templates/site-content-checklist.md](templates/site-content-checklist.md) 的 A–I 九节逐项映射；
   3. 按 [templates/brief-schema.json](templates/brief-schema.json) 填 `site/brand/contact/categories_*/tags/products/posts/story/nav`。
-- **验收判据**：`python3 site_pipeline.py validate 70_evidence/brief.json` → `VALID`（products<3 或 posts<4 → INVALID，回 §1.2 Q4）。
+- **验收判据**：`python3 site_pipeline.py validate 70_evidence/brief.json` → `VALID`（products<3 或本地文章计划 posts<4 → INVALID，回 §1.2 Q4；只证明本地成稿输入，不证明远程 article.create 能力）。
 - **产物**：`70_evidence/brief.json` + `70_evidence/source-extraction.md`（来源定位 + 图片 author/license + confirmed/inferred/missing 标注）。
 - **坑**：所有文案必须来自资料，AI 合成必须显式标 `synthetic demo`（不冒充案例/销量/认证）；brief 里 media 先写 ref 名，URL 在步骤 5 上传后回填。
 
@@ -97,7 +97,7 @@ redaction_status: "safe-to-publish"
   python3 site_pipeline.py validate 70_evidence/brief.json
   python3 site_pipeline.py generate 70_evidence/brief.json 70_evidence/generated/   # 生成 payload 集（可选加速）
   ```
-  写 COP（内容计划）：**每站数量基线**（产品 ≥3、文章 ≥4，[CONTENT-MINIMUM.md](templates/CONTENT-MINIMUM.md)）+ 文章主题 + 分类/标签清单 + faq_answers/cta/units 值。
+  写 COP（内容计划）：**本地内容计划基线**（产品 ≥3、文章主题/草稿 ≥4；remote published posts 另按现有 exact IDs，[CONTENT-MINIMUM.md](templates/CONTENT-MINIMUM.md)）+ 文章主题 + 分类/标签清单 + faq_answers/cta/units 值。
 - **验收判据**：`VALID`；COP 明确**每类实建数**（这个数 = 步骤 12 audit `count` 基线）。
 - **产物**：`70_evidence/<slug>-cop.md`。
 - **坑**：audit/gate/contact 不带 `--config` 会沿用 **Demo 基线误判新站**（ISS-063）——COP 就是该 config 的全部取值来源。
@@ -154,19 +154,26 @@ redaction_status: "safe-to-publish"
 - **输入**：customization products 节 + `taxonomy-ids.json` + 媒体 URL + **每产品正文 facts/应用场景/选型要点**。
 - **动作**（每产品）：
   ```python
-  p  = 全字段 payload   # 骨架 = templates/product-payload-example.json；首次 create 可用 media url；
-                        # publish/update 的 media 必须 oss+path；categories/tags = id 字符串数组；
-                        # specifications=[{key,value}]；content=非空 Slate（p/h2/h3/blockquote）
-  r1 = api.create_product(slug, site_id, p)        # 空壳 id
-  r2 = api.publish_product(slug, site_id, pid, p)  # API 自动注入 siteId；同 payload 带正确 slug 再发
+  p  = 最终完整 business payload   # 骨架 = templates/product-payload-example.json；
+                                   # media=oss+path；categories/tags=id 字符串数组；
+                                   # specifications=[{key,value}]；content=非空 Slate
+  # create/update 均先 resolve target：不存在 → operation=create,target_id=null；存在 → update,exact id
+  # ① content-review-gate.py digest p
+  # ② 独立 reviewer 按 product-content-review-prompt.md 审查最终全字段 p + facts + update diff
+  # ③ 产 <slug>-review.json：site/target/operation/phase/producer/reviewer/checks/findings + exact digest
+  # ④ 唯一受支持 mutation 入口（review + fresh capability 内部强制；裸方法 fail-closed）：
+  result = api.mutate_reviewed_product(slug, site_id, p, review_path, capability_context,
+                                       target_id=None_or_pid)
+  # create 时 wrapper 在审查后内部执行 create_draft → publish_update；update 直接 publish_update
   ```
 - **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态 published；`read_product` 的 content **非空**；公网每个产品详情页 `<article>` 内至少 1 个实质 H2 + 正文事实短语 SSR，且相关产品模块真链接可点、无空态。
-- **产物**：`70_evidence/products/<slug>.json`（每产品最终 payload 存证，含非空 content）。
+- **产物**：`70_evidence/products/<slug>.json` + `<slug>-review.json`（最终 payload + 独立 reviewer READY 记录，digest 精确绑定；含 business_operation=create|update、site/target binding）。
 - **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；全量 update 必须从 current readback + brief 真源合并，**不得复用可能过期的存证 payload**，尤其 specifications/content/media（空数组会真清空后台，ISS-101）；合并后必须再归一化为**写接口形状**：media 从读回包裹/url 形状转 `source:"oss"+path`，categories/tags 从对象数组转 id 字符串数组，specifications/content 以 brief/COP 真源覆盖（不得把 read_product/read_lists 读形状原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接。
 
-### 步骤 8 — 文章 k3 写 + flash 审 + create/publish
+### 步骤 8 — 文章 k3 写 + flash 审 + reviewed update（article.create BLOCK）
 
-- **输入**：写作前置素材（client-input-checklist 第六节：客户原话 ≥3 / 真实数据 / 案例 / 图 / 客群描述）+ COP 文章主题 + customization posts 节。
+- **输入**：写作前置素材（client-input-checklist 第六节）+ COP 文章主题 + customization posts 节。**Canonical Registry 当前仍将 article.create 标为 BLOCK**：本步骤只允许更新 exact existing post ID；全新文章需停下并补齐 Registry 要求的 current-deployment create discovery/before-after 唯一 ID/完整读回/editor reopen 资格证据，不能因本地脚本曾成功就放行。
+- **干净账号分支**：若 `read_lists(posts)` 无可更新 exact-ID 文章，4 篇仍完成本地成稿+独立评审+review records，但**不远程创建**；主题构建时移除 Posts 导航、news/post-related 模块，并从 audit pages/count/FAQ article 断言中移除远程文章项，DELIVERY 首行记录 `article.create=BLOCK / local drafts ready`。不得保留空文章列表入口。
 - **动作**（五步链，入口 [writing/WRITING-INDEX.md](writing/WRITING-INDEX.md)）：
   ```bash
   python3 writing/writing-module.py outline 70_evidence/brief.json     # 六段式骨架（可选）
@@ -175,11 +182,14 @@ redaction_status: "safe-to-publish"
   #    产出 70_evidence/posts/<slug>.json（字段全集 = templates/post-payload-example.json）
   # ③ 机器检查：python3 writing/writing-module.py check 70_evidence/posts/<slug>.json
   # ④ 派【评审子 agent，模型=flash】：templates/ghostwriter-review-prompt.md（5 维评分+最弱 3 处+钩子）→ READY / NEEDS_REWRITE
-  # ⑤ NEEDS_REWRITE → 回改表达（不动事实）重审；READY →：
-  api.create_post(...)  →  api.publish_post(...)   # 先 read_lists 查 slug 防重（ISS-059）
+  # ⑤ NEEDS_REWRITE → 回改表达（不动事实）重审；READY 后对最终完整 post business payload（含
+  #    title/slug/excerpt/order/coverImage/content/categories/tags）做 digest，产严格 review JSON；
+  # ⑥ 唯一受支持 mutation 入口（裸 create_post/publish_post fail-closed；article.create registry BLOCK）：
+  api.mutate_reviewed_post(slug, site_id, post_payload, review_path, capability_context, target_id=exact_pid)
+  # 先 read_lists 查 exact slug；不存在则 BLOCK，不得创建（ISS-059/102）
   ```
 - **验收判据**：`check` PASS + 评审 READY + 发布后抓取验证 **SSR**（FAQ 实质短语出现在公网 HTML）。
-- **产物**：`70_evidence/posts/<slug>.json` + `70_evidence/posts/<slug>-review.md`。
+- **产物**：`70_evidence/posts/<slug>.json` + `70_evidence/posts/<slug>-review.md`（人读评审报告）+ `70_evidence/posts/<slug>-review.json`（机器严格 context）。
 - **坑**：正文原生 Slate 类型 = `p|h2|h3|blockquote`（`heading`/`paragraph` 旧词法已禁用，ISS-060，用 writing-module.py 生成器保证）；正文内联 link 节点平铺渲染**无 `<a>`**——文章 CTA 放步骤 9 的页面级块；文章挂**文章分类** id，勿用产品分类 id。
 
 ### 步骤 9 — 主题 createTheme(default) + 7 页内容写入（save+publish）+ globals
@@ -239,7 +249,7 @@ redaction_status: "safe-to-publish"
 - **动作**：
   ```bash
   cp templates/site-audit-config.template.json 70_evidence/<slug>-audit-config.json
-  #   按 COP 填：pages（全部产品/文章 slug）、count（实建数）、faq_answers（文章必 SSR 的实质短语）、cta（真链接+source）、units
+  #   按 COP 填：pages（全部产品 slug；仅 existing reviewed-update 文章加文章 slug）、count（远程实建数）、faq_answers（仅有远程文章时加）、cta（真链接+source）、units
   python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json --out 70_evidence/audit-report.json
   python3 site_pipeline.py gate <slug> --config 70_evidence/<slug>-audit-config.json
   python3 site_pipeline.py contact <slug> --config 70_evidence/<slug>-audit-config.json --real "<真实电话|邮箱|地址>"
@@ -312,8 +322,8 @@ redaction_status: "safe-to-publish"
 | `<slug>-customization.md` | 4 | 逐字段填值的改造清单（该客户专属值） |
 | `media-manifest.md` | 5 | 文件名 → URL/alt/license |
 | `taxonomy-ids.json` | 6 | 分类/标签 name → id 映射 |
-| `products/<slug>.json` ×N | 7 | 每产品最终 publish payload |
-| `posts/<slug>.json` + `<slug>-review.md` ×N | 8 | k3 成稿 + flash 评审记录 |
+| `products/<slug>.json` + `<slug>-review.json` ×N | 7 | 每产品最终 publish payload + digest-bound 独立审查 READY（create/update） |
+| `posts/<slug>.json` + `<slug>-review.md` + `<slug>-review.json` ×N | 8 | k3 成稿 + flash 内容评审 + digest-bound READY 记录（create/update） |
 | `pages/<page>.json` ×7 | 9 | 每页最终三件套（document/globals/themeConfig） |
 | `routes-final.json` | 10 | routePath → pageId 快照 |
 | `cleanup-log.md` | 11 | demo 删除前后计数 |

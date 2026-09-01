@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-09-01"
-last_updated: "2026-09-01"
+last_updated: "2026-09-02"
 sources: ["../../../../../AGENTS.md"]
 related: ["2026-09-01.md"]
 visibility: "public"
@@ -23,5 +23,6 @@ keywords: ["2026-09", "governance batch", "token docs alignment", "daily log"]
 | ID | 入口 | 内容说明（description） | 类型 | 状态 / 可见性 | 什么时候读 | 检索词 |
 |---|---|---|---|---|---|---|
 | — | [2026-09-01 日志](2026-09-01.md) | token 文档对齐与手册规则、验收体系 v2 与弹窗根因修复、示例客户站全链重建交付、skill 对抗完善批与展示站虚拟联系方式决策。 | log | Working / public | 需要处理本目录对应主题时 | — |
+| — | [2026-09-02 日志](2026-09-02.md) | 产品与文章内容审查流程门、权威能力边界和原图参数纠正的对抗收口记录。 | log | Working / public | 需要处理本目录对应主题时 | — |
 
 <!-- INDEX:END -->

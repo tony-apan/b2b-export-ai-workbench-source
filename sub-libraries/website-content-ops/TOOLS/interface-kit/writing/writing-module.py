@@ -11,7 +11,7 @@
 """
 import json, random, re, string, sys
 
-# 更新优先：写文章更新时先查已发布 slug，存在则 publish_post 更新（勿 create 新草稿，否则产生 Untitled Post 残留）
+# 更新优先：先查已发布 slug resolve create/update；独立审查最终全字段 payload 后走 mutate_reviewed_post（勿裸 create，否则产生 Untitled 草稿/绕过门）
 
 
 STAGES = [

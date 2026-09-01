@@ -1,0 +1,18 @@
+{
+  "status": "live_verified_current_deployment",
+  "deployment_id": "<exact x-deployment-id>",
+  "site_key": "<exact-site-key>",
+  "site_id": "<exact-site-id>",
+  "operations": [
+    "allincms.product.create",
+    "allincms.product.update",
+    "allincms.product.publish"
+  ],
+  "evidence_ref": "70_evidence/<capability evidence file>",
+  "observed_at": "<RFC3339 with timezone>",
+  "expires_at": "<RFC3339 with timezone; short-lived, not permanent>",
+  "runtime_scope_root": "<absolute private task root>",
+  "evidence_digest": "sha256:<64 lowercase hex>",
+  "client_id": "<exact-client-id>",
+  "task_id": "<exact-task-id>"
+}

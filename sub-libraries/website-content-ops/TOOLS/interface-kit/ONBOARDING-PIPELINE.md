@@ -14,10 +14,10 @@ related: ["README.md"]
 
 # AllinCMS 建站上线 SOP（0 → 1 纯接口流水线）
 
-目标：拿到「公司/产品介绍文档」后，AI 按本文档直接执行，无需再摸索接口；一份资料 → 一个新站全量上线。
+目标：拿到公司/产品资料后，AI 按本文档执行当前 Registry 支持的站点/产品/页面/表单流程；已有 exact-ID 文章可 reviewed update。干净账号的文章只完成本地成稿与审查，remote article.create 保持 BLOCK，因此不承诺“一份资料→含新文章的全量上线”。
 所有命令均可复制粘贴；所有验证点都有输出判据。
 
-> **⛔ 永久禁令**：见 [RUNBOOK-ANYONE.md](RUNBOOK-ANYONE.md) 顶部横幅（2026-08-30 用户指令，四项平台层检查永不涉及）。
+> **平台前端检查边界**：见 [RUNBOOK-ANYONE.md](RUNBOOK-ANYONE.md) 顶部当前横幅；相关项已收窄为可检查+登记的 BOUNDARY，不作为站点侧强行修复依据。
 >
 > **零上下文新人先读 [RUNBOOK-ANYONE.md](RUNBOOK-ANYONE.md)**（10 步总入口 + 实测事实表 + 平台 BLOCK 回落表 + k3 写/flash 审工作流）；本文档是细节 SOP，RUNBOOK 是地图。
 
@@ -79,9 +79,9 @@ python3 allincms_api.py <token> read-sites             # 预期：站点列表 J
 ## 2. 执行顺序（依赖图）
 
 ```
-1 建站        2 分类          3 标签          4 媒体        5 产品          6 文章
-create_site  → category×N    → tag×N        → upload_media → create+publish  → create+publish
-7 设计器组装（首页/公司/联系页 document+globals）→ 8 全站 globals 统一 → 9 验收
+1 建站        2 分类          3 标签          4 媒体        5 产品                     6 文章
+create_site  → category×N    → tag×N        → upload_media → reviewed create/update  → existing reviewed update / clean account local drafts only
+7 设计器组装（干净账号移除 Posts 导航/news/post-detail/related）→ 8 全站 globals → 9 验收
 ```
 
 ### 2.1 建站
@@ -110,18 +110,18 @@ r = api.upload_media(slug, site_id, "photo.jpg", title="...", alt="...")
 # 图片素材：Wikimedia/Unsplash 等可商用来源；记录 license 到证据
 ```
 
-### 2.5 产品（每个产品：create → publish）
+### 2.5 产品（create/update：独立审查绑定最终 payload 后 mutation）
 ```python
 p = {"name":..., "slug":..., "description":..., "order":0,
-     "media": {"type":"image","value":{"name":...,"alt":...,"type":"image","source":"url","url":URL}},
-     "mediaList":[同 media]，"categories":[产品分类id]，"tags":[],
+     "media": {"name":...,"alt":...,"type":"image","source":"oss","path":...},
+     "mediaList":[]，"categories":[产品分类id字符串]，"tags":[],
      "specifications":[{"key":"Capacity","value":"500 ml"}, ...],
-     "content":[]（可选 Slate 块）}
-r1 = api.create_product(slug, site_id, p)          # 得 productId
-r2 = api.publish_product(slug, site_id, pid, p)    # 得 status published
+     "content":[非空 Slate blocks]}
+# 独立 reviewer READY record 绑定 exact payload/site/target/create|update 后：
+r = api.mutate_reviewed_product(slug, site_id, p, review_json, capability_context, target_id=exact_existing_id)
 ```
 
-"### 2.5b 文章创作流程（先要→逻辑→子 agent→验收）
+### 2.5b 文章创作流程（先要→逻辑→子 agent→验收）
 1. **先要**（client-input-checklist 六）：客户原话≥3/真实数据/案例/图/客群描述——缺则先索要（或书面确认 demo）
 2. **出稿**：按 templates/article-writing-logic.md 六段式骨架（H2 开始/钩子/代入感）
 3. **空白子 agent 完善**：templates/ghostwriter-review-prompt.md 派空白 agent（评分 4 维+最弱 3 处改写+钩子检查）→ 合并建议（不改事实）
@@ -131,7 +131,7 @@ r2 = api.publish_product(slug, site_id, pid, p)    # 得 status published
 ```python
 p = {"title":..., "slug":..., "excerpt":..., "order":0, "coverImage":media,
      "categories":[文章分类id]，"tags":[]， "content":[Slate blocks]}
-api.create_post(...) → api.publish_post(...)
+api.mutate_reviewed_post(slug, site_id, final_post_payload, review_json, capability_context, target_id=exact_existing_id)
 ```
 
 ### 2.7 页面组装（首页/公司页/联系页）
@@ -139,13 +139,20 @@ api.create_post(...) → api.publish_post(...)
 > **anchorId 合同（ISS-094）**：globals 里的 `contact_dialog()` 必须带与 header CTA 一致的 `anchor_id="contact-form-dialog"`；用 `el()` 手拼弹窗元素时同样必设——anchorId=null 时公开站渲染器**静默丢弃整棵弹窗树**（点击只改 hash、零报错）。builder 默认已带，手拼必查。
 ```python
 from allincms_blocks import *
-doc = page_document([
+has_existing_remote_articles = bool(api.read_lists(slug, "posts").get("data"))
+home_elements = [
     ("carousel-campaign-1", carousel([slide(...), slide(...)], [service_item("truck","Export shipments","...")])),
     ("categories-1", category_grid(...)), ("hero-commerce-1", hero(...actions/service_items/campaign_pills 全传)),
     ("features-1", feature_grid(...)), ("products-1", product_showcase(...)),
     ("materials-1", material_split(...)), ("proof-1", proof_quotes(...)),
-    ("news-1", news_list(...)), ("faq-accordion-1", faq(...)),
-    ("newsletter-inline-1", newsletter(...)), ("contact-1", contact_split(...))])
+]
+if has_existing_remote_articles:
+    home_elements.append(("news-1", news_list(...)))
+home_elements += [("faq-accordion-1", faq(...)),
+                  ("newsletter-inline-1", newsletter(...)), ("contact-1", contact_split(...))]
+doc = page_document(home_elements)
+# 干净账号：article.create Registry BLOCK；除 news-1 外，同步省略 Posts nav、posts/post-detail/related 页面入口与 audit article 断言。
+# existing exact-ID 文章分支才构建/发布 Posts 模块与文章页。
 # 公司页：breadcrumb/about_intro/company_story/company_stats/company_values/company_team
 # 联系页：breadcrumb/contact_header/contact_info(social_links=[]!)/location_map/contact_split
 # 关键：所有可显示字段显式传（见 MODULES.md 服务端回填坑）

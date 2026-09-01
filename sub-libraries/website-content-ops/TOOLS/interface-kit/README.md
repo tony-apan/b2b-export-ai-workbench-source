@@ -51,10 +51,10 @@ api = AllinCMS(email=..., password=...)   # 方式1（推荐）：纯 API 登录
 api.create_category2("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "Insulated Bottles", "insulated-bottles", content_type="posts")
 api.create_tag("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "Vacuum Insulated", "vacuum-insulated")
 api.upload_media("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "photo.jpg", title="demo")
-api.create_product("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", {...})
-api.publish_product("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "6a91e5e28333e0ece4a691b8", {...})
-api.create_post("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", {...})
-api.publish_post("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "6a91e66f8333e0ece4a69342", {...})
+# 内容 mutation 唯一入口：final business payload + digest-bound independent review record
+api.mutate_reviewed_product("<demo-site-key>", SID, product_payload, product_review_json, capability_context, target_id=None_or_exact_id)
+api.mutate_reviewed_post("<demo-site-key>", SID, article_payload, article_review_json, capability_context, target_id=exact_existing_id)  # update only; article.create Registry BLOCK
+# create_product/publish_product/create_post/publish_post 是 fail-closed 兼容壳；低层 transport 私有
 api.save_home("<demo-site-key>", "6a91e2fa8333e0ece4a68580", "6a91e2fa8333e0ece4a68762", "6a91e2fa8333e0ece4a6852e", doc, globals, cfg, intent="publish")
 
 # ---- 读（RSC 流纯接口：GET path?_rsc + RSC:1 header，无需浏览器）----
@@ -117,9 +117,9 @@ python allincms_api.py <token> read-info <site-slug>
    - 方式 A（推荐）：脚本 `AllinCMS(email, password)` 纯 API 登录——调 sign-in action（`7f04a5d5...`），成功分支从 **Set-Cookie** 提取 `payload-token`（ISS-083 已用真实凭据双路径实测）
    - 方式 B（兜底）：浏览器登录 `workspace.laicms.com` → DevTools → Application → Cookies → `payload-token` 值
    - 方式 C（方向指引，未实测）：从已登录浏览器配置文件提取（详见 TOKEN-AUTH.md 方式三）
-2. **写操作**：全部纯 HTTP server action（本工具包），无需浏览器/AppleScript/Playwright
-3. **读操作**：全部 RSC 纯接口（本工具包），无需浏览器/AppleScript/Playwright —— **读写闭环，全平台仅需 Python 3 + 网络**
-4. 新机器只需：复制本目录 → 安装 Python 3 → 填入 token 即可跑通全链路
+2. **受支持写操作**：纯 HTTP server action；产品 create/update 与 existing article update 仍须 strict review record + fresh capability；article.create Registry BLOCK
+3. **读操作**：全部 RSC 纯接口，无需浏览器/AppleScript/Playwright。读写闭环仅指 Registry 当前允许的受支持能力，不含新文章远程创建
+4. 新机器：复制完整 source 目录 → 安装 Python 3 → 获取 token → 完成 review/capability 前置后运行受支持流程；当前 release/dist 仍 BLOCK，不把 stale dist 当最新交付
 
 ## action id 部署相关（重要）
 - action id **随部署变化**（本包记录的是 dpl `83eddf…` 的值）。换环境/升级后用 `scan/scan-actions.py <token> <page-path>` 重扫

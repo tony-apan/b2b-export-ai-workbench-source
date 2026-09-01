@@ -25,7 +25,7 @@ related: ["../README.md"]
            （六段式）+ PROGRESSION.md（四阶段递进）+ visual-design-rules.md + MODULES 三·五
 ④ 评审     派【评审子 agent：GLM flash 模型】ghostwriter-review-prompt.md（空白视角 5 维评分+最弱 3 处+钩子检查）
            writing-module.py check <article.json> → 机器渐进检查（6 项）
-⑤ 发布     article-adversarial-checklist.md（发布前审查）→ publish → site_pipeline.py audit <slug>
+⑤ 更新     最终全字段 payload → 独立 READY record + fresh capability → mutate_reviewed_post(existing exact ID) → audit；article.create Registry BLOCK
 ```
 
 ## 资产表（本模块=入口；原件位置不变，全部经此路由）

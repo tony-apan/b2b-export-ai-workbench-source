@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "canonicalization": "python-json-nfc-v1",
+  "object_type": "product",
+  "business_operation": "update",
+  "mutation_phase": "publish_update",
+  "site_key": "<exact-site-key>",
+  "site_id": "<exact-site-id>",
+  "runtime_scope_root": "<absolute private task root>",
+  "client_id": "<exact-client-id>",
+  "task_id": "<exact-task-id>",
+  "target_id": "<exact-record-id-or-null-for-create>",
+  "slug": "<payload-slug>",
+  "business_payload_digest": "sha256:<content-review-gate.py digest output>",
+  "producer_id": "<stable-authoring-agent-or-task-id>",
+  "reviewer_id": "<stable-independent-reviewer-or-task-id>",
+  "reviewer_identity_status": "not_verified",
+  "independence_evidence_ref": "<task/subagent evidence pointer>",
+  "reviewed_at": "2026-09-02T00:00:00+08:00",
+  "verdict": "READY",
+  "findings": [],
+  "fact_source_refs": [
+    {
+      "ref": "<private source extraction / claim ledger pointer>",
+      "digest": "sha256:<64 lowercase hex>"
+    }
+  ],
+  "checks": {
+    "facts_confirmed_only": true,
+    "no_invented_price_moq_certification_case": true,
+    "object_specs_not_crossed": true,
+    "slate_shape_valid": true,
+    "cta_bounded": true,
+    "links_use_page_modules": true,
+    "all_business_fields_reviewed": true,
+    "update_diff_reviewed_or_not_applicable": true
+  },
+  "note": "Machine validation binds final business canonical JSON, exact site/target/operation, runtime scope and source bytes. Supported remote scope: product create/update and exact existing article update; article create Registry BLOCK. It does not prove reviewer identity or real independence."
+}

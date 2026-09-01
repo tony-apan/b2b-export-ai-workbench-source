@@ -24,7 +24,7 @@ related: ["../README.md"]
 AllinCMS(token=JWT)
 ├── 写（POST + next-action header；Cookie payload-token / Origin+Referer workspace / x-deployment-id）
 │   ├── 站点 create_site/delete_site │ 分类 create_category2 │ 标签 create_tag
-│   ├── 媒体 upload_media/update_media │ 产品 create→publish │ 文章 create→publish
+│   ├── 媒体 upload_media/update_media │ 产品 reviewed create/update │ 文章 reviewed update（create BLOCK）
 │   └── 设计器 save_home(slug, theme_id, page_id, sid, doc, globals, cfg, intent)
 ├── 读（GET path?_rsc + RSC:1 → 组件 props 即数据）
 │   read_sites / read_lists / read_pages / read_page_document / read_product / read_post / read_media_library / read_site_info
@@ -54,8 +54,9 @@ import os; api = AllinCMS(token=os.environ["WS_TOKEN"])  # export WS_TOKEN=<toke
 sites = api.read_sites()["sites"]                      # ① 冒烟
 api.create_category2("<demo-site-key>", SID, "Guide", "guide", content_type="posts", cover=None)
 api.upload_media("<demo-site-key>", SID, "photo.jpg", title="t")   # media_urls 是全量累积→取差值
-api.create_product(...) → api.publish_product(slug, sid, pid, {...})   # payload 必带 siteId；media 扁平
-api.create_post(...) → api.publish_post(...)
+api.mutate_reviewed_product(slug, sid, final_payload, review_json, capability_context, target_id=None_or_pid)
+api.mutate_reviewed_post(slug, sid, final_payload, review_json, capability_context, target_id=exact_existing_post_id)  # article.update only; create BLOCK
+# 唯一公开内容 mutation 入口；内部 verify review context 后生成 create/publish wire envelope（ISS-102）
 api.save_home(slug, theme_id, page_id, sid, doc, globals, cfg, intent="publish")
 # 读回：read_page_document → initialPayload.page.{document,globals,themeConfig}
 ```

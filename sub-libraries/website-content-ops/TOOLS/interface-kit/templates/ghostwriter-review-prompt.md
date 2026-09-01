@@ -22,7 +22,8 @@ related: ["../README.md"]
 ```text
 你是文案评审（空白视角，模拟挑剔的真实读者）。任务：评审下面这篇文章并给出可执行修改。
 约束（必须遵守）：
-- 只读我提供的内容与评判标准；不要添加任何未提供的事实、数字、认证或承诺（缺失信息只能标"[缺事实:...]"）
+- 只读我提供的**最终完整 article business payload JSON（当前受支持 remote mutation 仅 update；article.create Registry BLOCK）**（title/slug/excerpt/order/coverImage/content/categories/tags）、事实源/claim ledger，以及 update 时的 current readback/diff；不要添加任何未提供的事实、数字、认证或承诺（缺失信息只能标"[缺事实:...]"）
+- 标题/正文可另附可读副本，但不能替代最终 payload 全字段审查
 - 不写新文章，只输出评审表与改写示例
 评判标准（每项 1-5 分 + 一句话依据）：
 1) 代入感：第二人称？具象时空/物品？冲突细节？
@@ -35,6 +36,7 @@ related: ["../README.md"]
 【最弱 3 处】每处：原文引用 + 问题 + 改写示例（≤80 词，只改表达不动事实）
 【钩子检查】列举全文钩子位置；缺哪类钩子给出候选（不正文）
 【最终判定】READY / NEEDS_REWRITE（理由一行）
+【机器记录】若 READY，另按 content-review-record.template.json 产 `<slug>-review.json`：object_type=article、准确 business_operation/mutation_phase、site/target binding、producer/reviewer stable IDs、independence evidence、最终 business payload canonical digest、结构化 findings、全量 checks 与 fact source pointers；若任一业务字段随后修改，旧 READY 立即失效，必须重审。机器不证明 reviewer 真人或真实独立身份。
 
 【文章标题】{{TITLE}}
 【正文】{{BODY}}
@@ -44,4 +46,4 @@ related: ["../README.md"]
 1. 主 AI 按 article-writing-logic.md 出稿
 2. 本模板派空白子 agent → 取回评分/改写/钩子建议
 3. 主 AI 合并（改写只动表达；"缺事实"列表 → 回 client 资料补充或 demo 标注）
-4. 发布前跑 article-adversarial-checklist + validate_slate_content_shape + gate
+4. 发布前跑 article-adversarial-checklist + validate_slate_content_shape + gate；对最终 payload 计算 digest，distinct reviewer 产严格 review JSON；当前只允许由 `mutate_reviewed_post` 在受支持 mutation 流程中更新 exact existing article，article.create Registry BLOCK

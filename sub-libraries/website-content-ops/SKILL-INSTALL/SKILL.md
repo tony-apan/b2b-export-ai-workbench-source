@@ -3,14 +3,14 @@ title: "AllinCMS Bulk Content Upload Skill"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-01"
+last_updated: "2026-09-02"
 type: "skill"
 sources: ["self"]
 related: ["README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 name: allincms-bulk-content-upload
-description: Source-driven AllinCMS / LAICMS website content operations for creating or updating sites, articles, products, taxonomy, media, and theme pages from user-provided PDFs, DOCX files, spreadsheets, websites, images, briefs, or existing CMS records. Use when an AI must resolve a verified Website Content Operations runtime, extract traceable claims, discover the current logged-in CMS and field/capability contracts, build an exact create/update/noop plan, execute approved API or Server Action mutations strictly serially, and verify backend/editor/frontend persistence. The Skill resolves a complete canonical source checkout (mother library sub-libraries/website-content-ops) as its primary runtime and is distributed from SKILL-INSTALL/ inside that library; the digest-verified runtime snapshot is retired pending the dist pipeline. It must not invent client facts or reuse sample payloads as current contracts.
+description: Source-driven AllinCMS / LAICMS website content operations for creating or updating sites, products, taxonomy, media, and theme pages, and for updating exact existing articles from user-provided PDFs, DOCX files, spreadsheets, websites, images, briefs, or existing CMS records. Article create remains blocked by the canonical Registry. Use when an AI must resolve a verified Website Content Operations runtime, extract traceable claims, discover the current logged-in CMS and field/capability contracts, build an exact create/update/noop plan, execute approved API or Server Action mutations strictly serially, and verify backend/editor/frontend persistence. The Skill resolves a complete canonical source checkout (mother library sub-libraries/website-content-ops) as its primary runtime and is distributed from SKILL-INSTALL/ inside that library; the digest-verified runtime snapshot is retired pending the dist pipeline. It must not invent client facts or reuse sample payloads as current contracts.
 ---
 
 # AllinCMS Bulk Content Upload
@@ -103,7 +103,8 @@ Plan B: site_operation, site scope
 → reference the exact Plan A digest and private readback evidence
 → bind the real site identity
 → rediscover capability and current state
-→ create/update taxonomy, media, articles, products or theme pages
+→ create/update taxonomy, media and products; update exact existing articles; create/update theme pages
+→ article.create remains blocked by the canonical Registry
 ```
 
 Never invent a future site key and never combine site creation and content population in one plan. Plan A and Plan B have different target identities, digests and authorizations.
@@ -119,6 +120,24 @@ API / Server Action is preferred. UI is only for login, read-only contract disco
 Execute one immutable approved plan strictly serially. The user authorizes the complete ordered chain once; immediately before every request, the controller revalidates the same authorization, target, operation order, publication effects, source/plan digests, capability expiry and expected-current fingerprint. This machine revalidation is **not** a requirement to interrupt the user before every API call. The canonical Adapter requires its exact structured context and may return `ADAPTER_AUTHORIZATION_CONTEXT_REQUIRED`; a shared run grant **never satisfies the canonical Adapter**. The Adapter authorization may cover one unchanged serial plan for **no more than 30 minutes**.
 
 Any drift, expiry, ambiguity, target change, source-byte change or request-may-have-started failure stops automatic mutation. Reconcile read-only; never blindly resend. Delete, cleanup, unpublish and public publish remain explicit destructive/publication actions under the canonical plan.
+
+### 6.5 Digest-bound content review gate for the supported flow
+
+For the **supported Skill/API flow**, every product `create|update` and article `update` that changes title/name, description/excerpt, body, specifications, media or relations must pass a distinct-reviewer record before remote mutation. **Article create remains BLOCKED by the canonical Registry** until its current-deployment create contract and reconciliation evidence are qualified. This is a cooperative fail-closed workflow contract, not a security sandbox: a malicious token holder can always construct raw HTTP outside the supported API.
+
+```text
+final business payload JSON + current readback/diff (update)
+→ local shape/fact checks
+→ canonical payload + source digests
+→ distinct reviewer against source facts (identity status not_verified)
+→ strict record binds site/target/operation/actors/checks/findings
+→ fresh live_verified_current_deployment capability context
+→ mutate_reviewed_product|post (only supported content mutation entry)
+→ frozen request bytes + endpoint/action/body/response evidence
+→ exact readback/frontend verification or reconcile_required (automatic_retry=false)
+```
+
+Any business payload or source-byte change invalidates the prior READY by digest mismatch. `noop` does not require content review, but its current fingerprint still must match. Canonical entrypoints: `TOOLS/interface-kit/content_review_gate.py`, `content-review-gate.py`, `templates/content-review-record.template.json`, `live-capability-context.template.json`, article `ghostwriter-review-prompt.md`, and product `product-content-review-prompt.md` (ISS-102). Machine checks do not prove reviewer identity, human approval or real independence.
 
 ## 7. Verification and writeback
 

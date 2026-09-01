@@ -4,7 +4,7 @@ type: "index"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-08-30"
+last_updated: "2026-09-02"
 canonical_entry: "README.md"
 description: AllinCMS 建站工具包文档（README.md）
 visibility: "public"
@@ -26,6 +26,9 @@ related: ["../README.md"]
 | `about-page-example.json` | 公司页三件套 | 公司介绍页骨架（story/stats/values/team 模块真实结构） |
 | `about-page-example.json` 备注 | 同 above | - |
 | `site-acceptance-v2.md` | 建站交付全量验收清单 v2：7 层 61 项 + 四轮对抗流程 + F1-F9 模块/表单摸索计划（TPL-023） | 步骤 12 三门通过后、DELIVERY 签发前逐项执行；巡检复用子集 |
+| `content-review-record.template.json` | 产品 create/update、文章 exact-ID update 的严格 digest-bound READY 机器记录（TPL-024） | 独立 reviewer 审查最终全字段 business payload 后填写；site/target/operation/source/checks 全绑定 |
+| `product-content-review-prompt.md` | 产品最终 payload 独立事实/规格/完整性审查 prompt（TPL-025） | 产品 create/update 前派与作者不同的 reviewer；与 content-review-gate / reviewed wrapper 配合 |
+| `live-capability-context.template.json` | 当前 deployment/site/operation/expiry 能力上下文（TPL-026） | 远程产品 create/update 或文章 update 前只读发现并落私有证据；过期/跨站/缺 operation fail |
 
 ## 用法（对新站）
 1. 新站建好后，产品/文章 payload 以 example 为字段骨架，替换文本/ID（分类 id 用新站建分类返回的 id）。
