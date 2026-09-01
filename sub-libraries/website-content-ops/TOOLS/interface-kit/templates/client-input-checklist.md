@@ -57,7 +57,7 @@ related: ["../README.md"]
 
 ## 五、联系方式替换流程（用户提供后必做）
 1. 收集：邮箱/电话（含区号格式 +86 x xxxx xxxx）/WhatsApp（wa.me/86xxxxxxxxx）/地址/坐标/社媒
-2. 替换：contact 页（info 卡 items + 表单卡双字段）+ 首页 contact 模块 + **全站 globals 浮钮/弹窗**（7 页重交）
+2. 替换：contact 页（info 卡 items + 表单卡双字段）+ 首页 contact 模块 + **全站 globals 浮钮/弹窗**（7 页重交）（弹窗元素必带 anchorId=header CTA 锚点名，见 customization-checklist 26b / ISS-094）
 3. 验证：`python3 site_pipeline.py contact <slug> --real "<真实值|分隔>"` → PASS；公网人工核对显示格式
 4. 未提供项：保留 demo 但写入交付清单'待用户提供'清单（不得静默交付）
 

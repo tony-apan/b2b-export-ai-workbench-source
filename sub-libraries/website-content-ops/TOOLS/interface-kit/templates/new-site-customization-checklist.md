@@ -109,6 +109,7 @@ keywords: ["new-site", "customization", "checklist", "166-fields", "demo-replace
 | 24 | `...props.description` | `Send a question about insulation, capacity, wholesale programs...` | `Tell us about your measurement. Frequency range, connector interface, cable length and application.`（公网实测弹窗文案） | 弹窗描述 demo 品类 | home-page-example.json:656 |
 | 25 | `...props.eyebrow` | `Product support` | Example 弹窗 eyebrow 实值待验证（公网渲染为 `Sales & engineering` 一带，不确证） | 弹窗眉题 demo | home-page-example.json:657 |
 | 26 | `...props.formSlug` | `contact-inquiry` | 保持 `contact-inquiry`（平台表单库键，改了表单不渲染） | 弹窗表单断裂 | home-page-example.json:659；site-content-checklist.md F 节 |
+| 26b | 元素级 `anchorId` | `contact-form-dialog`（与 header `cta_anchor` 一致） | **必须显式设置**：null 时公开站渲染器静默丢弃整个弹窗（点击只改 hash、零报错，ISS-094）；builder 默认已带，手拼 elements 时勿漏 | 全站 CTA 弹窗静默失效 | MODULES.md globals 表；issues.tsv ISS-094 |
 | 27 | `...props.closeLabel` | `Close contact dialog` | 保持（无障碍文案，无客户内容） | —（不改无害） | home-page-example.json:658 |
 
 ### 2.4 social-floating-button（元素 key `social-floating-button-1`）

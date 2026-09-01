@@ -135,6 +135,8 @@ api.create_post(...) → api.publish_post(...)
 ```
 
 ### 2.7 页面组装（首页/公司页/联系页）
+
+> **anchorId 合同（ISS-094）**：globals 里的 `contact_dialog()` 必须带与 header CTA 一致的 `anchor_id="contact-form-dialog"`；用 `el()` 手拼弹窗元素时同样必设——anchorId=null 时公开站渲染器**静默丢弃整棵弹窗树**（点击只改 hash、零报错）。builder 默认已带，手拼必查。
 ```python
 from allincms_blocks import *
 doc = page_document([
@@ -155,7 +157,7 @@ api.save_home(slug, theme_id, page_id, site_id, doc, globals_doc, theme_cfg, int
 rb = api.read_page_document(slug, theme_id, page_id)   # 深度 diff，只允许 columnCount 无害回填；formSlug="" 在表单块=断裂必修（ISS-076，绑真实 slug）
 api.save_home(..., intent="publish")
 ```
-**globals 按页存储**：new site 时从任一页 readback 取 globals/themeConfig 为底，**对全部页面列表重交**：
+**globals 按页存储**：new site 时从任一页 readback 取 globals/themeConfig 为底，**对全部页面列表重交**：（globals 中弹窗元素须带 anchorId——见 2.7 节 ISS-094 合同）
 ```python
 for p in api.read_pages(slug, theme_id)["pages"]:
     doc = api.read_page_document(slug, theme_id, p["id"])["initialPayload"]["page"]["document"]

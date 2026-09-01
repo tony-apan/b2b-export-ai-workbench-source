@@ -202,7 +202,7 @@ redaction_status: "safe-to-publish"
   文章详情页 CTA 真链接：post-detail 页 `page-root.children` 追加 `cta-1`（type `material-story-split`，`actionTarget={"type":"custom","href":"/contact-us?source=<site>-article"}`），并替换 related-1 demo 文案。
 - **验收判据**：7 页 readback diff≈0；globals 7 页一致；公网无空态文案（`No content is available yet` 等——单品/单文时删详情页 related 模块）。
 - **产物**：`70_evidence/pages/<page>.json`（每页最终三件套存证，共 7 份）。
-- **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/+44-7911-123456`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取。
+- **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/+44-7911-123456`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取；**全局弹窗元素必须带 anchorId=header cta 锚点名，null 时公开站静默丢弃整树（ISS-094，builder 默认已带）**。
 
 ### 步骤 10 — 激活 + 路由 + set_home_page（顺序规则）
 

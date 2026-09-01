@@ -96,12 +96,52 @@ def verify():
 
 def gen():
     import datetime
+    managed = ["title", "type", "status", "owner", "last_updated"]
+    # ISS-096：保留 INDEX.md 现存 frontmatter 中非托管字段（description/created/
+    # visibility 等），gen 只重写托管键——此前固定 5 键重写会剥掉治理批补的字段。
+    # 续行（缩进/列表项/空行）跟随其归属键：属托管键则连键带续行整体丢弃，
+    # 属保留键则一并保留；不认识的顶层形态 fail-closed 拒绝再生（ISS-096 对抗审查 P2）。
+    preserved = []
+    _idx = os.path.join(HERE, "INDEX.md")
+    if os.path.exists(_idx):
+        with open(_idx, encoding="utf-8") as _f:
+            _lines = _f.read().splitlines()
+        if _lines and _lines[0].strip() == "---":
+            try:
+                _end = _lines[1:].index("---") + 1
+                _cur_managed = False
+                _seen_key = False
+                for _ln in _lines[1:_end]:
+                    _s = _ln.strip()
+                    if not _s:
+                        if _seen_key and not _cur_managed: preserved.append(_ln)
+                        continue
+                    if _s.startswith("#"):
+                        preserved.append(_ln); continue
+                    if _ln.startswith((" ", "\t")) or _s.startswith("- "):
+                        if not _seen_key:
+                            print(f"FAIL gen: INDEX.md frontmatter 顶层续行无归属键，拒绝再生：{_ln[:60]}")
+                            return 1
+                        if not _cur_managed: preserved.append(_ln)
+                        continue
+                    if ":" not in _ln:
+                        print(f"FAIL gen: INDEX.md frontmatter 含不识别形态，拒绝再生（防静默丢字段）：{_ln[:60]}")
+                        return 1
+                    _k = _ln.split(":", 1)[0].strip()
+                    _seen_key = True
+                    _cur_managed = _k in managed
+                    if not _cur_managed:
+                        preserved.append(_ln)
+            except ValueError:
+                print("FAIL gen: INDEX.md frontmatter 有起始 --- 无闭合 ---，拒绝再生（防静默覆盖损坏文件）")
+                return 1
     L = ["---",
          "title: \"AllinCMS 建站知识索引\"",
          "type: \"index\"",
          "status: \"Working\"",
          "owner: \"AI\"",
          "last_updated: \"" + datetime.date.today().isoformat() + "\"",
+         *preserved,
          "---",
          "",
          "# AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）",
