@@ -3,7 +3,7 @@ title: "AllinCMS 建站知识索引"
 type: "index"
 status: "Working"
 owner: "AI"
-last_updated: "2026-09-01"
+last_updated: "2026-09-02"
 description: AllinCMS 建站工具包文档（INDEX.md）
 created: 2026-08-31
 visibility: "public"
@@ -14,7 +14,7 @@ related: ["../README.md"]
 
 # AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）
 
-> 生成时间：2026-09-01｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
+> 生成时间：2026-09-02｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
 
 ## 1. 文档 / 脚本 / 模板（doc-registry.tsv）
 
@@ -190,6 +190,7 @@ related: ["../README.md"]
 | ISS-098 | fixed | api-contract | 产品首次 create 可接受 media source=url，但 publish/update 校验要求 siteId、media source=oss+path、categories/tags=id 字符串数组；把列表 readback 的对象数组或 url media 原样回传会连续 validationErrors | create_product 自动注入 siteId且 create/update schema 不同；publish_product 原未自动注入；read_lists 返回关系对象数组不等于写入形状 | publish_product 自动注入 siteId并在 docstring 写明 update schema；ONEPASS/示例明确 create 与 update 两套 media 形状、关系对象→id 字符串转换 | 任何 read-modify-write 先按写接口 schema 归一化：media oss+path；taxonomy id strings；不得原样回传 readback 对象 | ../NEW-SITE-ONEPASS.md |
 | ISS-099 | fixed | navigation | product-related-grid 按当前产品分类过滤并排除自己；分类只有一个产品时即使全站有5产品也渲染空态，不能当跨分类产品内链 | 动态 related 模块的数据源是同分类而非全站；旧判断只看全站产品数 | 最终方案：产品详情模板使用静态 feature-grid-proof 三条异目的地链接（产品总目录+两篇技术选型文章），避免产品自链；文章详情使用静态 feature-grid-proof 五产品各一条可见 action 链接，替代三重同向链接的 featured-product-list-showcase；acceptance-v2 L2.2 写明单产品分类禁用动态 related | 产品详情禁自身 URL；文章产品卡每产品只保留一个拥有可见文本的主链接；内链必须模块 target 真<a>，正文 link 节点平台平铺禁用；对每个分类而非全站总数做空态验收 | ../templates/site-acceptance-v2.md |
 | ISS-100 | boundary | tooling | IAB Playwright locator.click/force click 与 DOM-CUA click 对公开站普通产品链接超时或无导航，但元素无遮挡、真实 href 存在，页面原生 HTMLElement.click 可正常导航 | 内置浏览器自动化点击桥对该站普通链接事件分发异常；非站点 href/路由缺陷（目标页 200、原生事件导航成功） | 验收时记录工具边界：优先扩展/系统浏览器真实 pointer click；不可用时至少三证据=元素可见无遮挡+原生 click 前后URL+目标HTTP/正文；不得把 IAB timeout 误写站点 FAIL，也不得仅凭 href 冒充 pointer PASS | L4.1/L1.15 真链接验收必须区分站点行为与宿主工具行为；工具通道失败时降级证据须显式 WARN | ../templates/site-acceptance-v2.md |
+| ISS-101 | fixed | data-loss | 产品正文补写时复用过期 70_evidence/products payload，其中 specifications=[]；publish_product 是全量替换语义，5 个产品后台规格被真实清空，旧 audit/product-content 初版只查正文未拦截 | 存证 payload 不是 current state；前序 payload 形状转换已把规格丢成空数组；更新脚本错误把存证当读回真源 | 从 brief.json 事实真源恢复 36 项规格，5/5 publish 后 read_product 逐项 MATCH；product-content 闸升级为 required_specs 后台精确比对+公网规格键 SSR；ONEPASS/v2/SKILL/示例写明 current readback+brief merge；扩展闸规范化 NFC/trim 后按展示顺序+key+value 精确比对，公网 key/value 双 SSR | 任何全量 update 禁复用历史存证 payload；先 current readback，再以 brief/COP 真源覆盖业务字段；空数组视为删除信号；正文/规格/media 三类必须更新后精确回读；规格顺序是采购阅读合同，服务端重排同样 FAIL | ../templates/site-acceptance-v2.md |
 
 ## 3. 模块库（modules.tsv）
 

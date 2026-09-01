@@ -286,6 +286,7 @@ def product_content_gate(site_slug, base_url=None, config=None):
         detail = api.read_product(site_slug, rec["id"])
         product = detail.get("product") or {}
         content = product.get("content") or []
+        specifications = product.get("specifications") or []
         types = [b.get("type") for b in content if isinstance(b, dict)]
         h2_count = types.count("h2")
         bad_types = sorted({t for t in types if t not in allowed})
@@ -293,6 +294,20 @@ def product_content_gate(site_slug, base_url=None, config=None):
         if not content: problems.append(f"{slug}: content 为空")
         if bad_types: problems.append(f"{slug}: 非法 Slate type={bad_types}")
         if empty_blocks: problems.append(f"{slug}: 空正文块 indexes={empty_blocks[:5]}")
+        required_specs = (rule or {}).get("required_specs") or []
+        if required_specs:
+            import unicodedata
+            def _norm_specs(items):
+                return [{"key": unicodedata.normalize("NFC", str(x.get("key", "")).strip()),
+                         "value": unicodedata.normalize("NFC", str(x.get("value", "")).strip())}
+                        for x in (items or []) if isinstance(x, dict)]
+            got_specs = _norm_specs(specifications)
+            want_specs = _norm_specs(required_specs)
+            # 顺序是展示合同：规格面板按 brief/COP 的采购阅读顺序呈现；只忽略 NFC/首尾空白/JSON键序。
+            if got_specs != want_specs:
+                problems.append(f"{slug}: specifications 与 config 真源不一致 ({len(got_specs)}/{len(want_specs)}；含顺序合同)")
+        elif not specifications:
+            problems.append(f"{slug}: specifications 为空（ISS-101）")
         need_h2 = int((rule or {}).get("required_h2", 1))
         if h2_count < need_h2: problems.append(f"{slug}: h2={h2_count} < {need_h2}")
         try:
@@ -300,10 +315,17 @@ def product_content_gate(site_slug, base_url=None, config=None):
             html = urllib.request.urlopen(req, context=ssl._create_unverified_context(), timeout=20).read().decode("utf-8", "ignore")
         except Exception as exc:
             problems.append(f"{slug}: 公网抓取失败 {exc}"); continue
+        import html as _html, re as _re, unicodedata as _ud
+        visible = _ud.normalize("NFC", _re.sub(r"\s+", " ", _html.unescape(_re.sub(r"<[^>]+>", " ", html)))).strip().lower()
         for fact in (rule or {}).get("facts", []):
-            if str(fact).lower() not in html.lower(): problems.append(f"{slug}: SSR 缺事实短语 {fact!r}")
+            if _ud.normalize("NFC", str(fact)).strip().lower() not in visible: problems.append(f"{slug}: SSR 缺事实短语 {fact!r}")
+        for spec in required_specs:
+            key = _ud.normalize("NFC", str(spec.get("key", ""))).strip()
+            value = _ud.normalize("NFC", str(spec.get("value", ""))).strip()
+            if key and key.lower() not in visible: problems.append(f"{slug}: SSR 缺规格键 {key!r}")
+            if value and value.lower() not in visible: problems.append(f"{slug}: SSR 缺规格值 {key!r}={value!r}")
         if "No content is available yet" in html: problems.append(f"{slug}: 页面含空态文案")
-        print(f"[product-content] {slug}: blocks={len(content)} h2={h2_count} facts={len((rule or {}).get('facts', []))}")
+        print(f"[product-content] {slug}: blocks={len(content)} h2={h2_count} specs={len(specifications)} facts={len((rule or {}).get('facts', []))}")
     if problems:
         print("PRODUCT_CONTENT FAIL:"); [print("  -", p) for p in problems]; return 1
     print(f"PRODUCT_CONTENT PASS: {len(expected)} products")

@@ -162,7 +162,7 @@ redaction_status: "safe-to-publish"
   ```
 - **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态 published；`read_product` 的 content **非空**；公网每个产品详情页 `<article>` 内至少 1 个实质 H2 + 正文事实短语 SSR，且相关产品模块真链接可点、无空态。
 - **产物**：`70_evidence/products/<slug>.json`（每产品最终 payload 存证，含非空 content）。
-- **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接。
+- **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；全量 update 必须从 current readback + brief 真源合并，**不得复用可能过期的存证 payload**，尤其 specifications/content/media（空数组会真清空后台，ISS-101）；合并后必须再归一化为**写接口形状**：media 从读回包裹/url 形状转 `source:"oss"+path`，categories/tags 从对象数组转 id 字符串数组，specifications/content 以 brief/COP 真源覆盖（不得把 read_product/read_lists 读形状原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接。
 
 ### 步骤 8 — 文章 k3 写 + flash 审 + create/publish
 

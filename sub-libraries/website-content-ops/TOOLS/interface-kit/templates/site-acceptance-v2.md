@@ -64,7 +64,7 @@ related: ["../NEW-SITE-ONEPASS.md", "../RUNBOOK-ANYONE.md", "../MODULES.md", "si
 
 | # | 检查项 | 判据 |
 |---|---|---|
-| 2.1 | 模块 SSR 内容一致 | 每个已用模块 headline/eyebrow/description/media/notes 与 brief/COP 一致；**FAQ 实质短语 SSR 断言显式保留**（faq-answer 映射）；**每个产品 read_product.content 非空，产品详情 `<article>` 至少 1 个实质 H2+正文事实短语 SSR（ISS-097）** |
+| 2.1 | 模块 SSR 内容一致 | 每个已用模块 headline/eyebrow/description/media/notes 与 brief/COP 一致；**FAQ 实质短语 SSR 断言显式保留**（faq-answer 映射）；**每个产品 read_product.content 非空，产品详情 `<article>` 至少 1 个实质 H2+正文事实短语 SSR；**read_product.specifications 经 NFC/trim 规范化后与 brief/COP 真源按**展示顺序+key+value**逐项精确一致，且公网规格 key/value 均 SSR（顺序是采购阅读合同，ISS-097/101）**** |
 | 2.2 | 空态模块清零 | related/推荐位无 "No content is available yet."；单产品分类禁用按分类过滤的 product-related-grid，改静态跨分类 feature-grid/product showcase 内链（ISS-099） |
 | 2.3 | 模板默认文案清零 | 正文+meta 双处黑名单扫描（含 page-header stats 回填，ISS-089） |
 | 2.4 | 计数 == COP 实建数 | products/posts 数与 COP 严格相等（不齐=demo 重种信号 ISS-071） |

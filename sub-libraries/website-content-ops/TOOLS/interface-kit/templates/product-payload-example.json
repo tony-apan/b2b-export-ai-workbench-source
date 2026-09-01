@@ -110,7 +110,7 @@
    "value": "320 g"
   }
  ],
- "_comment": "Default payload is publish/update-safe: non-empty native Slate content, media oss+path, taxonomy ID string arrays. For first create only, media source=url may use _create_media_url_example. content=[] creates a hollow detail page (ISS-097); readback relation objects are not valid write shapes (ISS-098).",
+ "_comment": "Default payload is publish/update-safe: non-empty native Slate content, media oss+path, taxonomy ID string arrays. For first create only, media source=url may use _create_media_url_example. content=[] creates a hollow detail page (ISS-097); readback relation objects are not valid write shapes (ISS-098). Full-record update is replacement semantics: build from current readback plus brief truth source; never reuse stale evidence with empty specifications/content/media (ISS-101).",
  "_create_media_url_example": {
   "name": "create-only-image",
   "alt": "Source-confirmed product image",
