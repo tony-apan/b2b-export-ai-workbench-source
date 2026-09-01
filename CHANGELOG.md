@@ -5,7 +5,7 @@ type: "changelog"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-31"
+last_updated: "2026-09-01"
 sources: ["Mother-library and sub-library release architecture decision 2026-07-28", "Repository routing synchronization 2026-07-29"]
 related: ["README.md", "MANIFEST.md", "RELEASE.md", "VERSION.md", "wiki/00_meta/current-focus.md"]
 visibility: "private"
@@ -26,6 +26,8 @@ redaction_status: "private-source-reviewed"
 
 - 详细逐项对比见子库 CHANGELOG 2026-08-30 三列表与本文 0.3.2-working 治理批小节。
 - 治理收尾批次（2026-08-31）：validate-sub-library 存量 390 失败修复至 STRUCTURE_PASS（`1e976bd`）；interface-kit install 轻量安装（`192da25`）；governance tests 8→0（`a867865`）——截至 `289e974` 远端 CI run `33396415381` 与本地 pre-push-check 7/7 全绿，OQ-MOTHER-0001 关闭。
+
+- **2026-09-01 追加（建站实战回填批，working 未发布记录，四轮对抗×2 后达成；完成式措辞指本批工作状态，不构成版本冻结事实）**：示例客户站 ONEPASS 13 步全链交付跑通（三门+16 URL 全绿），新坑 ISS-084..091 入库；SKILL.md 新增 §7.5 静默失败合同（anchorId/BOUNDARY-FAIL 分类/点击证明），anchorId 合同五处文档闭环；ISS-096 根治（registry gen 合并式重写+fail-closed）；展示站虚拟联系方式 scope 限定授权入档（ISS-095，⛔ 禁止催办清单，真实客户站红线不变）。
 - 已知边界（2026-08-31 对抗修正批更新）：license 3 卡 BLOCK（按需通关）、公开 git 历史既有标识维持接受现状。（原"validate-sub-library 存量失败修复立项中"已由上条收口。）
 
 ## 0.3.2-working — 2026-08-30

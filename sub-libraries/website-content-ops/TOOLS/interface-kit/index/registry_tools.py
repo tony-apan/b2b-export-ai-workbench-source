@@ -193,7 +193,7 @@ def main():
     args = sys.argv[1:]
     cmd = args[0] if args else "help"
     if cmd == "verify": sys.exit(verify())
-    if cmd == "gen": gen(); return
+    if cmd == "gen": sys.exit(gen())  # ISS-096：fail-closed 退出码必须传给 CI/调用方
     if cmd == "ls": ls(args[1] if len(args) > 1 else None); return
     if cmd == "find": find(args[1]); return
     if cmd == "wiki": wiki(args); return
