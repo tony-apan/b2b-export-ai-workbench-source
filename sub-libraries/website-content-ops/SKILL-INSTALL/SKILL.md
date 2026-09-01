@@ -134,7 +134,7 @@ API response
 
 HTTP 200, toast, local test PASS, or a generated plan alone does not prove persistence, publication, SEO, ranking, inquiry or conversion. When public output includes interactive elements (dialog, menu, CTA), extend the chain with a real-browser click proof (see 7.5). Write current state, evidence pointers, ambiguity, BLOCKs and handoff only to the bound private `customer-runtime/` task.
 
-## 7.5 Delivery gate and silent-failure contracts (2026-09 sinopro evidence)
+## 7.5 Delivery gate and silent-failure contracts (2026-09 deployment evidence)
 
 The 13-item machine audit is the floor, not delivery. The delivery gate and the complete check/item taxonomy live in canonical `TOOLS/interface-kit/templates/site-acceptance-v2.md` — always read it for the authoritative BOUNDARY-vs-FAIL classification before escalating or waiving anything.
 
@@ -143,7 +143,8 @@ Rules that fail silently on this platform — assert them by verification, never
 - Global `contact-dialog-form-modal` must carry `anchorId` equal to the header CTA anchor. With `anchorId: null` the public renderer silently drops the whole dialog subtree (CTA click only changes the URL hash, zero console errors). Canonical spec: `MODULES.md` globals table, ISS-094; builder default already carries it.
 - Static top-level pages inherit template-default meta descriptions unless a page-level description is explicitly written — and re-read after the final publish, because publish can reset it. Static pages carry the canonical write recipe; direct meta overrides on dynamic detail pages are platform BOUNDARY — see ISS-073/093 and acceptance-v2 for the verified behavior.
 - Classification discipline (details in acceptance-v2): platform-render limits such as hardcoded `lang`, missing canonical/og/JSON-LD and img-attrs are BOUNDARY — check, register with evidence, do not block delivery, do not force-edit unknown themeConfig fields. Sitemap URL-set mismatches (e.g. `/` + `/home` dual-listing) and broken/missing contact links (plain-text email without a working link) are acceptance-v2 FAIL-class items even when the root cause sits platform-side — escalate through the platform ticket workflow, never silently downgrade them to BOUNDARY.
-- Interactive elements require a real-browser click proof in the verify chain (dialog open → fill → Escape close, mobile menu, CTA navigation). A `form-render` PASS with correct-looking config does not prove the click works — the sinopro dialog shipped dead while every config field was byte-identical to the known-good capture.
+- Interactive elements require a real-browser click proof in the verify chain (dialog open → fill → Escape close, mobile menu, CTA navigation). A `form-render` PASS with correct-looking config does not prove the click works — the reference deployment dialog shipped dead while every config field was byte-identical to the known-good capture.
+- Product records require substantive body content, not only `description`, image and specifications: `content: []` creates a hollow product detail page that passes count/HTTP gates. Verify `read_product.content` is non-empty and a real product fact phrase plus H2 render inside the public `<article>` (ISS-097). Product/article internal links must use page modules with real targets; inline Slate link nodes flatten to text. Dynamic `product-related-grid` is same-category and empties when that category has only one item — use a static cross-category module in that case (ISS-099).
 - Heavy workspace pages (`/forms`, theme editor) may hang in embedded browsers; the RSC/API channel (`read_page_document`, `save_home`, list pages) is the equivalent, preferred route.
 
 ## 8. References and legacy boundary

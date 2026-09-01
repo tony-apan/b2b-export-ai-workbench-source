@@ -11,6 +11,7 @@
   python site_pipeline.py gate <slug> --config <cfg>           # 上线门（数量/200/空态/模板词）
   python site_pipeline.py contact <slug> --config <cfg> --real "..."  # demo 联系方式门
   python site_pipeline.py audit <slug> --config <cfg> --out r.json  # 13 项对抗审计（必带每站 --config）
+  python site_pipeline.py product-content <slug> --config <cfg>    # 独立产品正文合同闸（不改 audit 13 项口径）
 """
 import json, os, re, sys
 
@@ -237,6 +238,8 @@ AUDIT_CONFIG_DEFAULTS = {
     "template_words_extra": [],
     "demo_contacts_extra": {},
     "required_h2": 3,
+    # 独立扩展闸（不改变 audit 13 项历史口径）：slug -> {required_h2, facts[]}
+    "product_content": {},
 }
 
 
@@ -253,6 +256,58 @@ def load_audit_config(path):
     if path and os.path.isfile(path):
         _deep_merge(cfg, json.load(open(path, encoding="utf-8")))
     return cfg
+
+
+def product_content_gate(site_slug, base_url=None, config=None):
+    """独立产品正文合同闸（ISS-097）：不改变 audit 13 项口径。
+    后台检查 content 非空/原生块/H2；公网检查每产品配置 facts SSR。
+    config.product_content = {slug:{required_h2:int,facts:[str]}}。"""
+    import urllib.request, ssl
+    cfg = load_audit_config(config)
+    expected = cfg.get("product_content") or {}
+    if not expected:
+        print("PRODUCT_CONTENT FAIL: config.product_content 为空（新站必须逐产品配置 H2/facts 断言）")
+        return 1
+    try:
+        from allincms_api import AllinCMS, _read_token
+        api = AllinCMS(token=_read_token())
+        rows = api.read_lists(site_slug, "products").get("data", [])
+    except Exception as exc:
+        print(f"PRODUCT_CONTENT FAIL: 后台读取失败: {exc}")
+        return 1
+    by_slug = {x.get("slug"): x for x in rows}
+    allowed = {"p", "h2", "h3", "blockquote"}
+    base = base_url or f"https://{site_slug}.web.allincms.com"
+    problems = []
+    for slug, rule in expected.items():
+        rec = by_slug.get(slug)
+        if not rec:
+            problems.append(f"{slug}: 后台记录不存在"); continue
+        detail = api.read_product(site_slug, rec["id"])
+        product = detail.get("product") or {}
+        content = product.get("content") or []
+        types = [b.get("type") for b in content if isinstance(b, dict)]
+        h2_count = types.count("h2")
+        bad_types = sorted({t for t in types if t not in allowed})
+        empty_blocks = [i for i, b in enumerate(content) if not "".join(str(c.get("text", "")) for c in (b.get("children") or []) if isinstance(c, dict)).strip()]
+        if not content: problems.append(f"{slug}: content 为空")
+        if bad_types: problems.append(f"{slug}: 非法 Slate type={bad_types}")
+        if empty_blocks: problems.append(f"{slug}: 空正文块 indexes={empty_blocks[:5]}")
+        need_h2 = int((rule or {}).get("required_h2", 1))
+        if h2_count < need_h2: problems.append(f"{slug}: h2={h2_count} < {need_h2}")
+        try:
+            req = urllib.request.Request(f"{base}/products/{slug}", headers={"User-Agent":"Mozilla/5.0"})
+            html = urllib.request.urlopen(req, context=ssl._create_unverified_context(), timeout=20).read().decode("utf-8", "ignore")
+        except Exception as exc:
+            problems.append(f"{slug}: 公网抓取失败 {exc}"); continue
+        for fact in (rule or {}).get("facts", []):
+            if str(fact).lower() not in html.lower(): problems.append(f"{slug}: SSR 缺事实短语 {fact!r}")
+        if "No content is available yet" in html: problems.append(f"{slug}: 页面含空态文案")
+        print(f"[product-content] {slug}: blocks={len(content)} h2={h2_count} facts={len((rule or {}).get('facts', []))}")
+    if problems:
+        print("PRODUCT_CONTENT FAIL:"); [print("  -", p) for p in problems]; return 1
+    print(f"PRODUCT_CONTENT PASS: {len(expected)} products")
+    return 0
 
 
 def contact_gate(base_url, check_values="", config=None):
@@ -490,6 +545,13 @@ def _cli():
             if a == "--out" and i + 1 < len(args): out = args[i + 1]
             if a == "--config" and i + 1 < len(args): config = args[i + 1]
         sys.exit(audit(args[1], base_url=base_url, out=out, config=config))
+    elif cmd == "product-content":
+        def _val(flag):
+            for i, a in enumerate(args):
+                if a.startswith(flag + "="): return a.split("=", 1)[1]
+                if a == flag and i + 1 < len(args): return args[i + 1]
+            return None
+        sys.exit(product_content_gate(args[1], base_url=_val("--base"), config=_val("--config")))
     elif cmd == "gate":
         import argparse
         args_extra = [a for a in args[2:] if not a.startswith("--")]

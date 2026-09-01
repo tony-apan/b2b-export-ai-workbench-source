@@ -64,8 +64,8 @@ related: ["../NEW-SITE-ONEPASS.md", "../RUNBOOK-ANYONE.md", "../MODULES.md", "si
 
 | # | 检查项 | 判据 |
 |---|---|---|
-| 2.1 | 模块 SSR 内容一致 | 每个已用模块 headline/eyebrow/description/media/notes 与 brief/COP 一致；**FAQ 实质短语 SSR 断言显式保留**（faq-answer 映射） |
-| 2.2 | 空态模块清零 | related/推荐位无 "No content is available yet." |
+| 2.1 | 模块 SSR 内容一致 | 每个已用模块 headline/eyebrow/description/media/notes 与 brief/COP 一致；**FAQ 实质短语 SSR 断言显式保留**（faq-answer 映射）；**每个产品 read_product.content 非空，产品详情 `<article>` 至少 1 个实质 H2+正文事实短语 SSR（ISS-097）** |
+| 2.2 | 空态模块清零 | related/推荐位无 "No content is available yet."；单产品分类禁用按分类过滤的 product-related-grid，改静态跨分类 feature-grid/product showcase 内链（ISS-099） |
 | 2.3 | 模板默认文案清零 | 正文+meta 双处黑名单扫描（含 page-header stats 回填，ISS-089） |
 | 2.4 | 计数 == COP 实建数 | products/posts 数与 COP 严格相等（不齐=demo 重种信号 ISS-071） |
 | 2.5 | 富文本块矩阵 | 正文仅 p/h2/h3/blockquote/加粗；无平铺 link/列表/Markdown 残留 |
@@ -95,7 +95,7 @@ related: ["../NEW-SITE-ONEPASS.md", "../RUNBOOK-ANYONE.md", "../MODULES.md", "si
 
 | # | 检查项 | 判据 |
 |---|---|---|
-| 4.1 | **CTA 点击面枚举实证** | header CTA、hero actions、列表卡按钮、**详情页 CTA 块**（product-detail/material-story-split）、页尾 CTA——逐个真浏览器点击，落到预期页/弹窗（href 值有效 ≠ 可达） |
+| 4.1 | **CTA 点击面枚举实证** | header CTA、hero actions、列表卡按钮、**详情页 CTA 块**（product-detail/material-story-split）、页尾 CTA——逐个真浏览器 pointer 点击，落到预期页/弹窗（href 值有效 ≠ 可达；`HTMLElement.click()` 只证明 DOM 事件/路由，不等于 pointer PASS）。宿主自动化点击桥异常时按 ISS-100 登记工具边界并用三证据降级为 WARN：元素可见无遮挡 + 原生 click 前后 URL + 目标页 HTTP/正文；换可用系统/扩展浏览器补 pointer PASS 后才可关闭 WARN |
 | 4.2 | 询盘路径完整性 | 首页→产品→CTA→联系方式 ≥3 条路径走通，断一条=FAIL |
 | 4.3 | email/tel/WhatsApp 链接 | 格式正确、值真实（非 demo） |
 | 4.4 | 真值三态表+硬门 | 电话/WhatsApp/营业时间逐项：真值/demo/缺失 + **确认人+日期**列；**硬门：≥1 条入站渠道实测可用**（真邮箱可达或表单端到端到客户可见收件），否则不许 DELIVERY |

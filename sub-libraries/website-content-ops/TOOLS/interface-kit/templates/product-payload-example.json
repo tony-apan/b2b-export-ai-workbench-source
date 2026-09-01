@@ -7,19 +7,79 @@
   "name": "thermos-photo-demo",
   "alt": "Red vacuum insulated flask (thermos) on a table",
   "type": "image",
-  "source": "url",
-  "url": "https://assets.laicms.com/<demo-site-key>/a1vn3g.jpg"
+  "source": "oss",
+  "path": "<siteKey>/<file>.webp",
+  "size": 0,
+  "mimeType": "image/webp"
  },
  "mediaList": [
   {
    "name": "vacuum-flask-vintage-card",
    "alt": "Vintage vacuum flask advertising card",
    "type": "image",
-   "source": "url",
-   "url": "https://assets.laicms.com/<demo-site-key>/5y1j8n.jpg"
+   "source": "oss",
+   "path": "<siteKey>/<file>.webp",
+   "size": 0,
+   "mimeType": "image/webp"
   }
  ],
- "content": [],
+ "content": [
+  {
+   "type": "h2",
+   "id": "prodUse001",
+   "children": [
+    {
+     "text": "Where This Product Fits"
+    }
+   ]
+  },
+  {
+   "type": "p",
+   "id": "prodUse002",
+   "children": [
+    {
+     "text": "Explain the buyer's application using only source-confirmed facts. Include at least one concrete specification or boundary.",
+     "bold": false
+    }
+   ]
+  },
+  {
+   "type": "h2",
+   "id": "prodSpec01",
+   "children": [
+    {
+     "text": "Construction and Specifications"
+    }
+   ]
+  },
+  {
+   "type": "p",
+   "id": "prodSpec02",
+   "children": [
+    {
+     "text": "Connect material, construction and key specifications to the application. Do not invent performance, certification, price, MOQ or customer cases."
+    }
+   ]
+  },
+  {
+   "type": "h2",
+   "id": "prodOrder1",
+   "children": [
+    {
+     "text": "Ordering Guidance"
+    }
+   ]
+  },
+  {
+   "type": "p",
+   "id": "prodOrder2",
+   "children": [
+    {
+     "text": "Tell the buyer which inputs are needed to confirm a configuration, then point to the page-level contact or product modules for real links."
+    }
+   ]
+  }
+ ],
  "categories": [
   "6a91f9808333e0ece4a6af3e"
  ],
@@ -49,5 +109,14 @@
    "key": "Weight",
    "value": "320 g"
   }
- ]
+ ],
+ "_comment": "Default payload is publish/update-safe: non-empty native Slate content, media oss+path, taxonomy ID string arrays. For first create only, media source=url may use _create_media_url_example. content=[] creates a hollow detail page (ISS-097); readback relation objects are not valid write shapes (ISS-098).",
+ "_create_media_url_example": {
+  "name": "create-only-image",
+  "alt": "Source-confirmed product image",
+  "type": "image",
+  "source": "url",
+  "url": "https://assets.laicms.com/<site-key>/<file>.jpg",
+  "_comment": "create only; publish/update must convert to oss+path"
+ }
 }

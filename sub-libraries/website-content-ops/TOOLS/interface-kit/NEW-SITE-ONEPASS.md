@@ -151,17 +151,18 @@ redaction_status: "safe-to-publish"
 
 ### 步骤 7 — 产品 create/publish（每个产品一遍）
 
-- **输入**：customization products 节 + `taxonomy-ids.json` + 媒体 URL。
+- **输入**：customization products 节 + `taxonomy-ids.json` + 媒体 URL + **每产品正文 facts/应用场景/选型要点**。
 - **动作**（每产品）：
   ```python
-  p  = 全字段 payload   # 骨架 = templates/product-payload-example.json；media 扁平 {name,alt,type,source,path/url}；
-                        # categories = 产品分类 id 数组（不可用文章分类）；specifications=[{key,value}]
+  p  = 全字段 payload   # 骨架 = templates/product-payload-example.json；首次 create 可用 media url；
+                        # publish/update 的 media 必须 oss+path；categories/tags = id 字符串数组；
+                        # specifications=[{key,value}]；content=非空 Slate（p/h2/h3/blockquote）
   r1 = api.create_product(slug, site_id, p)        # 空壳 id
-  r2 = api.publish_product(slug, site_id, pid, p)  # 同 payload 带正确 slug 再发，一次成功
+  r2 = api.publish_product(slug, site_id, pid, p)  # API 自动注入 siteId；同 payload 带正确 slug 再发
   ```
-- **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态 published。
-- **产物**：`70_evidence/products/<slug>.json`（每产品最终 payload 存证）。
-- **坑**：create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug。
+- **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态 published；`read_product` 的 content **非空**；公网每个产品详情页 `<article>` 内至少 1 个实质 H2 + 正文事实短语 SSR，且相关产品模块真链接可点、无空态。
+- **产物**：`70_evidence/products/<slug>.json`（每产品最终 payload 存证，含非空 content）。
+- **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接。
 
 ### 步骤 8 — 文章 k3 写 + flash 审 + create/publish
 
@@ -242,10 +243,11 @@ redaction_status: "safe-to-publish"
   python3 site_pipeline.py audit <slug> --config 70_evidence/<slug>-audit-config.json --out 70_evidence/audit-report.json
   python3 site_pipeline.py gate <slug> --config 70_evidence/<slug>-audit-config.json
   python3 site_pipeline.py contact <slug> --config 70_evidence/<slug>-audit-config.json --real "<真实电话|邮箱|地址>"
+  python3 site_pipeline.py product-content <slug> --config 70_evidence/<slug>-audit-config.json  # 独立扩展闸；audit 历史口径仍为 13 项
   # DELIVERY：templates/delivery-manifest.md → 70_evidence/DELIVERY-<slug>-<date>.md（链接表每行核验 200 + 已知事项照抄 RUNBOOK §9）
   # 收尾：70_evidence/HANDOFF.md + 新坑回填 issues.tsv（fixed/boundary/pending）+ registry_tools.py verify + gen
   ```
-- **验收判据**：audit 13 项站内检查全 PASS（范围以 site_pipeline.py 为真源）；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**。三门通过后、DELIVERY 签发前，另按 [templates/site-acceptance-v2.md](templates/site-acceptance-v2.md)（TPL-023，7 层 59 项 + 四轮对抗流程）逐项验收——判据="陌生买家能否完成询盘"，证据落盘 `70_evidence/acceptance-v2.md`。
+- **验收判据**：audit 13 项站内检查全 PASS（历史口径不变）+ product-content 独立扩展闸 PASS；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**。三门通过后、DELIVERY 签发前，另按 [templates/site-acceptance-v2.md](templates/site-acceptance-v2.md)（TPL-023，7 层 61 项 + 四轮对抗流程）逐项验收——判据="陌生买家能否完成询盘"，证据落盘 `70_evidence/acceptance-v2.md`。
 - **产物**：`<slug>-audit-config.json`、`audit-report.json`、`acceptance-v2.md`、`DELIVERY-<slug>-<date>.md`、`HANDOFF.md`（详见 §4）。
 - **坑**：没有 `--config` 的 audit 会用 Demo 基线误判新站（ISS-063）；公网 CDN 缓存 publish 后 5–10s 生效，验收以列表页数据源 + counter 为准。
 

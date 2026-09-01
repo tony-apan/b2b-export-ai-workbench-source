@@ -336,13 +336,19 @@ class AllinCMS:
     # ---------- 产品 ----------
     def create_product(self, site_slug, site_id, product_payload):
         """product_payload 含 name,slug,description,order,media,mediaList,categories:[idStr],tags:[],specifications,productId,mode='update'
-        siteId 自动注入（action 校验必填）。"""
-        product_payload.setdefault("siteId", site_id)
-        s, t = self._req(f"/{site_slug}/products", CREATE_PRODUCT, [product_payload])
+        siteId 注入内部副本（action 校验必填），不污染调用方待存证 payload。"""
+        payload = dict(product_payload)
+        payload.setdefault("siteId", site_id)
+        s, t = self._req(f"/{site_slug}/products", CREATE_PRODUCT, [payload])
         return self._flight(t)
     def publish_product(self, site_slug, site_id, product_id, product_payload):
-        product_payload["productId"] = product_id; product_payload["mode"] = "publish"
-        s, t = self._req(f"/{site_slug}/products/{product_id}/update", UPSERT_PRODUCT, [product_payload])
+        """发布/更新产品：siteId 自动注入；media update schema 只接受 oss+path；
+        categories/tags 必须是 id 字符串数组（readback 对象数组不可原样回传）；content 应为非空 Slate 块。
+        见 ISS-097/098。"""
+        payload = dict(product_payload)
+        payload["siteId"] = site_id
+        payload["productId"] = product_id; payload["mode"] = "publish"
+        s, t = self._req(f"/{site_slug}/products/{product_id}/update", UPSERT_PRODUCT, [payload])
         return self._flight(t)
     def delete_product(self, site_slug, site_id, product_id):
         """⚠️ 破坏性/不可逆：删除产品记录。先 read_product/read_lists 核对目标；必须取得用户明确授权后再调。"""
