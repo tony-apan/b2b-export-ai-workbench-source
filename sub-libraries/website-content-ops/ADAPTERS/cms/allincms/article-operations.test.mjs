@@ -241,10 +241,24 @@ test('unpublishPost requires and verifies draft readback', async () => {
   const result = await unpublishPost({ client, siteKey: 'demo-site', authorizationContext: articleAuth('unpublish'), ...ids, defaults: base, readback: async () => current });
   assert.equal(result.status, 'mutation_succeeded'); assert.equal(result.readback.status, 'draft');
 });
-test('503 reconciles to success without resend when record is present', async () => {
+test('503 reconciles to success without resend, including injected-client transport errors', async () => {
   let current = null; const client = clientFor({ response: { status: 503, contentType: 'text/plain' }, onSend: async ({ payload }) => { current = articleRecord(payload, 'draft'); } });
   const result = await savePostDraft({ client, siteKey: 'demo-site', authorizationContext: articleAuth('update'), ...ids, defaults: base, readback: async () => current });
   assert.equal(result.status, 'reconciled_success'); assert.equal(client.calls.length, 1);
+  let injectedReadback = null;
+  const injected = {
+    async send({ payload }) {
+      injectedReadback = articleRecord(payload, 'draft');
+      throw new Error('connection lost after send');
+    },
+  };
+  const injectedResult = await savePostDraft({
+    client: injected, siteKey: 'demo-site', authorizationContext: articleAuth('update'),
+    ...ids, defaults: base, readback: async () => injectedReadback,
+  });
+  assert.equal(injectedResult.status, 'reconciled_success');
+  assert.equal(injectedResult.requestStarted, true);
+  assert.equal(injectedResult.automaticRetryAllowed, false);
 });
 test('503 plus exact absence does not retry an existing article without explicit absence proof', async () => {
   let current = null; let sends = 0; const client = clientFor({ response: () => ({ status: 503, contentType: 'text/plain' }), onSend: async ({ payload }) => { sends += 1; if (sends === 2) current = articleRecord(payload, 'draft'); } });
@@ -253,7 +267,7 @@ test('503 plus exact absence does not retry an existing article without explicit
 });
 test('503 plus exact absence permits one controlled retry only with explicit absence proof', async () => {
   let current = null; let sends = 0; const client = clientFor({ response: () => ({ status: 503, contentType: 'text/plain' }), onSend: async ({ payload }) => { sends += 1; if (sends === 2) current = articleRecord(payload, 'draft'); } });
-  const result = await runActionWithRecovery({ client, route: '/x', actionName: 'postCreate', payload: {}, expected: {}, operation: 'post:create', readback: async () => current, retryOnExactAbsence: true, confirmExactAbsence: async () => true });
+  const result = await runActionWithRecovery({ client, route: '/x', actionName: 'categoryCreate', payload: {}, expected: {}, operation: 'taxonomy:category:create', readback: async () => current, retryOnExactAbsence: true, confirmExactAbsence: async () => true });
   assert.equal(result.status, 'reconciled_success'); assert.equal(sends, 2);
 });
 test('readback mismatch stops instead of blind retry', async () => {
@@ -265,67 +279,37 @@ test('deletePost treats exact absence as success and uses list route', async () 
   const client = clientFor(); const result = await deletePost({ client, siteKey: 'demo-site', authorizationContext: articleAuth('delete'), siteId: ids.siteId, postId: ids.postId, readback: async () => null });
   assert.equal(result.status, 'mutation_succeeded'); assert.equal(client.calls[0].route, '/demo-site/posts?tab=list'); assert.deepEqual(client.calls[0].payload, { id: ids.postId, siteId: ids.siteId });
 });
-test('createPostDraft requires a live create contract and exact single created ID', async () => {
-  let current = null;
-  const client = clientFor({ onSend: async ({ payload }) => { current = { id: ids.postId, siteId: payload.siteId, title: 'Untitled Post', postIds: [ids.postId] }; } });
-  const callbacks = {
-    readback: async () => current,
-    match: (record) => record?.id === ids.postId,
-    getCreatedPostId: (record) => record?.id,
-    getCreatedPostSiteId: (record) => record?.siteId,
-    getAfterPostIds: (record) => record?.postIds,
-  };
-  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), siteId: ids.siteId, payload: { siteId: ids.siteId }, ...callbacks }), /Live post-create contract/);
-  const result = await createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], ...callbacks });
-  assert.equal(result.status, 'mutation_succeeded'); assert.equal(result.createdPostId, ids.postId); assert.equal(client.calls[0].route, '/demo-site/posts');
-  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: 'other-site' }, beforePostIds: [], ...callbacks }), /payload.siteId must match/);
+test('createPostDraft is blocked by canonical registry at implementation layer', async () => {
+  await assert.rejects(() => createPostDraft({ createContractConfirmed: true }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
 });
-test('createPostDraft requires before and after snapshots and rejects existing or ambiguous IDs', async () => {
-  let current = null;
-  const client = clientFor({ onSend: async ({ payload }) => { current = { id: ids.postId, siteId: payload.siteId, postIds: [ids.postId] }; } });
-  const callbacks = {
-    readback: async () => current,
-    match: () => true,
-    getCreatedPostId: (record) => record?.id,
-    getCreatedPostSiteId: (record) => record?.siteId,
-    getAfterPostIds: (record) => record?.postIds,
-  };
-  await assert.rejects(() => createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, ...callbacks }), /beforePostIds snapshot/);
-  const existing = await createPostDraft({ client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [ids.postId], ...callbacks });
-  assert.equal(existing.status, 'stopped_manual_intervention');
-  assert.match(existing.mismatches.join('; '), /already existed|exactly one new post ID/);
-  current = { id: ids.postId, siteId: ids.siteId, postIds: [ids.postId, 'post-2'] };
-  const ambiguous = await createPostDraft({ client: clientFor(), siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true, siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], ...callbacks });
-  assert.equal(ambiguous.status, 'stopped_manual_intervention');
-  assert.match(ambiguous.mismatches.join('; '), /exactly one new post ID after create, found 2/);
-});
-test('createPostDraft stops when created ID or same-site ownership is not exact', async () => {
-  let current = null;
-  const client = clientFor({ onSend: async ({ payload }) => { current = { siteId: payload.siteId, title: 'Untitled Post', postIds: [] }; } });
-  const common = {
-    client, siteKey: 'demo-site', authorizationContext: createDraftAuth({ siteId: ids.siteId }), createContractConfirmed: true,
-    siteId: ids.siteId, payload: { siteId: ids.siteId }, beforePostIds: [], readback: async () => current, match: () => true,
-    getCreatedPostId: (record) => record?.id, getCreatedPostSiteId: (record) => record?.siteId, getAfterPostIds: (record) => record?.postIds,
-  };
-  const missingId = await createPostDraft(common);
-  assert.equal(missingId.status, 'stopped_manual_intervention');
-  assert.match(missingId.mismatches.join('; '), /created post ID is missing/);
-  assert.equal(missingId.createdPostId, null);
-  current = { id: ids.postId, siteId: 'other-site', postIds: [ids.postId] };
-  const wrongSite = await createPostDraft({ ...common, client: clientFor() });
-  assert.equal(wrongSite.status, 'stopped_manual_intervention');
-  assert.match(wrongSite.mismatches.join('; '), /different site/);
-
-  let idReads = 0;
-  current = { id: ids.postId, siteId: ids.siteId, postIds: [ids.postId] };
-  const stableCallback = await createPostDraft({
-    ...common,
-    client: clientFor(),
-    getCreatedPostId: (record) => { idReads += 1; if (idReads > 1) throw new Error('must not be called twice'); return record?.id; },
+test('createPostDraft and public action client block postCreate before side effects', async () => {
+  let sends = 0;
+  let readbacks = 0;
+  const client = { async send() { sends += 1; throw new Error('must not send'); } };
+  await assert.rejects(() => createPostDraft({
+    client,
+    siteKey: 'demo-site',
+    authorizationContext: createDraftAuth({ siteId: ids.siteId }),
+    createContractConfirmed: true,
+    siteId: ids.siteId,
+    payload: { siteId: ids.siteId },
+    beforePostIds: [],
+    readback: async () => { readbacks += 1; return null; },
+  }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
+  const actionClient = createAllinCmsActionClient({
+    siteKey: 'demo-site', runtime,
+    authorizationContext: createDraftAuth({ siteId: ids.siteId }),
+    request: async () => { sends += 1; return { status: 200, contentType: 'text/x-component' }; },
   });
-  assert.equal(stableCallback.status, 'mutation_succeeded');
-  assert.equal(stableCallback.createdPostId, ids.postId);
-  assert.equal(idReads, 1);
+  await assert.rejects(() => actionClient.send({
+    route: '/demo-site/posts', actionName: 'postCreate', payload: { siteId: ids.siteId },
+  }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
+  await assert.rejects(() => runActionWithRecovery({
+    client, route: '/demo-site/posts', actionName: 'postCreate', payload: { siteId: ids.siteId },
+    expected: {}, operation: 'post:create', readback: async () => { readbacks += 1; return null; },
+  }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
+  assert.equal(sends, 0);
+  assert.equal(readbacks, 0);
 });
 test('category create verifies every supplied field, exact ID, and site ownership', async () => {
   let current = null; const client = clientFor({ onSend: async ({ payload }) => { current = { ...payload, id: ids.categoryId }; } });

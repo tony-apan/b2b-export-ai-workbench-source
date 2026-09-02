@@ -327,11 +327,27 @@ function normalizeResponse(response) {
   };
 }
 
+function markRequestStarted(error) {
+  if (error && typeof error === 'object') {
+    try {
+      error.requestStarted = error.requestStarted ?? true;
+      if (error.requestStarted === true) return error;
+    } catch {
+      // Fall through to a writable wrapper for frozen or cross-realm errors.
+    }
+  }
+  const wrapped = new Error(error?.message || String(error));
+  wrapped.cause = error;
+  wrapped.requestStarted = true;
+  return wrapped;
+}
+
 export function createAllinCmsActionClient({ siteKey, runtime, request, authorizationContext = null }) {
   if (typeof request !== 'function') throw new Error('request callback is required');
   assertSiteKey(siteKey);
   return {
     async send({ route, actionName, payload }) {
+      if (actionName === 'postCreate') throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
       const contract = assertRuntime(runtime, actionName);
       const binding = deriveAllinCmsMutationBinding({ siteKey, route, actionName, payload });
       validateAllinCmsMutationAuthorizationContext(authorizationContext, {
@@ -356,8 +372,7 @@ export function createAllinCmsActionClient({ siteKey, runtime, request, authoriz
       try {
         return normalizeResponse(await request(requestDetails));
       } catch (error) {
-        if (error && typeof error === 'object') error.requestStarted = error.requestStarted ?? true;
-        throw error;
+        throw markRequestStarted(error);
       }
     },
   };
@@ -383,6 +398,7 @@ export async function runActionWithRecovery({
   retryOnExactAbsence = false,
   confirmExactAbsence,
 }) {
+  if (actionName === 'postCreate') throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
   if (!client?.send) throw new Error('AllinCMS action client is required');
   assertControlledRetryBudget(maxControlledRetries);
   if (typeof readback !== 'function') throw new Error('readback callback is required');
@@ -489,11 +505,16 @@ async function requireClient({ client, siteKey, runtime, request, authorizationC
   if (typeof client.send !== 'function') throw new Error('AllinCMS action client is required');
   return {
     async send(details) {
+      if (details?.actionName === 'postCreate') throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
       const binding = deriveAllinCmsMutationBinding({ siteKey, ...details });
       validateAllinCmsMutationAuthorizationContext(authorizationContext, {
         expectedSiteKey: binding.siteKey, operation: binding.operation, target: binding.target,
       });
-      return client.send(details);
+      try {
+        return await client.send(details);
+      } catch (error) {
+        throw markRequestStarted(error);
+      }
     },
   };
 }
@@ -537,88 +558,8 @@ export function unpublishPost(options) {
   return runArticleMutation({ ...options, mode: 'unpublish' });
 }
 
-export async function createPostDraft({
-  client, siteKey, runtime, request, authorizationContext = null,
-  createContractConfirmed = false, siteId, payload = { siteId }, expected, readback, refresh, match,
-  getCreatedPostId, getCreatedPostSiteId, getAfterPostIds, beforePostIds,
-  confirmExactAbsence, maxControlledRetries = 1,
-}) {
-  siteId = assertSiteId(siteId);
-  if (!createContractConfirmed) throw new Error('Live post-create contract confirmation is required');
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('post create payload must be an object');
-  if (Object.hasOwn(payload, 'siteId') && payload.siteId !== siteId) throw new Error('post create payload.siteId must match siteId');
-  if (typeof readback !== 'function') throw new Error('readback callback is required');
-  if (typeof getCreatedPostId !== 'function') throw new Error('getCreatedPostId callback is required');
-  if (typeof getCreatedPostSiteId !== 'function') throw new Error('getCreatedPostSiteId callback is required');
-  if (typeof getAfterPostIds !== 'function') throw new Error('getAfterPostIds callback is required');
-  if (!Array.isArray(beforePostIds)) throw new Error('beforePostIds snapshot is required');
-  const normalizedBeforePostIds = normalizeIdArray(beforePostIds, 'beforePostIds');
-  const knownPostIds = new Set(normalizedBeforePostIds);
-  const actionClient = await requireClient({ client, siteKey, runtime, request, authorizationContext });
-  const matcher = match || ((actual) => Boolean(actual && (!expected || compareExpectedReadback(actual, expected, { fields: Object.keys(expected) }).ok)));
-  let reconciledCreatedPostId = null;
-  const result = await runActionWithRecovery({
-    client: actionClient,
-    route: actionRoute(siteKey, ''),
-    actionName: 'postCreate',
-    payload: { ...payload, siteId },
-    expected,
-    operation: 'post:create',
-    readback,
-    refresh,
-    maxControlledRetries,
-    retryOnExactAbsence: typeof confirmExactAbsence === 'function',
-    confirmExactAbsence,
-    compare: (actual) => {
-      reconciledCreatedPostId = null;
-      if (actual === null || actual === undefined) {
-        return { ok: false, exactAbsence: true, mismatches: ['created post is absent from readback'] };
-      }
-      const mismatches = [];
-      let matches = false;
-      let createdPostId = null;
-      let createdPostSiteId = null;
-      let afterPostIds = [];
-      try {
-        matches = Boolean(matcher(actual));
-      } catch (error) {
-        mismatches.push(`created post matcher failed: ${error.message}`);
-      }
-      try {
-        createdPostId = asNonEmptyString(getCreatedPostId(actual), 'created post ID');
-        reconciledCreatedPostId = createdPostId;
-      } catch (error) {
-        mismatches.push('created post ID is missing from readback');
-      }
-      try {
-        createdPostSiteId = asNonEmptyString(getCreatedPostSiteId(actual), 'created post siteId');
-      } catch (error) {
-        mismatches.push('created post siteId is missing from readback');
-      }
-      try {
-        afterPostIds = normalizeIdArray(getAfterPostIds(actual), 'afterPostIds');
-      } catch (error) {
-        mismatches.push(error.message);
-      }
-      const newPostIds = afterPostIds.filter((id) => !knownPostIds.has(id));
-      if (!matches) mismatches.push('created post did not match expected readback');
-      if (createdPostSiteId && createdPostSiteId !== siteId) mismatches.push('created post belongs to a different site');
-      if (newPostIds.length !== 1) mismatches.push(`expected exactly one new post ID after create, found ${newPostIds.length}`);
-      if (createdPostId && knownPostIds.has(createdPostId)) mismatches.push('readback ID already existed before create');
-      if (createdPostId && newPostIds.length === 1 && createdPostId !== newPostIds[0]) {
-        mismatches.push('created post ID does not match the sole before/after snapshot difference');
-      }
-      return {
-        ok: mismatches.length === 0,
-        exactAbsence: false,
-        mismatches: [...new Set(mismatches)],
-      };
-    },
-  });
-  return {
-    ...result,
-    createdPostId: reconciledCreatedPostId,
-  };
+export async function createPostDraft() {
+  throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
 }
 
 export function deletePost({

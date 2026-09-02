@@ -164,7 +164,7 @@ const EXPECTED_RUNTIME_TEST_PLAN = [
   'article-content-formats.test.mjs',
   'article-operations.test.mjs',
 ];
-const EXPECTED_RUNTIME_TEST_COUNT = 158;
+const EXPECTED_RUNTIME_TEST_COUNT = 160;
 function currentGovernanceTestPlan(root) {
   const planScript = resolve(root, EXPECTED_GOVERNANCE_TEST_PLAN[0]);
   if (!existsSync(planScript) || !statSync(planScript).isFile()) {

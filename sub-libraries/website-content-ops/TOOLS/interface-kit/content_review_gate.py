@@ -20,6 +20,10 @@ OBJECTS = {"product", "article"}
 OPERATIONS = {"create", "update"}
 PHASES = {"create": "create_and_publish", "update": "publish_update"}
 ALLOWED_TYPES = {"p", "h2", "h3", "blockquote"}
+BUSINESS_KEYS = {
+    "product": {"name", "slug", "description", "order", "media", "mediaList", "content", "categories", "tags", "specifications"},
+    "article": {"title", "slug", "excerpt", "order", "coverImage", "content", "categories", "tags"},
+}
 REQUIRED_CHECKS = {
     "facts_confirmed_only",
     "no_invented_price_moq_certification_case",
@@ -102,17 +106,27 @@ def request_evidence(endpoint, action_id, request_body, status=None, response_te
 
 
 def verify_live_capability(context, *, deployment_id, site_key, site_id, required_operations,
-                           expected_runtime_scope_root, expected_client_id, expected_task_id, now=None):
+                           expected_action_ids, expected_runtime_scope_root, expected_client_id,
+                           expected_task_id, now=None):
     """Cooperative supported-flow gate; does not stop a token holder from constructing raw HTTP."""
     problems = []
     if not isinstance(context, dict):
         return 1, ["capability context missing"]
+    context_fields = {"status", "deployment_id", "site_key", "site_id", "operations", "evidence_ref",
+                      "observed_at", "expires_at", "runtime_scope_root", "evidence_digest", "client_id", "task_id"}
+    unknown_context = sorted(set(context) - context_fields)
+    if unknown_context: problems.append(f"capability context unknown fields: {unknown_context}")
     if context.get("status") != "live_verified_current_deployment": problems.append("capability status not live_verified_current_deployment")
     if context.get("deployment_id") != deployment_id: problems.append("capability deployment mismatch")
     if context.get("site_key") != site_key or context.get("site_id") != site_id: problems.append("capability site mismatch")
-    ops = set(context.get("operations") or [])
-    missing = sorted(set(required_operations) - ops)
-    if missing: problems.append(f"capability operations missing: {missing}")
+    raw_ops = context.get("operations")
+    if (not isinstance(raw_ops, list) or any(not isinstance(operation, str) or not operation for operation in raw_ops)
+            or len(raw_ops) != len(set(raw_ops))):
+        problems.append("capability operations invalid")
+        raw_ops = []
+    ops = set(raw_ops)
+    if ops != set(required_operations):
+        problems.append(f"capability operations must exactly match required operations: {sorted(required_operations)}")
     evidence_ref = str(context.get("evidence_ref", "")).strip()
     raw_root = context.get("runtime_scope_root")
     expected_root_raw = expected_runtime_scope_root
@@ -133,8 +147,47 @@ def verify_live_capability(context, *, deployment_id, site_key, site_id, require
             problems.append("capability evidence outside/missing runtime scope")
         else:
             with open(evidence_path, "rb") as evidence_file:
-                actual = "sha256:" + hashlib.sha256(evidence_file.read()).hexdigest()
-            if context.get("evidence_digest") != actual: problems.append("capability evidence digest mismatch")
+                evidence_bytes = evidence_file.read()
+            actual = "sha256:" + hashlib.sha256(evidence_bytes).hexdigest()
+            if context.get("evidence_digest") != actual:
+                problems.append("capability evidence digest mismatch")
+            else:
+                try:
+                    capability_evidence = load_json_strict(evidence_path)
+                    if not isinstance(capability_evidence, dict):
+                        raise ValueError("root must be object")
+                    evidence_fields = {"deployment_id", "site_key", "site_id", "verified_operations", "action_ids", "observed_at"}
+                    unknown_evidence = sorted(set(capability_evidence) - evidence_fields)
+                    if unknown_evidence: problems.append(f"capability evidence unknown fields: {unknown_evidence}")
+                    if set(capability_evidence) != evidence_fields:
+                        problems.append("capability evidence required fields mismatch")
+                    if capability_evidence.get("deployment_id") != deployment_id: problems.append("capability evidence deployment mismatch")
+                    if capability_evidence.get("site_key") != site_key or capability_evidence.get("site_id") != site_id:
+                        problems.append("capability evidence site mismatch")
+                    raw_verified_ops = capability_evidence.get("verified_operations")
+                    if (not isinstance(raw_verified_ops, list)
+                            or any(not isinstance(operation, str) or not operation for operation in raw_verified_ops)
+                            or len(raw_verified_ops) != len(set(raw_verified_ops))):
+                        problems.append("capability evidence verified_operations invalid")
+                        raw_verified_ops = []
+                    verified_ops = set(raw_verified_ops)
+                    if verified_ops != set(required_operations):
+                        problems.append("capability evidence operations must exactly match required operations")
+                    if verified_ops != ops: problems.append("capability context/evidence operations mismatch")
+                    action_ids = capability_evidence.get("action_ids")
+                    if not isinstance(action_ids, dict) or set(action_ids) != verified_ops:
+                        problems.append("capability evidence action_ids keys mismatch")
+                        action_ids = {}
+                    for operation in required_operations:
+                        action_id = action_ids.get(operation)
+                        if not re.fullmatch(r"[0-9a-f]{42}", str(action_id or "")):
+                            problems.append(f"capability evidence action missing/invalid: {operation}")
+                        elif action_id != expected_action_ids.get(operation):
+                            problems.append(f"capability evidence action mismatch: {operation}")
+                    if capability_evidence.get("observed_at") != context.get("observed_at"):
+                        problems.append("capability evidence observed_at mismatch")
+                except Exception as exc:
+                    problems.append(f"capability evidence schema invalid: {exc}")
     try:
         observed = _dt.datetime.fromisoformat(str(context.get("observed_at", "")).replace("Z", "+00:00"))
         expires = _dt.datetime.fromisoformat(str(context.get("expires_at", "")).replace("Z", "+00:00"))
@@ -144,18 +197,25 @@ def verify_live_capability(context, *, deployment_id, site_key, site_id, require
             if observed > current: problems.append("capability observed_at is future")
             if current >= expires: problems.append("capability expired")
             if expires <= observed: problems.append("capability invalid interval")
+            if expires - observed > _dt.timedelta(minutes=30): problems.append("capability interval exceeds 30 minutes")
+            if current - observed > _dt.timedelta(minutes=30): problems.append("capability observation is stale")
     except ValueError:
         problems.append("capability timestamps invalid")
     return (1 if problems else 0), problems
 
 
 def project_wire_payload(business_payload, *, object_type, site_id, target_id, wire_phase):
-    """Pure business→wire projection. Review covers business payload; mutation evidence covers this envelope."""
+    """Pure allowlisted business→wire projection. Review covers business payload; evidence covers envelope."""
     if object_type not in OBJECTS:
         raise ValueError("object_type invalid")
     if wire_phase not in {"create_draft", "publish_update"}:
         raise ValueError("wire_phase invalid")
-    envelope = dict(_normalize(business_payload))
+    allowed = BUSINESS_KEYS[object_type]
+    unknown = sorted(set(business_payload) - allowed)
+    if unknown:
+        raise ValueError(f"unknown/wire-only business fields: {unknown}")
+    normalized = _normalize(business_payload)
+    envelope = {key: normalized[key] for key in allowed if key in normalized}
     envelope["siteId"] = site_id
     if wire_phase == "publish_update":
         if not target_id:
@@ -191,6 +251,8 @@ def _validate_text_leaves(children, path, problems):
 
 def payload_checks(payload, object_type):
     problems = []
+    unknown_business = sorted(set(payload) - BUSINESS_KEYS[object_type])
+    if unknown_business: problems.append(f"{object_type} payload unknown/wire-only fields: {unknown_business}")
     product_keys = ("name", "slug", "description", "media", "content", "specifications", "categories", "tags")
     article_keys = ("title", "slug", "excerpt", "coverImage", "content", "categories", "tags")
     for key in (product_keys if object_type == "product" else article_keys):

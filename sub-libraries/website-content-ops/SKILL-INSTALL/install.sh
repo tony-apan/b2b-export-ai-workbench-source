@@ -160,7 +160,7 @@ if [ "$runtime_source" = "bundled-runtime" ]; then
     echo "  = locked bundled runtime dependencies already match this bundle"
   fi
 
-  echo "  verifying bundled Adapter registry, index, 248 local tests, and native image dependency"
+  echo "  verifying bundled Adapter registry, index, 250 local tests, and native image dependency"
   if ! (cd "$runtime_adapter" && \
       npm run interfaces:validate && \
       npm run interfaces:index:check && \

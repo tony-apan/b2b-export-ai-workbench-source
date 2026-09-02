@@ -15,6 +15,11 @@ redaction_status: "safe-to-publish"
 
 ## Unreleased — 2026-08-30
 
+### AllinCMS trusted runtime profile alignment (2026-09-02)
+
+- 当前正式 trusted runtime profile 对齐真实已验证四文件 160/160：媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48；完整 Adapter 七文件回归为 250/250。
+- 原 158/158（媒体 45）保留为 historical snapshot，并由 release governance 显式拒绝，不再具备当前 qualification 资格。
+
 ### 四项平台层审计禁令全仓清扫 + id-0002 退役 + 工具包治理（每批 flash+TERRA 双审）
 
 改动对比（旧 → 新 → 原因）：
@@ -75,14 +80,14 @@ redaction_status: "safe-to-publish"
 - 形成 12 verified / 1 unsupported-current-shape / 0 not-tested 矩阵；H3、五种 inline mark、链接、两类列表、引用、分隔线和表格通过后台回读、编辑器重开与前台验收。
 - `code-block` 在该阶段的测试形状虽可 API 保存并精确回读，但编辑器重开失败；已恢复 last-known-good 后再发布，合同明确禁止发布该形状。
 - 新增 `article-content-formats.mjs`，把 Slate canonical 示例和 Markdown → Slate 保守转换固定为代码；直接 HTML/Markdown 不进入文章 `content`，代码围栏、正文 H1、raw HTML、不安全链接和畸形表格请求前 fail closed。
-- 当前未发布工作树的 Adapter 回归为 158/158：媒体 45、正文图片 52、正文格式 13、文章生命周期/taxonomy 48；正式 trusted runtime profile 同步为四文件 158 全通过。
+- 当前未发布工作树的 Adapter 回归为 158/158：媒体 45、正文图片 52、正文格式 13、文章生命周期/taxonomy 48；该结果现为 historical snapshot，当前 trusted runtime profile 已于 2026-09-02 对齐为 160/160。
 
 ### AllinCMS article and taxonomy verification
 
 - 在冻结计划授权下，同站点严格串行完成 2 个分类、2 个标签、3 张真实图片和 2 篇全字段文章的接口创建与发布；未删除、未清理、未跨站，随后逐篇单请求重复 publish，ID、slug、数量和 published 状态保持不变。
 - 修复浏览器/CDP 跨 realm prototype 导致的 JSON 假阴性；taxonomy 精确 `/posts` route 回读允许省略 `contentType`，但显式冲突继续 fail closed。
 - 封面回读改为比较后端实际持久化的 `name / alt / type / source / path / size / mimeType` canonical 字段；任何非空封面 payload 在请求前必须完整自有这 7 个字段，URL-only 或提交与回读同时缺字段也会 fail closed；扩展字段被省略不再误报，canonical 字段缺失/变化仍失败。
-- 历史阶段 Adapter 计数依次为 136/136、加入正文格式 profile 后 145/145、将独立正文格式回归文件纳入 trusted profile 后 156/156；这些均为 historical snapshot，不是当前 trusted profile。当前固定四文件为 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期/taxonomy 48）。媒体 caption 在该次自然运行中仍为 `null`，主题未稳定透传正文图片 alt、分类与全部标签，因此顶层结论保持 WARN，不能宣称跨部署、Stable 或 production-ready。
+- 历史阶段 Adapter 计数依次为 136/136、加入正文格式 profile 后 145/145、将独立正文格式回归文件纳入 trusted profile 后 156/156、补齐 2 项格式负向回归后 158/158；这些均为 historical snapshot，不是当前 trusted profile。当前固定四文件为 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48），旧 158/158 必须拒绝。媒体 caption 在该次自然运行中仍为 `null`，主题未稳定透传正文图片 alt、分类与全部标签，因此顶层结论保持 WARN，不能宣称跨部署、Stable 或 production-ready。
 
 ### Human onboarding and AI execution entry
 
@@ -96,7 +101,7 @@ redaction_status: "safe-to-publish"
 
 - AllinCMS direct、serial、batch、single 四个媒体上传入口现在都要求显式 `authorizationContext`，精确绑定 site、operation、有序文件列表 digest、approval actor/time 与限时 expiry；底层 direct 原语自行 fail closed，`beforeRequest` 仅用于 journaling。
 - 历史安全快照阶段在原有授权回归上新增 11 项 TOCTOU / mutation-edge 负向测试：覆盖同路径换字节、symlink retarget、批次中途替换、chooser payload 篡改、29:59.999 / 30:00.000 / 30:00.001、future timestamp 和 callback 延迟过期；该 historical snapshot 的媒体测试为 45/45、adapter 全量为 131/131，后续文章与封面回读补测又将当时工作树提升到 136/136。这些不是当前 trusted profile，且该阶段未访问 CMS。
-- 历史 `sub-library-release-v1` trusted runtime profile 曾与当时机器合同同步为媒体 45、正文图片 52、文章与 taxonomy 39，共 136 项；该 historical profile 的治理负向测试明确拒绝更旧的 `120/120`、`131/131`、135/137、少通过、失败、跳过和 test plan 重排。此记录不代表当前 158/158 profile。
+- 历史 `sub-library-release-v1` trusted runtime profile 曾与当时机器合同同步为媒体 45、正文图片 52、文章与 taxonomy 39，共 136 项；该 historical profile 的治理负向测试明确拒绝更旧的 `120/120`、`131/131`、135/137、少通过、失败、跳过和 test plan 重排。此记录不代表当前 160/160 profile。
 - 子库 approval/artifact validator 新增 workflow 注入的实际 tag object SHA、signer fingerprint、canonical tag annotation 与 approval-binding digest 精确比对，并明确 PASS 不证明真人身份、远程保护或正式发布。
 - 该历史 `v0.3.2-preview.1` 安全加固阶段的冻结 `MANIFEST.md` 曾为 `release_status: Preview`、`approval_status: pending`；这是 historical snapshot，不能覆盖当前 candidate 的 `BLOCK / pending`，Preview 与 Stable qualification 继续分闸。
 

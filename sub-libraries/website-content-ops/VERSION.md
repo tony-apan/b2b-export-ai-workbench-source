@@ -32,7 +32,7 @@ current_candidate_version: null
 - Release guide：[RELEASE.md](RELEASE.md)
 - Update URL：`https://fluxpedal.example/content-lab/updates`（虚拟演示）
 - Compatibility：本地 Markdown；Obsidian 仅为参考查看器；可读取本地文件的 AI agent；图床与 CMS 通过 adapter 接入。
-- Trusted runtime profile（2026-08-01）：固定四文件 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；这是本地合同证据，不改变当前候选 `BLOCK`、Stable qualification 或跨部署边界。
+- Trusted runtime profile（2026-09-02）：固定四文件 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；历史 158/158 已陈旧并必须拒绝；这是本地合同证据，不改变当前候选 `BLOCK`、Stable qualification 或跨部署边界。
 
 ## Historical release: 0.3.2-preview.1
 

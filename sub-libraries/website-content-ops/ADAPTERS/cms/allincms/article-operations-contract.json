@@ -10,9 +10,7 @@
       "siteId",
       "postId",
       "categoryId",
-      "tagId",
-      "beforePostIds",
-      "afterPostIds"
+      "tagId"
     ],
     "mustNotPersistInPublicContract": [
       "cookie",
@@ -45,14 +43,14 @@
       "unpublish": "return to draft with complete payload"
     },
     "actionName": "postUpdate",
-    "createRoute": "/{site_key}/posts",
-    "createActionName": "postCreate",
+    "createRoute": null,
+    "createActionName": null,
     "deleteRoute": "/{site_key}/posts?tab=list",
     "deleteActionName": "postDelete",
     "bodyEncoding": "JSON array containing one payload object",
     "coverImage": "current media record object; never assume URL-only shape; readback comparison uses the canonical persisted field subset",
     "content": "Slate node array; never Markdown or HTML string",
-    "createApiStatus": "guarded_requires_live_contract_confirmation_and_before_snapshot",
+    "createApiStatus": "blocked_unconditionally_by_canonical_registry",
     "coverImagePersistedFields": [
       "name",
       "alt",
@@ -190,9 +188,8 @@
     "safeRetryRule": "only one controlled retry after an explicit fresh exact-absence confirmation; readback null alone is insufficient",
     "unresolvedRule": "stop with stopped_manual_intervention",
     "batchRule": "strict serial; skip completed keys; stop on first unresolved result",
-    "createRule": "postCreate is blocked unless the current deployment create contract is freshly confirmed, beforePostIds and afterPostIds snapshots are supplied, the snapshots have exactly one new ID, and the created-record readback proves that exact ID plus same-site ownership",
-    "existingArticleRule": "postUpdate and taxonomy mutations never retry merely because a readback is null",
-    "callbackRule": "createPostDraft returns the ID normalized during reconciliation and never calls the external ID extractor again while constructing the result"
+    "createRule": "postCreate and createPostDraft are blocked unconditionally by the canonical Interface Registry; no runtime action capture, snapshot, authorization, callback, or readback can enable article.create",
+    "existingArticleRule": "postUpdate and taxonomy mutations never retry merely because a readback is null"
   },
   "verification": {
     "draft": [
@@ -219,13 +216,8 @@
       "parent relationship for children"
     ],
     "create": [
-      "fresh postCreate action capture",
-      "beforePostIds snapshot",
-      "afterPostIds snapshot",
-      "exactly one new post ID in the before/after difference",
-      "created-record ID equals the sole new snapshot ID",
-      "complete created-record readback",
-      "exact same-site ownership"
+      "blocked unconditionally by the canonical Interface Registry",
+      "no request, readback, or retry is permitted"
     ],
     "publishedThemeWarnings": [
       "backend Slate image alt persistence does not prove frontend theme img alt propagation",
@@ -237,13 +229,13 @@
     "articleOperationsTests": 48,
     "articleContentFormatsTests": 13,
     "articleImageBindingTests": 52,
-    "mediaUploadTests": 45,
-    "totalTests": 158,
-    "lastVerified": "2026-08-12",
+    "mediaUploadTests": 47,
+    "totalTests": 160,
+    "lastVerified": "2026-09-02",
     "profileScope": "article/media four-file specialized profile",
     "workspacePreflightTests": 21,
     "contentRunControllerTests": 58,
     "interfaceRegistryTests": 11,
-    "adapterTotalTests": 248
+    "adapterTotalTests": 250
   }
 }

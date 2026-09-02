@@ -102,13 +102,13 @@ exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**
 
 - 图片路由：目标为 AllinCMS 媒体库时优先零点击接口串行上传；[R2 / GitHub / 腾讯云 COS / 阿里云 OSS](ADAPTERS/image-hosts/README.md) 仅为外部图床备选；
 - Virtual business：[FluxPedal Motors](EXAMPLES/fluxpedal-motors/README.md) 公司、产品、ICP、聊天和首条闭环已建立；
-- CMS：首个参考实现为 AllinCMS；真实环境已验证站点发现、单图零点击直传、10 张严格串行直传、一次五图 UI 回退、匿名 URL 验证、零点击媒体记录删除，以及一张获批虚拟媒体的 `title / alt / caption` 最终持久化；本地实现已补只读对账、原子图片索引、断点恢复、源 / 上传 / 远端哈希、单写者锁、AI 元数据单次写入和停批规则，并通过 45 项媒体测试；文章 taxonomy 创建、全字段多轮 update / publish、真实封面与前台列表/详情也已有单样本证据；Markdown 正文图片 A/B/A 草稿绑定、后台回读、编辑器重载和 Caption 可见已有真实限定证据；本地控制器已升级为 manifest schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 和整篇单次保存；当前 trusted runtime profile 固定四文件并通过 158/158（媒体 45、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；
+- CMS：首个参考实现为 AllinCMS；真实环境已验证站点发现、单图零点击直传、10 张严格串行直传、一次五图 UI 回退、匿名 URL 验证、零点击媒体记录删除，以及一张获批虚拟媒体的 `title / alt / caption` 最终持久化；本地实现已补只读对账、原子图片索引、断点恢复、源 / 上传 / 远端哈希、单写者锁、AI 元数据单次写入和停批规则，并通过 47 项媒体测试；文章 taxonomy 创建、全字段多轮 update / publish、真实封面与前台列表/详情也已有单样本证据；Markdown 正文图片 A/B/A 草稿绑定、后台回读、编辑器重载和 Caption 可见已有真实限定证据；本地控制器已升级为 manifest schema 2、逐 occurrence 双重复核、`bindingProof`、文章 operation lock 和整篇单次保存；当前 trusted runtime profile 固定四文件并通过 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；历史 158/158 已陈旧，不具备当前 qualification 资格；
 - 第二图床 / CMS：计划从四种图床中选择另一个完成迁移；
 - Analytics / Search data：在真实站点阶段接入 Search Console、询盘和销售反馈。
 
 ## 既有 Preview 限制与当前发布阻断
 
-1. AllinCMS 图片默认路线已固化并通过 45 项媒体测试；正文图片唯一 adapter 已通过 52 项文章图片测试；当前四文件 trusted profile 为 158/158，其中正文格式 13、文章生命周期与 taxonomy 48；新恢复层、自定义标题和跨部署元数据读后写稳定性仍需在下一次自然、获批的真实上传中顺带复验；
+1. AllinCMS 图片默认路线已固化并通过 47 项媒体测试；正文图片唯一 adapter 已通过 52 项文章图片测试；当前四文件 trusted profile 为 160/160，其中正文格式 13、文章生命周期与 taxonomy 48；历史 158/158 已陈旧并必须拒绝；新恢复层、自定义标题和跨部署元数据读后写稳定性仍需在下一次自然、获批的真实上传中顺带复验；
 2. AllinCMS 文章单样本已完成 taxonomy、多轮保存/发布和前台渲染；A/B/A 正文图片草稿已验证，逐 occurrence 原位替换能力不再暂停。公开主题 Alt、表格等更多复杂节点、跨部署封面/正文稳定性、覆盖和完整回滚仍无完整证据；
 3. 控制器不设图片数量上限，本地已验证 12 张仍严格串行；真实远程证据目前到 10 张。媒体并发永久禁止，一次请求多图不是默认路线；
 4. PicGo + R2 / GitHub / COS / OSS 不再是 AllinCMS 上传前置，只作为外部图床和迁移能力；其真实单图参考实现尚未完成；

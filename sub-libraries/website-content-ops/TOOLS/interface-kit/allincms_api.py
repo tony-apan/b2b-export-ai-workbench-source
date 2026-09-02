@@ -21,7 +21,7 @@ AllinCMS / LAICMS 纯接口客户端（跨平台：macOS / Windows / Linux，Pyt
     api.create_theme(site_slug, site_id, name, preset="default"); api.set_theme_active(...); api.apply_theme_routes(...)
 零上下文建站总入口见 interface-kit/RUNBOOK-ANYONE.md。
 """
-import json, os, re, ssl, sys, urllib.parse, urllib.request, urllib.error
+import hashlib, json, os, re, ssl, sys, urllib.parse, urllib.request, urllib.error
 
 
 # ---------- 跨平台 token 路径（Windows 兼容） ----------
@@ -339,6 +339,69 @@ class AllinCMS:
     def update_media(self, site_slug, media_id, site_id, title, alt="", caption=""):
         s, t = self._req(f"/{site_slug}/media", UPDATE_MEDIA, [{"id": media_id, "siteId": site_id, "title": title, "alt": alt, "caption": caption}])
         return self._flight(t)
+    def _normalize_content_readback(self, record, object_type):
+        import content_review_gate as _review
+        allowed = _review.BUSINESS_KEYS[object_type]
+        out = {key: record.get(key) for key in allowed if key in record}
+        for key in ("categories", "tags"):
+            out[key] = [str(x.get("id") or x.get("value")) if isinstance(x, dict) else str(x)
+                        for x in (out.get(key) or [])]
+        if out.get("order") is None: out["order"] = 0
+        if object_type == "product" and out.get("mediaList") is None: out["mediaList"] = []
+        if out.get("tags") is None: out["tags"] = []
+        return out
+    def _authoritative_content_readback(self, site_slug, target_id, business_payload, object_type):
+        resource = "products" if object_type == "product" else "posts"
+        import content_review_gate as _review
+        evidence = {"target_id": target_id, "resource": resource}
+        try:
+            status, raw = self.get_page(f"/{site_slug}/{resource}/{target_id}/update")
+            evidence["detail_http_status"] = status
+            evidence["detail_raw_digest"] = "sha256:" + hashlib.sha256(raw.encode("utf-8")).hexdigest()
+            records = rsc_records(raw)
+            box = find_json(records, "defaultValues")
+            if not isinstance(box, dict) or not isinstance(box.get("defaultValues"), dict):
+                raise ValueError("defaultValues not found in authoritative detail readback")
+            normalized = self._normalize_content_readback(box["defaultValues"], object_type)
+            listing = self.read_lists(site_slug, resource)
+            evidence["list_http_status"] = listing.get("status")
+            rows = listing.get("data", [])
+            if not isinstance(rows, list):
+                raise ValueError("authoritative list readback data is not a list")
+            exact_rows = [row for row in rows if isinstance(row, dict) and row.get("id") == target_id]
+            list_status = (exact_rows[0].get("status") or exact_rows[0].get("_status")) if len(exact_rows) == 1 else None
+            exact_match = _review.canonical_bytes(normalized) == _review.canonical_bytes(business_payload)
+            normalized_digest = _review.payload_digest(normalized)
+        except Exception as exc:
+            exact_match = False
+            normalized_digest = None
+            exact_rows = []
+            list_status = None
+            evidence["readback_error"] = f"{type(exc).__name__}: {exc}"
+        evidence.update({"normalized_business_digest": normalized_digest, "business_exact_match": exact_match,
+                         "list_exact_id_count": len(exact_rows), "list_status": list_status})
+        evidence["readback_evidence_digest"] = _review.payload_digest(evidence)
+        return (evidence.get("detail_http_status") == 200 and evidence.get("list_http_status") == 200
+                and exact_match and len(exact_rows) == 1 and list_status == "published"), evidence
+
+    @staticmethod
+    def _safe_route_segment(value, label):
+        if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", value):
+            raise ValueError(f"{label} must be a non-empty safe route segment")
+        return value
+
+    @staticmethod
+    def _content_transport_confirmed(result, request_evidence, *, require_id=False):
+        status = request_evidence.get("response_status") if isinstance(request_evidence, dict) else None
+        if not isinstance(result, dict):
+            return False
+        data = result.get("data")
+        if not isinstance(status, int) or not 200 <= status < 300 or not isinstance(data, dict):
+            return False
+        if require_id:
+            target_id = data.get("id")
+            return isinstance(target_id, str) and bool(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", target_id))
+        return data.get("status") == "published"
     # ---------- 产品（受支持内容 mutation 只允许 reviewed + fresh capability 入口） ----------
     def _send_content_transport(self, path, action, envelope):
         """Freeze one HTTP body, digest it, then send the exact same bytes."""
@@ -375,6 +438,9 @@ class AllinCMS:
                                 capability_context, target_id=None):
         """受支持产品 create/update 入口；合作式流程门，不是对恶意 token 持有者的安全沙箱。"""
         import content_review_gate as _review
+        self._safe_route_segment(site_slug, "site_slug")
+        if target_id is not None:
+            self._safe_route_segment(target_id, "target_id")
         operation = "update" if target_id else "create"
         required_ops = ({"allincms.product.update", "allincms.product.publish"} if target_id else
                         {"allincms.product.create", "allincms.product.publish"})
@@ -386,6 +452,9 @@ class AllinCMS:
         cap_rc, cap_problems = _review.verify_live_capability(
             capability_context, deployment_id=DEPLOY, site_key=site_slug, site_id=site_id,
             required_operations=required_ops, expected_runtime_scope_root=ctx["runtime_scope_root"],
+            expected_action_ids={"allincms.product.create": CREATE_PRODUCT,
+                                 "allincms.product.update": UPSERT_PRODUCT,
+                                 "allincms.product.publish": UPSERT_PRODUCT},
             expected_client_id=ctx["client_id"], expected_task_id=ctx["task_id"])
         if cap_rc: raise RuntimeError("FRESH_LIVE_CAPABILITY_REQUIRED: " + "; ".join(cap_problems))
         evidence = {"review_context": ctx, "capability_context": capability_context,
@@ -393,25 +462,40 @@ class AllinCMS:
         if not target_id:
             created, create_request = self._create_product_transport(site_slug, site_id, business_payload)
             evidence["create_request"] = create_request
-            new_id = ((created or {}).get("data") or {}).get("id")
-            if not new_id:
+            created_data = created.get("data") if isinstance(created, dict) else None
+            new_id = created_data.get("id") if isinstance(created_data, dict) else None
+            if not self._content_transport_confirmed(created, create_request, require_id=True):
                 return {"result": created, "evidence": evidence, "request_may_have_succeeded": True,
                         "reconcile_required": True, "reconcile": {"resource":"products", "site_key":site_slug,
                         "natural_key":{"slug":business_payload.get("slug")}, "before_after_unique_id_delta":True}}
             evidence["target_id"] = new_id
             published, publish_request = self._publish_product_transport(site_slug, site_id, new_id, business_payload)
             evidence["publish_request"] = publish_request
-            if ((published or {}).get("data") or {}).get("status") != "published":
+            if not self._content_transport_confirmed(published, publish_request):
                 return {"result": published, "evidence": evidence, "request_may_have_succeeded": True,
                         "reconcile_required": True, "reconcile": {"resource":"products", "site_key":site_slug,
                         "target_id":new_id, "expected_slug":business_payload.get("slug"), "readback_required":True}}
+            readback_ok, readback_evidence = self._authoritative_content_readback(
+                site_slug, new_id, business_payload, "product")
+            evidence["authoritative_readback"] = readback_evidence
+            if not readback_ok:
+                return {"result": published, "evidence": evidence, "reconcile_required": True,
+                        "reconcile": {"resource":"products", "site_key":site_slug, "target_id":new_id,
+                                      "expected_slug":business_payload.get("slug"), "readback_required":True}}
             return {"result": published, "evidence": evidence, "reconcile_required": False}
         published, request_evidence = self._publish_product_transport(site_slug, site_id, target_id, business_payload)
         evidence.update({"target_id": target_id, "publish_request": request_evidence})
-        if ((published or {}).get("data") or {}).get("status") != "published":
+        if not self._content_transport_confirmed(published, request_evidence):
             return {"result": published, "evidence": evidence, "request_may_have_succeeded": True,
                     "reconcile_required": True, "reconcile": {"resource":"products", "site_key":site_slug,
                     "target_id":target_id, "expected_slug":business_payload.get("slug"), "readback_required":True}}
+        readback_ok, readback_evidence = self._authoritative_content_readback(
+            site_slug, target_id, business_payload, "product")
+        evidence["authoritative_readback"] = readback_evidence
+        if not readback_ok:
+            return {"result": published, "evidence": evidence, "reconcile_required": True,
+                    "reconcile": {"resource":"products", "site_key":site_slug, "target_id":target_id,
+                                  "expected_slug":business_payload.get("slug"), "readback_required":True}}
         return {"result": published, "evidence": evidence, "reconcile_required": False}
     def delete_product(self, site_slug, site_id, product_id):
         """⚠️ 破坏性/不可逆：删除产品记录。先 read_product/read_lists 核对目标；必须取得用户明确授权后再调。"""
@@ -433,8 +517,10 @@ class AllinCMS:
                              capability_context, target_id=None):
         """受支持文章 update 入口；article.create 依权威 registry 保持 BLOCK。"""
         import content_review_gate as _review
+        self._safe_route_segment(site_slug, "site_slug")
         if not target_id:
             raise RuntimeError("ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY")
+        self._safe_route_segment(target_id, "target_id")
         rc, ctx = _review.verify_payload_record(
             business_payload, review_record_path, expected_object_type="article",
             expected_operation="update", expected_site_key=site_slug, expected_site_id=site_id,
@@ -443,6 +529,8 @@ class AllinCMS:
         cap_rc, cap_problems = _review.verify_live_capability(
             capability_context, deployment_id=DEPLOY, site_key=site_slug, site_id=site_id,
             required_operations={"allincms.article.update", "allincms.article.publish"},
+            expected_action_ids={"allincms.article.update": UPSERT_POST,
+                                 "allincms.article.publish": UPSERT_POST},
             expected_runtime_scope_root=ctx["runtime_scope_root"], expected_client_id=ctx["client_id"],
             expected_task_id=ctx["task_id"])
         if cap_rc: raise RuntimeError("FRESH_LIVE_CAPABILITY_REQUIRED: " + "; ".join(cap_problems))
@@ -451,10 +539,17 @@ class AllinCMS:
                     "target_id": target_id}
         published, request_evidence = self._publish_post_transport(site_slug, site_id, target_id, business_payload)
         evidence["publish_request"] = request_evidence
-        if ((published or {}).get("data") or {}).get("status") != "published":
+        if not self._content_transport_confirmed(published, request_evidence):
             return {"result": published, "evidence": evidence, "request_may_have_succeeded": True,
                     "reconcile_required": True, "reconcile": {"resource":"posts", "site_key":site_slug,
                     "target_id":target_id, "expected_slug":business_payload.get("slug"), "readback_required":True}}
+        readback_ok, readback_evidence = self._authoritative_content_readback(
+            site_slug, target_id, business_payload, "article")
+        evidence["authoritative_readback"] = readback_evidence
+        if not readback_ok:
+            return {"result": published, "evidence": evidence, "reconcile_required": True,
+                    "reconcile": {"resource":"posts", "site_key":site_slug, "target_id":target_id,
+                                  "expected_slug":business_payload.get("slug"), "readback_required":True}}
         return {"result": published, "evidence": evidence, "reconcile_required": False}
     def delete_post(self, site_slug, site_id, post_id):
         """⚠️ 破坏性/不可逆：删除文章记录。先 read_post/read_lists 核对目标；必须取得用户明确授权后再调。"""

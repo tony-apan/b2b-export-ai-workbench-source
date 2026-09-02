@@ -1,0 +1,14 @@
+{
+  "deployment_id": "<exact x-deployment-id>",
+  "site_key": "<exact-site-key>",
+  "site_id": "<exact-site-id>",
+  "verified_operations": [
+    "allincms.product.update",
+    "allincms.product.publish"
+  ],
+  "action_ids": {
+    "allincms.product.update": "<42 lowercase hex action id>",
+    "allincms.product.publish": "<42 lowercase hex action id>"
+  },
+  "observed_at": "<same RFC3339 timestamp used by capability context>"
+}

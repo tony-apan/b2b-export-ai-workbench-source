@@ -287,7 +287,7 @@ result.items.every((item) => [
 - `request_started` 恢复并对账成功时，索引必须保留请求前已经记录的规范化上传 SHA-256 / MD5，不得被空值覆盖。
 - `${imageIndexPath}.lock` 已存在时，第二个 AI / 进程必须停止，不得删除锁后抢写。若结束时 `cleanup.imageIndexLockReleased !== true`，上传结果仍保留，但必须人工检查私有运行区中的锁文件，下一轮不得直接开始。
 
-2026-07-27 的真实远程证据覆盖单张直传、10 张单图严格串行、一次 5 张中的受控刷新对账、一张获批虚拟媒体的 `title / alt / caption` 最终持久化，以及 A/B/A 正文原位绑定草稿。2026-07-30 的历史本地回归快照曾为媒体上传 45/45、正文图片 52/52、文章、正文格式与 taxonomy 48/48，adapter 全量 145/145；2026-08-01 的历史 trusted-profile 快照为 156/156，随后补齐 2 项格式负向回归，当前正式冻结的文章/媒体四文件 qualification profile 为媒体 45/45、正文图片 52/52、正文格式 13/13、文章生命周期与 taxonomy 48/48，合计 158/158；完整源码工作树另含 Workspace 前置检查 21/21、严格串行 Controller 58/58 与接口 Registry 11/11，`npm test` 七文件当前全量为 251/251；两种口径不得互相替代；负向用例覆盖四入口缺失授权、site/operation/entrypoint/actor/digest 篡改、同路径换字节、symlink retarget、批次中途替换、chooser payload 篡改、29:59.999 / 30:00.000 / 30:00.001 边界、future timestamp，以及 callback 延迟跨过 expiry，且均未访问真实 CMS。正文绑定前另会复核本地图片字节未变化、远端映射源 SHA-256 与资产一致、候选携带已知 media ID/URL，并对后台 Caption 结构再次验形；标题相同不构成资产归属证据。**本地 PASS 只证明隔离控制器合同；新快照/时效逻辑、恢复层、自定义标题和跨部署元数据稳定性仍待下一次自然、获批的真实操作顺带复验**，不得为测试重复写入。
+2026-07-27 的真实远程证据覆盖单张直传、10 张单图严格串行、一次 5 张中的受控刷新对账、一张获批虚拟媒体的 `title / alt / caption` 最终持久化，以及 A/B/A 正文原位绑定草稿。2026-07-30 的历史本地回归快照曾为媒体上传 45/45、正文图片 52/52、文章、正文格式与 taxonomy 48/48，adapter 全量 145/145；2026-08-01 的历史 trusted-profile 快照为 156/156，随后补齐 2 项格式负向回归形成历史 158/158。当前正式冻结的文章/媒体四文件 qualification profile 为媒体 47/47、正文图片 52/52、正文格式 13/13、文章生命周期与 taxonomy 48/48，合计 160/160；历史 158/158 已陈旧并必须拒绝。完整源码工作树另含 Workspace 前置检查 21/21、严格串行 Controller 58/58 与接口 Registry 11/11，`npm test` 七文件当前全量为 250/250；两种当前口径不得互相替代；负向用例覆盖四入口缺失授权、site/operation/entrypoint/actor/digest 篡改、同路径换字节、symlink retarget、批次中途替换、chooser payload 篡改、29:59.999 / 30:00.000 / 30:00.001 边界、future timestamp，以及 callback 延迟跨过 expiry，且均未访问真实 CMS。正文绑定前另会复核本地图片字节未变化、远端映射源 SHA-256 与资产一致、候选携带已知 media ID/URL，并对后台 Caption 结构再次验形；标题相同不构成资产归属证据。**本地 PASS 只证明隔离控制器合同；新快照/时效逻辑、恢复层、自定义标题和跨部署元数据稳定性仍待下一次自然、获批的真实操作顺带复验**，不得为测试重复写入。
 
 ### 单张原语：仅供 adapter 维护者
 
@@ -446,7 +446,7 @@ publication_status: WARN_CURRENT_DEPLOYMENT_CREATE_PUBLISH_COMPLETE__MEDIA_CAPTI
 | `image-index-e2e-verification.redacted.md`（仅源码 checkout） | 私有图片索引、断点恢复与去重闭环的去敏证据及适用边界 |
 | `direct-delete-verification.redacted.md` | 零点击媒体记录删除的历史去敏证据；当前完成口径只看卡片与 RSC 记录 |
 | `upload-media-browser.mjs` | 运行预检 + 任意数量永久串行总控 + 报错延迟对账与有限重试 + 单图接口原语 + AI title/alt/caption 同步 + 原子私有索引 + 零点击媒体记录删除 + 1–5 图 UI 回退 |
-| `upload-media-browser.test.mjs` | 45 项媒体本地故障与授权边界测试；不等同于所有部署的真实远程生产验证 |
+| `upload-media-browser.test.mjs` | 47 项媒体本地故障与授权边界测试；不等同于所有部署的真实远程生产验证 |
 | `article-image-binding-contract.json` | 正文图片的资产、occurrence、Slate、保存、渲染和 Alt 分层合同 |
 | `article-image-binding.mjs` | Markdown 原位解析、映射复核、Slate 构建、草稿保存与编辑器健康闸 |
 | `article-image-binding.test.mjs` | 52 项文章图片本地测试；包含 A/B/A、锚点防漂移、Caption 全数组预检、非空封面 canonical 字段请求前完整性与持久化回读，以及编辑器、图片解码、Caption 和草稿状态健康闸 |
@@ -467,4 +467,4 @@ npm test
 
 ## 结构化内容 mutation 授权
 
-文章、分类、标签和正文图片草稿写入统一要求结构化 `authorizationContext`；裸布尔值不会授权任何请求。`mutation-authorization.mjs` 将授权精确绑定到当前 `site_key`、operation、目标 SHA-256 摘要、具名 `human-asserted` actor、批准时间和最长 30 分钟有效期，并在每次远程请求前重验。actor 身份状态固定为 `not_verified`，不能据此宣称真人批准。当前摘要主要证明 operation + 对象/slug/文件列表级 target binding：文章 update/publish/unpublish、taxonomy 与正文图片并未把完整 mutation payload 全部绑定进授权摘要；媒体元数据字段和 direct 删除仍是 legacy 裸布尔授权。publish/delete 仍需独立明确人工批准；本地完整 Adapter 的 251 项源码工作树测试和 npm 包检查不证明真实 CMS、跨部署稳定或正式发布资格。
+文章、分类、标签和正文图片草稿写入统一要求结构化 `authorizationContext`；裸布尔值不会授权任何请求。`mutation-authorization.mjs` 将授权精确绑定到当前 `site_key`、operation、目标 SHA-256 摘要、具名 `human-asserted` actor、批准时间和最长 30 分钟有效期，并在每次远程请求前重验。actor 身份状态固定为 `not_verified`，不能据此宣称真人批准。当前摘要主要证明 operation + 对象/slug/文件列表级 target binding：文章 update/publish/unpublish、taxonomy 与正文图片并未把完整 mutation payload 全部绑定进授权摘要；媒体元数据字段和 direct 删除仍是 legacy 裸布尔授权。publish/delete 仍需独立明确人工批准；本地完整 Adapter 的 250 项源码工作树测试和 npm 包检查不证明真实 CMS、跨部署稳定或正式发布资格。

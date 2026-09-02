@@ -553,7 +553,7 @@ python3 -m json.tool media-operations-contract.redacted.json
 python3 -m json.tool article-image-binding-contract.json
 ```
 
-当前正式冻结的文章/媒体 runtime qualification profile 固定为四文件 158 项：45 项媒体测试、52 项文章图片测试、13 项正文格式测试、48 项文章生命周期与 taxonomy 测试。完整源码工作树的 `npm test` 另含 21 项 Workspace 登录/用户/站点/建站合同测试、58 项严格串行 Controller 测试和 11 项接口 Registry 测试，七文件当前全量为 251/251；正式 158 项 profile 与完整 251 项开发回归不得互相替代。全量共同覆盖严格串行、授权时效与 TOCTOU 边界、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、taxonomy route-scoped `contentType`、跨 realm JSON 语义比较、封面 canonical 持久化字段与非空封面 payload 请求前完整性、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
+当前正式冻结的文章/媒体 runtime qualification profile 固定为四文件 160 项：47 项媒体测试、52 项文章图片测试、13 项正文格式测试、48 项文章生命周期与 taxonomy 测试；历史 158/158 已陈旧并必须拒绝。完整源码工作树的 `npm test` 另含 21 项 Workspace 登录/用户/站点/建站合同测试、58 项严格串行 Controller 测试和 11 项接口 Registry 测试，七文件当前全量为 250/250；正式 160 项 profile 与完整 250 项开发回归不得互相替代。全量共同覆盖严格串行、授权时效与 TOCTOU 边界、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、taxonomy route-scoped `contentType`、跨 realm JSON 语义比较、封面 canonical 持久化字段与非空封面 payload 请求前完整性、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
 
 ## 当前边界
 

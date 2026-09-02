@@ -86,7 +86,7 @@ python3 sub-libraries/website-content-ops/scripts/interface-kit-pipeline.py inst
 ```
 
 
-安装器现在会先验证 bundle，再执行 `npm ci`、接口 Registry/索引校验、248 项本地 Adapter 测试和 `sharp` 原生加载检查；**全部通过后才创建 Skill 链接**。任何一步失败均 exit 1，不再出现“Skill 看似安装成功、真正上传时才发现 canonical runtime 缺失”的半安装状态。正常输出应包含 `verified bundled runtime resolved`、`bundled runtime dependencies and self-tests verified`；调用方另外提供完整源包时则显示 `canonical source checkout resolved`。
+安装器现在会先验证 bundle，再执行 `npm ci`、接口 Registry/索引校验、250 项本地 Adapter 测试和 `sharp` 原生加载检查；**全部通过后才创建 Skill 链接**。任何一步失败均 exit 1，不再出现“Skill 看似安装成功、真正上传时才发现 canonical runtime 缺失”的半安装状态。正常输出应包含 `verified bundled runtime resolved`、`bundled runtime dependencies and self-tests verified`；调用方另外提供完整源包时则显示 `canonical source checkout resolved`。
 
 检查：
 
