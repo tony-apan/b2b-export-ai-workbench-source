@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Sequence
 
 BLOCK_CODE = "CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED"
-MIN_PYTHON = (3, 10)
+MIN_PYTHON = (3, 9)
 MIN_NODE = (20, 9, 0)
 SKILL_NAME_FALLBACK = "allincms-bulk-content-upload"
 TOOL_DIRS = {
@@ -81,8 +81,7 @@ def parse_node_version(output: str) -> tuple[int, int, int] | None:
 def require_runtimes() -> tuple[str, str, str]:
     if sys.version_info < MIN_PYTHON:
         raise InstallError(
-            f"Python 3.10+ is required; found {platform.python_version()}. "
-            "Install Python 3.10+ and retry with that interpreter."
+            f"Python 3.9+ is required; found {platform.python_version()}. "
         )
     node = shutil.which("node")
     npm = shutil.which("npm")

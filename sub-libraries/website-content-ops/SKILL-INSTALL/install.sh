@@ -9,7 +9,7 @@ if [ ! -f "$INSTALLER" ]; then
   exit 2
 fi
 if ! command -v python3 >/dev/null 2>&1; then
-  echo "ERROR: Python 3.10+ is required. Install it from https://www.python.org/downloads/ and retry:" >&2
+  echo "ERROR: Python 3.9+ is required. Install it from https://www.python.org/downloads/ and retry:" >&2
   echo "  python3 \"$INSTALLER\" $*" >&2
   exit 1
 fi

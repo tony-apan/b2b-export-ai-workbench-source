@@ -75,7 +75,7 @@ Skill 不能直接把示例内容发进 CMS。标准链路是：
 
 ### 一次安装
 
-从完整 `website-content-ops` clean clone 运行安装器。Python 3.10+、Node.js >=20.9.0 和 npm 为必需前置；安装器自动执行 `npm ci`、接口 Registry/索引校验、由 `runtime-test-plan.json` 驱动的测试套件及 `acorn`/`ajv`/`sharp` 加载检查，全部通过后才创建 Skill 链接。
+从完整 `website-content-ops` clean clone 运行安装器。Python 3.9+、Node.js >=20.9.0 和 npm 为必需前置；安装器自动执行 `npm ci`、接口 Registry/索引校验、由 `runtime-test-plan.json` 驱动的测试套件及 `acorn`/`ajv`/`sharp` 加载检查，全部通过后才创建 Skill 链接。
 
 ```bash
 cd sub-libraries/website-content-ops/SKILL-INSTALL

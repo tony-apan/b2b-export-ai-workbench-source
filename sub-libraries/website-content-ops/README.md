@@ -44,7 +44,7 @@ license_status: "cleared"
 
 ■ 仓库：https://github.com/tony-apan/b2b-export-ai-workbench-source
 ■ 要点：
-  - 前置：git + Python 3.10+（Skill 安装器）+ Node.js >= 20.9 与 npm（Adapter 依赖/自测必需；PDF/DOCX 解析另选装）；一个 AllinCMS 账号
+  - 前置：git + Python 3.9+（Skill 安装器）+ Node.js >= 20.9 与 npm（Adapter 依赖/自测必需；PDF/DOCX 解析另选装）；一个 AllinCMS 账号
   - 产出：当前受支持为站点 + 7 产品 + 7 页主题 + 表单绑定；已有 exact-ID 文章可审查后更新。全新文章可本地成稿/评审，但远程 article.create 依 canonical Registry 保持 BLOCK，域名 <site-key>.web.allincms.com
   - 实测参考：干净账号从零到 13 项审计 PASS（时长约半小时量级；内部 Example 实测值，证据在私有运行区，见 RUNBOOK sources）
   - 红线①：删除类操作（站点/产品/文章/分类/标签/主题/媒体，含 delete-demo-content 与任何 --force/--confirm 批量写）逐条列目标等我确认；未经批准不上传、不覆盖、不发布
@@ -68,7 +68,7 @@ license_status: "cleared"
 
 | 要点 | 内容 |
 |---|---|
-| 前置条件 | git + Python 3.10+（Skill 安装器）+ Node.js >= 20.9 + npm（Adapter 依赖/自测必需；PDF/DOCX 解析选装）；一个 AllinCMS 账号取 token（30 天登录态） |
+| 前置条件 | git + Python 3.9+（Skill 安装器）+ Node.js >= 20.9 + npm（Adapter 依赖/自测必需；PDF/DOCX 解析选装）；一个 AllinCMS 账号取 token（30 天登录态） |
 | 实测时长 | 干净账号从零到 13 项审计 PASS ≈ **25 分钟** |
 | 产出 | 当前受支持：站点 + 7 产品 + 7 页主题 + 表单绑定；已有 exact-ID 文章可 reviewed update。全新文章本地成稿/评审可完成，远程 article.create Registry BLOCK |
 | 关键入口 | [13 步一条龙](TOOLS/interface-kit/NEW-SITE-ONEPASS.md) · [事实与坑库](TOOLS/interface-kit/RUNBOOK-ANYONE.md) · [166+ 字段清单](TOOLS/interface-kit/templates/new-site-customization-checklist.md) · [token 三种取法](ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md) |

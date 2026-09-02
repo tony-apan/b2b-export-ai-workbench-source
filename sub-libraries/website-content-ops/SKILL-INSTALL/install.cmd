@@ -11,5 +11,5 @@ if errorlevel 1 goto failed
 exit /b 0
 
 :failed
-echo 若失败请安装 Python 3.10+ 后重试。
+echo 若失败请安装 Python 3.9+ 后重试。
 exit /b 1
