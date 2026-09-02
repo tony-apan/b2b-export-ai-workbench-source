@@ -126,6 +126,12 @@ pagination.* / canCreate
 
 未来 capability 经本次 deployment 的真实单样本升级后，Plan A 才可在精确 `name + description` 授权下严格调用一次。验收必须用完整网站列表 before/after 唯一 ID 差集证明只新增 1 个站点，并回读 `site_id / site_key(slug) / account owner / displayDomain / setupError`；HTTP 200 或 toast 不足以判定成功。然后停止 Plan A，以该私有 readback 和 Plan A digest 生成全新的 `site_operation` Plan B，重新发现 capability/current state 后才处理分类、标签、媒体、文章、产品或主题页。Adapter 不接受一个同时 create site + populate 的计划。
 
+> **动产品 / 主题页 / globals 前先读这些坑（新电脑必读，避免做空站/改动不生效）**：
+> - **产品**：`TOOLS/interface-kit/RUNBOOK-ANYONE.md` §4（媒体用 `source:"url"`+CDN url 而非 `source:"oss"`；`specifications.value` ≤200 字符；先 `scan-actions` 确认该站有无 `createProductAction`，无则走 update/upsert；publish 后查 `validationErrors`）。对应 `index/issues.tsv` ISS-105。
+> - **globals / 导航 CTA / 品牌 footer**：`NEW-SITE-ONEPASS.md` 步骤 9 与 RUNBOOK §3（`read_page_document` 取原 globals 后**只改目标字段**原样回传 `save_home(save→readback→publish)`，不要自建 globals 结构；CTA 弹窗 = `header-dropdown.props.ctaTarget={type:"action",anchorId:"contact-form-dialog"}`；站点级可见改动用后台设计器**站点级 Publish** 刷 CDN）。对应 `index/issues.tsv` ISS-106。
+> - **模块网格 / 大标题**：`MODULES.md` 网格规则块与 RUNBOOK §2（`columnCount` 必须等于实际条目数，否则公开站空白列/半幅空白；大标题避免连字符词开头、≤42 字符）。对应 ISS-107。
+> - **激活/生效状态**：改完没生效，先跑 `RUNBOOK-ANYONE.md` **§2.1 诊断树**九步（theme `active`【**没有 isActive 这个键**】→`homePageId`→`homePagePublished`→page `enabled`→route `bound`→页面 publish readback→站点级 Publish→product `_status`→CDN），先诊断再动手。对应 ISS-108。
+
 ### 0.5 精确媒体页与页面健康检查
 
 站点确认后，打开 `https://workspace.laicms.com/{site_key}/media`，并同时确认：

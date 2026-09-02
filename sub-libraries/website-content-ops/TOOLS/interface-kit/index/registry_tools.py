@@ -37,6 +37,17 @@ def verify():
     remote_note = []
     for table, (fn, cols) in FILES.items():
         rows = _rows(table)
+        # 列数守卫（2026-09-02 实测缺口：追加行缺行尾换行把两行粘成一行，DictReader 把多余列吞进 None 键，逐列检查全放行）
+        tsv_path = os.path.join(HERE, fn)
+        if os.path.exists(tsv_path):
+            with open(tsv_path, encoding="utf-8") as _rawf:
+                for _no, _ln in enumerate(_rawf.read().splitlines(), 1):
+                    if not _ln.strip() or _no == 1:
+                        continue
+                    _n = _ln.count("\t") + 1
+                    if _n != len(cols):
+                        print(f"FAIL {table} line {_no}: {_n} 列（应为 {len(cols)}）——行粘连或缺列，先修 tsv 再 verify")
+                        ok = False
         ids = [r.get("id") or r.get("type") for r in rows]
         dup = [i for i in set(ids) if ids.count(i) > 1]
         if dup: print(f"FAIL {table}: duplicate ids {dup}"); ok = False

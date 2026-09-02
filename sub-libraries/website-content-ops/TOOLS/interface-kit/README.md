@@ -31,7 +31,12 @@ cd index && python3 registry_tools.py find <关键词>   # 找文档/脚本/模�
 1. 依赖全景：**runtime = 零第三方依赖（Python stdlib）**；docs-parse（解析用户 PDF/DOCX/PPTX/XLSX）= 选装 4 包；canonical 校验 = 选装 Node ≥18；截图 = 本机 Chrome
 2. 安装：`python3 install-deps.py --yes && python3 install-deps.py --verify`（检测+安装+复检）
 3. 自检：`python3 index/registry_tools.py verify` → PASS；`python3 allincms_api.py <token> read-sites` 冒烟
-4. 详见 [SETUP.md](SETUP.md)（依赖表/各平台命令/常见问题/每次干活前顺序）
+4. **5 分钟连通冒烟（推荐，免手动取 token）**：账号开通后（无账号见子库 [CONTACT.md](../../CONTACT.md)），用环境变量传邮箱密码（勿写进命令行历史/脚本/日志）：
+   ```bash
+   WS_EMAIL=you@example.com WS_PASSWORD='...' python3 -c "import os; from allincms_api import AllinCMS; api=AllinCMS(email=os.environ['WS_EMAIL'], password=os.environ['WS_PASSWORD']); s=api.read_sites()['sites']; print(len(s),'sites:', [x.get('slug') for x in s][:5])"
+   ```
+   打印出站点列表（slug=站点 key，公开站 URL 用）= 登录+读权限全通，直接进 [NEW-SITE-ONEPASS.md](NEW-SITE-ONEPASS.md) 步骤 0。
+5. 详见 [SETUP.md](SETUP.md)（依赖表/各平台命令/常见问题/每次干活前顺序）
 
 ## 组成
 - `allincms_api.py` —— 零依赖 Python 客户端（stdlib only：json/os/re/urllib）

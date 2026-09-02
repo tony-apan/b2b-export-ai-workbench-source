@@ -118,6 +118,24 @@ redaction_status: "safe-to-publish"
 
 目标是 AllinCMS 时，先读 [AllinCMS AI 唯一入口](ADAPTERS/cms/allincms/AI-START-HERE.md)，并从其第 0 节直接执行：默认用宿主内置 Browser session 请求 `/sites?_rsc`，读取登录状态、`user.id`、完整网站列表和 `canCreate`；只有未登录才打开并前台展示 `/sign-in`，登录后重新 API 检查，再做精确选站、媒体页检查、接口优先和页面诊断回落。不要让用户先自行找页面，不要绕过当前 adapter 自行重抓或重写上传循环，也不要把 UI 当自动降级。历史 artifact 的 Public Preview 不放行当前未发布源码候选；当前路线仍受 `MANIFEST.md` 的 `BLOCK` 状态与独立 Stable qualification 边界约束。
 
+### 建站产品 / globals / 模块网格关键坑（2026-09-02 实测，ISS-105/106/107）
+
+新建站一条龙建产品、写 globals、配模块时，以下为会直接导致"产品 Untitled / 改动不生效 / 界面空白断裂"的硬坑，执行前先对号入座：
+
+1. **产品 media 必须 `{source:"url", url:<CDN url>}`**，不能 `source:"oss"+path`——部分新建站对 oss 会**静默拒绝整个 payload**，产品保持 Untitled（name/slug/specs/content 全丢）。media url 从 `read_media_library` 读回拿。
+2. **`specifications.value` 有 200 字符上限**（`validation.specifications.valueMax200`）；长型号/参数清单放 `content` 正文（Slate p/h2/h3），specifications 只留短 value。
+3. **写产品前先 scan 该站有无 `createProductAction`**：新建站常只有 `upsertProductAction`（无 create），必须走 update/upsert 路径——`mutate_reviewed_product(target_id=已有 draft id)`（先 create 得 draft id，再 update 填字段）。publish 后检查 response 的 `validationErrors` 是否为空。**产品字段级更新（如改名）**：payload = `GET /{slug}/products/{id}/update` 的 `defaultValues` 归一化后只改目标字段，配 per-product 审查记录 + 新鲜 capability（≤30 分钟）批量走同一入口（实测 14/14 零 reconcile）。
+4. **globals 改动读原值改单字段回传**：`read_page_document` 取 `ip['globals']` → 只改目标字段（如 `header-dropdown-1.props.ctaTarget`、`footer-columns-1.props.brand`）→ 其余原样 `save_home(intent=save)` → `readback` 确认 → `save_home(intent=publish)`。**不要自建整个 globals 结构**（缺 children/anchorId 会被服务端回退用存储值）。
+5. **导航 CTA 弹窗** = `header-dropdown.props.ctaTarget = {type:"action", anchorId:"contact-form-dialog"}`（公网 `#contact-form-dialog`）；`{type:"custom", href:"/contact-us"}` 是跳页非弹窗。
+6. **站点级/头部/footer/品牌可见改动**，若页面级 publish 后公网未刷新，用后台主题设计器顶部的 **Publish**（站点级）触发 CDN，而非仅 `save_home`。
+7. **网格模块 `columnCount` 必须等于实际条目数**（category-showcase-grid / feature-grid-proof / social-proof-quotes / company-*-grid 等）：模板按列数固定生成 N 列、**条目不足不折叠不报错**——3 列填 2 条=第三列空白卡，4 列填 2 卡=右半幅空白。改列数或补条目二选一，提交前逐模块校验。
+8. **大标题避免连字符词开头、≤42 字符**：hero-commerce 等大字号标题固定 72px 不随列宽缩放，长标题堆 6 行且 "Wall-mounted" 会断成孤儿行 "Wall-"。
+9. **模板固有行为登记不硬改**：hero 左列 content-between 中段空隙、产品卡 line-clamp 截断、奇数卡末行空位、吸顶导航 bg-background/95 半透明（滚动截图时底下内容 5% 透出=鬼影，**勿误判为重叠 bug**）。
+10. **用户截图报障诊断套路**：先排导航穿透鬼影 → 浏览器 evaluate 量 section `getBoundingClientRect` + `computed gridTemplateColumns` 定位到元素（视觉模型会误读字符、乱排区块序）→ grep 公开 HTML 核对内容是否真缺失 → 区分"数据可修"（columnCount/条目/文案）与"模板限制"（登记）。
+11. **激活/生效状态键名（勿猜勿用 isActive）**：theme 行激活键是 `active`(bool)——**`isActive` 不存在，取它恒 None**，会误判"没有激活主题"；theme 行还有 `homePageId`/`homePagePublished`(bool，免 curl 直接判根路径发布)；page 行 `enabled`/`_status`；route 行 `status=='bound'`；product 行 `_status=='published'`（create-only 草稿公网不可见）。"改动不生效"按 RUNBOOK **§2.1 诊断树**九步按序查（主题 active→homePageId→homePagePublished→page enabled→route bound→页面 publish readback→站点级 Publish→产品 _status→CDN），先诊断再动手。
+
+以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树）与 `NEW-SITE-ONEPASS.md` 步骤 7/9/10。
+
 ### 上传前必须取得精确授权
 
 对 direct、serial、batch、single 四个媒体上传入口，`authorizationContext` 是不可省略的必需输入，不是可选 callback。执行 agent 必须：

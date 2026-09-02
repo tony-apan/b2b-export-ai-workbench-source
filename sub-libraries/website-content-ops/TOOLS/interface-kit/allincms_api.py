@@ -251,7 +251,8 @@ class AllinCMS:
                 "tagOptions": box.get("tagOptions", []),
                 "pagination": box.get("pagination", {})}
     def read_pages(self, site_slug, theme_id):
-        """读主题页面列表（/themes/{themeId} 页 RSC）：pages + routes + 主题信息。"""
+        """读主题页面列表（/themes/{themeId} 页 RSC）：pages + routes + 主题信息。
+        pages 行状态键（ISS-108 实测）：enabled(bool)/isHome/_status；routes 行 status=='bound' 判已绑路由。"""
         s, t = self.get_page(f"/{site_slug}/themes/{theme_id}")
         rec = rsc_records(t)
         box = find_json(rec, "pages", "routes")
@@ -636,6 +637,7 @@ class AllinCMS:
         return self._flight(t)
 
     def set_page_enabled(self, site_slug, site_id, theme_id, page_id, enabled):
+        """页面启用/停用（setPageEnabledAction）：enabled=False 时路由仍 bound 但公开 404（ISS-108 诊断树第 4 步）。"""
         payload = [{"id": page_id, "siteId": site_id, "themeId": theme_id, "enabled": enabled}]
         s, t = self._req(f"/{site_slug}/themes/{theme_id}", self.PAGE_ACTION_IDS["setPageEnabled"], payload)
         return self._flight(t)

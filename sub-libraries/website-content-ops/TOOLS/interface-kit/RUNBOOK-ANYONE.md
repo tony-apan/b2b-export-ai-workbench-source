@@ -37,6 +37,7 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
   2. **浏览器 Cookie（兜底，已验证）**：用户登录 `workspace.laicms.com` → DevTools → Cookies → 复制 `payload-token` → `export WS_TOKEN=<token>`。
   3. **浏览器配置文件提取（方向指引，未实测）**：AI 从用户已登录浏览器的 Cookie 存储自动提取；详见 TOKEN-AUTH.md 方式三，优先 1/2。
   **拿 token 是唯一可能碰浏览器的环节；拿到后全程纯接口**（操作矩阵 10/10 实测：读 8 + 幂等写 2 + 媒体 multipart + 公开站表单 submit，零浏览器）。
+  **最快连通验证**：README.md 安装节第 4 条的 5 分钟冒烟一行命令（email+password 环境变量直连，打印站点列表即全通）。
 - 目标：工作台 `workspace.laicms.com`，公开站 `https://<site_key>.web.allincms.com`。
 - 路径约定：本文内 runtime 相关路径相对于**运行时根 `$RUNTIME_ROOT`**（独立 runtime 目录；母库内经 `customer-runtime/` 软链可达）；`templates/...`、`writing/...`、`index/...` 相对于 interface-kit 目录。
 - 零第三方依赖：Python3 stdlib 即可；全文 API 直连，**不要开浏览器自动化**（除登录拿 token）。
@@ -57,6 +58,8 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
 10 交付清单 DELIVERY-<slug>-<date>.md + HANDOFF.md + 回填 issues.tsv
 ```
 
+> **步骤号映射（本文 ↔ ONEPASS 13 步）**：本文 6=ONEPASS 步骤 7（产品）、7=8（文章）、8=9/10/11（主题页/激活路由/demo 清理）、9=12（审计交付）；其余同号。跨文档引用步骤号时写明出处（如 "ONEPASS 步骤 10"），防歧义。
+
 ## §2 关键事实（已实测，别重踩）
 
 | 事实 | 结论 | 出处 |
@@ -69,6 +72,28 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
 | **createTheme(default) 会重新种入 3 demo 产品+3 demo 文章+6 demo 分类+7 demo 标签**（站点级，新记录 id 时间戳=创建时刻；taxonomy 同样种入且 0 引用也会公开出现在筛选下拉） | 每次重建主题后重跑全链清理（delete-demo-content.py）；audit count 项自动暴露 | ISS-071/074 |
 | 正文原生 Slate 类型 = `p|h2|h3|blockquote`（服务器存储形态；'heading'/'paragraph' 旧词法禁用） | 格式见 templates/post-payload-example.json；生成器 writing-module.py block/skeleton | ISS-060 |
 | 主题 id/页面 id 会变 | 一律 read_themes/read_pages/read_page_document 现取，勿猜 | allincms_api.read_themes |
+| **跨站: 部分新站产品 media 只接受 `source:"url"`**（oss+path 被静默拒，产品保持 Untitled）；且 `specifications.value` ≤200 字符 | 产品 media 用 `{source:url, url:<CDN url>}`；specs 短 value；先 scan 有无 createProductAction（无则走 update/upsert） | ISS-105（2026-09-02 新建站实测） |
+| **globals 改动读原值改单字段回传**（自建 globals 结构会被服务端回退旧值）；导航 CTA 弹窗 = `header-dropdown.ctaTarget={type:action,anchorId:contact-form-dialog}` | read_page_document 取原 globals → 只改目标字段 → save_home(save)→readback→save_home(publish)；站点级可见改动用后台设计器站点级 Publish 刷 CDN | ISS-106（2026-09-02 实测） |
+| **网格模块 columnCount 必须等于条目数**：columnCount=N 固定 N 列，条目不足渲染空白卡/半幅空白（3列填2=空白第三卡；4列填2=右半空白） | 提交前校验 `columnCount == len(items/proofRows/...)`，改列数或补条目二选一；hero 级大标题 72px 固定，连字符首词断孤儿行（"Wall-"），标题避免连字符词开头、≤42 字符 | ISS-107（2026-09-02 实测，MODULES.md 网格规则块） |
+| **截图报障先排"导航穿透"**：吸顶导航 bg-background/95 半透明，滚动截图必有 5% 内容透出的鬼影；视觉模型会误读字符（6800→9600）和乱排区块序 | 定性前用浏览器 evaluate 量 section getBoundingClientRect + computed gridTemplateColumns，grep 公开 HTML 核对内容；模板固有行为（content-between 空隙/line-clamp 截断/奇数末行空位）登记不硬改 | 2026-09-02 三截图诊断实测（ISS-107） |
+| **产品改名/字段级 update 全自动可行**：payload=GET `/{slug}/products/{id}/update` 的 defaultValues 归一化后只改目标字段；配 per-product 审查记录 + 新鲜 capability（≤30min，evidence digest 绑定）走 mutate_reviewed_product(target_id) | 实测 14/14 零 reconcile、全量 canonical readback 匹配；readback 证据键名是 `business_exact_match`（不是 exact_match） | 2026-09-02 批量改名实测（rename-results.json） |
+| **激活/生效状态键名（ISS-108，勿猜勿用 isActive）**：theme 行 `active`(bool，**`isActive` 不存在，恒 None**)、`homePageId`、`homePagePublished`(bool)；page 行 `enabled`(bool)/`isHome`/`_status`；route 行 `status=='bound'`；product 行 `_status=='published'`（create-only 草稿不可见=ISS-105 另一面） | 判断是否生效只准用实测键名；**theme.homePagePublished 可免 curl 直接判根路径发布状态**；`active:True` 的主题仍要核对 homePageId 非空 | 2026-09-02 read_themes/read_pages/read_lists 实测键名 |
+
+### §2.1 「改动不生效」诊断树（未激活/未发布/未启用，按序查）
+
+```text
+改了后台/接口，公开站没变？按序查（全部用上表实测键名）：
+1) theme.active==True？            → 否：set_theme_active（激活后必须重跑 set_home_page！ISS-070）
+2) theme.homePageId 指向预期首页？  → 否：set_home_page
+3) theme.homePagePublished==True？ → 否：save_home(intent='publish') 后重查
+4) page.enabled==True 且 _status 正常？ → 否：set_page_enabled(true)
+5) route.status=='bound'？          → 否：apply_theme_routes
+6) read_page_document readback 与预期一致？ → 否：save_home(intent='save')→readback→(intent='publish')（ISS-106 只改单字段）
+7) 页面 publish 后公网仍未变且改动在 header/footer/站点级 → 后台主题设计器站点级 Publish 刷 CDN（ISS-106）
+8) 产品在公开列表缺失 → read_lists 行 _status=='published'？否=create-only 草稿，走 update/publish（ISS-105）
+9) 以上全对仍旧内容 → CDN 缓存：sleep 后重取 curl，勿连续硬刷
+audit 机器闸目前不覆盖 1)-8) 的状态字段——这九步必须人工/脚本各跑一遍（扩展项已列计划）。
+```
 
 ## §3 主题页操作（第 8 步展开）
 
@@ -79,8 +104,11 @@ import os; api = AllinCMS(token=os.environ["WS_TOKEN"])  # export WS_TOKEN=<toke
 # 建 default 主题（preset='default' 总是生成 7 页：/home /about-us /contact-us /posts /posts/{post} /products /products/{product}）
 api.create_theme(slug, site_id, 'My Default', 'Default theme', preset='default')
 # theme_id 来源：create_theme 后按 name 取最新（或取 active 主题）
+# ⚠️ 激活键名是 t['active']（bool），isActive 不存在（恒 None，ISS-108）；active 主题仍须核对 homePageId 非空
 themes = api.read_themes(slug)['themes']
 theme_id = [t['id'] for t in themes if t['name'] == 'My Default'][-1]
+act = [t for t in themes if t.get('active')]
+assert act and act[0]['homePageId'], 'active 主题缺 homePageId → 根路径是 Runtime 壳，跑 §2.1 诊断树'
 # 读页面与文档（read_page_document 返回 {status, initialPayload:{page:{document,globals,themeConfig}}）
 r = api.read_pages(slug, theme_id)          # {'pages':[...], 'routes':[...]}
 page_id = r['pages'][0]['id']               # 示例取第一页；按需换 path=='/home' 等
@@ -100,13 +128,15 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 
 - 页面文档结构：`{"root":"page-root","elements":{...}}`；块类型白名单与 props 见 `templates/home-page-example.json`、allincms_blocks.py 与 MODULES.md（37 块注册表全集在 MODULES.md 开头）。
 - globals（header/footer/contact dialog/social button）**按页存储**：改 globals 后用同一份 globals_doc 对**全部 7 页**逐页 save+publish（Example 实测可靠做法；只 commit 一页不可保证全站一致）。
+- **globals 改动只改单字段回传（ISS-106）**：`read_page_document` 取 `page['globals']` → 改目标字段（如 `globals_doc['elements']['header-dropdown-1']['props']['ctaTarget']`、`footer-columns-1.props.brand`）→ 其余原样 `save_home(intent=save)` → `readback` 确认 → `save_home(intent=publish)`。**不要自建整个 globals 结构**（缺 children/anchorId 会被服务端回退用存储值，改动不生效）。**导航 CTA 弹窗** = `header-dropdown.props.ctaTarget = {type:"action", anchorId:"contact-form-dialog"}`（公网 `#contact-form-dialog`）；`{type:"custom",href:"/contact-us"}` 是跳页非弹窗。站点级/头部/品牌/菜单可见改动，若页面级 publish 后公网未刷新，用后台主题设计器顶部的**站点级 Publish**（而非仅 save_home）触发 CDN。
 - **文章页 CTA 真链接（仅已有 exact-ID 文章 update 分支）**：post-detail 页 `page-root.children` 追加 `cta-1` 元素（type `material-story-split`，actionTarget `{"type":"custom","href":"/contact-us?source=<site>-article"}`），同时替换 related-1 demo 文案。干净账号无 existing article 时 article.create Registry BLOCK，须移除 Posts 导航/news/post-detail/related 模块，不部署空文章入口。参考脚本仅作历史结构证据：`<task_dir>/70_evidence/scripts-*/fix-post-cta.py`。
 
 ## §4 产品（第 6 步展开）
 
-- payload 见 `templates/product-payload-example.json`：media 扁平 `{name,alt,type:'image',source:'oss',path:'<siteKey>/<file>.webp',size,mimeType}`；categories/tags 传 id 字符串数组；specifications `[{key,value}]`。
+> **跨站差异（ISS-105，2026-09-02 新建站实测，先看再动）**：不是所有站都接受 `source:"oss"`。部分新建站产品 upsert 若 media=oss+path 会**静默拒绝整个 payload**（产品保持 Untitled）。**写产品前先 scan 该站有无 `createProductAction`**（新站常只有 `upsertProductAction`，无 create → 必须走 update/upsert，即 `mutate_reviewed_product(target_id=已有 draft id)`，先 create 得 draft id 再 update 填字段）。
+- payload 见 `templates/product-payload-example.json`，但 **media 用 `{name,alt,type:'image',source:'url',url:<CDN url>}`**（url 从 `read_media_library` 读回拿，如 `https://assets.laicms.com/<siteKey>/<file>.jpg`），不要 oss+path；categories/tags 传 id 字符串数组；specifications `[{key,value}]` 且 **每个 value ≤200 字符**（`valueMax200`），长型号/参数清单放 `content` 正文（Slate p/h2/h3）。
 - 流程：`mutate_reviewed_product` 是唯一公开入口；review context PASS 后内部完成 create_draft→publish_update（create）或 publish_update（update）。
-- 数量/字段以 COP 为准；完成后 `read_lists(slug,'products')` 与 COP 逐条 diff。
+- publish 后检查 response 的 `validationErrors` 是否为空（非空即被拒，回退 Untitled）；完成用 `read_lists(slug,'products')` 与 COP 逐条 diff，并 `read_product` 确认 content 非空。
 
 ## §5 分类/标签（第 5 步展开）
 

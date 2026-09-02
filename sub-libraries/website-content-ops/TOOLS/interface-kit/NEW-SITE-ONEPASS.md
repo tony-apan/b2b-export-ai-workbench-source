@@ -166,9 +166,10 @@ redaction_status: "safe-to-publish"
                                        target_id=None_or_pid)
   # create 时 wrapper 在审查后内部执行 create_draft → publish_update；update 直接 publish_update
   ```
-- **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态 published；`read_product` 的 content **非空**；公网每个产品详情页 `<article>` 内至少 1 个实质 H2 + 正文事实短语 SSR，且相关产品模块真链接可点、无空态。
+- **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态字段 `_status=='published'`（键名是 `_status`，ISS-108；create-only 草稿 `_status` 非 published 且**公网不可见**=ISS-105 另一面）；`read_product` 的 content **非空**；公网每个产品详情页 `<article>` 内至少 1 个实质 H2 + 正文事实短语 SSR，且相关产品模块真链接可点、无空态。
 - **产物**：`70_evidence/products/<slug>.json` + `<slug>-review.json`（最终 payload + 独立 reviewer READY 记录，digest 精确绑定；含 business_operation=create|update、site/target binding）。
 - **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；全量 update 必须从 current readback + brief 真源合并，**不得复用可能过期的存证 payload**，尤其 specifications/content/media（空数组会真清空后台，ISS-101）；合并后必须再归一化为**写接口形状**：media 从读回包裹/url 形状转 `source:"oss"+path`，categories/tags 从对象数组转 id 字符串数组，specifications/content 以 brief/COP 真源覆盖（不得把 read_product/read_lists 读形状原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接。
+  > **跨站差异（ISS-105，2026-09-02 新建站实测）**：不是所有站都接受 `source:"oss"`。新建站产品 upsert 若 media=oss+path 会**静默拒绝整个 payload**（产品保持 Untitled）；`specifications.value` 有 200 字符上限（`validation.specifications.valueMax200`）。**写产品前先扫该站是否有 `createProductAction`**（若无只能走 update/upsert，即 `mutate_reviewed_product(target_id=draft id)`）；media 用 `{source:url, url:<CDN url>}`；长型号清单放 `content` 正文、specifications 只留短 value（≤200）；publish 后查 response 的 `validationErrors` 是否为空。API 读回媒体库能拿每张图的真实 `url`。
 
 ### 步骤 8 — 文章 k3 写 + flash 审 + reviewed update（article.create BLOCK）
 
@@ -214,6 +215,8 @@ redaction_status: "safe-to-publish"
 - **验收判据**：7 页 readback diff≈0；globals 7 页一致；公网无空态文案（`No content is available yet` 等——单品/单文时删详情页 related 模块）。
 - **产物**：`70_evidence/pages/<page>.json`（每页最终三件套存证，共 7 份）。
 - **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/+44-7911-123456`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取；**全局弹窗元素必须带 anchorId=header cta 锚点名，null 时公开站静默丢弃整树（ISS-094，builder 默认已带）**。
+  > **globals 写入（ISS-106，2026-09-02 新建站实测）**：`save_home` 传**自建的 globals 结构**不会覆盖页面级 globals（readback 仍是旧值，因缺 children/anchorId 等被服务端回退用存储值）。正确做法：`read_page_document` 取 `ip['globals']`，**只改目标字段**（如 `header-dropdown-1.props.ctaTarget`、`footer-columns-1.props.brand`），其余原样回传 `save_home(intent=save)` → `readback` 确认 → `save_home(intent=publish)`。**导航 CTA 弹窗** = `ctaTarget: {type:"action", anchorId:"contact-form-dialog"}`（公网 `#contact-form-dialog`，参照弹窗站已验证）。涉及站点级/头部/footer 的可见改动，若页面级 publish 后公网未刷新，用后台主题设计器的 **Publish**（站点级）触发 CDN。
+  > **网格列数=条目数 + 大标题规则（ISS-107，2026-09-02 实测）**：带 `columnCount` 的网格模块按列数**固定生成 N 列、条目不足不折叠**——3 列只填 2 条 proofRows → 公开站第三列只剩边框空白卡；4 列只填 2 个分类卡 → 右半幅约 540px 空白。提交前逐模块校验 `columnCount == len(items/proofRows/reviews/stats/values)`，改列数或补条目二选一。hero-commerce 大标题固定 72px 不随列宽缩放：长标题在窄列堆 6 行、连字符首词断孤儿行（"Wall-mounted"→"Wall-"独行），标题**避免连字符词开头、≤42 字符**。**模板固有行为登记不硬改**：hero 左列 content-between 中段空隙、产品卡 line-clamp 截断、奇数卡末行空位、吸顶导航 bg-background/95 半透明（滚动截图时底下内容 5% 透出，勿误判为重叠 bug）。
 
 ### 步骤 10 — 激活 + 路由 + set_home_page（顺序规则）
 
@@ -226,8 +229,16 @@ redaction_status: "safe-to-publish"
   api.set_home_page(slug, site_id, theme_id, home_page_id)   # 必须最后（action=setHomePageAction，URL=/{slug}/themes/{themeId}）
   ```
 - **验收判据**：根路径 `/` 返回 200 且渲染首页（**非** "Allin CMS Runtime" 错误壳）；`/about-us` `/contact-us` `/posts` `/products` 均 200。
+- **状态自检（先 API 后 curl，ISS-108）**：
+  ```python
+  th = [t for t in api.read_themes(slug)['themes'] if t.get('active')][0]  # ⚠️ 键名是 active，isActive 不存在（恒 None）
+  assert th['id'] == theme_id and th.get('homePageId') == home_page_id and th.get('homePagePublished') is True
+  # homePagePublished=False 或 homePageId 为空 → 根路径必然是 Runtime 壳，回到上方动作重跑（勿等 curl 才发现）
+  rp = api.read_pages(slug, theme_id)
+  assert all(p.get('enabled') for p in rp['pages']) and all(rt.get('status')=='bound' for rt in rp['routes'])
+  ```
 - **产物**：`70_evidence/routes-final.json`（routePath → pageId 快照）。
-- **坑**：`setThemeActive` 是**唯一会清空 homePageId** 的操作 → set_home_page 必须最后（routes/activate 次序互换无害，实测路由不破坏绑定）；**任何未来重新激活主题后都要重跑 set_home_page**；其余路径（`/{slug}/themes`）返回 200 但**静默无效**。
+- **坑**：`setThemeActive` 是**唯一会清空 homePageId** 的操作 → set_home_page 必须最后（routes/activate 次序互换无害，实测路由不破坏绑定）；**任何未来重新激活主题后都要重跑 set_home_page**；其余路径（`/{slug}/themes`）返回 200 但**静默无效**；激活键名是 `active` 不是 `isActive`，判断生效状态一律用 §2.1 诊断树的实测键名。
 
 ### 步骤 11 — demo 种子清理（createTheme 重种 3 产品+3 文章+6 分类+7 标签，全链）
 

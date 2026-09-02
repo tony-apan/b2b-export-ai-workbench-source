@@ -56,7 +56,9 @@ python3 allincms_api.py <token> read-sites    # 预期：站点列表 JSON
 - **pip 安装权限**：用 `--user`（install-deps.py 已带）；公司镜像慢可加 `-i https://pypi.tuna.tsinghua.edu.cn/simple`
 - **macOS 系统 Python 受限**：装 `python3-docx` 失败时先 `python3 -m ensurepip` 再重试
 - **Node 不想装**：跳过 ④ 的 canonical 校验即可；界面校验不影响建站工具
-- **token 从哪来**（三种取法，推荐①，真源 [TOKEN-AUTH.md](../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md)）：① `AllinCMS(email, password)` 纯 API 登录自动提取；② 工作台登录 → DevTools → Application → Cookies → `payload-token`（兜底）；③ 浏览器配置文件提取（未实测）。取到后**推荐 `export WS_TOKEN=<token>` 环境变量**；或 token 文件 chmod 600 后传路径，**不要提交到 git/公开目录**
+- **token 从哪来**（三种取法，推荐①，真源 [TOKEN-AUTH.md](../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md)）：① `AllinCMS(email, password)` 纯 API 登录自动提取；② 工作台登录 → DevTools → Application → Cookies → `payload-token`（兜底）；③ 浏览器配置文件提取（未实测）。取到后**推荐 `export WS_TOKEN=<token>` 环境变量**；或 token 文件 chmod 600 后传路径，**不要提交到 git/公开目录**。
+- **audit/gate/contact 三门依赖公网可达**：`site_pipeline.py audit/gate/contact` 会 `urllib` 抓取 `https://<site-key>.web.allincms.com` 做 200/空态/模板词/SSR 检查。**受限/离线/无公网环境会卡或超时**——此时别等它，改用：浏览器直接访问 `.web.allincms.com` 各路径实测 200 + 截图，配合 `read_product`/`read_lists`/`read_page_document` 后台回读对抗验收，并在审计报告注明"公网抓取受限，已用浏览器+readback 替代"（BOUNDARY 记录）。
+- **新电脑建站前先 `find` 关键坑（迭代自证）**：`python3 index/registry_tools.py find 产品` 会列出 ISS-105（media 用 url 非 oss / specs≤200 / 无 create action 走 update）；`find globals` 列 ISS-106（globals 读原值改单字段 / CTA 弹窗 anchorId / 站点级 publish 刷 CDN）。先读再动手，避免重踩。
 
 ## 安装后顺序（每次干活前）
 
