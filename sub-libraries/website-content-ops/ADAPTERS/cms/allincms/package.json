@@ -3,7 +3,7 @@
   "version": "0.3.2-preview.1",
   "private": true,
   "description": "Fail-closed AllinCMS workspace preflight, media, article-draft, and taxonomy adapter used by website-content-ops.",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=20.9.0"

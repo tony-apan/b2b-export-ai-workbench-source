@@ -5,22 +5,22 @@ type: "manifest"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-08-02"
+last_updated: "2026-09-03"
 sources: ["Package contract compiled 2026-07-26", "Tony decisions 2026-07-27", "Tony structure upgrade decision 2026-07-28"]
 related: ["README.md", "COURSE-MAP.md", "WORKSPACE-TEMPLATE/README.md", "MENTAL-MODEL.md", "ADAPTERS/cms/allincms-overview.md", "ADAPTERS/cms/allincms/README.md", "QA-CHECKLIST.md", "VERSION.md", "CHANGELOG.md", "RELEASE.md", "INSTALL.md", "REFERENCES/README.md", "scripts/README.md", "SCHEMAS/runtime-contract.schema.json", "BRAND.md", "CONTACT.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 repository_status: "public-preview"
-preview_publication_status: "BLOCK"
+preview_publication_status: "Ready"
 preview_version: "0.3.2-preview.1"
 preview_tag: "v0.3.2-preview.1"
 historical_published_version: "0.3.2-preview.1"
 historical_published_tag: "v0.3.2-preview.1"
-current_candidate_identity: "unassigned"
-current_candidate_snapshot: "dirty-working-tree"
-current_candidate_version: null
-current_candidate_date: "2026-08-01"
-release_status: "BLOCK"
+current_candidate_identity: "website-content-ops-0.4.0-preview.1"
+current_candidate_snapshot: "clean-committed-tree"
+current_candidate_version: "0.4.0-preview.1"
+current_candidate_date: "2026-09-03"
+release_status: "Preview"
 maturity_status: "validated"
 verification_status: "evidence-partial"
 release_scope: "standalone-sub-library"
@@ -35,8 +35,8 @@ dependency_mode: "declared-external-runtime"
 durable_roots: ["KNOWLEDGE", "PLAYBOOKS", "COURSES", "OUTPUTS"]
 external_dependencies: ["Node.js >=20.9.0", "npm", "sharp 0.35.3 (AllinCMS adapter only)"]
 source_package_only: true
-license_status: "pending"
-license_record: "see body table License Records (tools/interface-kit Apache-2.0 UNOFFICIAL, recorded 2026-08-30)"
+license_status: "cleared"
+license_record: "see body table License Records (tools/interface-kit Apache-2.0 UNOFFICIAL, recorded 2026-08-30); three source cards cleared 2026-09-03 (see REFERENCES/SOURCE-INVENTORY.json)"
 
 approval_required: true
 approval_status: "pending"
@@ -52,7 +52,9 @@ exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**
 
 ## 当前交付判断
 
-既有 `v0.3.2-preview.1` 独立公开仓事实保留，可继续用于其已发布范围内的本地试用和单样本验证；该 version 与 tag 只属于 immutable historical published artifact。当前 dirty working-tree candidate 的机器身份为 `unassigned`、`current_candidate_version: null`；AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 均为 `publication_status: BLOCK` 且 `license_status: pending`，因此当前 `preview_publication_status` 与 `release_status` 均为 `BLOCK`，`license_status` 与 `approval_status` 均为 `pending`。兼容字段 `preview_version` / `preview_tag` 也只投影历史发布身份，不得作为当前候选版本。任何 prepare 或 release build 必须先分配新的 current candidate version，且不得与历史 version/tag 碰撞。这不撤销既有结构测试和限定证据，但在许可审批完成前不得据此重新发布 Public Preview，也不得外推为 Stable、Published、production-ready 或跨平台、跨部署稳定。
+`v0.3.2-preview.1` 仍为 immutable historical published artifact（tag 与身份不重用）。2026-09-03 起：三张 bundled source card（AllinCMS official、PicGo image-hosts official、B2B SEO content research）已按 RELEASE.md 推荐流程第 2 步完成逐卡 publication review，三字段均为 `approved / PASS / cleared`（依据见各卡 Publication clearance 节；授权 actor Tony，human-asserted，reviewer identity `not_verified`）。因此 `release_status` 进入 `Preview`、`preview_publication_status: Ready`、`license_status: cleared`；当前候选分配 `current_candidate_version: 0.4.0-preview.1`（identity `website-content-ops-0.4.0-preview.1`，snapshot `clean-committed-tree`），与历史 version/tag 无碰撞。
+
+`Preview` 口径边界不变：README 明确非 Stable、先单样本、生产动作需批准；`approval_status` 保持 `pending`、`release validator` 对 `Ready/Published`（Stable 口径）的正式 qualification（signed tag、approval sidecar、外部 workflow 注入）仍未执行，Stable 与 `Published` 继续阻断。若任一来源卡复审回到 `pending/BLOCK`，本状态必须回退 `BLOCK`。
 
 ## 学习层
 

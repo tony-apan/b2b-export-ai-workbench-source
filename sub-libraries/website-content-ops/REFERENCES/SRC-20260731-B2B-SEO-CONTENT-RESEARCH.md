@@ -6,20 +6,20 @@ source_id: "SRC-20260731-B2B-SEO-CONTENT-RESEARCH"
 status: "Working"
 owner: "AI"
 created: "2026-07-31"
-last_updated: "2026-08-01"
+last_updated: "2026-09-03"
 sources: ["https://developers.google.com/search/docs/fundamentals/creating-helpful-content", "https://developers.google.com/search/docs/crawling-indexing/links-crawlable", "https://www.animalz.co/blog/information-gain", "https://ahrefs.com/blog/how-to-format-a-blog-post/", "https://cxl.com/blog/voice-of-customer/", "https://cxl.com/blog/3-layers-of-customer-pain-points/"]
 related: ["../PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "../PLAYBOOKS/id-0003-b2b-article-optimization-sop.md", "../SOURCES.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 method_use: "internal-research-only-links-and-original-summary"
-publication_review_status: "pending"
-publication_status: "BLOCK"
-license_status: "pending"
+publication_review_status: "approved"
+publication_status: "PASS"
+license_status: "cleared"
 release_validator_source_clearance_binding: "implemented"
 ---
 # B2B SEO Content Research Notes
 
-> **Publication governance BLOCK（2026-08-01）**：`redaction_status: safe-to-publish` 只表示当前原创摘要未发现需去敏内容，**不等于** `publication-cleared`。本来源仅允许内部方法研究；`publication_review_status: pending`、`publication_status: BLOCK`、`license_status: pending`。当前 release validator 已机械绑定参与来源的来源级 clearance；只把候选包级 `license_status` 改为 `cleared` 不能放行。由于本来源的 publication review、publication status 与 license clearance 仍未批准，当前 dirty candidate 继续不得 Public Preview、release、Stable 或 Published。
+> **Publication clearance（2026-09-03 更新）**：2026-08-01 的 governance BLOCK 已按 RELEASE.md 推荐流程第 2 步复审解除——三字段现为 `approved / PASS / cleared`（依据与授权见文末 Publication clearance 节）。机械绑定仍生效：release validator 直接读取本卡 frontmatter，若未来复审回到 `pending/BLOCK`，prepare/approval 将再次 fail closed。
 
 ## 来源快照
 
@@ -48,3 +48,10 @@ release_validator_source_clearance_binding: "implemented"
 - 不把第三方案例中的转化数字当成本库承诺；
 - 不把“信息增益”写成已确认的 Google 排名因子；
 - 不按固定字数、H2 数量、粗体数量或 CTA 密度机械优化。
+
+## Publication clearance（2026-09-03）
+
+- `publication_review_status: approved`、`publication_status: PASS`、`license_status: cleared`。
+- 审查依据：method_use=internal-research-only-links-and-original-summary：仅保存来源链接、采集日期、用途与边界，方法论（people-first/information-gain/层级/VoC）以原创提炼形式落入自有 playbook，不复制 Google/Animalz/Ahrefs/CXL 正文或图片；不暗示任何来源背书。
+- 审查执行：2026-09-03 会话内按 RELEASE.md 推荐流程第 2 步逐卡审查；授权 actor：Tony（human-asserted，会话指令）；reviewer identity `not_verified`（合同口径）。
+- 边界不变：来源仅作 reference/method 依据，不构成来源方背书；`review_after` 到期须复审。

@@ -1250,16 +1250,30 @@ ${output}`);
       const outputPath = join(root, '.governance-fixtures/router-sub-output.txt');
       mkdirSync(dirname(outputPath), { recursive: true });
       const historicalTag = 'sub-library/website-content-ops/v0.3.2-preview.1';
-      const unassigned = run(root, 'scripts/resolve-release-scope.mjs', [historicalTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
-      assertRejected(unassigned, /current candidate identity\/version is unassigned/, 'unassigned sub-library candidate route');
 
       const manifestPath = join(root, 'sub-libraries/website-content-ops/MANIFEST.md');
       const versionPath = join(root, 'sub-libraries/website-content-ops/VERSION.md');
       const registryPath = join(root, 'sub-libraries/registry.json');
+      // 场景 1：先把真实候选态（Preview/0.4.0-preview.1，2026-09-03 起的仓默认）临时降回 unassigned，验证路由拒绝未分配身份
       for (const path of [manifestPath, versionPath]) {
-        replaceExact(path, 'release_status: "BLOCK"', 'release_status: "Ready"');
+        replaceExact(path, 'current_candidate_identity: "website-content-ops-0.4.0-preview.1"', 'current_candidate_identity: "unassigned"');
+        replaceExact(path, 'current_candidate_version: "0.4.0-preview.1"', 'current_candidate_version: null');
+      }
+      mutateJson(registryPath, (registry) => {
+        const entry = registry.entries.find((item) => item.id === 'website-content-ops');
+        if (!entry) throw new Error('website-content-ops registry fixture entry missing');
+        entry.current_candidate_identity = 'unassigned';
+        entry.current_candidate_version = null;
+      });
+
+      const unassigned = run(root, 'scripts/resolve-release-scope.mjs', [historicalTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
+      assertRejected(unassigned, /current candidate identity\/version is unassigned/, 'unassigned sub-library candidate route');
+
+      // 场景 2：升到 Ready + 已分配身份，但候选版本与历史版本碰撞 → 拒绝
+      for (const path of [manifestPath, versionPath]) {
+        replaceExact(path, 'release_status: "Preview"', 'release_status: "Ready"');
         replaceExact(path, 'current_candidate_identity: "unassigned"', 'current_candidate_identity: "assigned"');
-        replaceExact(path, 'current_candidate_snapshot: "dirty-working-tree"', 'current_candidate_snapshot: "source-commit"');
+        replaceExact(path, 'current_candidate_snapshot: "clean-committed-tree"', 'current_candidate_snapshot: "source-commit"');
         replaceExact(path, 'current_candidate_version: null', 'current_candidate_version: "0.3.2-preview.1"');
       }
       mutateJson(registryPath, (registry) => {

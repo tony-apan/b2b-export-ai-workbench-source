@@ -13,6 +13,15 @@ redaction_status: "safe-to-publish"
 ---
 # Changelog
 
+## 0.4.0-preview.1 — 2026-09-03
+
+- 三张 bundled source card 逐卡 publication clearance（approved/PASS/cleared，依据入卡）；`release_status: Preview`、`preview_publication_status: Ready`、`license_status: cleared`；当前候选 `0.4.0-preview.1`。
+- 自 0.3.2-preview.1 以来的主要能力（详见 git log 2a6ebd5 之前历史与 issues.tsv ISS-067..108）：
+  - interface-kit 纯接口工具包（allincms_api/content_review_gate/site_pipeline/audit 三门）+ RUNBOOK-ANYONE/NEW-SITE-ONEPASS 13 步一条龙；
+  - SKILL-INSTALL 一键安装（fresh-clone 跨平台自测）；README AI 复制即用快速启动；
+  - 内容审查合作式闸（producer/reviewer 分离、fresh capability、canonical readback）；
+  - ISS-105 产品 media source=url、ISS-106 globals 单字段回传+CTA 弹窗+站点级 Publish、ISS-107 网格 columnCount=条目数、ISS-108 激活键名 active+§2.1 未生效诊断树；registry verify 列数守卫。
+
 ## Unreleased — 2026-08-30
 
 ### AllinCMS trusted runtime profile alignment (2026-09-02)

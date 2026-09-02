@@ -5,21 +5,21 @@ type: "release-guide"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-01"
+last_updated: "2026-09-03"
 sources: ["Sub-library contract", "Publishing and redaction policy", "Repository structure adversarial upgrade 2026-07-28"]
 related: ["README.md", "MANIFEST.md", "VERSION.md", "CHANGELOG.md", "QA-CHECKLIST.md", "scripts/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status"]
-release_status: "BLOCK"
-preview_publication_status: "BLOCK"
+release_status: "Preview"
+preview_publication_status: "Ready"
 ---
 # Release Guide
 
 ## 当前边界
 
-既有 `v0.3.2-preview.1` 已以 **Public Preview** 独立发布；当前目录的新增源码候选因 publication clearance pending，`preview_publication_status` 与 `release_status` 均为 `BLOCK`。既有公开仓事实不等于当前候选获准重新发布，也不等于跨环境稳定、生产可用或正式 qualification。
+既有 `v0.3.2-preview.1` 已以 **Public Preview** 独立发布（immutable，不重用）。2026-09-03：三张 source card 逐卡 clearance 完成，`release_status: Preview`、`preview_publication_status: Ready`，当前候选 `0.4.0-preview.1`（identity `website-content-ops-0.4.0-preview.1`）。`Preview` 口径允许公开仓与 prerelease，但 README 必须保持非 Stable、先单样本、生产动作需批准的说明；`approval_status: pending`，Stable 正式 qualification（`--prepare`/signed tag/approval sidecar）仍未执行，`Ready/Published`（Stable 口径）继续阻断。
 
 ## Preview 发布流程
 

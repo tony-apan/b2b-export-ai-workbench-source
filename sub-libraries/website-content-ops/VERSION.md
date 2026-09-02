@@ -5,29 +5,29 @@ type: "version"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-08-01"
+last_updated: "2026-09-03"
 sources: ["self"]
 related: ["CONTACT.md", "MANIFEST.md", "MENTAL-MODEL.md", "CHANGELOG.md", "RELEASE.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "historical_published_version", "historical_published_tag", "current_candidate_identity", "current_candidate_snapshot", "current_candidate_version"]
-release_status: "BLOCK"
-preview_publication_status: "BLOCK"
+release_status: "Preview"
+preview_publication_status: "Ready"
 historical_published_version: "0.3.2-preview.1"
 historical_published_tag: "v0.3.2-preview.1"
-current_candidate_identity: "unassigned"
-current_candidate_snapshot: "dirty-working-tree"
-current_candidate_version: null
+current_candidate_identity: "website-content-ops-0.4.0-preview.1"
+current_candidate_snapshot: "clean-committed-tree"
+current_candidate_version: "0.4.0-preview.1"
 ---
 # Version
 
 - Package ID：`website-content-ops`
 - Version：`0.3.2-preview.1`
 - Version meaning：legacy compatibility 字段，仅指 immutable historical published artifact，不是当前 candidate version。
-- Current candidate identity：`unassigned`；snapshot：`dirty-working-tree`；version：`null`（2026-08-01），不是已发布版本，也未分配下一发布版本。
+- Current candidate identity：`website-content-ops-0.4.0-preview.1`；snapshot：`clean-committed-tree`；version：`0.4.0-preview.1`（2026-09-03 分配，未发布）。
 - Historical published version：`0.3.2-preview.1`；tag：`v0.3.2-preview.1`；Public Preview / Published（2026-07-30）。
-- Publication：当前候选保持 `release_status: BLOCK`、`preview_publication_status: BLOCK`、`license_status: pending`、`approval_status: pending`；不得继承历史发布身份。
+- Publication：`release_status: Preview`、`preview_publication_status: Ready`、`license_status: cleared`（2026-09-03；三张 source card 已逐卡 clearance）；`approval_status: pending` 不变——Stable/`Published` 正式 qualification 仍阻断，不得继承历史发布身份。
 - Changelog：[CHANGELOG.md](CHANGELOG.md)
 - Release guide：[RELEASE.md](RELEASE.md)
 - Update URL：`https://fluxpedal.example/content-lab/updates`（虚拟演示）

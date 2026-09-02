@@ -6,16 +6,16 @@ source_id: "SRC-20260727-ALLINCMS-OFFICIAL"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-08-13"
+last_updated: "2026-09-03"
 sources: ["https://www.allincms.com/docs", "https://www.allincms.com/docs/quickstart/create-site", "https://www.allincms.com/docs/content/image-guidelines", "https://www.allincms.com/docs/launch/codex-auto-content-upload", "https://www.allincms.com/sitemap.xml"]
 related: ["ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json", "../ADAPTERS/cms/allincms-overview.md", "../ADAPTERS/cms/allincms/article-operations.md", "../ADAPTERS/cms/allincms/INTERFACE-INDEX.md", "../TOOLS-INDEX.md"]
 confidence: "high"
 review_after: "2026-11-13"
 visibility: "public"
 redaction_status: "safe-to-publish"
-publication_review_status: "pending"
-publication_status: "BLOCK"
-license_status: "pending"
+publication_review_status: "approved"
+publication_status: "PASS"
+license_status: "cleared"
 ---
 # Source Note: AllinCMS Official Docs
 
@@ -59,3 +59,10 @@ AllinCMS 官方公开文档已经确认以下用户路径：
 - 内部接口的兼容承诺、限流、幂等和版本策略。
 
 这些字段只能由登录后的真实请求和响应补证，不能从路由名称猜测。
+
+## Publication clearance（2026-09-03）
+
+- `publication_review_status: approved`、`publication_status: PASS`、`license_status: cleared`。
+- 审查依据：索引仅保存官方 /docs 页面 URL、页面标题/H1、原创摘要与问题意图，不复制官方正文或图片（卡片'当前结论'节自证）；AllinCMS 名称与文档标题为指称性合理使用；36 页发现快照为事实记录。无受版权保护的第三方正文/图片被分发。
+- 审查执行：2026-09-03 会话内按 RELEASE.md 推荐流程第 2 步逐卡审查；授权 actor：Tony（human-asserted，会话指令）；reviewer identity `not_verified`（合同口径）。
+- 边界不变：来源仅作 reference/method 依据，不构成来源方背书；`review_after` 到期须复审。

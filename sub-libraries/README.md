@@ -38,7 +38,7 @@ sub-libraries/<library>/SKILL.md
 
 | 子库 | 用途 | 交付形态 | 状态 | Historical / current identity | 入口 | 安装/自测 | 发布判断 |
 |---|---|---|---|---|---|---|---|
-| [Website Content Operations](website-content-ops/README.md) | 从公司/产品/客户语言到内容、图片、CMS 草稿、验证和写回 | `human-playbook` + `ai-skill-draft` + `toolkit` | Validated | historical `0.3.2-preview.1`; current `unassigned` / version `null` | [README](website-content-ops/README.md) | 一键安装+自测：`python3 website-content-ops/SKILL-INSTALL/install.py`（Windows 用 `install.cmd`）；自动 `npm ci` 并跑完整 11 文件自测套件 | 既有 Preview 可按已发布版本试用；当前源码候选 `BLOCK`、许可 pending、非 Stable；见 [MANIFEST](website-content-ops/MANIFEST.md) |
+| [Website Content Operations](website-content-ops/README.md) | 从公司/产品/客户语言到内容、图片、CMS 草稿、验证和写回 | `human-playbook` + `ai-skill-draft` + `toolkit` | Validated | historical `0.3.2-preview.1`; current `website-content-ops-0.4.0-preview.1` / version `0.4.0-preview.1` | [README](website-content-ops/README.md) | 一键安装+自测：`python3 website-content-ops/SKILL-INSTALL/install.py`（Windows 用 `install.cmd`）；自动 `npm ci` 并跑完整 11 文件自测套件 | `Preview`（2026-09-03）：许可 cleared、三张 source card 逐卡 clearance、当前候选 `0.4.0-preview.1`；非 Stable、生产动作需批准；见 [MANIFEST](website-content-ops/MANIFEST.md) |
 | [Agency Operations](agency-operations/README.md) | 同一母库根目录内的多客户私有运行区、AI 续接、作用域搜索和安全更新检查 | `human-playbook` + `toolkit` + `template-pack` | Draft / Preparation Complete | current `0.1.0-draft.1` / dirty working tree | [README](agency-operations/README.md) | 本地结构与 synthetic 准备 | 本地结构与 synthetic 准备 `complete`；真实运行、许可、审批、发布和 production 仍 `BLOCK`；见 [MANIFEST](agency-operations/MANIFEST.md) |
 
 Agency Operations 当前是已完成本地准备的 Draft/BLOCK 子库，不是正式发布，也没有创建真实客户运行区。继续新增子库前，先通过 [Module Expansion SOP](../wiki/00_meta/module-expansion-sop.md) 的当前焦点、最小证据和停止条件。

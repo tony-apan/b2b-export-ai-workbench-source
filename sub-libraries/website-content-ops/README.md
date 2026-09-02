@@ -14,9 +14,9 @@ canonical_entry: "README.md"
 keywords: ["建站内容运营", "外贸网站", "AllinCMS", "CMS", "图片上传", "内容工作流", "AI 执行", "新手入门"]
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "license_status"]
-release_status: "BLOCK"
-preview_publication_status: "BLOCK"
-license_status: "pending"
+release_status: "Preview"
+preview_publication_status: "Ready"
+license_status: "cleared"
 ---
 # AI 建站内容运营
 

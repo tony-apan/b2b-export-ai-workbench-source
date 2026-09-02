@@ -6,16 +6,16 @@ source_id: "SRC-20260727-PICGO-IMAGE-HOSTS-OFFICIAL"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-08-01"
+last_updated: "2026-09-03"
 sources: ["https://picgo.github.io/PicGo-Doc/zh/guide/config.html", "https://github.com/Molunerfinn/PicGo/releases/tag/v3.0.1", "https://developers.cloudflare.com/r2/api/s3/api/", "https://developers.cloudflare.com/r2/buckets/public-buckets/", "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github", "https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits", "https://cloud.tencent.com/document/product/436/36638", "https://help.aliyun.com/zh/oss/user-guide/map-custom-domain-names-5"]
 related: ["../TOOLS-INDEX.md", "../ADAPTERS/image-hosts/README.md"]
 confidence: "high"
 review_after: "2026-10-27"
 visibility: "public"
 redaction_status: "safe-to-publish"
-publication_review_status: "pending"
-publication_status: "BLOCK"
-license_status: "pending"
+publication_review_status: "approved"
+publication_status: "PASS"
+license_status: "cleared"
 ---
 # Source Note: PicGo And Image Hosts
 
@@ -52,3 +52,10 @@ PicGo 官方配置文档覆盖 GitHub、腾讯云 COS、阿里云 OSS 等 upload
 - 自定义域名、HTTPS、公开权限、缓存和删除恢复；
 - 单图 URL 是否在未登录浏览器中打开；
 - 批量上传的成功、失败、跳过、重名和重试记录。
+
+## Publication clearance（2026-09-03）
+
+- `publication_review_status: approved`、`publication_status: PASS`、`license_status: cleared`。
+- 审查依据：PicGo 为 MIT 开源项目（官方文档同仓公开）；Cloudflare R2/腾讯云 COS/阿里云 OSS/GitHub 均为厂商公开文档。卡片只登记官方能力边界、课程适配定位与原创摘要，不复制厂商文档正文或图片；产品名称为指称性合理使用。
+- 审查执行：2026-09-03 会话内按 RELEASE.md 推荐流程第 2 步逐卡审查；授权 actor：Tony（human-asserted，会话指令）；reviewer identity `not_verified`（合同口径）。
+- 边界不变：来源仅作 reference/method 依据，不构成来源方背书；`review_after` 到期须复审。
