@@ -11,7 +11,7 @@ related: ["README.md", "COURSE-MAP.md", "WORKSPACE-TEMPLATE/README.md", "MENTAL-
 visibility: "public"
 redaction_status: "safe-to-publish"
 repository_status: "public-preview"
-preview_publication_status: "Ready"
+preview_publication_status: "Published"
 preview_version: "0.3.2-preview.1"
 preview_tag: "v0.3.2-preview.1"
 historical_published_version: "0.3.2-preview.1"
@@ -52,7 +52,7 @@ exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**
 
 ## 当前交付判断
 
-`v0.3.2-preview.1` 仍为 immutable historical published artifact（tag 与身份不重用）。2026-09-03 起：三张 bundled source card（AllinCMS official、PicGo image-hosts official、B2B SEO content research）已按 RELEASE.md 推荐流程第 2 步完成逐卡 publication review，三字段均为 `approved / PASS / cleared`（依据见各卡 Publication clearance 节；授权 actor Tony，human-asserted，reviewer identity `not_verified`）。因此 `release_status` 进入 `Preview`、`preview_publication_status: Ready`、`license_status: cleared`；当前候选分配 `current_candidate_version: 0.4.0-preview.1`（identity `website-content-ops-0.4.0-preview.1`，snapshot `clean-committed-tree`），与历史 version/tag 无碰撞。
+`v0.3.2-preview.1` 仍为 immutable historical published artifact（tag 与身份不重用）。2026-09-03 起：三张 bundled source card（AllinCMS official、PicGo image-hosts official、B2B SEO content research）已按 RELEASE.md 推荐流程第 2 步完成逐卡 publication review，三字段均为 `approved / PASS / cleared`（依据见各卡 Publication clearance 节；授权 actor Tony，human-asserted，reviewer identity `not_verified`）。因此 `release_status` 进入 `Preview`、`license_status: cleared`；发布事实：候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布（2026-09-03），`preview_publication_status` 回写为 `Published`；当前候选分配 `current_candidate_version: 0.4.0-preview.1`（identity `website-content-ops-0.4.0-preview.1`，snapshot `clean-committed-tree`），与历史 version/tag 无碰撞。
 
 `Preview` 口径边界不变：README 明确非 Stable、先单样本、生产动作需批准；`approval_status` 保持 `pending`、`release validator` 对 `Ready/Published`（Stable 口径）的正式 qualification（signed tag、approval sidecar、外部 workflow 注入）仍未执行，Stable 与 `Published` 继续阻断。若任一来源卡复审回到 `pending/BLOCK`，本状态必须回退 `BLOCK`。
 

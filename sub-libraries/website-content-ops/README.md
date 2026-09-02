@@ -15,7 +15,7 @@ keywords: ["建站内容运营", "外贸网站", "AllinCMS", "CMS", "图片上�
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "license_status"]
 release_status: "Preview"
-preview_publication_status: "Ready"
+preview_publication_status: "Published"
 license_status: "cleared"
 ---
 # AI 建站内容运营

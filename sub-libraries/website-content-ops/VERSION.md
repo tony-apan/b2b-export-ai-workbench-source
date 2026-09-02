@@ -13,7 +13,7 @@ redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "historical_published_version", "historical_published_tag", "current_candidate_identity", "current_candidate_snapshot", "current_candidate_version"]
 release_status: "Preview"
-preview_publication_status: "Ready"
+preview_publication_status: "Published"
 historical_published_version: "0.3.2-preview.1"
 historical_published_tag: "v0.3.2-preview.1"
 current_candidate_identity: "website-content-ops-0.4.0-preview.1"
