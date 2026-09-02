@@ -29,7 +29,7 @@ redaction_status: "safe-to-publish"
 
 ## 已验证事实
 
-- 私有母库仓为 `tony-apan/b2b-export-ai-workbench-source`，默认分支 `main`，GitHub 可见性为 `PRIVATE`；[母库 manifest](../../MANIFEST.md) 保持 `repository_sync_status: Synced`、`release_status: BLOCK`、`license_status: restricted`。
+- 母库仓为 `tony-apan/b2b-export-ai-workbench-source`，默认分支 `main`，以 MIT 许可公开；[母库 manifest](../../MANIFEST.md) 为 `repository_sync_status: Synced`、`release_status: BLOCK`、`license_status: cleared`。
 - 公开子库仓为 `tony-apan/website-content-ops`，默认分支 `main`，GitHub 可见性为 `PUBLIC`；`v0.3.2-preview.1` 指向发布提交并以非 Draft 的 prerelease 公开。
 - 历史 `v0.3.2-preview.1` 的冻结 manifest 曾为 `release_status: Preview`、`preview_publication_status: Published`、`license_status: cleared`；当前工作树 manifest 为 `release_status: BLOCK`、`preview_publication_status: BLOCK`、`license_status: pending`、`approval_status: pending`，不得借用历史 Preview 状态放行当前候选。
 - 从远端 clean clone 与 GitHub Node.js 20 CI 复验：母库文档 ID、治理攻击 53/53、母库/子库构建与 artifact、知识链和 Adapter workflow 全部通过；子库独立 archive 校验通过，已发布 Public Preview 的 AllinCMS Adapter 为 131/131，`npm audit --omit=dev` 为 0 vulnerabilities。
@@ -41,7 +41,7 @@ redaction_status: "safe-to-publish"
 - 2026-08-01 本轮仅做 governance repair：不操作 CMS、不改 `dist/`，不 commit、push、tag 或 release。当前 candidate identity 为 `unassigned / dirty-working-tree`，继续保持 `release_status: BLOCK`、`preview_publication_status: BLOCK`、`license_status: pending`、`approval_status: pending`，不得继承 historical `v0.3.2-preview.1` 的 Published/Public Preview 身份。Tony 已明确 deferred 平台前端边界项（⛔ 禁令范围，不展开），但 deferred 不得写成 PASS；final DOM 正文图片空 alt 与 B2B research publication clearance pending 继续作为独立 BLOCK。
 - 直接对普通 Git clone 根目录运行 artifact validator 会因 `.git/` 不是发布 allowlist 内容而失败；正确对象是 builder 产物或 `git archive` 导出的纯发布树。该失败证明 validator 没有静默忽略额外文件，不是公开仓内容泄漏；公开 clone 验收说明仍可在后续 Preview 改善。
 - 子库 artifact 的逐文件 SHA-256 和公开 release commit 可验证，但 `source_commit` 指向私有母库，公开用户不能解析该 upstream Git object；当前作为 Preview provenance WARN 记录，不冒充公开可重建的完整来源链。
-- 当前 `origin` 指向新的私有 canonical 母库；旧公开仓和旧私有仓分别保留为 `legacy-public`、`legacy-private`，发布后 `main` HEAD 仍为发布前基线。公开子库来自独立 artifact 和独立 Git 历史，不是把母库根目录推到公开仓。
+- 当前 `origin` 指向 canonical 母库 `tony-apan/b2b-export-ai-workbench-source`（MIT 许可）；旧公开仓和旧私有仓分别保留为 `legacy-public`、`legacy-private`，不 force push、不覆盖。公开子库来自独立 artifact 和独立 Git 历史，不是把母库根目录推到公开仓。
 - 母库与子库分别使用独立 manifest、builder、validator、approval/evidence 与 tag namespace；一个 scope 的结论不可替代另一个 scope。
 - `raw/`、课程和日志已有独立入口与验证规则；真实客户、凭据和经营数据不得进入公开子库，也不得把 private Git 仓误当客户运行区。
 - 子库不自动等于 Skill；当前 `SKILL.md` 是 Preview 条件入口，不是一键安装或跨平台稳定 Skill。
@@ -49,7 +49,7 @@ redaction_status: "safe-to-publish"
 
 ## Current BLOCK
 
-- 母库对外发行许可证仍为 restricted；子库 Preview 已采用 Apache-2.0，但 Stable 所需的候选包外批准、真实批准者身份、可信 signer、远端 Protected Environment/ruleset 和正式服务端 run 尚未形成完整外部证据链。
+- 母库对外以 MIT 许可公开（`license_status: cleared`）；子库 Preview 已采用 Apache-2.0，但 Stable 所需的候选包外批准、真实批准者身份、可信 signer、远端 Protected Environment/ruleset 和正式服务端 run 尚未形成完整外部证据链。
 - `APPROVAL_RECORD_PASS` 只能证明记录结构与候选绑定，不能单靠名称字段证明真人身份。
 - 课程仍缺真实学员提交与独立 reviewer 的效果证据，不能宣称稳定课程交付。
 - AllinCMS 的限定本地/当前部署证据不得外推到任意站点、任意批次、远程恢复或未来稳定性；媒体 caption 与 taxonomy 主题展示继续作为 WARN。正文图片 alt 已确认是当前 renderer 的正式 SEO / 无障碍 BLOCK：CMS payload 有值而最终 DOM 为空。

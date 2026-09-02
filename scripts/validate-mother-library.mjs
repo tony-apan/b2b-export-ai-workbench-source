@@ -21,7 +21,10 @@ const allowedVerification = new Set(['unverified', 'structure-pass', 'evidence-p
 const allowedRelease = new Set(['BLOCK', 'Preview', 'candidate', 'Ready', 'Published', 'retired']);
 const allowedLicense = new Set(['pending', 'cleared', 'restricted', 'unknown']);
 const allowedApproval = new Set(['pending', 'approved', 'rejected', 'expired']);
+const allowedMotherPackageKinds = new Set(['open-source-mother-library', 'private-master-source']);
 const allowedRepositorySync = new Set(['Working', 'Ready', 'Synced', 'Archived']);
+const allowedRepositoryStates = new Set(['public-source', 'private-source']);
+const allowedVisibilities = new Set(['public', 'private']);
 const allowedDependency = new Set(['self-contained', 'declared-external-runtime']);
 const allowedPackageKinds = new Set(['standalone-sub-library']);
 const allowedDeliveryModes = new Set(['human-playbook', 'ai-skill-draft', 'ai-skill-stable', 'toolkit', 'adapter', 'template-pack', 'reference-implementation', 'course']);
@@ -304,14 +307,14 @@ if (manifestStatus === 'Ready' || manifestStatus === 'Published') {
 }
 if (!version) fail('VERSION.md has no machine-readable Version field');
 if (!read(join(root, 'CHANGELOG.md')).includes(version)) fail(`CHANGELOG.md does not contain ${version}`);
-if (fieldValue(manifestFront, 'package_kind') !== 'private-master-source') fail('MANIFEST.md package_kind is not private-master-source');
-if (repositoryStatus !== 'private-source') fail(`MANIFEST.md repository_status must be private-source: ${repositoryStatus ?? 'missing'}`);
+if (!allowedMotherPackageKinds.has(fieldValue(manifestFront, 'package_kind'))) fail(`MANIFEST.md package_kind is not an allowed mother kind: ${fieldValue(manifestFront, 'package_kind')}`);
+if (!allowedRepositoryStates.has(repositoryStatus)) fail(`MANIFEST.md repository_status is invalid: ${repositoryStatus ?? 'missing'}`);
 if (!allowedRepositorySync.has(repositorySyncStatus)) fail(`MANIFEST.md repository_sync_status is invalid: ${repositorySyncStatus ?? 'missing'}`);
-if (visibility !== 'private') fail(`MANIFEST.md visibility must be private: ${visibility ?? 'missing'}`);
+if (!allowedVisibilities.has(visibility)) fail(`MANIFEST.md visibility is invalid: ${visibility ?? 'missing'}`);
 if (!read(join(root, 'RELEASE.md')).includes('母库 release') || !read(join(root, 'RELEASE.md')).includes('子库 release')) fail('RELEASE.md does not declare two independent release lines');
 if (!read(join(root, 'README.md')).includes('MANIFEST.md') || !read(join(root, 'README.md')).includes('RELEASE.md')) warn('README.md does not expose both mother-library release contracts');
 if ((releaseMode || prepareMode) && !/release_status:\s*["']?(Ready|Published)["']?/m.test(manifestFront ?? '')) fail('release mode requires MANIFEST.md release_status Ready or Published');
-if (manifestStatus === 'BLOCK') warn('mother-library release_status is BLOCK for external distribution; private repository sync is evaluated separately');
+if (manifestStatus === 'BLOCK') warn('mother-library release_status is BLOCK; this blocks formal Stable qualification');
 if (licenseStatus !== 'cleared') warn('license status is not cleared; this blocks external release');
 if (approvalStatus !== 'approved') warn('approval status is not approved; a human approval sidecar is still required for external release');
 

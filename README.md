@@ -1,106 +1,119 @@
 <!--
 Repository metadata:
 title: "B2B Export AI Workbench"
-description: "面向人和 AI 的外贸增长知识母库入口，说明母库、独立子库、知识层与发布状态应从哪里读取。"
+description: "给外贸人的增长工作台：把做外贸网站、B2B 文章、开发信、LinkedIn、SEO/GEO、询盘、展会、短视频的方法、模板和工具放在一个仓库里，让 AI 按你的资料直接帮你干活。"
 type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-08-30"
-sources: ["AGENTS.md", "wiki/00_meta/private-master-and-sub-library-model.md"]
-related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/in-repository-agency-runtime-model.md", "sub-libraries/README.md", "sub-libraries/agency-operations/README.md"]
-visibility: "private"
+last_updated: "2026-09-02"
+sources: ["AGENTS.md", "wiki/00_meta/private-master-and-sub-library-model.md", "Tony public MIT decision 2026-09-02"]
+related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "MANIFEST.md", "RELEASE.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/in-repository-agency-runtime-model.md", "sub-libraries/README.md", "sub-libraries/agency-operations/README.md"]
+visibility: "public"
 redaction_status: "safe-to-publish"
 canonical_entry: "README.md"
 -->
 # B2B Export AI Workbench
 
-外贸增长 AI 工作台：本仓库是私有、持续演进的逻辑**母库**，`sub-libraries/` 保存可独立交付和独立判定发布状态的**子库**。本页只帮助人和 AI 找到正确入口，不复制治理 SOP。
+一个给外贸人用的“增长工作台”。里面装的不是软件，而是**做外贸要用到的方法、模板和工具**：怎么建网站、怎么写 B2B 文章、怎么开发信、怎么做 LinkedIn、怎么弄 SEO/GEO、怎么回询盘、怎么参加展会、怎么做短视频——全都整理成了人和 AI 都能读的步骤。
 
-## 仓库分层
-
-| 层 | 用途 | 入口 |
-|---|---|---|
-| `raw/` | 来源接入与原始上下文；公开包默认只含入口、模板和被精确 allowlist 的安全 synthetic fixture | [raw/index.md](raw/index.md) |
-| `wiki/` | 提炼后的知识、业务模型、playbook、治理与输出 | [wiki/index.md](wiki/index.md) |
-| `wiki/90_outputs/courses/` | 从来源与知识链提炼的课程模块、练习、验收和写回 | [课程入口](wiki/90_outputs/courses/index.md) |
-| `wiki/00_meta/logs/` | 按日事件与证据指针、按月摘要；不是第二知识库 | [日志入口](wiki/00_meta/logs/index.md) |
-| `sub-libraries/` | 可独立发布的能力模块；每个 scope 使用自己的 manifest、运行合同和发布证据 | [子库入口](sub-libraries/README.md) |
-| `customer-runtime/` | 根目录下 Git 隔离的真实客户私有运行区；由 agency-operations 初始化，母库更新不得覆盖 | [运行模型](wiki/00_meta/in-repository-agency-runtime-model.md) / 初始化后本地 `customer-runtime/README.md` |
-
-`wiki/` 的目录 canonical 入口使用 `index.md`；允许 README-only 的非 wiki 目录必须显式声明 `canonical_entry: "README.md"`。父级入口只索引直接文件和直接子目录入口，不递归铺平全库。
+**它最大的用法很简单：把这个仓库交给一个 AI，然后告诉它你要干什么，它照着里面的方法帮你干。**
 
 ---
 
-## 我要建站 / 使用本仓库能力
+## 快速上手（1 分钟看懂怎么用）
 
-> **状态口径**：`website-content-ops` 当前是源码候选（Working），历史 `v0.3.2-preview.1` 可继续按其范围试用；当前源码候选发布状态 `BLOCK`，不代表 Stable 或 production-ready。本仓库可让“人 + AI”在干净账号上从资料建站并自测，但真实客户资料、账号、凭据只进独立客户私有运行区，不进公开提交。
+你只需要做两件事：
 
-### 快速上手：用资料直接建站
+1. **装一个能读写本地文件的 AI**（例如 Claude Code、Codex 之类，或支持 skills 的 AI 助手）。
+2. **按下面的“发给 AI 的话”挑一段复制给它。**
 
-把下面这段整体复制发给一个能读写本地文件、能跑 Python/Node、有浏览器能力的 AI：
+想建网站 / 想更新网站内容，复制这段：
 
 ```text
-使用本仓库的 Website Content Operations 能力建站。
-1. 先读 sub-libraries/website-content-ops/README.md、AGENTS.md、MANIFEST.md、
-   TOOLS/interface-kit/NEW-SITE-ONEPASS.md 与 RUNBOOK-ANYONE.md，不要扫描无关目录。
-2. 检查环境并安装依赖：运行 sub-libraries/website-content-ops/SKILL-INSTALL/install.py
-   （Windows 用 install.cmd）；它会自动 npm ci 并跑完整自测，缺失 Node/Python 时给出可复制安装命令。
-3. 我提供客户资料（PDF/DOCX/表格/网站/图片均可）与 site-key 偏好。
-4. 先只读核对账号/目标站点与当前能力；列出建站与发布计划，等我批准后再严格串行执行。
-5. 删除类操作（站点/产品/文章/分类/标签/媒体/主题，含 delete-demo-content 与 --force/--confirm）
-   永远逐条列目标等我确认。token 只放环境变量，不落盘、不入日志。
-6. 完成后用 audit / acceptance-v2 逐项验收并报告证据，不把 HTTP 200 当成功。
+请使用本仓库的建站能力（sub-libraries/website-content-ops）。
+1. 先读该目录的 README、AGENTS、MANIFEST 和 NEW-SITE-ONEPASS，别扫描无关目录。
+2. 帮我检查本机环境并安装依赖：运行 SKILL-INSTALL/install.py（Windows 用 install.cmd），
+   缺 Node/Python 时给我可复制命令。
+3. 我会给你客户资料（PDF/DOCX/表格/网站/图片）和想要的网址前缀。
+4. 先只读核对我的 CMS 账号和现状，把“准备做什么 + 发布什么”列成清单给我批。
+5. 没我逐条点头，不要删除/覆盖/发布任何东西；我的登录凭据只放环境变量。
 ```
 
-### 本仓库能做什么（按目标找入口）
+想把公司资料变成能上外网的英文 B2B 文章，复制这段：
 
-| 我的目标 | 入口 |
-|---|---|
-| 用资料从零建 AllinCMS 网站 | [Website Content Operations（建站一条龙）](sub-libraries/website-content-ops/README.md) |
-| 更新现有网站的产品/文章 | [WCO 内容更新与 review 门](sub-libraries/website-content-ops/README.md) |
-| 新建客户私有代运营运行区 | [Agency Operations](sub-libraries/agency-operations/README.md) |
-| 给 AI 注册成可调用 Skill | [WCO SKILL-INSTALL 安装说明](sub-libraries/website-content-ops/SKILL-INSTALL/README.md) |
-| 只查外贸/建站知识 | [wiki 导航](wiki/index.md) |
-| 查看所有可独立交付模块 | [子库注册表](sub-libraries/README.md) |
+```text
+请用本仓库的 B2B 文章方法（sub-libraries/website-content-ops/PLAYBOOKS/）帮我写文章。
+1. 先读 id-0001-b2b-seo-article-standard.md 和写作逻辑，再读我给你的产品/公司资料。
+2. 先给我标题选项 + 文章大纲 + 事实清单，等我确认再写全文。
+3. 文章里每个数字都要有出处；没有认证/价格/客户案例就不要写。
+4. 写完后给我指出哪里证据不足，再决定要不要进 CMS。
+```
 
-安装与自测命令（在 clone 根执行）：
+想找外贸获客/增长的方法（不只是建站），复制这段：
 
-```bash
-# 1) 基础自检（应 VERIFY PASS；remote-refs WARN 属正常）
-cd sub-libraries/website-content-ops/TOOLS/interface-kit && python3 index/registry_tools.py verify && cd ../../..
-
-# 2) 一键安装 Node 依赖 + 全量自测 + 注册 Skill（Windows 用 install.cmd）
-python3 sub-libraries/website-content-ops/SKILL-INSTALL/install.py          # 加 --dir=<skills目录> 指定目标
-
-# 3) 可选：PDF/DOCX/PPTX/XLSX 解析能力
-python3 sub-libraries/website-content-ops/TOOLS/interface-kit/install-deps.py --yes
+```text
+请把本仓库当知识库用（先读 wiki/index.md）。
+1. 我的情况是：______（行业 / 目标市场 / 现有什么）。
+2. 请告诉我：做外贸增长应该先做什么，用仓库里哪些方法（开发信/LinkedIn/SEO/GEO/展会/短视频…）。
+3. 每次给建议都要引用仓库里的具体 playbook 页面，别凭空说。
 ```
 
 ---
 
-## 从这里开始
+## 这个仓库里到底有什么
 
-- 新 agent 术语路由：[CONTEXT.md](CONTEXT.md)
-- 最高项目规则：[AGENTS.md](AGENTS.md)
-- Claude 薄入口：[CLAUDE.md](CLAUDE.md)
-- 当前状态与阻断：[current-focus.md](wiki/00_meta/current-focus.md)
-- 人和 AI 的知识导航：[wiki/index.md](wiki/index.md)
-- 子库机器注册表：[sub-libraries/registry.json](sub-libraries/registry.json)
-- 多客户代运营运行区：[Agency Operations](sub-libraries/agency-operations/README.md)；初始化前先读 [仓库内运行模型](wiki/00_meta/in-repository-agency-runtime-model.md)
+| 你想干什么 | 去哪里 | 成熟度 |
+|---|---|---|
+| **从资料建一个 B2B 网站**（AllinCMS，纯接口一条龙） | [website-content-ops（建站工具包）](sub-libraries/website-content-ops/README.md) | 最成熟，有真实建站证据 |
+| **更新现有网站的产品 / 文章** | 同上 → [内容更新流程](sub-libraries/website-content-ops/TOOLS/interface-kit/NEW-SITE-ONEPASS.md) | 较成熟，需审查后写入 |
+| **把公司资料写成英文 B2B 文章** | [B2B 文章规范](sub-libraries/website-content-ops/PLAYBOOKS/id-0001-b2b-seo-article-standard.md) | 方法成型，效果待真实数据 |
+| **外贸增长各渠道打法**（开发信 / LinkedIn / SEO / GEO / Ads / 展会 / 短视频 / 询盘回复 / 销售电话） | [Playbooks 总入口](wiki/30_playbooks/index.md) | 多数为可用方法 + 部分待验证 |
+| **整理公司业务事实**（客户是谁 / 卖什么 / 痛点 / 证据） | [Business 底座](wiki/40_business/index.md) | 框架可用，内容需自己填 |
+| **按渠道看打法**（SEO、GEO、LinkedIn、外联、Ads、短视频…） | [Channels 总入口](wiki/50_channels/index.md) | 方法层 |
+| **把做过的项目/对话沉淀成可复用课程** | [课程入口](wiki/90_outputs/courses/index.md) | 框架 + 少量内容 |
+| **做多客户代运营（私域运行区管理）** | [Agency Operations](sub-libraries/agency-operations/README.md) | 草稿阶段，本地框架完成 |
+| **注册成 AI 可直接调用的 Skill** | [Skill 安装说明](sub-libraries/website-content-ops/SKILL-INSTALL/README.md) | 源码可用 |
+
+> 想看全部可独立交付模块的机器清单，去 [sub-libraries/README.md](sub-libraries/README.md)。
+
+---
+
+## 新手常见问题
+
+**Q：我需要会编程吗？**
+A：不用。装好 AI 后，复制上面的话发给它即可。仓库里的命令是给 AI 读的，不是给你背的。
+
+**Q：它真的能帮我建一个能用的网站吗？**
+A：能。已用真实客户资料从零建出过 B2B 站并通过审计；但这套流程需要：一个 AllinCMS 账号、一份客户资料、以及你对“上传/发布”的逐次批准。它不等于“一键生成”，而是“AI 按方法干 + 你点头 + 事后验收”。
+
+**Q：我的客户资料 / 账号密码安全吗？**
+A：仓库公开，但**真实客户资料、账号、密码、登录态绝不要提交进这个仓库**。资料和运行数据只放在你自己电脑上的私有目录，由你和 AI 处理。
+
+**Q：这些方法靠谱吗？**
+A：仓库对每块内容都标了成熟度：有真实证据的写“有证据”，只是框架的标“Seed / 待验证”，没效果数据的不吹。**别把“方法存在”当成“结果已验证”。** 详细的证据口径见 [check-mechanism-map.md](wiki/00_meta/check-mechanism-map.md)。
+
+---
+
+## 许可证
+
+本仓库（B2B Export AI Workbench）母库原创内容以 **MIT License** 对外提供，可以自由使用、修改、再分发（保留版权声明即可）。完整文本见 [LICENSE](LICENSE)，范围说明见 [LICENSE.md](LICENSE.md)。
+
+几点说明：
+
+- 真实客户资料、账号、凭据不属于授权范围——它们本来就不该进仓库。
+- 第三方名称/商标（AllinCMS、LinkedIn、Google 等）和通过外链加载的图片不随 MIT 授权。
+- 各子库可独立声明自己的许可证；以该子库的 LICENSE 为准。
+- 仓库仍在持续演进，`release_status: BLOCK` 表示还没有做过正式“稳定版”资格认定，不代表内容不可读或不可用。
+
+---
+
+## 面向维护者 / 想深入的人
+
+- 仓库结构、发布状态与机器约束：[CONTEXT.md](CONTEXT.md)、[MANIFEST.md](MANIFEST.md)、[RELEASE.md](RELEASE.md)、[AGENTS.md](AGENTS.md)
+- 知识导航：[wiki/index.md](wiki/index.md)
+- 当前在做的事与卡点：[current-focus.md](wiki/00_meta/current-focus.md)
 - 检查结果能证明什么：[check-mechanism-map.md](wiki/00_meta/check-mechanism-map.md)
-- 任务完成标准：[definition-of-done.md](wiki/00_meta/definition-of-done.md)
+- 本地全量校验（推送前必跑）：`bash scripts/pre-push-check.sh`，7 步全绿才推。
 
-## 安全与发布边界
-
-- 即使母库为私有仓库，真实客户、账号、凭据、课程原文和经营数据仍不得直接提交；它们进入独立客户私有运行区。
-- 子库不自动等于 Skill。只有 manifest 声明 `skill_entrypoint` 时，子库内的 `SKILL.md` 才是条件性交付入口；根目录不建立第二真源 `skills/`。
-- 母库与每个子库分别判定。一个 scope 的结构、制品或测试 PASS 不得替代另一个 scope 的证据。
-- `APPROVAL_RECORD_PASS` 只证明记录结构和候选绑定；本地校验、候选 archive、checksum、签名字段或 attestation 均不能单独证明真人身份、远端保护或已经 Published。
-- 母库的私有源码同步与子库的公开发布分开判定：母库可同步到私有 canonical 仓；`website-content-ops` 仅以 Preview 公开，不代表 Stable 或 production-ready。
-
-发布前从 [母库合同](MANIFEST.md)、[发布指南](RELEASE.md)、[发布状态机](wiki/00_meta/release-state-machine.md) 和 [发布检查清单](wiki/00_meta/release-checklist.md) 进入。所有命令以 [scripts/README.md](scripts/README.md) 和目标子库自己的合同为准，避免在根入口复制易漂移命令。
-
-## 许可
-
-母库是私有内部源码，不授予公开再分发许可，见 [LICENSE.md](LICENSE.md)。公开子库使用自己的许可证和发布状态；母库私有同步不等于公开授权，Preview 也不等于稳定发布。
+**边界**：即使仓库公开，真实客户数据、凭据和经营数据仍只进独立私有运行区，不进提交；一个模块的结构/测试通过不代表另一个模块或生产环境成立。

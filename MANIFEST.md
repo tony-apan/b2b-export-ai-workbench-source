@@ -1,24 +1,24 @@
 ---
-title: "Mother Library Private Source Manifest"
-description: "私有母库源码仓的范围、数据边界、同步状态，以及与公开子库独立发布之间的关系。"
+title: "Mother Library Manifest"
+description: "母库源码仓的范围、数据边界、同步状态，以及与公开子库独立发布之间的关系。本仓库以 MIT 许可证对外提供。"
 type: "manifest"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-30"
-sources: ["Mother-library and sub-library release architecture decision 2026-07-28", "Publishing and redaction policy"]
+last_updated: "2026-09-02"
+sources: ["Mother-library and sub-library release architecture decision 2026-07-28", "Publishing and redaction policy", "Tony public MIT decision 2026-09-02"]
 related: ["README.md", "CONTEXT.md", "AGENTS.md", "CLAUDE.md", "RELEASE.md", "VERSION.md", "CHANGELOG.md", "sub-libraries/README.md", "sub-libraries/registry.json", "scripts/README.md", "scripts/build-mother-release.mjs", "wiki/00_meta/publishing-and-redaction.md", "wiki/00_meta/release-state-machine.md"]
-visibility: "private"
-redaction_status: "private-source-reviewed"
-repository_status: "private-source"
+visibility: "public"
+redaction_status: "safe-to-publish"
+repository_status: "public-source"
 repository_sync_status: "Synced"
 release_status: "BLOCK"
-maturity_status: "draft"
+maturity_status: "validated"
 verification_status: "evidence-partial"
 release_scope: "standalone-mother-library"
 package_id: "b2b-export-ai-workbench-mother-library"
-package_kind: "private-master-source"
-license_status: "restricted"
+package_kind: "open-source-mother-library"
+license_status: "cleared"
 approval_required: true
 approval_status: "pending"
 approval_record: "RELEASE-APPROVAL.json (external sidecar)"
@@ -26,7 +26,7 @@ tag_namespace: "mother"
 tag_prefix: "mother/v"
 runtime_applicability: "none"
 runtime_contract: null
-include: [".gitignore", ".gitattributes", ".github/**", "README.md", "CONTEXT.md", "AGENTS.md", "CLAUDE.md", "MANIFEST.md", "RELEASE.md", "VERSION.md", "CHANGELOG.md", "LICENSE.md", "REVIEW-RECORDS/**", "wiki/**", "sub-libraries/**", "scripts/**", "raw/index.md", "raw/00_inbox/index.md", "raw/10_conversations/index.md", "raw/10_conversations/src-20260728-0001-knowledge-base-structure-closure.md", "raw/20_web/index.md", "raw/30_documents/index.md", "raw/40_media/index.md", "raw/50_exports/index.md", "raw/90_archive/index.md", "raw/_templates/index.md", "raw/_templates/conversation-source.md"]
+include: [".gitignore", ".gitattributes", ".github/**", "README.md", "CONTEXT.md", "AGENTS.md", "CLAUDE.md", "MANIFEST.md", "RELEASE.md", "VERSION.md", "CHANGELOG.md", "LICENSE", "LICENSE.md", "NOTICE", "THIRD-PARTY-NOTICES.md", "REVIEW-RECORDS/**", "wiki/**", "sub-libraries/**", "scripts/**", "raw/index.md", "raw/00_inbox/index.md", "raw/10_conversations/index.md", "raw/10_conversations/src-20260728-0001-knowledge-base-structure-closure.md", "raw/20_web/index.md", "raw/30_documents/index.md", "raw/40_media/index.md", "raw/50_exports/index.md", "raw/90_archive/index.md", "raw/_templates/index.md", "raw/_templates/conversation-source.md"]
 exclude: [".git/**", ".obsidian/**", "node_modules/**", "dist/**", "customer-runtime/**", "credentials/**", "raw/**", "**/client-ids.local.txt", "sub-libraries/website-content-ops/TOOLS/**/*.py", "sub-libraries/website-content-ops/scripts/*.py", "sub-libraries/website-content-ops/scripts/**/*.py", ".env*", "*.secret", "*.credentials", "*.sqlite*", "*.db", "*.p12", "*.pfx", "*.crt", "*.token", "*.cookie", "*.key", "*.pem", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif", "*.mp4", "*.mov", "*.mp3", "*.wav"]
 raw_fixture_digests: ["raw/10_conversations/src-20260728-0001-knowledge-base-structure-closure.md=3adeb6144f626ea99eb5a8bcf74518016dd4000464806f11438029fea4331180"]
 ---
@@ -34,9 +34,9 @@ raw_fixture_digests: ["raw/10_conversations/src-20260728-0001-knowledge-base-str
 
 ## 当前交付判断
 
-本仓库是私有 canonical monorepo 母库源码，不是客户运行区，也不是把所有子库自动批准后的产品包。母库可以携带注册表中标记为 `source-only` 的公开子库源码快照，但这只表示源码分发，不授予任何子库独立发布资格；真实客户资料、账号、凭据、运行日志和私有 raw 必须在仓库外维护。
+本仓库是以 MIT 许可公开的 canonical monorepo 母库源码，不是客户运行区，也不是把所有子库自动批准后的产品包。母库可以携带注册表中标记为 `source-only` 的公开子库源码快照，但这只表示源码分发，不授予任何子库独立发布资格；真实客户资料、账号、凭据、运行日志和私有 raw 必须在仓库外维护。
 
-`repository_sync_status: Synced` 表示当前源码已非覆盖地同步到私有 canonical 仓 `tony-apan/b2b-export-ai-workbench-source`。`release_status: BLOCK` 继续阻止把整个母库当作公开或稳定发行物；私有同步完成也不代表子库已稳定。
+`repository_sync_status: Synced` 表示当前源码已同步到 canonical 仓 `tony-apan/b2b-export-ai-workbench-source`。`release_status: BLOCK` 表示尚未完成正式 Stable qualification（approval/evidence、signed tag、Protected Environment、远端验收），不等于不可读或不可用。
 
 ## 母库包包含
 
@@ -66,11 +66,10 @@ raw_fixture_digests: ["raw/10_conversations/src-20260728-0001-knowledge-base-str
 
 ## 对外发行阻断
 
-1. 私有同步不授予母库公开再分发许可；正式 public export 仍需单独许可证和第三方来源闭环；
-2. 正式 Stable qualification 尚无完整真人 approval、signed tag、受保护 workflow 和远端证据；
-3. `website-content-ops` 仅为 Preview，不能被母库入口包装成 Stable；
-4. 任何正式候选必须来自 clean tagged commit；
-5. 即使远程为 Private，也必须继续禁止凭据、真实客户运行数据和未授权原文进入 Git。
+1. 正式 Stable qualification 尚无完整真人 approval、signed tag、受保护 workflow 和远端证据；
+2. `website-content-ops` 仅为 Preview，不能被母库入口包装成 Stable；
+3. 任何正式候选必须来自 clean tagged commit；
+4. 即使仓库为 Public，也必须继续禁止凭据、真实客户运行数据和未授权原文进入 Git。
 
 ## 检查入口
 
