@@ -15,6 +15,7 @@
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 export function createAllinCmsChromeAppleScriptTransport({ siteKey, exec = execFileSync }) {
   if (!siteKey) throw new Error('siteKey is required');

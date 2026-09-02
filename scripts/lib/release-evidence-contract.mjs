@@ -10,7 +10,9 @@ export const EXPECTED_RUNTIME_TEST_PLAN = [
   'article-content-formats.test.mjs',
   'article-operations.test.mjs',
 ];
-export const EXPECTED_RUNTIME_TESTS = 156;
+// Single machine truth lives in the adapter's runtime-test-plan.json. The formal
+// qualification profile is the 4-file subset; keep this constant in sync with it.
+export const EXPECTED_RUNTIME_TESTS = 160;
 
 const motherChecks = [
   ['governance-tests', 'node scripts/run-governance-tests.mjs --timeout-ms 60000'],

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "packageId": "website-content-ops",
+  "description": "Machine truth for every executable test suite in ADAPTERS/cms/allincms. All installers, npm scripts, governance tests, release workflow and evidence must read counts and file sets from here instead of hardcoding them.",
+  "formalProfile": {
+    "label": "sub-library-release-v1 formal runtime profile (4 files)",
+    "files": [
+      "upload-media-browser.test.mjs",
+      "article-image-binding.test.mjs",
+      "article-content-formats.test.mjs",
+      "article-operations.test.mjs"
+    ],
+    "tests": 160,
+    "note": "This is the frozen qualification set. Per-file: media 47, article-image 52, article-content 13, article-operations 48. Do not add files to the formal profile without a new governance + evidence cycle."
+  },
+  "devSuite": {
+    "label": "npm test development suite (all adapter test files)",
+    "files": [
+      "article-content-formats.test.mjs",
+      "article-image-binding.test.mjs",
+      "article-operations.test.mjs",
+      "content-plan-host-driver.test.mjs",
+      "content-run-controller.test.mjs",
+      "host-run-template.test.mjs",
+      "interface-registry.test.mjs",
+      "product-operations.test.mjs",
+      "site-operations.test.mjs",
+      "upload-media-browser.test.mjs",
+      "workspace-preflight.test.mjs"
+    ],
+    "tests": 267,
+    "perFile": {
+      "article-content-formats.test.mjs": 13,
+      "article-image-binding.test.mjs": 52,
+      "article-operations.test.mjs": 48,
+      "content-plan-host-driver.test.mjs": 1,
+      "content-run-controller.test.mjs": 58,
+      "host-run-template.test.mjs": 2,
+      "interface-registry.test.mjs": 11,
+      "product-operations.test.mjs": 9,
+      "site-operations.test.mjs": 5,
+      "upload-media-browser.test.mjs": 47,
+      "workspace-preflight.test.mjs": 21
+    },
+    "note": "npm test runs this whole set. Verifying a fresh clone must show 267/267; the formal qualification remains the 160-file subset above."
+  }
+}

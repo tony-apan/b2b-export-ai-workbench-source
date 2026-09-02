@@ -5,11 +5,12 @@ Resolution order is fail-closed and deterministic:
 1. ``--root`` (exact caller-provided full canonical source checkout)
 2. ``$WEBSITE_CONTENT_OPS_ROOT`` (full canonical source checkout)
 3. validated sibling/upward full-source discovery from ``--start`` or cwd
-4. this Skill's immutable, digest-verified bundled runtime snapshot
 
-An invalid explicit/environment root never falls through to another source. The
-bundled snapshot is a generated runtime subset, not a second mutable canonical
-implementation and not evidence of remote login, authorization, or capability.
+The checked-in vendor bundle is retired and is not distributed. Full-source
+explicit/environment/discovery resolution is the only default path; when none
+validates, resolution blocks. ``--bundle-root`` remains only as an explicit test
+fixture injection path and reports a missing/invalid bundle without affecting a
+valid full-source result.
 """
 from __future__ import annotations
 
@@ -315,6 +316,45 @@ def _bundle_runtime_state(root: Path, manifest: dict[str, object]) -> tuple[bool
     return not problems, problems, marker
 
 
+def _dependency_state(root: Path, *, require_ready_marker: bool) -> tuple[bool, list[str]]:
+    """Probe declared adapter dependencies under node_modules.
+
+    Returns (ok, problems). For full source we only require each declared runtime
+    dependency to be installed at the exact locked version (resolver must never
+    claim controllerExecutable before `npm ci` has run); the ready marker is
+    bundle-installer-only and therefore not required for full source.
+    """
+    adapter = root / ALLINCMS_REL
+    problems: list[str] = []
+    try:
+        package = json.loads((adapter / "package.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return False, [f"package_json_unreadable_or_invalid: {exc}"]
+    dependencies = package.get("dependencies")
+    if not isinstance(dependencies, dict) or not dependencies:
+        return False, ["package_json_dependencies_missing"]
+    marker = adapter / "node_modules" / BUNDLE_READY_MARKER_NAME
+    for name, expected_version in sorted(dependencies.items()):
+        package_path = adapter / "node_modules" / str(name) / "package.json"
+        try:
+            installed = json.loads(package_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            problems.append(f"missing_or_invalid_dependency:{name}@{expected_version}")
+            continue
+        if installed.get("version") != expected_version:
+            problems.append(
+                f"dependency_version_mismatch:{name}:expected={expected_version}:actual={installed.get('version')!r}"
+            )
+    if require_ready_marker:
+        try:
+            ready = json.loads(marker.read_text(encoding="utf-8"))
+            if ready.get("status") != "verified":
+                problems.append("runtime_ready_marker_status_invalid")
+        except (OSError, json.JSONDecodeError):
+            problems.append("runtime_ready_marker_missing_or_invalid")
+    return not problems, problems
+
+
 def discovery_candidates(start: str | Path) -> Iterable[Path]:
     cursor = _resolved(start)
     if cursor.is_file():
@@ -352,18 +392,23 @@ def resolve_root(
         except ResolutionError as exc:
             errors.append(str(exc))
 
-    candidate_bundle = bundle_root if bundle_root is not None else BUNDLED_RUNTIME_ROOT
-    try:
-        root, _manifest = validate_runtime_bundle(candidate_bundle)
-        return root, "bundled-runtime"
-    except ResolutionError as exc:
-        errors.append(str(exc))
+    if bundle_root is not None:
+        try:
+            root, _manifest = validate_runtime_bundle(bundle_root)
+            return root, "bundled-runtime"
+        except ResolutionError as exc:
+            errors.append(str(exc))
 
     detail = "; ".join(errors[-4:]) if errors else "no candidates"
+    fixture_hint = (
+        f"; explicit --bundle-root fixture missing or invalid: {bundle_root}"
+        if bundle_root is not None
+        else "; checked-in vendor bundle is retired and not distributed"
+    )
     raise _blocked(
         "complete_runtime_not_found: pass --root, set "
-        f"{ENV_NAME}, run from a repository containing sub-libraries/{PACKAGE_ID}, "
-        f"or reinstall a Skill containing a valid {BUNDLE_MANIFEST_NAME}; {detail}"
+        f"{ENV_NAME}, or run from a repository containing "
+        f"sub-libraries/{PACKAGE_ID}{fixture_hint}; {detail}"
     )
 
 
@@ -383,6 +428,12 @@ def build_result(root: Path, source: str) -> dict[str, object]:
         bundle_manifest_path = str(root / BUNDLE_MANIFEST_NAME)
         runtime_dependencies_installed, runtime_dependency_problems, marker = _bundle_runtime_state(root, manifest)
         runtime_ready_marker = str(marker)
+    else:
+        # Full source: report whether npm dependencies are actually installed at the
+        # locked versions, so callers never treat a pre-`npm ci` checkout as executable.
+        runtime_dependencies_installed, runtime_dependency_problems = _dependency_state(
+            root, require_ready_marker=False
+        )
     return {
         "status": "resolved",
         "packageId": PACKAGE_ID,
@@ -411,7 +462,7 @@ def build_result(root: Path, source: str) -> dict[str, object]:
         "runtimeDependenciesInstalled": runtime_dependencies_installed,
         "runtimeDependencyProblems": runtime_dependency_problems,
         "runtimeReadyMarker": runtime_ready_marker,
-        "controllerExecutable": runtime_dependencies_installed if bundled else True,
+        "controllerExecutable": runtime_dependencies_installed is True,
         "minimalAdapterPackageOnly": False,
         # Compatibility for callers of the first resolver draft.
         "isSourceArtifact": not bundled,

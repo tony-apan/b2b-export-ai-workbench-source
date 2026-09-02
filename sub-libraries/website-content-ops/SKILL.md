@@ -128,7 +128,7 @@ redaction_status: "safe-to-publish"
 4. 把返回对象显式传给对应上传入口；
 5. 任何文件内容/顺序、site、operation、entrypoint 变化，任何 `approved_at > now`，或最长 30 分钟授权在 `now >= expires_at` 时过期后，停止并重新批准；最终路径为 symlink 时不得开始。
 
-底层 `uploadAllinCmsMediaDirect()` 自身也会 fail closed，不能依赖 `beforeRequest`、UI 状态或上层“已经问过用户”的口头假设。direct/serial 必须沿用首次通过 digest 校验的源 Buffer；batch/single 必须使用安全 Buffer payload，不得在确认前把原始路径重新交给浏览器。`beforeRequest` 返回后或确认点击前必须重新校验完整授权、逐文件 digest 和当前时间。授权记录的 actor 是 `human-asserted` 声明，身份状态固定为 `not_verified`；本 Skill 不验证或证明批准者真人身份。当前冻结的文章/媒体四文件专项 qualification profile 为 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48）；历史 158/158 已陈旧并必须拒绝；完整源码工作树另含 Workspace 前置检查 21/21、串行 Controller 58/58 与 Interface Registry 11/11，当前 `npm test` 七文件全量为 250/250。正式 qualification profile 与完整开发回归必须分层报告，不能用 250 取代冻结的 160，也不能用 160 冒充完整套件；这些本地结果仍不证明真实 CMS、跨部署或发布资格。
+底层 `uploadAllinCmsMediaDirect()` 自身也会 fail closed，不能依赖 `beforeRequest`、UI 状态或上层“已经问过用户”的口头假设。direct/serial 必须沿用首次通过 digest 校验的源 Buffer；batch/single 必须使用安全 Buffer payload，不得在确认前把原始路径重新交给浏览器。`beforeRequest` 返回后或确认点击前必须重新校验完整授权、逐文件 digest 和当前时间。授权记录的 actor 是 `human-asserted` 声明，身份状态固定为 `not_verified`；本 Skill 不验证或证明批准者真人身份。当前冻结的文章/媒体四文件专项 qualification profile 为 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48）；历史 158/158 已陈旧并必须拒绝；完整源码工作树另含 Workspace 前置检查 21/21、串行 Controller 58/58 与 Interface Registry 11/11，当前 `npm test` 开发回归为 11 文件 267/267（媒体 47、正文图片 52、正文格式 13、文章/taxonomy 48、Workspace 21、Controller 58、Registry 11、host-run/template/product/site 12）。正式 qualification profile 与完整开发回归必须分层报告，不能用 267 取代冻结的 160，也不能用 160 冒充完整套件；这些本地结果仍不证明真实 CMS、跨部署或发布资格。
 
 ## 适配范围
 

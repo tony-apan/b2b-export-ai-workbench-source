@@ -21,7 +21,6 @@ from resolve_website_content_ops_root import (  # noqa: E402
     BUNDLED_RUNTIME_REQUIRED_PATHS,
     BUNDLE_FORMAT_VERSION,
     BUNDLE_MANIFEST_NAME,
-    BUNDLED_RUNTIME_ROOT,
     FULL_SOURCE_REQUIRED_PATHS,
     ResolutionError,
     _sha256_bytes,
@@ -33,17 +32,9 @@ from resolve_website_content_ops_root import (  # noqa: E402
 )
 
 SKILL_ROOT = SCRIPT.parents[1]
-ROUTED_DOCS = (
-    SKILL_ROOT / "SKILL.md",
-    SKILL_ROOT / "README.md",
-    SKILL_ROOT / "AGENTS.md",
-    SKILL_ROOT / "CLAUDE.md",
-    SKILL_ROOT / "NEXT-SESSION.md",
-    SKILL_ROOT / "agents/openai.yaml",
-    SKILL_ROOT / "references/canonical-adapter-routing.md",
-    SKILL_ROOT / "references/README.md",
-    SKILL_ROOT / "scripts/README.md",
-)
+SOURCE_ROOT = SKILL_ROOT.parent
+INSTALLER = SKILL_ROOT / "install.py"
+PYTHON_310 = shutil.which("python3.11") or shutil.which("python3.10")
 
 
 def make_package(root: Path) -> Path:
@@ -51,11 +42,30 @@ def make_package(root: Path) -> Path:
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("fixture\n", encoding="utf-8")
+    adapter = root / "ADAPTERS/cms/allincms"
+    (adapter / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "fixture-adapter",
+                "dependencies": {"acorn": "8.15.0", "ajv": "8.20.0", "sharp": "0.35.3"},
+            }
+        ),
+        encoding="utf-8",
+    )
     (root / "MANIFEST.md").write_text('---\npackage_id: "website-content-ops"\n---\n', encoding="utf-8")
     (root / "RUNTIME-CONTRACT.json").write_text(
         json.dumps({"package_id": "website-content-ops"}), encoding="utf-8"
     )
     return root
+
+
+def install_fixture_dependencies(root: Path, *, sharp_version: str = "0.35.3") -> None:
+    versions = {"acorn": "8.15.0", "ajv": "8.20.0", "sharp": sharp_version}
+    adapter = root / "ADAPTERS/cms/allincms"
+    for name, version in versions.items():
+        package = adapter / "node_modules" / name / "package.json"
+        package.parent.mkdir(parents=True, exist_ok=True)
+        package.write_text(json.dumps({"name": name, "version": version}), encoding="utf-8")
 
 
 def make_bundle(root: Path) -> Path:
@@ -67,11 +77,12 @@ def make_bundle(root: Path) -> Path:
         if rel == Path("RUNTIME-CONTRACT.json"):
             data = json.dumps({"package_id": "website-content-ops"}).encode("utf-8")
         elif rel == Path("ADAPTERS/cms/allincms/package.json"):
-            data = json.dumps({
-                "name": "fixture-adapter",
-                "version": "1.0.0",
-                "dependencies": {"acorn": "8.15.0", "ajv": "8.20.0", "sharp": "0.35.3"},
-            }).encode("utf-8")
+            data = json.dumps(
+                {
+                    "name": "fixture-adapter",
+                    "dependencies": {"acorn": "8.15.0", "ajv": "8.20.0", "sharp": "0.35.3"},
+                }
+            ).encode("utf-8")
         path.write_bytes(data)
         entries.append({"path": rel.as_posix(), "bytes": len(data), "sha256": _sha256_bytes(data)})
     manifest: dict[str, object] = {
@@ -90,123 +101,103 @@ def make_bundle(root: Path) -> Path:
     return root
 
 
-def mark_bundle_ready(root: Path) -> None:
-    manifest = json.loads((root / BUNDLE_MANIFEST_NAME).read_text(encoding="utf-8"))
-    adapter = root / "ADAPTERS/cms/allincms"
-    for name, version in {"acorn": "8.15.0", "ajv": "8.20.0", "sharp": "0.35.3"}.items():
-        package = adapter / "node_modules" / name / "package.json"
-        package.parent.mkdir(parents=True, exist_ok=True)
-        package.write_text(json.dumps({"name": name, "version": version}), encoding="utf-8")
-    (adapter / "node_modules/.allincms-runtime-ready.json").write_text(
-        json.dumps({"status": "verified", "bundleDigest": manifest["bundleDigest"]}),
-        encoding="utf-8",
-    )
-
-
 class ResolverTests(unittest.TestCase):
-    def test_checked_in_bundle_validates_and_builds_machine_result(self) -> None:
-        root, manifest = validate_runtime_bundle(BUNDLED_RUNTIME_ROOT)
-        self.assertEqual(root, BUNDLED_RUNTIME_ROOT.resolve())
-        self.assertEqual(manifest["bundleKind"], "verified-runtime-snapshot")
-        result = build_result(root, "bundled-runtime")
-        self.assertFalse(result["sourceCheckoutValidated"])
-        self.assertTrue(result["runtimeBundleValidated"])
-        self.assertFalse(result["runtimeDependenciesInstalled"])
-        self.assertFalse(result["controllerExecutable"])
-        self.assertIn("runtime_ready_marker_missing_or_invalid", result["runtimeDependencyProblems"])
-        self.assertEqual(result["sourceRevision"], manifest["sourceCommit"])
-        self.assertEqual(result["bundleDigest"], manifest["bundleDigest"])
+    def test_current_full_source_validates_and_builds_machine_result(self) -> None:
+        root = validate_root(SOURCE_ROOT)
+        result = build_result(root, "explicit")
+        self.assertEqual(result["runtimeKind"], "full-source-checkout")
+        self.assertTrue(result["sourceCheckoutValidated"])
+        self.assertFalse(result["runtimeBundleValidated"])
+        self.assertEqual(result["controllerExecutable"], result["runtimeDependenciesInstalled"])
 
-    def test_runtime_created_node_modules_are_ignored_but_ready_state_is_digest_bound(self) -> None:
+    def test_full_source_without_node_modules_is_not_controller_executable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            bundle = make_bundle(Path(tmp) / "bundle")
-            mark_bundle_ready(bundle)
-            root, _manifest = validate_runtime_bundle(bundle)
-            result = build_result(root, "bundled-runtime")
+            root = make_package(Path(tmp) / "website-content-ops")
+            result = build_result(root, "explicit")
+            self.assertFalse(result["runtimeDependenciesInstalled"])
+            self.assertFalse(result["controllerExecutable"])
+            self.assertIn("missing_or_invalid_dependency:sharp@0.35.3", result["runtimeDependencyProblems"])
+
+    def test_full_source_exact_dependency_versions_are_controller_executable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = make_package(Path(tmp) / "website-content-ops")
+            install_fixture_dependencies(root)
+            result = build_result(root, "explicit")
             self.assertTrue(result["runtimeDependenciesInstalled"])
             self.assertTrue(result["controllerExecutable"])
 
-            marker = Path(result["runtimeReadyMarker"])
-            payload = json.loads(marker.read_text(encoding="utf-8"))
-            payload["bundleDigest"] = "sha256:" + "0" * 64
-            marker.write_text(json.dumps(payload), encoding="utf-8")
-            drifted = build_result(root, "bundled-runtime")
-            self.assertFalse(drifted["controllerExecutable"])
-            self.assertIn("runtime_ready_marker_bundle_digest_mismatch", drifted["runtimeDependencyProblems"])
+    def test_full_source_dependency_version_drift_is_not_executable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = make_package(Path(tmp) / "website-content-ops")
+            install_fixture_dependencies(root, sharp_version="0.35.2")
+            result = build_result(root, "explicit")
+            self.assertFalse(result["controllerExecutable"])
+            self.assertIn(
+                "dependency_version_mismatch:sharp:expected=0.35.3:actual='0.35.2'",
+                result["runtimeDependencyProblems"],
+            )
 
-    def test_explicit_root_precedes_environment_and_bundle(self) -> None:
+    def test_explicit_root_precedes_environment_and_discovery(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             explicit = make_package(Path(tmp) / "explicit/website-content-ops")
             env_root = make_package(Path(tmp) / "env/website-content-ops")
-            bundle = make_bundle(Path(tmp) / "bundle")
             with patch.dict(os.environ, {"WEBSITE_CONTENT_OPS_ROOT": str(env_root)}):
-                resolved, source = resolve_root(
-                    explicit_root=str(explicit), start=Path(tmp) / "unused", bundle_root=bundle
-                )
-            self.assertEqual(resolved, explicit.resolve())
-            self.assertEqual(source, "explicit")
-            result = build_result(resolved, source)
-            self.assertTrue(result["sourceCheckoutValidated"])
-            self.assertFalse(result["runtimeBundleValidated"])
+                resolved, source = resolve_root(explicit_root=str(explicit), start=tmp)
+            self.assertEqual((resolved, source), (explicit.resolve(), "explicit"))
 
-    def test_environment_root_precedes_discovery_and_bundle(self) -> None:
+    def test_environment_root_precedes_full_source_discovery(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env_root = make_package(Path(tmp) / "env/website-content-ops")
             discovered = make_package(Path(tmp) / "repo/sub-libraries/website-content-ops")
-            bundle = make_bundle(Path(tmp) / "bundle")
             with patch.dict(os.environ, {"WEBSITE_CONTENT_OPS_ROOT": str(env_root)}):
-                resolved, source = resolve_root(start=discovered / "ADAPTERS", bundle_root=bundle)
-            self.assertEqual(resolved, env_root.resolve())
-            self.assertEqual(source, "environment")
+                resolved, source = resolve_root(start=discovered / "ADAPTERS")
+            self.assertEqual((resolved, source), (env_root.resolve(), "environment"))
 
-    def test_upward_and_sibling_discovery_precede_bundle(self) -> None:
+    def test_upward_and_sibling_full_source_discovery(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            bundle = make_bundle(Path(tmp) / "bundle")
             root = make_package(Path(tmp) / "repo/sub-libraries/website-content-ops")
             deep = Path(tmp) / "repo/wiki/00_meta"
             deep.mkdir(parents=True)
             with patch.dict(os.environ, {}, clear=True):
-                resolved, source = resolve_root(start=deep, bundle_root=bundle)
-            self.assertEqual((resolved, source), (root.resolve(), "upward-discovery"))
-
-            sibling_base = Path(tmp) / "sibling"
-            skill_checkout = sibling_base / "allincms-bulk-content-upload"
-            skill_checkout.mkdir(parents=True)
-            canonical = make_package(sibling_base / "website-content-ops")
+                self.assertEqual(resolve_root(start=deep), (root.resolve(), "upward-discovery"))
+            sibling = Path(tmp) / "sibling/allincms-bulk-content-upload"
+            sibling.mkdir(parents=True)
+            canonical = make_package(Path(tmp) / "sibling/website-content-ops")
             with patch.dict(os.environ, {}, clear=True):
-                resolved, source = resolve_root(start=skill_checkout, bundle_root=bundle)
-            self.assertEqual((resolved, source), (canonical.resolve(), "upward-discovery"))
+                self.assertEqual(resolve_root(start=sibling), (canonical.resolve(), "upward-discovery"))
 
-    def test_bundle_is_fallback_from_arbitrary_working_directories(self) -> None:
+    def test_no_full_source_and_no_explicit_bundle_blocks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True):
-            starts = [SKILL_ROOT, Path(tmp), Path(tmp) / "new-project/deep"]
-            starts[2].mkdir(parents=True)
-            for start in starts:
-                resolved, source = resolve_root(start=start)
-                self.assertEqual(resolved, BUNDLED_RUNTIME_ROOT.resolve())
-                self.assertEqual(source, "bundled-runtime")
+            with self.assertRaisesRegex(ResolutionError, rf"^{BLOCK_CODE}:.*vendor bundle is retired"):
+                resolve_root(start=tmp)
 
-    def test_invalid_explicit_or_environment_root_fails_closed_without_bundle_fallback(self) -> None:
+    def test_invalid_explicit_or_environment_root_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            bundle = make_bundle(Path(tmp) / "bundle")
             invalid = Path(tmp) / "missing"
-            with self.assertRaisesRegex(ResolutionError, rf"{BLOCK_CODE}.*candidate_not_directory"):
-                resolve_root(explicit_root=str(invalid), start=tmp, bundle_root=bundle)
+            with self.assertRaisesRegex(ResolutionError, "candidate_not_directory"):
+                resolve_root(explicit_root=str(invalid), start=tmp)
             with patch.dict(os.environ, {"WEBSITE_CONTENT_OPS_ROOT": str(invalid)}):
-                with self.assertRaisesRegex(ResolutionError, rf"{BLOCK_CODE}.*candidate_not_directory"):
-                    resolve_root(start=tmp, bundle_root=bundle)
+                with self.assertRaisesRegex(ResolutionError, "candidate_not_directory"):
+                    resolve_root(start=tmp)
 
     def test_dist_and_incomplete_source_candidates_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = make_package(Path(tmp) / "dist/latest/website-content-ops")
+            dist = make_package(Path(tmp) / "dist/latest/website-content-ops")
             with self.assertRaisesRegex(ResolutionError, "candidate_is_build_artifact"):
-                validate_root(root)
-            root = make_package(Path(tmp) / "incomplete/website-content-ops")
-            (root / "scripts/runtime-scope.mjs").unlink()
+                validate_root(dist)
+            incomplete = make_package(Path(tmp) / "incomplete/website-content-ops")
+            (incomplete / "scripts/runtime-scope.mjs").unlink()
             with self.assertRaisesRegex(ResolutionError, "candidate_missing_source_checkout_files"):
-                validate_root(root)
+                validate_root(incomplete)
 
-    def test_bundle_missing_tampered_or_extra_file_fails_closed(self) -> None:
+    def test_explicit_bundle_root_remains_available_for_test_injection(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True):
+            bundle = make_bundle(Path(tmp) / "bundle")
+            resolved, source = resolve_root(start=Path(tmp) / "none", bundle_root=bundle)
+            self.assertEqual((resolved, source), (bundle.resolve(), "bundled-runtime"))
+            self.assertTrue(build_result(resolved, source)["runtimeBundleValidated"])
+
+    def test_explicit_bundle_missing_tampered_or_extra_file_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             source = make_bundle(Path(tmp) / "source")
             for mode in ("missing", "tampered", "extra"):
@@ -222,7 +213,7 @@ class ResolverTests(unittest.TestCase):
                 with self.assertRaisesRegex(ResolutionError, "bundled_runtime_"):
                     validate_runtime_bundle(candidate)
 
-    def test_bundle_rejects_internal_symlinks(self) -> None:
+    def test_explicit_bundle_rejects_internal_symlinks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle = make_bundle(Path(tmp) / "bundle")
             target = bundle / BUNDLED_RUNTIME_REQUIRED_PATHS[-1]
@@ -234,61 +225,58 @@ class ResolverTests(unittest.TestCase):
             with self.assertRaisesRegex(ResolutionError, "symlink_forbidden"):
                 validate_runtime_bundle(bundle)
 
-    def test_no_runtime_returns_stable_block_code(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True):
-            with self.assertRaisesRegex(ResolutionError, rf"^{BLOCK_CODE}:"):
-                resolve_root(start=tmp, bundle_root=Path(tmp) / "missing-bundle")
-
-    def test_cli_json_bundle_success_and_structured_block(self) -> None:
+    def test_cli_full_source_success_and_structured_block(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
+            root = make_package(Path(tmp) / "website-content-ops")
             env = os.environ.copy()
             env.pop("WEBSITE_CONTENT_OPS_ROOT", None)
             completed = subprocess.run(
-                [sys.executable, str(SCRIPT), "--start", tmp, "--json"],
+                [sys.executable, str(SCRIPT), "--root", str(root), "--json"],
                 check=True,
                 capture_output=True,
                 text=True,
                 env=env,
             )
-            result = json.loads(completed.stdout)
-            self.assertEqual(result["source"], "bundled-runtime")
-            self.assertTrue(result["runtimeBundleValidated"])
-
+            self.assertEqual(json.loads(completed.stdout)["source"], "explicit")
+        with tempfile.TemporaryDirectory() as blocked_tmp:
+            env = os.environ.copy()
+            env.pop("WEBSITE_CONTENT_OPS_ROOT", None)
+            blocked_start = Path(blocked_tmp) / "isolated/no-runtime/here"
+            blocked_start.mkdir(parents=True)
             blocked = subprocess.run(
-                [sys.executable, str(SCRIPT), "--root", str(Path(tmp) / "missing"), "--json"],
+                [sys.executable, str(SCRIPT), "--start", str(blocked_start), "--json"],
                 check=False,
                 capture_output=True,
                 text=True,
                 env=env,
             )
             self.assertEqual(blocked.returncode, 2)
-            payload = json.loads(blocked.stdout)
-            self.assertEqual(payload["status"], "blocked")
-            self.assertEqual(payload["code"], BLOCK_CODE)
+            self.assertEqual(json.loads(blocked.stdout)["code"], BLOCK_CODE)
 
-    def test_installer_from_isolated_copy_reports_verified_runtime_ready(self) -> None:
+    @unittest.skipUnless(PYTHON_310, "Python 3.10+ interpreter required for installer test")
+    def test_install_py_from_isolated_full_source_copy_creates_link_without_dependencies(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            copied_skill = Path(tmp) / "checkout"
-            shutil.copytree(SKILL_ROOT, copied_skill, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+            copied_source = Path(tmp) / "website-content-ops"
+            shutil.copytree(
+                SOURCE_ROOT,
+                copied_source,
+                ignore=shutil.ignore_patterns(".git", "node_modules", "dist", "__pycache__"),
+            )
+            copied_skill = copied_source / "SKILL-INSTALL"
             install_root = Path(tmp) / "skills"
             env = os.environ.copy()
             env.pop("WEBSITE_CONTENT_OPS_ROOT", None)
             completed = subprocess.run(
-                ["bash", str(copied_skill / "install.sh"), f"--dir={install_root}"],
+                [PYTHON_310, str(copied_skill / "install.py"), f"--dir={install_root}", "--skip-self-test"],
                 check=True,
                 capture_output=True,
                 text=True,
                 env=env,
             )
-            combined = completed.stdout + completed.stderr
             link = install_root / "allincms-bulk-content-upload"
             self.assertTrue(link.is_symlink())
             self.assertEqual(link.resolve(), copied_skill.resolve())
-            self.assertIn("verified bundled runtime resolved", combined)
-            self.assertIn("bundled runtime dependencies and self-tests verified", combined)
-            self.assertIn("verified runtime ready", combined)
-            self.assertNotIn("Thin router installed only", combined)
-            self.assertNotIn("CMS operations remain BLOCK", combined)
+            self.assertIn("Skipping npm ci and runtime self-tests", completed.stdout)
             resolved = subprocess.run(
                 [sys.executable, str(copied_skill / "scripts/resolve_website_content_ops_root.py"), "--start", str(copied_skill), "--json"],
                 check=True,
@@ -297,105 +285,27 @@ class ResolverTests(unittest.TestCase):
                 env=env,
             )
             payload = json.loads(resolved.stdout)
-            self.assertTrue(payload["runtimeDependenciesInstalled"])
-            self.assertTrue(payload["controllerExecutable"])
+            self.assertFalse(payload["runtimeDependenciesInstalled"])
+            self.assertFalse(payload["controllerExecutable"])
 
-    def test_installer_does_not_create_link_when_bundle_is_tampered(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            copied_skill = Path(tmp) / "checkout"
-            shutil.copytree(
-                SKILL_ROOT,
-                copied_skill,
-                ignore=shutil.ignore_patterns(".git", "__pycache__", "node_modules"),
-            )
-            target = copied_skill / "vendor/website-content-ops-runtime/RUNTIME-CONTRACT.json"
-            target.write_text("tampered\n", encoding="utf-8")
-            install_root = Path(tmp) / "skills"
-            env = os.environ.copy()
-            env.pop("WEBSITE_CONTENT_OPS_ROOT", None)
-            completed = subprocess.run(
-                ["bash", str(copied_skill / "install.sh"), f"--dir={install_root}"],
-                check=False,
-                capture_output=True,
-                text=True,
-                env=env,
-            )
-            self.assertNotEqual(completed.returncode, 0)
-            self.assertFalse((install_root / "allincms-bulk-content-upload").exists())
-            self.assertIn("bundled_runtime_file_integrity_mismatch", completed.stdout + completed.stderr)
-
-    def test_installer_recognizes_explicit_full_source_checkout(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            canonical = make_package(Path(tmp) / "website-content-ops")
-            install_root = Path(tmp) / "skills"
-            env = os.environ.copy()
-            env["WEBSITE_CONTENT_OPS_ROOT"] = str(canonical)
-            completed = subprocess.run(
-                ["bash", str(SKILL_ROOT / "install.sh"), f"--dir={install_root}"],
-                check=True,
-                capture_output=True,
-                text=True,
-                env=env,
-            )
-            combined = completed.stdout + completed.stderr
-            self.assertIn("canonical source checkout resolved", combined)
-            self.assertIn("verified runtime ready", combined)
-            self.assertNotIn("verified bundled runtime resolved", combined)
-
-    def test_active_docs_describe_portable_bundle_and_fail_closed_login_handoff(self) -> None:
-        forbidden = "<home>"
-        for path in ROUTED_DOCS:
-            text = path.read_text(encoding="utf-8")
-            self.assertNotIn(forbidden, text, path)
-
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        self.assertLessEqual(len(skill.splitlines()), 200)
-        for stable_token in (
-            "<SUB_LIBRARY_ROOT>",
-            BLOCK_CODE,
-            "BUNDLE-MANIFEST.json",
-            "ADAPTER_AUTHORIZATION_CONTEXT_REQUIRED",
-            "never satisfies the canonical Adapter",
-            "no more than 30 minutes",
-            "id-0005-source-driven-cms-operation-sop.md",
-            "site_bootstrap",
-            "site_operation",
-            "Never invent a future site key",
-            "live_verified_current_deployment",
-            "product at `exploration_only`",
-            "User-provided sources override examples",
-            "A customer value must be dynamic",
-            "Only if the API itself reports `login_required`",
-            "`http_error`, `contract_drift`, or `pagination_incomplete`",
-            "repeat the API preflight",
-        ):
-            self.assertIn(stable_token, skill)
-        for retired_heading in (
-            "## Operating Rule", "## Required Reading", "## Workflow",
-            "## Browser Paths", "## Probe Rules", "## Payload Rules",
-        ):
-            self.assertNotIn(retired_heading, skill)
-
-        routing = (SKILL_ROOT / "references/canonical-adapter-routing.md").read_text(encoding="utf-8")
-        for token in (
-            "digest-verified bundled runtime",
-            "revalidates the same context immediately before every request",
-            "not a requirement to interrupt the user before every API call",
-            "Only `login_required`", "`authenticated`", "`http_error`",
-            "`contract_drift`", "`pagination_incomplete`",
-        ):
-            self.assertIn(token, routing)
-
+    def test_active_docs_describe_source_only_install_and_fail_closed_handoff(self) -> None:
         readme = (SKILL_ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("普通用户只 clone / 安装这个 Skill 即可解析运行时", readme)
-        self.assertIn("runtimeBundleValidated", readme)
-        self.assertIn("runtimeDependenciesInstalled", readme)
-        self.assertIn("全部通过后才创建 Skill 链接", readme)
-        installer = (SKILL_ROOT / "install.sh").read_text(encoding="utf-8")
-        self.assertIn(BLOCK_CODE, installer)
-        self.assertIn("verified bundled runtime resolved", installer)
-        self.assertIn("npm ci --omit=dev --no-audit --no-fund", installer)
-        self.assertIn("Installation stopped before creating Skill links", installer)
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        install = INSTALLER.read_text(encoding="utf-8")
+        for text in (readme, skill):
+            self.assertIn("source-only", text)
+            self.assertIn("vendor", text)
+            self.assertIn("retired", text)
+            self.assertIn(BLOCK_CODE, text)
+        self.assertIn("install.py", readme)
+        self.assertIn("install.cmd", readme)
+        self.assertNotIn("普通用户只 clone / 安装这个 Skill 即可解析运行时", readme)
+        self.assertNotIn("For a bundled runtime", skill)
+        self.assertIn("npm", install)
+        self.assertIn("--skip-self-test", install)
+        self.assertIn("--docs-parse", install)
+        self.assertIn("ADAPTER_AUTHORIZATION_CONTEXT_REQUIRED", skill)
+        self.assertIn("Only if the API itself reports `login_required`", skill)
 
 
 if __name__ == "__main__":

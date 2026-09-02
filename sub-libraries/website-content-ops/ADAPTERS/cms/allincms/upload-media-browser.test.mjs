@@ -656,7 +656,6 @@ test('batch rejects symbolic-link inputs even if the link target digest was appr
   const first = await makeImage(dir, 'first.webp', 'first-target');
   const second = await makeImage(dir, 'second.webp', 'second-target');
   const link = join(dir, 'linked.webp');
-  await symlink(first, link);
   const record = {
     filename: 'linked.webp',
     bytes: Buffer.byteLength('first-target'),
@@ -665,19 +664,47 @@ test('batch rejects symbolic-link inputs even if the link target digest was appr
   const context = authorizationContext('batch', [record]);
   let browserReads = 0;
   const tab = { ...mockTab(), url: async () => { browserReads += 1; return MEDIA_PAGE; } };
+
+  // Real file symlinks are required for the exact input; Windows without Developer
+  // Mode/admin cannot create them (EPERM). Probe capability and keep the production
+  // rejection exercised in either case — never skip the branch.
+  let realSymlinks = true;
+  try {
+    await symlink(first, link);
+    await rm(link);
+  } catch {
+    realSymlinks = false;
+  }
+
+  if (realSymlinks) {
+    await symlink(first, link);
+    await assert.rejects(uploadAllinCmsMediaBatch({
+      tab,
+      localFiles: [link],
+      expectedSiteKey: SITE_KEY,
+      authorizationContext: context,
+    }), /symbolic-link/);
+    await rm(link);
+    await symlink(second, link);
+    await assert.rejects(uploadAllinCmsMediaBatch({
+      tab,
+      localFiles: [link],
+      expectedSiteKey: SITE_KEY,
+      authorizationContext: context,
+    }), /symbolic-link/);
+    assert.equal(browserReads, 0);
+    return;
+  }
+
+  // Unprivileged Windows fallback: inject an lstat seam that reports a symbolic link,
+  // so the exact same production guard runs without requiring OS symlink privilege.
+  const fakeLinkStat = () => ({ isSymbolicLink: () => true, isFile: () => false, size: 0 });
   await assert.rejects(uploadAllinCmsMediaBatch({
     tab,
-    localFiles: [link],
+    localFiles: [first],
     expectedSiteKey: SITE_KEY,
     authorizationContext: context,
-  }), /symbolic-link/);
-  await rm(link);
-  await symlink(second, link);
-  await assert.rejects(uploadAllinCmsMediaBatch({
-    tab,
-    localFiles: [link],
-    expectedSiteKey: SITE_KEY,
-    authorizationContext: context,
+    _internal: { lstat: fakeLinkStat },
   }), /symbolic-link/);
   assert.equal(browserReads, 0);
 }));

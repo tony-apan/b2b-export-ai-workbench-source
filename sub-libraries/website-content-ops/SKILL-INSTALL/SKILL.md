@@ -17,7 +17,7 @@ description: Source-driven AllinCMS / LAICMS website content operations for crea
 
 ## 1. Authority and dependency
 
-This Skill is a **portable discovery and host-orchestration layer** distributed from `SKILL-INSTALL/` inside the mother library (2026-08-30 merge; the former standalone repository is archived). Its primary runtime is the sibling canonical source checkout of Website Content Operations; the generated, digest-verified runtime snapshot is retired pending the dist pipeline (id-0073) and must never be treated as a second editable implementation.
+This Skill is a **source-only portable discovery and host-orchestration layer** distributed from `SKILL-INSTALL/` inside the mother library (2026-08-30 merge; the former standalone repository is archived). A complete canonical Website Content Operations source checkout is its only runtime. The `vendor/` bundled runtime is retired and is not distributed; it must not be fabricated, restored as a fallback, or treated as a second implementation.
 
 Resolve `<SUB_LIBRARY_ROOT>` before planning or touching AllinCMS:
 
@@ -25,15 +25,12 @@ Resolve `<SUB_LIBRARY_ROOT>` before planning or touching AllinCMS:
 python3 scripts/resolve_website_content_ops_root.py --start "$PWD" --json
 ```
 
-If none is supplied, resolution stops with `CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED` (the bundled-snapshot tier is retired pending the dist pipeline; do not fabricate or resurrect it).
-
-For a bundled runtime, `runtimeBundleValidated: true` proves the committed file snapshot only. Before any CMS operation, require `runtimeDependenciesInstalled: true` and `controllerExecutable: true`. If either is false, run this repository's `install.sh`; it installs locked Node dependencies and self-tests the Adapter before creating Skill links. Do not treat a copied-but-not-installed Skill as executable, and do not switch to UI or historical helpers to bypass dependency setup.
+If no full source checkout validates, resolution stops with `CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED`. Install from the complete source tree with `python3 install.py` on POSIX or `install.cmd` on Windows. The installer runs locked Node dependency installation and Adapter self-tests before creating links; `--skip-self-test` creates links only and does not establish executable readiness. Do not switch to UI or historical helpers to bypass dependency setup.
 
 Canonical precedence is:
 
 ```text
-validated full canonical source checkout, when supplied
-  > digest-verified bundled runtime snapshot
+validated full canonical source checkout
   > this Skill's host routing
   > supplemental or historical files under references/ and scripts/
 ```

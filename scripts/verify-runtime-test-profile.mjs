@@ -15,7 +15,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 const PROFILES = new Map([
   ['website-content-ops', {
     adapterPath: 'sub-libraries/website-content-ops/ADAPTERS/cms/allincms',
-    packageFiles: ['package.json', 'package-lock.json'],
+    packageFiles: ['package.json', 'package-lock.json', 'runtime-test-plan.json'],
     implementationFiles: [
       'upload-media-browser.mjs',
       'article-image-binding.mjs',
@@ -30,20 +30,11 @@ const PROFILES = new Map([
       'verify-media.mjs',
       'workspace-preflight.mjs',
     ],
-    testFiles: [
-      'upload-media-browser.test.mjs',
-      'article-image-binding.test.mjs',
-      'article-content-formats.test.mjs',
-      'article-operations.test.mjs',
-      'content-plan-host-driver.test.mjs',
-      'content-run-controller.test.mjs',
-      'host-run-template.test.mjs',
-      'interface-registry.test.mjs',
-      'product-operations.test.mjs',
-      'site-operations.test.mjs',
-      'workspace-preflight.test.mjs',
-    ],
-    expectedTests: 268,
+    // testFiles/expectedTests are populated at runtime from the adapter's
+    // runtime-test-plan.json (devSuite), the single machine truth.
+    testFiles: null,
+    expectedTests: null,
+    planKey: 'devSuite',
   }],
 ]);
 
@@ -176,7 +167,10 @@ function prepareSubject(subjectPath, packageId, profile, trustedRoot, candidateR
     schema_version: 1,
     package_id: packageId,
     adapter_path: profile.adapterPath,
-    expected_tests: profile.expectedTests,
+    // The isolated release container runs the formal 4-file profile; bind that exact
+    // count (160), not the broader dev suite, so the subject is usable for qualification.
+    expected_tests: profile.formalTests,
+    formal_files: profile.formalTestFiles,
     files: [],
   };
   const copyProfileFile = (name, sourceRole, sourceRoot, sourceAdapter) => {
@@ -205,6 +199,31 @@ const trustedRoot = assertRoot(args['trusted-root'], 'trusted root');
 const candidateRoot = assertRoot(args['candidate-root'], 'candidate root');
 const trustedAdapter = assertDirectoryChain(trustedRoot, resolve(trustedRoot.lexical, profile.adapterPath), 'trusted adapter path');
 const candidateAdapter = assertDirectoryChain(candidateRoot, resolve(candidateRoot.lexical, profile.adapterPath), 'candidate adapter path');
+
+// Load the single machine truth (runtime-test-plan.json) from the trusted adapter.
+// devSuite lists every .test.mjs that exists in the adapter so the parity check can
+// detect any added/removed test file; the formal profile (4 files / 160) is what the
+// isolated release container actually runs, so the subject manifest must bind 160.
+let plan;
+try {
+  plan = JSON.parse(readFileSync(join(trustedAdapter, 'runtime-test-plan.json'), 'utf8'));
+} catch (error) {
+  fail(`runtime-test-plan.json is unreadable in the trusted adapter: ${error.message}`);
+}
+const devSuite = plan?.devSuite;
+const formalProfile = plan?.formalProfile;
+if (!devSuite || !Array.isArray(devSuite.files) || !devSuite.files.length
+    || !Number.isInteger(devSuite.tests) || devSuite.tests < 1) {
+  fail('runtime-test-plan.json devSuite must declare a non-empty files array and a positive integer tests count');
+}
+if (!formalProfile || !Array.isArray(formalProfile.files) || !formalProfile.files.length
+    || !Number.isInteger(formalProfile.tests) || formalProfile.tests < 1) {
+  fail('runtime-test-plan.json formalProfile must declare a non-empty files array and a positive integer tests count');
+}
+profile.testFiles = [...devSuite.files];
+profile.expectedTests = devSuite.tests;
+profile.formalTestFiles = [...formalProfile.files];
+profile.formalTests = formalProfile.tests;
 
 for (const packageFile of profile.packageFiles) {
   assertSameFile(

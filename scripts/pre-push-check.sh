@@ -7,13 +7,16 @@ PASS=0; FAIL=0
 run() {
   local name="$1"; shift
   local out rc
-  out=$("$@" 2>&1) || true; rc=$?
-  local fails=$(echo "$out" | grep -ciE "FAIL:|BLOCK:|CASE_FAILURE" || true)
+  set +e
+  out=$("$@" 2>&1)
+  rc=$?
+  set -e
+  local fails=$(printf '%s\n' "$out" | grep -ciE "FAIL:|BLOCK:|CASE_FAILURE" || true)
   if [ $rc -eq 0 ] && [ "$fails" -eq 0 ]; then
     echo -e "${GREEN}✔ $name${NC}"; PASS=$((PASS+1))
   else
-    echo -e "${RED}✘ $name (${fails} failures)${NC}"
-    echo "$out" | grep -E "FAIL:|BLOCK:|CASE_FAILURE" | head -5 | sed 's/^/    /'
+    echo -e "${RED}✘ $name (rc=$rc, ${fails} failures)${NC}"
+    printf '%s\n' "$out" | grep -E "FAIL:|BLOCK:|CASE_FAILURE|Error:|error:" | head -8 | sed 's/^/    /'
     FAIL=$((FAIL+1))
   fi
 }

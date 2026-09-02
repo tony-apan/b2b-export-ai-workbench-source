@@ -236,6 +236,7 @@
     "workspacePreflightTests": 21,
     "contentRunControllerTests": 58,
     "interfaceRegistryTests": 11,
-    "adapterTotalTests": 250
+    "additionalDevSuiteTests": 17,
+    "adapterTotalTests": 267
   }
 }

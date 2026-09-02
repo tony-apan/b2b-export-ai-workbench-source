@@ -39,11 +39,11 @@
     "scripts/scan-server-action-ids.mjs"
   ],
   "scripts": {
-    "test": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs workspace-preflight.test.mjs content-run-controller.test.mjs interface-registry.test.mjs",
+    "test": "node scripts/run-dev-suite.mjs",
     "test:media": "node --test upload-media-browser.test.mjs",
     "test:article-images": "node --test article-image-binding.test.mjs",
     "test:articles": "node --test article-content-formats.test.mjs article-operations.test.mjs article-image-binding.test.mjs",
-    "test:all": "node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs workspace-preflight.test.mjs content-run-controller.test.mjs interface-registry.test.mjs",
+    "test:all": "node scripts/run-dev-suite.mjs",
     "test:workspace": "node --test workspace-preflight.test.mjs",
     "interfaces:validate": "node scripts/validate-interface-registry.mjs",
     "interfaces:index": "node scripts/build-interface-index.mjs",

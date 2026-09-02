@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   _internal as bindingInternal,
@@ -636,7 +636,7 @@ test('manifest schema 2 keeps occurrence-scoped source identity for equal bytes 
   assert.equal(manifest.assets[0].sourceFiles.length, 2);
   assert.notEqual(manifest.occurrences[0].sourceFile, manifest.occurrences[1].sourceFile);
   for (const occurrence of manifest.occurrences) {
-    assert.match(occurrence.sourceFile, /^\//);
+    assert.equal(isAbsolute(occurrence.sourceFile), true);
     assert.equal(occurrence.sourceSha256, occurrence.assetId);
     assert.match(occurrence.sourceMd5, /^md5:[0-9a-f]{32}$/);
   }

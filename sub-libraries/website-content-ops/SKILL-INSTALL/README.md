@@ -21,24 +21,19 @@ related: ["../README.md"]
 
 ## 架构与唯一真源
 
-```
-
-> **双真源警示**：本机 `~/.agents|claude|codex|workbuddy/skills/allincms-bulk-content-upload` 四处软链已指向母库 SKILL-INSTALL（**live 真源**）。dist 安装是 digest 冻结快照——安装目标必须避开 skills 发现路径（如上例 `$HOME/tools/`），同名并存时一律以母库软链为 canonical。text
-website-content-ops 完整 canonical source checkout（如调用方显式提供）
-  > 本仓 vendor/website-content-ops-runtime（按 commit 生成、逐文件 SHA-256 校验）
-  > allincms-bulk-content-upload 的宿主路由与编排
+```text
+website-content-ops 完整 canonical source checkout
+  > SKILL-INSTALL 的宿主路由与编排
   > references/ 和 scripts/ 中的历史辅助材料
 ```
 
-本仓默认安装已经包含约 1.4 MB 的 **verified bundled runtime snapshot**，所以普通用户只 clone / 安装这个 Skill 即可解析运行时，不再额外要求第二个私有或公开仓。bundle 由 `scripts/build_bundled_runtime.py` 从 canonical Git revision 的 committed bytes 和显式 allowlist 生成；`BUNDLE-MANIFEST.json` 记录 source commit、每个文件 SHA-256、大小和整体 digest。它不是可手工维护的第二真源。
-
-如果调用方提供完整 `<SUB_LIBRARY_ROOT>`，resolver 仍优先使用完整 canonical source checkout。显式 `--root` 或 `WEBSITE_CONTENT_OPS_ROOT` 无效时必须 fail-closed，不得静默改用 bundle。若 full source 与 bundle 都不能验证，才返回：
+**source-only 是唯一 canonical 安装路径。** `vendor/website-content-ops-runtime` bundle 已退役且不随仓分发；安装器只接受自身父目录就是完整 `website-content-ops` 源码树的布局。resolver 仍支持显式 `--root`、`WEBSITE_CONTENT_OPS_ROOT`、并列 checkout 和向上发现完整 source checkout；无效的显式高优先级路径必须 fail-closed，不能回落到历史 payload、旧 UI 流程或 retired helper。找不到完整源码时返回：
 
 ```text
 CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED
 ```
 
-不能回落到历史 payload、旧 UI 流程或 retired helper。bundle 完整性 PASS 只证明本地运行时字节完整，不证明 CMS 登录、当前部署接口、用户授权、远程写入、Stable 或 production-ready。
+不能回落到历史 payload、旧 UI 流程或 retired helper。完整源码与依赖自测 PASS 只证明本地运行时可执行，不证明 CMS 登录、当前部署接口、用户授权、远程写入、Stable 或 production-ready。
 
 ## 用户资料怎样参与新建或更新
 
@@ -74,54 +69,48 @@ Skill 不能直接把示例内容发进 CMS。标准链路是：
 1. **Plan A / `site_bootstrap`**：账号 scope，仅创建一个站点资源；未来 `site_id/site_key` 为 `null`；回读真实站点身份。
 2. **Plan B / `site_operation`**：引用 Plan A digest 与私有回读证据，绑定真实站点，重新发现 capability/current state，再创建 taxonomy、媒体、文章、产品或主题页。
 
-当前 canonical evidence 仍不允许本 Skill 自行把 create-site 升级为远程可执行能力；产品远程操作仍是 `exploration_only`。以运行时 `MANIFEST.md` 和 Adapter capability 为准。
+当前 Registry 将 `site.create` 与 product create/update/publish 纳入 canonical `fresh_live_verified_current_deployment` gate；`product.discover` 仍为 exploration，`product.delete` 仍为 blocked。以运行时 `MANIFEST.md`、Interface Registry 和当前部署 capability 为准。
 
 ## 安装与依赖
 
 ### 一次安装
 
-```bash
-# 自用轻量安装（在母库根目录执行；source-only 边界，逐文件 sha256 校验）
-python3 sub-libraries/website-content-ops/scripts/interface-kit-pipeline.py install "$HOME/tools/interface-kit-dist"
-```
-
-
-安装器现在会先验证 bundle，再执行 `npm ci`、接口 Registry/索引校验、250 项本地 Adapter 测试和 `sharp` 原生加载检查；**全部通过后才创建 Skill 链接**。任何一步失败均 exit 1，不再出现“Skill 看似安装成功、真正上传时才发现 canonical runtime 缺失”的半安装状态。正常输出应包含 `verified bundled runtime resolved`、`bundled runtime dependencies and self-tests verified`；调用方另外提供完整源包时则显示 `canonical source checkout resolved`。
-
-检查：
+从完整 `website-content-ops` clean clone 运行安装器。Python 3.10+、Node.js >=20.9.0 和 npm 为必需前置；安装器自动执行 `npm ci`、接口 Registry/索引校验、由 `runtime-test-plan.json` 驱动的测试套件及 `acorn`/`ajv`/`sharp` 加载检查，全部通过后才创建 Skill 链接。
 
 ```bash
-env -u WEBSITE_CONTENT_OPS_ROOT \
-  python3 scripts/resolve_website_content_ops_root.py --start /tmp --json
+cd sub-libraries/website-content-ops/SKILL-INSTALL
+python3 install.py codex
+python3 install.py --dir="$HOME/.agents/skills"
 ```
 
-默认结果应包含：
+Windows：
+
+```bat
+cd sub-libraries\website-content-ops\SKILL-INSTALL
+install.cmd codex
+```
+
+`install.sh` 仅是 POSIX 薄包装，行为与 `python3 install.py` 相同。PDF/DOCX 解析依赖默认不安装，需要时增加 `--docs-parse`；仅验证链接逻辑可用 `--skip-self-test`，该模式不会安装 Node 依赖、运行自测或写 ready marker，因此不能据此宣称 controller 可执行。
+
+检查完整源码解析与依赖状态：
+
+```bash
+python3 scripts/resolve_website_content_ops_root.py --start "$PWD" --json
+```
+
+正常完成安装后结果包含：
 
 ```json
 {
-  "source": "bundled-runtime",
-  "sourceCheckoutValidated": false,
-  "runtimeBundleValidated": true,
+  "source": "upward-discovery",
+  "sourceCheckoutValidated": true,
+  "runtimeBundleValidated": false,
   "runtimeDependenciesInstalled": true,
   "controllerExecutable": true
 }
 ```
 
-如果只 clone/copy 仓库而没有运行 `install.sh`，resolver 仍会识别 bundle，但会返回 `runtimeDependenciesInstalled: false` 和 `controllerExecutable: false`；这不是可上传状态，应先执行安装器，不能回落 UI 或历史 helper。
-
-高级开发者仍可用 `--root`、`WEBSITE_CONTENT_OPS_ROOT`、并列 checkout 或母库 upward discovery 提供完整 canonical source checkout；它们优先于 bundle。不要把无效显式路径留在环境变量里，因为高优先级输入错误会按设计 BLOCK。
-
-### 维护 bundle
-
-维护者只能从 committed canonical revision 重建，不得直接手改 `vendor/`：
-
-```bash
-python3 scripts/build_bundled_runtime.py \
-  --source-root /absolute/path/to/website-content-ops \
-  --revision <40-char-commit>
-```
-
-构建器排除 source cards、客户运行区、凭据、浏览器 profile、`node_modules/`、`dist/`、未去敏运行证据和二进制 fixture；为保证外部安装闭环，会包含锁文件、接口校验器、合成本地测试及其去敏证据引用。新的 bundle 在 commit/push 前仍需执行本仓测试、去敏审计与发布授权；本地安装 PASS 不等于已公开更新。
+只 clone/copy 而未运行正常安装时，resolver 会返回 `runtimeDependenciesInstalled: false` 和 `controllerExecutable: false`。vendor bundle 已退役且不随仓分发；无完整 source checkout 时必须返回 `CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED`，不能回落 UI 或历史 helper。
 
 ## 使用
 
@@ -175,13 +164,13 @@ python3 scripts/build_bundled_runtime.py \
 
 ## Upgrade & drift policy（升级与漂移策略）
 
-- 本仓是消费端快照+路由层，不承载 operational 工具的编辑权；升级前必须先把本地未提交改动 commit 或归档，再执行升级，**禁止 fresh-clone 式覆盖升级**。
-- `vendor/` 快照由 `scripts/build_bundled_runtime.py` 从母库 committed revision 生成并锚定 sourceCommit；升级后必须用 resolver 重新校验 bundleDigest。
+- 本目录是 source-only 唯一安装来源；升级必须更新完整 canonical source checkout 后重新运行 `install.py` / `install.cmd`，不得复制旧目录覆盖。
+- `vendor/` bundle 已退役且不随仓分发；resolver 只默认发现完整 source checkout。
 
 
 ## 合并说明（2026-08-30）
 
 - 独立仓 `tony-apan/allincms-bulk-content-upload` 已**封存**（GitHub archived，保留历史）；本目录（母库 `sub-libraries/website-content-ops/SKILL-INSTALL/`）为唯一真源。
-- **vendor 33MB 快照不再随仓分发**：resolver 的 full-checkout 优先级（母库 `sub-libraries/website-content-ops/` 本体）即为事实路径；安装包能力待 dist 管线（id-0073）建成后恢复。
+- **vendor bundle 已退役且不随仓分发**：resolver 的 full-source 路径（母库 `sub-libraries/website-content-ops/` 本体）是唯一 canonical 安装来源。
 - 合并前已清：母库实名×2（00da9e0）、客户名大小写变形×3（3b6c573 两处 + 31191ea 全大写一处）；历史字节仍存于封存仓与 git 历史。
-- 安装：`~/.agents/skills/allincms-bulk-content-upload` 软链指向本目录；或运行本目录 `install.sh`。
+- 安装：运行本目录 `python3 install.py`；Windows 运行 `install.cmd`。`install.sh` 仅转发给 Python 安装器。

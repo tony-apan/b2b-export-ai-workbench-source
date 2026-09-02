@@ -1271,12 +1271,14 @@ governanceTest('the formal runtime profile matches the adapter contract and exac
   assert.equal(localVerification.workspacePreflightTests, 21);
   assert.equal(localVerification.contentRunControllerTests, 58);
   assert.equal(localVerification.interfaceRegistryTests, 11);
-  assert.equal(localVerification.adapterTotalTests, 250);
+  assert.equal(localVerification.additionalDevSuiteTests, 17);
+  assert.equal(localVerification.adapterTotalTests, 267);
   assert.equal(
     localVerification.totalTests
       + localVerification.workspacePreflightTests
       + localVerification.contentRunControllerTests
-      + localVerification.interfaceRegistryTests,
+      + localVerification.interfaceRegistryTests
+      + localVerification.additionalDevSuiteTests,
     localVerification.adapterTotalTests,
   );
   assert.equal(

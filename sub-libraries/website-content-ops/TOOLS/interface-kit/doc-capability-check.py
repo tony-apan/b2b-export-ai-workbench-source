@@ -23,7 +23,6 @@ def check():
     if has_module("pypdf"): out["pdf"] = ("ok", "pypdf")
     elif has_module("PyPDF2"): out["pdf"] = ("ok", "PyPDF2")
     elif has_exe("pdftotext"): out["pdf"] = ("ok", "poppler pdftotext")
-    elif system == "Darwin" and has_exe("python3"): out["pdf"] = ("warn", "macOS 无 pdftotext/pypdf；建议 pip install pypdf")
     else: out["pdf"] = ("not-ok", "需 pypdf 或 poppler")
     # Word
     if has_module("docx"): out["docx"] = ("ok", "python-docx")
@@ -65,6 +64,10 @@ def main():
             doc = Document(); doc.add_heading("Hi", 1); doc.add_paragraph("docx test")
             doc.save(os.path.join(d, "t.docx")); print("docx self-test write ok")
         except Exception as e: print("docx self-test skipped:", type(e).__name__)
+    # 门：任一格式 not-ok → exit 1（--install/self-test 只是提示与自证，不豁免缺失项）。
+    if not allok:
+        return 1
+    return 0
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -35,6 +35,7 @@ const supportedSchemaKeywords = new Set([
   'type', 'const', 'enum', 'allOf', 'format', 'pattern', 'minLength',
   'minItems', 'uniqueItems', 'items', 'contains', 'minContains',
   'required', 'properties', 'additionalProperties',
+  'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum',
 ]);
 const supportedTypes = new Set(['object', 'array', 'string', 'number', 'integer', 'boolean', 'null']);
 
@@ -103,6 +104,13 @@ export function validateJsonSchema(instance, schema) {
       if (rule.minLength !== undefined && value.trim().length < rule.minLength) issues.push(`${path} must contain at least ${rule.minLength} non-whitespace characters`);
       if (rule.pattern && !new RegExp(rule.pattern).test(value)) issues.push(`${path} does not match required pattern`);
       if (rule.format === 'date-time' && !isDateTime(value)) issues.push(`${path} must be a valid RFC3339 date-time`);
+    }
+
+    if (typeof value === 'number') {
+      if (rule.minimum !== undefined && value < rule.minimum) issues.push(`${path} must be >= ${rule.minimum}`);
+      if (rule.maximum !== undefined && value > rule.maximum) issues.push(`${path} must be <= ${rule.maximum}`);
+      if (rule.exclusiveMinimum !== undefined && value <= rule.exclusiveMinimum) issues.push(`${path} must be > ${rule.exclusiveMinimum}`);
+      if (rule.exclusiveMaximum !== undefined && value >= rule.exclusiveMaximum) issues.push(`${path} must be < ${rule.exclusiveMaximum}`);
     }
 
     if (Array.isArray(value)) {

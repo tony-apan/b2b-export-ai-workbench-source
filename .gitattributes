@@ -1,0 +1,18 @@
+# 强制 LF，防止 Windows `core.autocrlf=true` 把 checkout 转成 CRLF 导致
+# 生成索引/测试精确比较与脚本解释误判（build-interface-index / *.test.mjs / *.py / *.md / *.tsv 一律 LF）。
+* text=auto
+
+*.mjs    text eol=lf
+*.cjs    text eol=lf
+*.js     text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.tsv    text eol=lf
+*.py     text eol=lf
+*.sh     text eol=lf
+*.cmd    text eol=crlf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.css    text eol=lf
+*.html   text eol=lf
+*.gitattributes text eol=lf

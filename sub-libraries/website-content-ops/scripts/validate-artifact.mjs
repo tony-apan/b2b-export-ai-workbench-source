@@ -214,8 +214,11 @@ if (!failures.length) {
   // Artifact-level redaction checks are intentionally repeated after packaging.
   // A correct checksum only proves integrity, not that the packaged content is safe.
   // The allowlist is fail-closed: any file type not declared here blocks the artifact.
-  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml', '.tsv', '.txt', '.jsonl', '.sh']);
-  const allowedExtensionlessArtifactFiles = new Set(['.gitignore', '.npmignore', 'LICENSE', 'NOTICE']);
+  // .py/.cmd are permitted because SKILL-INSTALL ships a cross-platform installer
+  // (install.py/install.cmd) whose resolver is Python; they are required for the
+  // artifact to be self-installable.
+  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml', '.tsv', '.txt', '.jsonl', '.sh', '.py', '.cmd']);
+  const allowedExtensionlessArtifactFiles = new Set(['.gitignore', '.gitattributes', '.npmignore', 'LICENSE', 'NOTICE']);
   for (const file of actual) {
     if (['MANIFEST.json', 'SHA256SUMS'].includes(file)) continue;
     const ext = extname(file).toLowerCase();

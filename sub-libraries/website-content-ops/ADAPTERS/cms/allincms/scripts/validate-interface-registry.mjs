@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFile, access } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { parse } from 'acorn';
@@ -84,7 +84,8 @@ async function referenceExists(ref) {
 
 async function assertReference(ref, errors, { requireSourceOnly }) {
   const absolute = resolve(ADAPTER_ROOT, ref.path);
-  if (!absolute.startsWith(`${ADAPTER_ROOT}/`) && absolute !== ADAPTER_ROOT) {
+  const rel = relative(ADAPTER_ROOT, absolute);
+  if (!rel || rel === '.' || rel.startsWith(`..${sep}`) || rel === '..' || isAbsolute(rel)) {
     errors.push(`reference escapes adapter root: ${ref.path}`);
     return;
   }
@@ -149,8 +150,10 @@ async function validateRuntimeDependencyClosure(pkg, errors) {
     for (const specifier of state.specifiers) {
       if (specifier.startsWith('.')) {
         const target = resolve(ADAPTER_ROOT, dirname(module), specifier);
-        const relativeTarget = target.slice(`${ADAPTER_ROOT}/`.length);
-        if (!target.startsWith(`${ADAPTER_ROOT}/`) || !packageFiles.has(relativeTarget)) {
+        const relativeTarget = relative(ADAPTER_ROOT, target);
+        const packageKey = relativeTarget.split(sep).join('/');
+        if (!relativeTarget || relativeTarget.startsWith(`..${sep}`) || isAbsolute(relativeTarget)
+            || !packageFiles.has(packageKey)) {
           errors.push(`packaged module ${module} imports local module not present in package files: ${specifier}`);
         }
         continue;

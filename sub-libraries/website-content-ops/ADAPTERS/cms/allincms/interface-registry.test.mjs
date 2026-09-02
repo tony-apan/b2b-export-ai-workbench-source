@@ -3,10 +3,23 @@ import assert from 'node:assert/strict';
 import { cp, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
+import { platform } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extractEsmExportBindings, validateInterfaceRegistry } from './scripts/validate-interface-registry.mjs';
 import { renderInterfaceIndex } from './scripts/build-interface-index.mjs';
+
+// Windows without Developer Mode/admin cannot create directory symlinks; directory
+// junctions need no privilege, and a plain recursive copy is the final fallback.
+async function linkNodeModules(source, linkPath) {
+  try {
+    await symlink(source, linkPath, platform() === 'win32' ? 'junction' : 'dir');
+    return;
+  } catch {
+    // Fall through to copy when symlink/junction creation is denied (EPERM/EACCES).
+  }
+  await cp(source, linkPath, { recursive: true });
+}
 
 const loadRegistry = () => readFile(new URL('./interface-registry.json', import.meta.url), 'utf8').then(JSON.parse);
 const loadPackage = () => readFile(new URL('./package.json', import.meta.url), 'utf8').then(JSON.parse);
@@ -50,7 +63,7 @@ test('runtime package closure rejects non-literal dynamic imports and unpackaged
       recursive: true,
       filter: (source) => source !== sourceNodeModules && !source.startsWith(`${sourceNodeModules}/`),
     });
-    await symlink(sourceNodeModules, join(temporaryAdapter, 'node_modules'), 'dir');
+    await linkNodeModules(sourceNodeModules, join(temporaryAdapter, 'node_modules'));
     await writeFile(
       join(temporaryAdapter, 'verify-media.mjs'),
       `import './not-packaged.mjs';
@@ -80,7 +93,7 @@ test('Registry validator fails closed on runtime-distribution and capability-rou
       recursive: true,
       filter: (source) => source !== sourceNodeModules && !source.startsWith(`${sourceNodeModules}/`),
     });
-    await symlink(sourceNodeModules, join(temporaryAdapter, 'node_modules'), 'dir');
+    await linkNodeModules(sourceNodeModules, join(temporaryAdapter, 'node_modules'));
     const registryPath = join(temporaryAdapter, 'interface-registry.json');
     const registry = JSON.parse(await readFile(registryPath, 'utf8'));
     registry.interfaces.find((item) => item.interface_id === 'allincms.content-run-controller.run-allin-cms-content-plan').runtime_availability = 'packaged';
@@ -119,7 +132,7 @@ test('verification contract and executable mutation routes reject profile and ch
       recursive: true,
       filter: (source) => source !== sourceNodeModules && !source.startsWith(`${sourceNodeModules}/`),
     });
-    await symlink(sourceNodeModules, join(temporaryAdapter, 'node_modules'), 'dir');
+    await linkNodeModules(sourceNodeModules, join(temporaryAdapter, 'node_modules'));
     const registryPath = join(temporaryAdapter, 'interface-registry.json');
     const contractPath = join(temporaryAdapter, 'verification-evidence-contract.json');
     const baselineRegistry = JSON.parse(await readFile(registryPath, 'utf8'));
@@ -365,7 +378,8 @@ test('generated human/AI index is deterministic, current, and contains every int
   const first = renderInterfaceIndex(registry);
   const second = renderInterfaceIndex(structuredClone(registry));
   assert.equal(first, second);
-  const current = await readFile(new URL('./INTERFACE-INDEX.md', import.meta.url), 'utf8');
+  const currentRaw = await readFile(new URL('./INTERFACE-INDEX.md', import.meta.url), 'utf8');
+  const current = currentRaw.replace(/\r\n/g, '\n');
   assert.equal(current, first);
   assert.match(current, /^---\ntitle: "AllinCMS Interface Index"\n/);
   assert.match(current, /\nwhen_to_read: "需要按接口名、导出名、领域、暴露层级或生命周期查询 AllinCMS Adapter 能力与限制时。"\n/);

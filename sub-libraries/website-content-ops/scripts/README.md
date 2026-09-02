@@ -14,6 +14,10 @@ canonical_entry: "README.md"
 ---
 # Scripts
 
+## Source-only Skill 安装
+
+完整 `website-content-ops` clean clone 是唯一 canonical 安装来源；`vendor/` bundle 已退役且不随仓分发。在 `SKILL-INSTALL/` 运行 `python3 install.py`，Windows 运行 `install.cmd`。安装器自动完成 adapter 的 `npm ci`、接口 Registry/索引检查、`runtime-test-plan.json` 驱动的全自测、原生依赖加载检查和 Skill 链接创建；`install.sh` 仅为 POSIX 薄包装。详见 [INSTALL.md](../INSTALL.md) 与 [SKILL-INSTALL/README.md](../SKILL-INSTALL/README.md)。
+
 ## interface-kit 真源管线（id-0073）
 
 ```bash

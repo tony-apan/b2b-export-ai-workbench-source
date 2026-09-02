@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { tmpdir } from 'node:os';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { createAllinCmsChromeAppleScriptTransport } from './host-run-template.mjs';
 
 test('transport bridge is UTF-8 safe and never uses eval(atob)', async () => {

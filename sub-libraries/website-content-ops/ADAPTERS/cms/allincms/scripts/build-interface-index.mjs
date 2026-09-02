@@ -114,7 +114,9 @@ async function main() {
   if (check) {
     let current = '';
     try { current = await readFile(INDEX_PATH, 'utf8'); } catch {}
-    if (current !== rendered) {
+    // Normalize CRLF so a Windows checkout (core.autocrlf=true) does not false-alarm stale.
+    const normalizedCurrent = current.replace(/\r\n/g, '\n');
+    if (normalizedCurrent !== rendered) {
       console.error('INTERFACE-INDEX.md is stale; run npm run interfaces:index');
       process.exitCode = 1;
       return;

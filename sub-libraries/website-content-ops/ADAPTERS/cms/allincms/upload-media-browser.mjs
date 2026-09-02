@@ -463,7 +463,7 @@ function assertNormalizedFileSnapshot(item) {
   return item;
 }
 
-async function prepareLocalFiles(localFiles, maxFiles) {
+async function prepareLocalFiles(localFiles, maxFiles, _internal = {}) {
   if (!Array.isArray(localFiles)) throw new Error('localFiles must be an array');
   if (!Number.isInteger(maxFiles) || maxFiles < 1 || maxFiles > VERIFIED_MAX_FILES) {
     throw new Error(`maxFiles must be an integer from 1 to ${VERIFIED_MAX_FILES}`);
@@ -475,10 +475,11 @@ async function prepareLocalFiles(localFiles, maxFiles) {
     throw new Error('localFiles contains duplicate paths');
   }
 
+  const lstatNow = _internal.lstat || lstat;
   const prepared = [];
   for (const localFile of localFiles) {
     if (!isAbsolute(localFile)) throw new Error(`localFile must be an absolute path: ${localFile}`);
-    const pathState = await lstat(localFile);
+    const pathState = await lstatNow(localFile);
     if (pathState.isSymbolicLink()) {
       throw new Error(`Refusing symbolic-link media input; select an immutable regular file: ${localFile}`);
     }
@@ -2728,7 +2729,7 @@ export async function uploadAllinCmsMediaBatch({
   if (!tab?.playwright || !tab?.capabilities) {
     throw new Error('A claimed Browser tab with Playwright and CDP capabilities is required');
   }
-  const prepared = _internal.preparedFiles || await prepareLocalFiles(localFiles, maxFiles);
+  const prepared = _internal.preparedFiles || await prepareLocalFiles(localFiles, maxFiles, _internal);
   if (!Array.isArray(prepared) || prepared.length < 1 || prepared.length > maxFiles) {
     throw new Error(`Prepared media snapshot count must be between 1 and ${maxFiles}`);
   }

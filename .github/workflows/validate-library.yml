@@ -121,3 +121,35 @@ jobs:
         run: |
           npm ci
           npm test
+
+  adapter-tests-matrix:
+    name: Adapter tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 1
+
+      # Line-ending safety is enforced by the repository .gitattributes (all source
+      # files eol=lf) plus CRLF normalization in build-interface-index --check and
+      # the interface-registry test; this matrix runs the same suite on all three OSes.
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache-dependency-path: sub-libraries/website-content-ops/ADAPTERS/cms/allincms/package-lock.json
+
+      - name: Install and run the full dev suite
+        working-directory: sub-libraries/website-content-ops/ADAPTERS/cms/allincms
+        run: |
+          npm ci
+          npm run interfaces:validate
+          npm run interfaces:index:check
+          npm test

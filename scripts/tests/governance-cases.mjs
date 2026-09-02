@@ -206,7 +206,7 @@ function fixedEvidenceChecks(manifest, profile, tagName) {
         id: 'runtime-tests', status: 'pass', result: {
           ...common('node --test upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs'),
           test_plan: ['upload-media-browser.test.mjs', 'article-image-binding.test.mjs', 'article-content-formats.test.mjs', 'article-operations.test.mjs'],
-          expected_tests: 156, passed_tests: 156, failed_tests: 0, skipped_tests: 0,
+          expected_tests: 160, passed_tests: 160, failed_tests: 0, skipped_tests: 0,
         },
       },
     );
@@ -426,7 +426,7 @@ function createQualificationFixture(root, name, options = {}) {
         QUALIFICATION_RUNTIME_REASON: 'trusted-sub-library-runtime-profile',
         QUALIFICATION_RUNTIME_IMAGE_DIGEST: `sha256:${'e'.repeat(64)}`,
         QUALIFICATION_TEST_PLAN_JSON: '["upload-media-browser.test.mjs","article-image-binding.test.mjs","article-content-formats.test.mjs","article-operations.test.mjs"]',
-        QUALIFICATION_EXPECTED_TESTS: '156', QUALIFICATION_PASSED_TESTS: '156',
+        QUALIFICATION_EXPECTED_TESTS: '160', QUALIFICATION_PASSED_TESTS: '160',
         QUALIFICATION_FAILED_TESTS: '0', QUALIFICATION_SKIPPED_TESTS: '0',
       }
     : {
@@ -921,7 +921,7 @@ export const governanceCases = new Map([
         kind: 'sub',
         manifest: { release_status: 'Ready', maturity_status: 'stable', verification_status: 'e2e-pass', license_status: 'cleared', approval_status: 'pending' },
       });
-      for (const staleCount of [120, 135, 137]) {
+      for (const staleCount of [120, 135, 137, 156, 158]) {
         const subApprovalPath = join(root, `.governance-fixtures/approval-evidence-runtime-count-${staleCount}.json`);
         writeApproval(subCandidate, subApprovalPath);
         const subApproval = JSON.parse(readFileSync(subApprovalPath, 'utf8'));
@@ -935,7 +935,7 @@ export const governanceCases = new Map([
         writeFileSync(subApprovalPath, `${JSON.stringify(subApproval, null, 2)}\n`);
         assertRejected(
           run(root, 'scripts/validate-release-approval.mjs', [subCandidate, subApprovalPath, subEvidencePath], { timeoutMs }),
-          /approval evidence runtime-tests expected_tests must be 156/,
+          /approval evidence runtime-tests expected_tests must be 160/,
           `non-canonical ${staleCount}-test approval evidence`,
         );
       }
@@ -1697,13 +1697,13 @@ ${output}`);
           QUALIFICATION_RUNTIME_IMAGE_DIGEST: '', QUALIFICATION_TEST_PLAN_JSON: '[]',
           QUALIFICATION_EXPECTED_TESTS: '0', QUALIFICATION_PASSED_TESTS: '0',
         }),
-        /sub-library attestation must bind the trusted runtime_verified 156-test profile/,
+        /sub-library attestation must bind the trusted runtime_verified 160-test profile/,
         'sub-library runtime_not_applicable forgery',
       );
       assertRejected(
-        runQualification(root, sub, timeoutMs, { ...sub.env, QUALIFICATION_PASSED_TESTS: '155' }),
+        runQualification(root, sub, timeoutMs, { ...sub.env, QUALIFICATION_PASSED_TESTS: '159' }),
         /runtime test counters do not represent an exact clean pass/,
-        'sub-library incomplete 155-of-156 runtime count',
+        'sub-library incomplete 159-of-160 runtime count',
       );
       assertRejected(
         runQualification(root, sub, timeoutMs, {
@@ -1711,17 +1711,17 @@ ${output}`);
           QUALIFICATION_EXPECTED_TESTS: '120',
           QUALIFICATION_PASSED_TESTS: '120',
         }),
-        /sub-library attestation must bind the trusted runtime_verified 156-test profile/,
+        /sub-library attestation must bind the trusted runtime_verified 160-test profile/,
         'stale 120-test qualification profile',
       );
       assertRejected(
         runQualification(root, sub, timeoutMs, {
           ...sub.env,
-          QUALIFICATION_EXPECTED_TESTS: '157',
-          QUALIFICATION_PASSED_TESTS: '157',
+          QUALIFICATION_EXPECTED_TESTS: '161',
+          QUALIFICATION_PASSED_TESTS: '161',
         }),
-        /sub-library attestation must bind the trusted runtime_verified 156-test profile/,
-        'inflated 157-test qualification profile',
+        /sub-library attestation must bind the trusted runtime_verified 160-test profile/,
+        'inflated 161-test qualification profile',
       );
     },
   }],
@@ -1819,7 +1819,7 @@ ${output}`);
         '--read-only',
         '--mount "type=bind,src=$subject,dst=/subject,readonly"',
         'node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs',
-        '--expected-tests 156',
+        '--expected-tests 160',
         'trusted signer allowlist contains an invalid fingerprint',
         'BLOCK: no trusted formal qualification test profile exists for sub-library',
         'tar --sort=name --mtime=',

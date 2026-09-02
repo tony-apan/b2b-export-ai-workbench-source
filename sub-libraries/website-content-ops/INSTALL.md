@@ -19,13 +19,24 @@ preview_publication_status: "BLOCK"
 
 既有 `v0.3.2-preview.1` 已作为 **Public Preview** 发布，可继续按该版本范围下载试用；当前源码候选因新增研究来源的 publication clearance pending 而保持 `BLOCK`，不得重新发布。Stable qualification、跨部署稳定性和生产批量使用继续 `BLOCK`。
 
-## 复制源码或 latest 包
+## Source-only 安装
+
+完整 `website-content-ops` clean clone 是唯一 canonical 安装来源；`vendor/` bundle 已退役且不随仓分发。不要只复制 `SKILL-INSTALL/`，否则安装器会以 `CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED` 阻断。
 
 ```bash
-cp -R website-content-ops /path/to/target/website-content-ops
-cd /path/to/target/website-content-ops
-node scripts/validate-sub-library.mjs
+git clone <repository-url>
+cd <repository>/sub-libraries/website-content-ops/SKILL-INSTALL
+python3 install.py codex
+# 或指定任意 Skills 目录：python3 install.py --dir=/path/to/skills
 ```
+
+Windows 在同一目录运行：
+
+```bat
+install.cmd codex
+```
+
+`install.py` 要求 Python 3.10+、Node.js >=20.9.0 与 npm，并自动执行 `npm ci`、接口 Registry/索引校验、由 `runtime-test-plan.json` 驱动的完整测试及 `acorn`/`ajv`/`sharp` 加载检查；全部通过后才创建 Skill 链接。`install.sh` 只是 POSIX 薄包装，不是唯一入口。PDF/DOCX 解析依赖按需增加 `--docs-parse`。
 
 正式候选包由以下命令生成：
 
@@ -35,7 +46,7 @@ node scripts/build-release.mjs
 
 候选包输出到 `dist/latest/`，包含 `MANIFEST.json` 和 `SHA256SUMS`。对复制后的候选包运行 `node scripts/validate-artifact.mjs /path/to/latest`；安装者应从 `README.md` 和 `START-HERE.md` 开始，不应读取母库私有路径。
 
-AllinCMS 图片 adapter 的工具测试位于 `ADAPTERS/cms/allincms/`；在该目录执行 `npm ci --ignore-scripts --no-audit --no-fund` 和 `npm test`。其运行时依赖 Node.js、npm 和 `sharp`，不是母库或客户凭据。
+AllinCMS adapter 的 Node 依赖与本地自测由 `SKILL-INSTALL/install.py`（Windows 为 `install.cmd`）统一安装和执行，不再要求使用者手工进入 adapter 运行 `npm ci`。其运行时依赖 Node.js、npm 和 `sharp`，不是母库或客户凭据。
 
 ## Runtime 依赖
 

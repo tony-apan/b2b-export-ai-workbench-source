@@ -225,8 +225,8 @@ if (!failures.length) {
   // Artifact-level redaction checks are intentionally repeated after packaging.
   // A correct checksum only proves integrity, not that the packaged content is safe.
   // The allowlist is fail-closed: any file type not declared here blocks the artifact.
-  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml', '.tsv', '.txt', '.jsonl', '.sh']);
-  const allowedExtensionlessArtifactFiles = new Set(['.gitignore', '.npmignore', 'LICENSE', 'NOTICE']);
+  const allowedArtifactExtensions = new Set(['.md', '.json', '.mjs', '.yml', '.yaml', '.tsv', '.txt', '.jsonl', '.sh', '.py', '.cmd']);
+  const allowedExtensionlessArtifactFiles = new Set(['.gitignore', '.gitattributes', '.npmignore', 'LICENSE', 'NOTICE']);
   const absolutePathPattern = /(?:\/Users\/[A-Za-z0-9._-]+\/|\/(?:private\/)?var\/folders\/[A-Za-z0-9._-]+\/|\/tmp\/[A-Za-z0-9._-]+\/)/;
   const credentialPattern = /(?:api[_ -]?key|access[_ -]?token|secret|password|cookie|authorization)\s*[:=]\s*["'"]?([A-Za-z0-9_./+=-]{12,})/i;
   for (const file of actual) {

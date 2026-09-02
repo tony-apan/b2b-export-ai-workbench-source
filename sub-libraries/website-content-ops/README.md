@@ -44,7 +44,7 @@ license_status: "pending"
 
 ■ 仓库：https://github.com/tony-apan/b2b-export-ai-workbench-source
 ■ 要点：
-  - 前置：git + Python 3.8+（建站零第三方依赖；PDF/DOCX 解析选装）；一个 AllinCMS 账号
+  - 前置：git + Python 3.10+（Skill 安装器）+ Node.js >= 20.9 与 npm（Adapter 依赖/自测必需；PDF/DOCX 解析另选装）；一个 AllinCMS 账号
   - 产出：当前受支持为站点 + 7 产品 + 7 页主题 + 表单绑定；已有 exact-ID 文章可审查后更新。全新文章可本地成稿/评审，但远程 article.create 依 canonical Registry 保持 BLOCK，域名 <site-key>.web.allincms.com
   - 实测参考：干净账号从零到 13 项审计 PASS（时长约半小时量级；内部 Example 实测值，证据在私有运行区，见 RUNBOOK sources）
   - 红线①：删除类操作（站点/产品/文章/分类/标签/主题/媒体，含 delete-demo-content 与任何 --force/--confirm 批量写）逐条列目标等我确认；未经批准不上传、不覆盖、不发布
@@ -53,13 +53,13 @@ license_status: "pending"
 
 请为我安装并启动，逐步执行并在每步后报告实际输出：
 1. 克隆：git clone https://github.com/tony-apan/b2b-export-ai-workbench-source.git && cd b2b-export-ai-workbench-source
-2. 工具包自检（应输出 VERIFY PASS；可能出现 remote refs 缺失的 WARN，属正常）：cd sub-libraries/website-content-ops/TOOLS/interface-kit && python3 index/registry_tools.py verify
-3. 真源管线检查（应输出 CHECK PASS；出现任何 WARN/FAIL 都停下向我报告，唯一例外：与步骤 2 同类的 remote refs 缺失 WARN）：cd ../../scripts && python3 interface-kit-pipeline.py check
-4. 选装依赖（仅 PDF/DOCX 解析需要）：cd ../TOOLS/interface-kit && python3 install-deps.py --yes
+2. 一键安装并自测（Windows 用 install.cmd；自动 npm ci + 完整 11 文件自测套件，任一失败打印可修复命令）：python3 sub-libraries/website-content-ops/SKILL-INSTALL/install.py --dir=<你的 skills 目录，可选>
+3. 基础自检（应输出 VERIFY PASS；可能出现 remote refs 缺失的 WARN，属正常）：cd sub-libraries/website-content-ops/TOOLS/interface-kit && python3 index/registry_tools.py verify
+4. 选装依赖（仅 PDF/DOCX/PPTX/XLSX 解析需要）：cd ../TOOLS/interface-kit && python3 install-deps.py --yes
 5. 凭据：token 三种取法（推荐①，专题真源：仓库内 sub-libraries/website-content-ops/ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md）——① 纯 API 登录：我把邮箱+密码直接发你（或我自己 printf 'email\npassword' > <tmp>/ws-creds.txt 后告诉你路径），你登录一次换 token，密码即弃、该临时文件你用完即删，事后提醒我改密；② 兜底：我登录 workspace.laicms.com 后从浏览器 Cookie 复制 payload-token 发你；③ 你从我本地浏览器配置文件提取（方向指引，未实测）。任一方式取到后 export WS_TOKEN=<token>；我一样都不给就停在这里，不要猜、不要碰远程。该 token 等于我的登录态（约 30 天有效且无法提前吊销），只放进环境变量（若你手敲 export，先 set +o history 防落入 shell 历史），不要写 token 文件、不要入日志（方式①的密码临时文件是唯一例外，用完即删）；用完提醒我在平台退出登录，或到期前轮换/改密作废
 6. 就绪后：先向我要客户资料（PDF/DOCX/表格/网站/图片均可）与 site-key 偏好（不给则按 ONEPASS 规则生成）；然后读当前目录的 NEW-SITE-ONEPASS.md，按其 13 步建当前受支持站点（文章 create BLOCK 边界以 ONEPASS 为准）；事实与坑查同目录 RUNBOOK-ANYONE.md
 7. 批准粒度：13 步内的上传/发布类操作，首次执行前把整批计划列给我批一次即可；删除类（站点/产品/文章/分类/标签/主题/媒体，含 delete-demo-content 与任何 --force/--confirm 批量写）永远逐条列目标等我确认；未经批准不覆盖
-（Windows 同样适用：WS_TOKEN 环境变量跨平台；若你的执行环境每条命令独立 shell，cd 不持久，请自行换算为绝对路径）
+（跨平台：macOS/Linux 用 install.py，Windows 用 install.cmd + WS_TOKEN 环境变量；若你的执行环境每条命令独立 shell，cd 不持久，请自行换算为绝对路径）
 ```
 
 > 已经在用 AI 技能生态（Claude/Codex skills）？把 `sub-libraries/website-content-ops/SKILL-INSTALL/` 软链到你的 skills 目录即可注册本能力（详见 [SKILL-INSTALL/README](SKILL-INSTALL/README.md) 的安装段与双真源警示）。
@@ -68,7 +68,7 @@ license_status: "pending"
 
 | 要点 | 内容 |
 |---|---|
-| 前置条件 | git + Python 3.8+（零第三方依赖即可建站；PDF/DOCX 解析选装）；一个 AllinCMS 账号取 token（30 天登录态） |
+| 前置条件 | git + Python 3.10+（Skill 安装器）+ Node.js >= 20.9 + npm（Adapter 依赖/自测必需；PDF/DOCX 解析选装）；一个 AllinCMS 账号取 token（30 天登录态） |
 | 实测时长 | 干净账号从零到 13 项审计 PASS ≈ **25 分钟** |
 | 产出 | 当前受支持：站点 + 7 产品 + 7 页主题 + 表单绑定；已有 exact-ID 文章可 reviewed update。全新文章本地成稿/评审可完成，远程 article.create Registry BLOCK |
 | 关键入口 | [13 步一条龙](TOOLS/interface-kit/NEW-SITE-ONEPASS.md) · [事实与坑库](TOOLS/interface-kit/RUNBOOK-ANYONE.md) · [166+ 字段清单](TOOLS/interface-kit/templates/new-site-customization-checklist.md) · [token 三种取法](ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md) |

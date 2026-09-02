@@ -32,6 +32,53 @@ canonical_entry: "README.md"
 
 ---
 
+## 我要建站 / 使用本仓库能力
+
+> **状态口径**：`website-content-ops` 当前是源码候选（Working），历史 `v0.3.2-preview.1` 可继续按其范围试用；当前源码候选发布状态 `BLOCK`，不代表 Stable 或 production-ready。本仓库可让“人 + AI”在干净账号上从资料建站并自测，但真实客户资料、账号、凭据只进独立客户私有运行区，不进公开提交。
+
+### 快速上手：用资料直接建站
+
+把下面这段整体复制发给一个能读写本地文件、能跑 Python/Node、有浏览器能力的 AI：
+
+```text
+使用本仓库的 Website Content Operations 能力建站。
+1. 先读 sub-libraries/website-content-ops/README.md、AGENTS.md、MANIFEST.md、
+   TOOLS/interface-kit/NEW-SITE-ONEPASS.md 与 RUNBOOK-ANYONE.md，不要扫描无关目录。
+2. 检查环境并安装依赖：运行 sub-libraries/website-content-ops/SKILL-INSTALL/install.py
+   （Windows 用 install.cmd）；它会自动 npm ci 并跑完整自测，缺失 Node/Python 时给出可复制安装命令。
+3. 我提供客户资料（PDF/DOCX/表格/网站/图片均可）与 site-key 偏好。
+4. 先只读核对账号/目标站点与当前能力；列出建站与发布计划，等我批准后再严格串行执行。
+5. 删除类操作（站点/产品/文章/分类/标签/媒体/主题，含 delete-demo-content 与 --force/--confirm）
+   永远逐条列目标等我确认。token 只放环境变量，不落盘、不入日志。
+6. 完成后用 audit / acceptance-v2 逐项验收并报告证据，不把 HTTP 200 当成功。
+```
+
+### 本仓库能做什么（按目标找入口）
+
+| 我的目标 | 入口 |
+|---|---|
+| 用资料从零建 AllinCMS 网站 | [Website Content Operations（建站一条龙）](sub-libraries/website-content-ops/README.md) |
+| 更新现有网站的产品/文章 | [WCO 内容更新与 review 门](sub-libraries/website-content-ops/README.md) |
+| 新建客户私有代运营运行区 | [Agency Operations](sub-libraries/agency-operations/README.md) |
+| 给 AI 注册成可调用 Skill | [WCO SKILL-INSTALL 安装说明](sub-libraries/website-content-ops/SKILL-INSTALL/README.md) |
+| 只查外贸/建站知识 | [wiki 导航](wiki/index.md) |
+| 查看所有可独立交付模块 | [子库注册表](sub-libraries/README.md) |
+
+安装与自测命令（在 clone 根执行）：
+
+```bash
+# 1) 基础自检（应 VERIFY PASS；remote-refs WARN 属正常）
+cd sub-libraries/website-content-ops/TOOLS/interface-kit && python3 index/registry_tools.py verify && cd ../../..
+
+# 2) 一键安装 Node 依赖 + 全量自测 + 注册 Skill（Windows 用 install.cmd）
+python3 sub-libraries/website-content-ops/SKILL-INSTALL/install.py          # 加 --dir=<skills目录> 指定目标
+
+# 3) 可选：PDF/DOCX/PPTX/XLSX 解析能力
+python3 sub-libraries/website-content-ops/TOOLS/interface-kit/install-deps.py --yes
+```
+
+---
+
 ## 从这里开始
 
 - 新 agent 术语路由：[CONTEXT.md](CONTEXT.md)

@@ -669,7 +669,7 @@ Markdown 转换只接受当前已验证的保守子集：
 - 分类与标签的主题稳定展示；
 - 正文图片 alt 已在 2026-07-31 的单篇现有文章实测中确认：Slate/CMS payload 保存非空 alt，但当前前端 renderer 输出空 alt；这是独立表现层 BLOCK，不再属于“尚未观察”。
 
-因此当前结论分层记录：**当前部署的字段、taxonomy、文章生命周期、11 篇历史串行接口长跑、2 篇真实全字段创建/发布与幂等 publish，以及 1 篇现有文章的单次优化/单次发布已有证据；文章/媒体四文件专项 profile 为 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48），历史 158/158 已陈旧并必须拒绝；完整源码工作树另有 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11，当前 `npm test` 七文件全量为 250/250。媒体 caption 与 taxonomy 主题展示仍为 WARN；正文图片 alt renderer、正式技术 SEO、跨部署、失败注入的远程证据和任意大批量远程长跑继续 BLOCK。**
+因此当前结论分层记录：**当前部署的字段、taxonomy、文章生命周期、11 篇历史串行接口长跑、2 篇真实全字段创建/发布与幂等 publish，以及 1 篇现有文章的单次优化/单次发布已有证据；文章/媒体四文件专项 profile 为 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48），历史 158/158 已陈旧并必须拒绝；完整源码工作树另有 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11，当前 `npm test` 11 文件 dev suite 全量为 267/267。媒体 caption 与 taxonomy 主题展示仍为 WARN；正文图片 alt renderer、正式技术 SEO、跨部署、失败注入的远程证据和任意大批量远程长跑继续 BLOCK。**
 ## 10. Markdown 正文图片原位绑定合同（2026-07-27）
 
 文章正文图片已经形成独立 adapter，不再允许由执行 AI 临时拼 payload：
@@ -792,7 +792,7 @@ published_theme_alt_current_run: not_run_not_authorized
 
 | 范围 | 当前结论 | 证据 / 缺口 |
 |---|---|---|
-| 当前知识库 Adapter：文章字段、taxonomy、状态机、恢复和串行控制 | **PASS（本地控制器）** | 固定文章/媒体四文件专项 profile：160/160 通过；其中媒体 47/47、正文图片 52/52、正文格式 13/13、文章生命周期与 taxonomy 48/48；历史 158/158 已陈旧并必须拒绝；完整源码工作树再加 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11 后，`npm test` 七文件全量为 250/250，覆盖全字段、状态冲突、动态 action、`postCreate` 前后 ID snapshot 唯一差集、创建记录同站点归属、taxonomy route-scoped `contentType` 与显式冲突、跨 realm JSON 语义、封面 canonical 持久化字段、重复 slug、受控重试和人工介入 |
+| 当前知识库 Adapter：文章字段、taxonomy、状态机、恢复和串行控制 | **PASS（本地控制器）** | 固定文章/媒体四文件专项 profile：160/160 通过；其中媒体 47/47、正文图片 52/52、正文格式 13/13、文章生命周期与 taxonomy 48/48；历史 158/158 已陈旧并必须拒绝；完整源码工作树再加 Workspace 21/21、串行 Controller 58/58 与接口 Registry 11/11 后，`npm test` 11 文件 dev suite 全量为 267/267，覆盖全字段、状态冲突、动态 action、`postCreate` 前后 ID snapshot 唯一差集、创建记录同站点归属、taxonomy route-scoped `contentType` 与显式冲突、跨 realm JSON 语义、封面 canonical 持久化字段、重复 slug、受控重试和人工介入 |
 | 当前部署历史真实文章闭环 | **PASS（限定范围）** | 已有当前登录站点、动态捕获 action、严格串行 11 篇 `update → publish`、后台/前台/图片验收证据 |
 | `postCreate` API | **PASS（当前部署、限定本次授权）** | 2026-07-30 已在同一站点严格串行创建并发布 2 篇全字段文章；每次均重新捕获当前 action/router/deployment，并用创建前后完整 ID snapshot 证明差集恰好一个、创建记录 ID 与该差集一致且属于精确站点。此证据不放行其他站点或未来部署；后续运行仍须重新确认当前合同后才可传 `createContractConfirmed: true` |
 | 503、transaction mismatch、请求可能成功后的文章恢复 | **BLOCK** | 只有本地故障控制测试，没有文章级远程注入证据；状态不明时 adapter 只允许停下，不会盲重发 |
