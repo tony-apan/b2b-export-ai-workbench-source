@@ -24,7 +24,19 @@ license_status: "cleared"
 
 你不需要先学会 Obsidian、PicGo、接口或代码。**人负责说清目标、提供资料并批准关键操作；AI 按本子库的执行手册完成检查、制作、验证和记录。**
 
-> **既有 `v0.3.2-preview.1` Public Preview 可继续按其已发布范围试用；当前源码候选为 `BLOCK`。** 三张 bundled source card——AllinCMS official、PicGo image-host official、B2B SEO content research——均为 `publication_status: BLOCK` 且 `license_status: pending`；当前工作树因此不得重新发布、不得宣称 Stable 或 production-ready。实时状态与许可证见 [MANIFEST.md](MANIFEST.md) 和 [LICENSE](LICENSE)。
+> **当前版本 `0.4.0-preview.1`（Public Preview，2026-09-03 发布）。** 三张 bundled source card 已逐卡 publication clearance（`approved / PASS / cleared`），`license_status: cleared`。Preview 口径：非 Stable、先单样本、生产动作需用户批准；正式 Stable qualification 继续阻断。实时状态见 [MANIFEST.md](MANIFEST.md)、[VERSION.md](VERSION.md) 与 [LICENSE](LICENSE)。
+
+## 核心优势：全程 API 建站，不依赖浏览器自动化
+
+**正常路径不需要打开浏览器——从建站到发布全程走 HTTP 接口。** 登录、建站、产品、文章、分类、标签、媒体上传（multipart）、页面模块、主题、公开站验收，全部是纯接口调用（操作矩阵 10/10 实测，零浏览器）。相比"模拟人点后台"的浏览器自动化方案：速度快一个量级、可精确回读校验（readback diff）、不依赖页面改版、可串行可审计。
+
+**遇到问题才会打开浏览器，而且是去"摸索"不是去"操作"。** 当接口行为和文档不一致（如平台更新后 action id 变化、新站字段校验差异），AI 按 [AI-START-HERE §0](ADAPTERS/cms/allincms/AI-START-HERE.md) 的会话桥路由打开浏览器做**只读诊断**：复用登录态查真实请求、扫客户端 bundle 重新发现 action id（`scan/scan-actions.py`）、对照官方教程核验——找到根因后**回到接口层修复**并沉淀成新配方。浏览器是探索工具，不是执行通道。
+
+配套的可靠性底座：
+
+- **108 个实测坑位库**（`TOOLS/interface-kit/index/issues.tsv`，现象→根因→修复→规避，可检索）——别的 AI 踩过的坑你不用再踩；
+- **合作式审查门**（producer/reviewer 分离 + 30 分钟新鲜 capability + canonical readback 精确比对）——写错会 fail-closed，不会静默破坏站点；
+- **发布前后全量校验**（结构/链接/去敏/治理 55 项对抗测试）——交付即审计通过，不是"应该可以"。
 
 ## 你可以用它做什么
 
