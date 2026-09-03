@@ -41,7 +41,7 @@ related: ["README.md"]
 | featured-news-list-editorial | 精选文章 | sectionLabel, headline, supportingCopy, digestLabel, featureLabel, ctaLabel, ctaTarget, associatedListPage, associatedDetailPage, categorySlug, sortOrder, fit, postActionLabel, featureActionLabel | 特色文章大卡+列表卡 |
 | faq-accordion | FAQ 手风琴 | sectionLabel, headline, supportingCopy, supportNote, items[] | 问答手风琴 |
 | newsletter-inline | 订阅条 | sectionLabel, headline, supportingCopy, emailPlaceholder, submitLabel, finePrint | 订阅行（输入+按钮+细则） |
-| contact-form-split | 联系表单分栏 | eyebrow, title, description, responseTitle, responseDescription, emailLabel, emailValue, phoneLabel, phoneValue, addressLabel, addressValue, hoursLabel, hoursValue, formCardEyebrow, formCardTitle, formCardDescription, formSlug("") | 左联系卡（email/phone/office/hours）+右表单卡 |
+| contact-form-split | 联系表单分栏 | eyebrow, title, description, responseTitle, responseDescription, emailLabel, emailValue, phoneLabel, phoneValue, addressLabel, addressValue, hoursLabel, hoursValue, formCardEyebrow, formCardTitle, formCardDescription, **formSlug（必填真实 slug，缺失=公网只渲染表单卡外壳 0 个 <form>，ISS-110；builder contact_split 已带默认 contact-inquiry）** | 左联系卡（email/phone/office/hours）+右表单卡 |
 | product-comparison（chunk 注册） | 产品对比表 | -（对比表格） |
 | header-card（chunk 注册） | 页头卡 | -（辅助区块） |
 

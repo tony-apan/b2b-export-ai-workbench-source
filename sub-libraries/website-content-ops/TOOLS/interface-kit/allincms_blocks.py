@@ -100,12 +100,14 @@ def newsletter(label,headline,supporting,email_ph="Email address",submit="Subscr
     return el("newsletter-inline",{"sectionLabel":label,"headline":headline,"supportingCopy":supporting,
         "emailPlaceholder":email_ph,"submitLabel":submit,"finePrint":fine})
 
-def contact_split(eyebrow,title,description,resp_title,resp_desc,email,phone,address,hours,form_card_eyebrow="Inquiry intake",form_card_title="Send the details",form_card_desc="Share a few details about your request so we can send a useful reply."):
+def contact_split(eyebrow,title,description,resp_title,resp_desc,email,phone,address,hours,form_card_eyebrow="Inquiry intake",form_card_title="Send the details",form_card_desc="Share a few details about your request so we can send a useful reply.",form_slug="contact-inquiry"):
+    # form_slug 必须绑定真实表单 slug：缺失时公网只渲染表单卡外壳、0 个 <form>（ISS-076/ISS-110）
     return el("contact-form-split",{"eyebrow":eyebrow,"title":title,"description":description,
         "responseTitle":resp_title,"responseDescription":resp_desc,
         "emailLabel":"Email","emailValue":email,"phoneLabel":"Phone","phoneValue":phone,
         "addressLabel":"Office","addressValue":address,"hoursLabel":"Hours","hoursValue":hours,
-        "formCardEyebrow":form_card_eyebrow,"formCardTitle":form_card_title,"formCardDescription":form_card_desc})
+        "formCardEyebrow":form_card_eyebrow,"formCardTitle":form_card_title,"formCardDescription":form_card_desc,
+        "formSlug":form_slug})
 
 # ---------- 公司页 / 联系页区块（模板标准组件，字段严格对齐模板页 schema）
 # 注意：未提供的展示字段会被服务端用模块默认值回填（含模板文案！），显式传空/自定义以覆盖 ----------

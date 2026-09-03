@@ -417,11 +417,17 @@ def audit(site_slug, base_url=None, html_dir=None, out=None, config=None):
     home_raw = htmls.get("home.html", "")
     add("root-home", "__next_error__" not in home_raw and len(home_raw) > 10000,
         "根路径 / 渲染真实首页" if "__next_error__" not in home_raw else "根路径 / 是错误壳（用 set_home_page 修复，见 RUNBOOK §2）")
-    # 表单渲染（ISS-076）：contact-us 必须有真实 <form>（formSlug 空=整个表单不渲染）；home 至少 1 个表单（内联或全局弹窗）
+    # 表单渲染（ISS-076/ISS-110）：contact-us 必须有真实 <form>；任何页面的 contact-form-split 卡（含首页底部）
+    # 若同页 0 个 <form> 即 formSlug 断裂——静态 HTML 里该模块类型名必然可见，可精确检测
     contact_raw = htmls.get("contact-us.html", "")
     has_form = "<form" in contact_raw and ('type="submit"' in contact_raw or "Send message" in contact_raw)
-    add("form-render", has_form,
-        "contact-us 渲染真实表单" if has_form else "contact-us 无 <form>（表单块 formSlug 空=断裂，绑 readback initialForms 里的真实 slug，ISS-076）")
+    broken_inline = sorted(fn for fn, t in htmls.items()
+                           if "contact-form-split" in t and "<form" not in t)
+    form_ok = has_form and not broken_inline
+    add("form-render", form_ok,
+        ("contact-us 渲染真实表单；内联表单卡页面均有 <form>" if form_ok else
+         ("contact-us 无 <form>（表单块 formSlug 空=断裂，绑 readback initialForms 里的真实 slug，ISS-076）" if not has_form else
+          f"内联表单卡页面缺 <form>（formSlug 断裂，ISS-110）: {broken_inline[:3]}")))
     # 全页正文聚合（去 script/style/meta/标签）。meta 排除理由：模板词扫描只对可见文本判定；
     # 页面 description 是主题生成元数据——静态页可经 api.update_page(description=) 改（ISS-073），
     # 动态路由页回退模板值（平台限制）；审计以可见文本为准，meta 单独人工核对。
