@@ -21,43 +21,29 @@ canonical_entry: "README.md"
 
 ---
 
-## 快速上手（1 分钟看懂怎么用）
+## 🚀 快速上手（1 分钟看懂怎么用）
 
 你只需要做两件事：
 
 1. **装一个能读写本地文件的 AI**（例如 Claude Code、Codex 之类，或支持 skills 的 AI 助手）。
-2. **按下面的“发给 AI 的话”挑一段复制给它。**
-
-想建网站 / 想更新网站内容，复制这段：
+2. **把下面这一个代码块整体复制发给它，末尾补上你要干的事。**
 
 ```text
-请使用本仓库的建站能力（sub-libraries/website-content-ops）。
-1. 先读该目录的 README、AGENTS、MANIFEST 和 NEW-SITE-ONEPASS，别扫描无关目录。
-2. 帮我检查本机环境并安装依赖：运行 SKILL-INSTALL/install.py（Windows 用 install.cmd），
-   缺 Node/Python 时给我可复制命令。
-3. 我会给你客户资料（PDF/DOCX/表格/网站/图片）和想要的网址前缀。
-4. 先只读核对我的 CMS 账号和现状，把“准备做什么 + 发布什么”列成清单给我批。
-5. 没我逐条点头，不要删除/覆盖/发布任何东西；我的登录凭据只放环境变量。
+【B2B 外贸工作台 · 一键启动】把本块整体复制发给你的 AI。
+■ 仓库：https://github.com/tony-apan/b2b-export-ai-workbench-source.git
+■ 第一步：clone 后安装建站工具包并自测：
+   python3 sub-libraries/website-content-ops/SKILL-INSTALL/install.py
+   （Windows 用 install.cmd）缺 Node/Python 给我可复制命令，不要跳过。
+■ 第二步：我要做的事是：______（例：建网站 / 写 B2B 文章 / 外贸增长建议）
+■ 规则：建站类读 sub-libraries/website-content-ops/，方法类先读 wiki/index.md；
+   删除/覆盖/发布先列清单等我逐条批准；凭据只进环境变量；情况不明先问不要猜。
 ```
 
-想把公司资料变成能上外网的英文 B2B 文章，复制这段：
+装完之后直接用大白话提需求就行，AI 会自己路由到对应方法：
 
-```text
-请用本仓库的 B2B 文章方法（sub-libraries/website-content-ops/PLAYBOOKS/）帮我写文章。
-1. 先读 id-0001-b2b-seo-article-standard.md 和写作逻辑，再读我给你的产品/公司资料。
-2. 先给我标题选项 + 文章大纲 + 事实清单，等我确认再写全文。
-3. 文章里每个数字都要有出处；没有认证/价格/客户案例就不要写。
-4. 写完后给我指出哪里证据不足，再决定要不要进 CMS。
-```
-
-想找外贸获客/增长的方法（不只是建站），复制这段：
-
-```text
-请把本仓库当知识库用（先读 wiki/index.md）。
-1. 我的情况是：______（行业 / 目标市场 / 现有什么）。
-2. 请告诉我：做外贸增长应该先做什么，用仓库里哪些方法（开发信/LinkedIn/SEO/GEO/展会/短视频…）。
-3. 每次给建议都要引用仓库里的具体 playbook 页面，别凭空说。
-```
+- **建网站 / 更新网站**：给它客户资料（PDF/DOCX/表格/网站/图片）+ AllinCMS 账号，其余全自动；
+- **写 B2B 英文文章**：给它产品/公司资料，先出提纲和事实清单再动笔；
+- **外贸增长咨询**（开发信/LinkedIn/SEO/展会…）：说清你的行业、目标市场和现状。
 
 ---
 
