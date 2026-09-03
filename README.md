@@ -6,7 +6,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-09-02"
+last_updated: "2026-09-03"
 sources: ["AGENTS.md", "wiki/00_meta/private-master-and-sub-library-model.md", "Tony public MIT decision 2026-09-02"]
 related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "MANIFEST.md", "RELEASE.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/in-repository-agency-runtime-model.md", "sub-libraries/README.md", "sub-libraries/agency-operations/README.md"]
 visibility: "public"
@@ -15,7 +15,9 @@ canonical_entry: "README.md"
 -->
 # B2B Export AI Workbench
 
-一个给外贸人用的“增长工作台”。里面装的不是软件，而是**做外贸要用到的方法、模板和工具**：怎么建网站、怎么写 B2B 文章、怎么开发信、怎么做 LinkedIn、怎么弄 SEO/GEO、怎么回询盘、怎么参加展会、怎么做短视频——全都整理成了人和 AI 都能读的步骤。
+![Status](https://img.shields.io/badge/status-Public_Preview-2ea043) ![Version](https://img.shields.io/badge/version-0.4.0--preview.1-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white) ![Node](https://img.shields.io/badge/node-%E2%89%A520.9-339933?logo=node.js&logoColor=white)
+
+一个给外贸人用的"增长工作台"。里面装的不是软件，而是**做外贸要用到的方法、模板和工具**：怎么建网站、怎么写 B2B 文章、怎么开发信、怎么做 LinkedIn、怎么弄 SEO/GEO、怎么回询盘、怎么参加展会、怎么做短视频——全都整理成了人和 AI 都能读的步骤。
 
 **它最大的用法很简单：把这个仓库交给一个 AI，然后告诉它你要干什么，它照着里面的方法帮你干。**
 
@@ -47,7 +49,7 @@ canonical_entry: "README.md"
 
 ---
 
-## 这个仓库里到底有什么
+## 📦 这个仓库里到底有什么
 
 | 你想干什么 | 去哪里 | 成熟度 |
 |---|---|---|
@@ -65,23 +67,27 @@ canonical_entry: "README.md"
 
 ---
 
-## 新手常见问题
+## ❓ 新手常见问题
 
 **Q：我需要会编程吗？**
+
 A：不用。装好 AI 后，复制上面的话发给它即可。仓库里的命令是给 AI 读的，不是给你背的。
 
 **Q：它真的能帮我建一个能用的网站吗？**
-A：能。已用真实客户资料从零建出过 B2B 站并通过审计；但这套流程需要：一个 AllinCMS 账号、一份客户资料、以及你对“上传/发布”的逐次批准。它不等于“一键生成”，而是“AI 按方法干 + 你点头 + 事后验收”。
+
+A：能。已用真实客户资料从零建出过 B2B 站并通过审计；但这套流程需要一个 AllinCMS 账号、一份客户资料，以及你对"上传/发布"的逐次批准。它不等于"一键生成"，而是"AI 按方法干 + 你点头 + 事后验收"。
 
 **Q：我的客户资料 / 账号密码安全吗？**
-A：仓库公开，但**真实客户资料、账号、密码、登录态绝不要提交进这个仓库**。资料和运行数据只放在你自己电脑上的私有目录，由你和 AI 处理。
+
+A：仓库公开，但真实客户资料、账号、密码、登录态绝不要提交进这个仓库。资料和运行数据只放在你自己电脑上的私有目录，由你和 AI 处理。
 
 **Q：这些方法靠谱吗？**
-A：仓库对每块内容都标了成熟度：有真实证据的写“有证据”，只是框架的标“Seed / 待验证”，没效果数据的不吹。**别把“方法存在”当成“结果已验证”。** 详细的证据口径见 [check-mechanism-map.md](wiki/00_meta/check-mechanism-map.md)。
+
+A：仓库对每块内容都标了成熟度：有真实证据的写"有证据"，只是框架的标"Seed / 待验证"，没效果数据的不吹。**别把"方法存在"当成"结果已验证"**。详细的证据口径见[检查机制说明](wiki/00_meta/check-mechanism-map.md)。
 
 ---
 
-## 许可证
+## 📄 许可证
 
 本仓库（B2B Export AI Workbench）母库原创内容以 **MIT License** 对外提供，可以自由使用、修改、再分发（保留版权声明即可）。完整文本见 [LICENSE](LICENSE)，范围说明见 [LICENSE.md](LICENSE.md)。
 
@@ -94,7 +100,7 @@ A：仓库对每块内容都标了成熟度：有真实证据的写“有证据�
 
 ---
 
-## 面向维护者 / 想深入的人
+## 🛠️ 面向维护者 / 想深入的人
 
 - 仓库结构、发布状态与机器约束：[CONTEXT.md](CONTEXT.md)、[MANIFEST.md](MANIFEST.md)、[RELEASE.md](RELEASE.md)、[AGENTS.md](AGENTS.md)
 - 知识导航：[wiki/index.md](wiki/index.md)
