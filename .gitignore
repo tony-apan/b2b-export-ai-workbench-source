@@ -68,3 +68,4 @@ sub-libraries/website-content-ops/TOOLS/interface-kit/index/client-ids.local.txt
 # Transient agent/editor session state; never part of a public release package.
 /.zcode/
 /.video_agent/
+/.v2c/

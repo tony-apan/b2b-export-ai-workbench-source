@@ -226,7 +226,7 @@ function contentDigest(root, files) {
   for (const file of files) hash.update(`${file}\0${sha256(join(root, file))}\n`);
   return hash.digest('hex');
 }
-const autoIgnoredDirs = new Set(['.git', '.obsidian', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace']);
+const autoIgnoredDirs = new Set(['.git', '.obsidian', '.v2c', '.video_agent', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace']);
 function collectSourceFiles(source, prefix = '') {
   const result = [];
   for (const entry of readdirSync(source, { withFileTypes: true })) {
@@ -270,7 +270,7 @@ function copySelected(source, target, prefix = '') {
   for (const entry of readdirSync(source, { withFileTypes: true })) {
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
     if (entry.isSymbolicLink()) fail(`symlink is not allowed in release source: ${rel}`);
-    if (['.git', '.obsidian', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace'].includes(entry.name)) continue;
+    if (['.git', '.obsidian', '.v2c', '.video_agent', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace'].includes(entry.name)) continue;
     if (isExcluded(rel)) continue;
     const from = join(source, entry.name);
     const to = join(target, entry.name);

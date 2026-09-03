@@ -29,7 +29,7 @@ const allowedDependency = new Set(['self-contained', 'declared-external-runtime'
 const allowedPackageKinds = new Set(['standalone-sub-library']);
 const allowedDeliveryModes = new Set(['human-playbook', 'ai-skill-draft', 'ai-skill-stable', 'toolkit', 'adapter', 'template-pack', 'reference-implementation', 'course']);
 const allowedSkillStatus = new Set(['draft-adapter-not-installable', 'preview-adapter-not-installable', 'validated-adapter', 'stable-adapter', 'retired']);
-const ignoredSourceDirs = new Set(['.git', '.obsidian', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace']);
+const ignoredSourceDirs = new Set(['.git', '.obsidian', '.v2c', '.video_agent', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace']);
 const requiredStateProjections = new Map([
   ['VERSION.md', ['repository_sync_status', 'release_status']],
   ['RELEASE.md', ['repository_sync_status', 'release_status']],
@@ -49,7 +49,7 @@ function isInside(parent, candidate) { const p = resolve(parent) + sep; return r
 function walk(dir) {
   const result = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (['.git', '.obsidian', 'node_modules', 'dist'].includes(entry.name)) continue;
+    if (['.git', '.obsidian', '.v2c', '.video_agent', 'node_modules', 'dist'].includes(entry.name)) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) result.push(...walk(path));
     else if (entry.isSymbolicLink()) {
