@@ -18,7 +18,7 @@ related: ["../README.md"]
 
 ## 何时读
 
-要完成**当前 Registry 支持的站点范围**（新建站 → 媒体/分类/产品 → 主题 7 页/表单 → 审计与交付；existing exact-ID 文章可 reviewed update），读本机 operational 工具包的零上下文总入口。全新文章可本地成稿/审查，但 remote article.create 保持 Registry BLOCK，干净账号须移除 Posts 入口与模块：
+要完成**当前 Registry 支持的站点范围**（新建站 → 媒体/分类/产品/文章 → 主题 7 页/表单 → 审计与交付），读本机 operational 工具包的零上下文总入口。全新文章必须先跑当前部署 ISS-111 资格五步，再 create draft + reviewed update/publish；资格失败且有部署证据时才移除 Posts 入口并降级：
 
 ```text
 <本机 customer-runtime>/00_shared/interface-kit/RUNBOOK-ANYONE.md

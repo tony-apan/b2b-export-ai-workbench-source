@@ -14,7 +14,7 @@ related: ["README.md"]
 
 # AllinCMS 建站上线 SOP（0 → 1 纯接口流水线）
 
-目标：拿到公司/产品资料后，AI 按本文档执行当前 Registry 支持的站点/产品/页面/表单流程；已有 exact-ID 文章可 reviewed update。干净账号的文章只完成本地成稿与审查，remote article.create 保持 BLOCK，因此不承诺“一份资料→含新文章的全量上线”。
+目标：拿到公司/产品资料后，AI 按本文档执行站点/产品/文章/页面/表单一条龙。文章 create 为 canonical + fresh gate：新部署首篇先跑 ISS-111 资格五步，create draft 后 reviewed update/publish；只有资格失败并留下部署证据时才降级为本地稿。
 所有命令均可复制粘贴；所有验证点都有输出判据。
 
 > **平台前端检查边界**：见 [RUNBOOK-ANYONE.md](RUNBOOK-ANYONE.md) 顶部当前横幅；相关项已收窄为可检查+登记的 BOUNDARY，不作为站点侧强行修复依据。
@@ -151,7 +151,7 @@ if has_existing_remote_articles:
 home_elements += [("faq-accordion-1", faq(...)),
                   ("newsletter-inline-1", newsletter(...)), ("contact-1", contact_split(...))]
 doc = page_document(home_elements)
-# 干净账号：article.create Registry BLOCK；除 news-1 外，同步省略 Posts nav、posts/post-detail/related 页面入口与 audit article 断言。
+# 干净账号：先跑 ISS-111 资格五步；通过则 create+reviewed update 并恢复 Posts nav/news；失败且留有部署证据才省略文章入口与 audit article 断言。
 # existing exact-ID 文章分支才构建/发布 Posts 模块与文章页。
 # 公司页：breadcrumb/about_intro/company_story/company_stats/company_values/company_team
 # 联系页：breadcrumb/contact_header/contact_info(social_links=[]!)/location_map/contact_split

@@ -35,5 +35,5 @@
     "all_business_fields_reviewed": true,
     "update_diff_reviewed_or_not_applicable": true
   },
-  "note": "Machine validation binds final business canonical JSON, exact site/target/operation, runtime scope and source bytes. Supported remote scope: product create/update and exact existing article update; article create Registry BLOCK. It does not prove reviewer identity or real independence."
+  "note": "Machine validation binds final business canonical JSON, exact site/target/operation, runtime scope and source bytes. Supported remote scope: product create/update and article create/update; article create additionally requires current-deployment ISS-111 qualification evidence before the draft request. It does not prove reviewer identity or real independence."
 }

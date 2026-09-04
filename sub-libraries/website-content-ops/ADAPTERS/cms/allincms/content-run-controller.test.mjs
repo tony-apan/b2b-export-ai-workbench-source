@@ -162,7 +162,7 @@ function makeReadOnlyPlan(intent = 'noop') {
 }
 
 function observed(overrides = {}) {
-  return { login_status: 'authenticated', deployment_fingerprint: H('a'), capability_ids: ['CAP-category-create', 'CAP-article-publish', 'CAP-category-noop', 'CAP-category-explore', 'CAP-article-update'], site_key: 'site-fixture', site_id: 'site-id-fixture', account_user_id: 'user-fixture', current_fingerprint: null, ...overrides };
+  return { login_status: 'authenticated', deployment_fingerprint: H('a'), capability_ids: ['CAP-category-create', 'CAP-article-publish', 'CAP-category-noop', 'CAP-category-explore', 'CAP-article-update', 'CAP-article-create', 'CAP-product-create'], site_key: 'site-fixture', site_id: 'site-id-fixture', account_user_id: 'user-fixture', current_fingerprint: null, ...overrides };
 }
 
 const checkKinds = {
@@ -186,9 +186,14 @@ const checkKinds = {
   'article.public_url': 'anonymous_resource',
   'article.anonymous_frontend_detail': 'anonymous_frontend',
   'article.visible_content_and_media': 'anonymous_frontend',
+  'article.create.before_after_unique_id_delta': 'backend_readback',
+  'article.create.backend_field_readback': 'backend_readback',
+  'article.create.editor_reopen_health': 'editor_reopen',
+  'product.complete_backend_field_readback': 'backend_readback',
+  'product.editor_reopen_health': 'editor_reopen',
 };
 
-function verificationCheck(operation, checkId, plan) {
+function verificationCheck(operation, checkId, plan, entityIdOverride) {
   const evidenceKind = checkKinds[checkId];
   const articleUrl = 'https://site-fixture.web.allincms.com/posts/buyer-guide';
   const mediaUrl = 'https://cdn.example.invalid/media-fixture.png';
@@ -211,7 +216,7 @@ function verificationCheck(operation, checkId, plan) {
     artifact_ref: runtimePath(`40_evidence/${operation.operation_id.toLowerCase()}-${checkId.replaceAll('.', '-')}.json`),
     artifact_digest: H('0'), artifact_media_type: 'application/json', observed_at: NOW,
     site_key: 'site-fixture', site_id: 'site-id-fixture', entity_ref: operation.entity_ref,
-    entity_id: operation.identity.id ?? `${operation.operation_id}-entity-id`,
+    entity_id: entityIdOverride ?? operation.identity.id ?? `${operation.operation_id}-entity-id`,
     subject_digest: digest(operationSubject(operation, plan)), method: 'synthetic authoritative fixture',
     observed_result: `passed ${checkId}`, observations,
   };
@@ -219,11 +224,12 @@ function verificationCheck(operation, checkId, plan) {
   return check;
 }
 function successfulReadback(operation, plan, overrides = {}) {
+  const { entityId, ...rest } = overrides;
   return {
     ok: true, authoritative: true, requirements: [...operation.readback_requirements],
     evidence_ref: runtimePath(`40_evidence/${operation.operation_id.toLowerCase()}-readback.json`),
-    checks: operation.readback_requirements.map((checkId) => verificationCheck(operation, checkId, plan)),
-    entity: { id: operation.operation_id }, ...overrides,
+    checks: operation.readback_requirements.map((checkId) => verificationCheck(operation, checkId, plan, entityId)),
+    entity: { id: entityId ?? operation.identity.id ?? operation.operation_id }, ...rest,
   };
 }
 
@@ -271,6 +277,36 @@ function mutateReadback(plan, operation, mutate) {
   mutate(readback);
   return readback;
 }
+
+test('handler output contract violation locks requestStarted against prototype pollution (2026-09-04 pollution fix)', async () => {
+  // 511 defines a locked own requestStarted and 522 reads the own descriptor,
+  // so a polluted Object.prototype.requestStarted accessor (get => false) can
+  // never flip an ambiguous handler failure into REQUEST_NOT_STARTED (which
+  // would let a rerun send a second create).
+  const plan = keepOperations(makePlan(), 1);
+  const operation = plan.operations[0];
+  const key = `${operation.entity_type}:${operation.intent}`;
+  Object.defineProperty(Object.prototype, 'requestStarted', {
+    get() { return false; },
+    set() {},
+    configurable: true,
+  });
+  try {
+    const violatingHandler = {
+      async readCurrent() { return { fingerprint: operation.expected_current_fingerprint }; },
+      async execute() { return { request_started: true, status: 'completed', transportToken: 'forbidden-material' }; },
+      async readback() { return successfulReadback(operation, plan); },
+      async reconcile() { return { verdict: 'applied', authoritative: true, evidence_ref: runtimePath(`40_evidence/${operation.operation_id.toLowerCase()}-reconcile.json`) }; },
+    };
+    const { result } = await run(plan, { handlers: { [key]: violatingHandler } });
+    assert.equal(result.status, 'blocked');
+    assert.equal(result.code, 'HANDLER_OUTPUT_CONTRACT_VIOLATION_APPLIED');
+    assert.equal(result.evidence.operations[0].transport.request_started, true, 'the locked own requestStarted must defeat the polluted accessor');
+  } finally {
+    delete Object.prototype.requestStarted;
+  }
+  assert.equal(({}).requestStarted, undefined, 'the prototype pollution must be cleaned up');
+});
 
 async function expectReadbackBlocked(plan, readback, { readEvidenceArtifact, preflight, pattern } = {}) {
   const operation = plan.operations[0];
@@ -581,7 +617,7 @@ test('noop readback failure and explore transport failure never enter write reco
 
 
 test('blocked capability routes cannot be revived by a self-reported live capability snapshot', async () => {
-  for (const [entityType, intent] of [['article', 'create'], ['product', 'create'], ['media', 'update']]) {
+  for (const [entityType, intent] of [['product', 'create'], ['media', 'update']]) {
     const plan = makeSingleRoutePlan({ entityType, intent });
     let executeCount = 0;
     const handler = makeHandler(plan.operations[0], plan, [], { async execute() { executeCount += 1; return { request_started: true, status: 'completed' }; } });
@@ -589,6 +625,277 @@ test('blocked capability routes cannot be revived by a self-reported live capabi
     assert.equal(result.code, 'CAPABILITY_ROUTE_BLOCK', `${entityType}:${intent}`);
     assert.equal(executeCount, 0, `${entityType}:${intent}`);
   }
+});
+
+function makeArticleCreatePlan() {
+  const plan = keepOperations(makePlan(), 1);
+  const entityRef = 'article:new-guide';
+  const identity = { id: null, natural_key: { site_key: 'site-fixture', slug: 'new-guide' }, match_strategy: 'exact_natural_key' };
+  plan.desired_state[0] = {
+    entity_ref: entityRef, entity_type: 'article', intent: 'create', identity,
+    fields: { title: { value: 'Buyer Guide', fact_status: 'confirmed', source_refs: ['SRC-001'], claim_refs: ['CLAIM-ARTICLE-TITLE'], derivation: direct(), clear_existing: false } },
+  };
+  plan.desired_state = [plan.desired_state[0]];
+  plan.capability_snapshot.capabilities = [{ capability_id: 'CAP-article-create', entity_type: 'article', action: 'create', maturity: 'live_verified_current_deployment', evidence_refs: [runtimePath('40_evidence/capability.json')] }];
+  plan.diff = [{ operation_id: 'OP-AC-001', entity_ref: entityRef, resolved_intent: 'create', changed_fields: ['title'] }];
+  plan.operations = [{ operation_id: 'OP-AC-001', entity_ref: entityRef, entity_type: 'article', intent: 'create', identity: structuredClone(identity), field_refs: ['title'], capability_ref: 'CAP-article-create', expected_current_fingerprint: null, dependencies: [], mutation: true, publication_effect: 'private_draft', readback_requirements: ['article.create.before_after_unique_id_delta', 'article.create.backend_field_readback', 'article.create.editor_reopen_health'] }];
+  plan.authorization_scope.operation_ids = ['OP-AC-001'];
+  return reseal(plan);
+}
+
+test('canonical article create route reaches the handler and completes under the fresh evidence profile', async () => {
+  const plan = makeArticleCreatePlan();
+  let executeCount = 0;
+  const handler = makeHandler(plan.operations[0], plan, [], {
+    async execute() { executeCount += 1; return { request_started: true, status: 'completed', entity_id: `${plan.operations[0].operation_id}-entity-id` }; },
+  });
+  const { result } = await run(plan, { handlers: { 'article:create': handler } });
+  assert.equal(result.ok, true);
+  assert.equal(result.code, 'ALLINCMS_CONTENT_RUN_COMPLETED');
+  assert.equal(executeCount, 1);
+  assert.equal(result.evidence.operations[0].status, 'readback_passed');
+  assert.equal(result.evidence.operations[0].transport.entity_id, 'OP-AC-001-entity-id');
+  assert.equal(result.evidence.operations[0].runtime_entity_id, 'OP-AC-001-entity-id');
+  assert.equal(result.evidence.operations[0].runtime_entity_id_source, 'execute_result');
+  assert.equal(validateAllinCmsLiveRunEvidence(result.evidence).ok, true);
+});
+
+test('article create execute ID A with readback evidence bound to B fails closed (A/B fake PASS)', async () => {
+  const plan = makeArticleCreatePlan();
+  const handler = makeHandler(plan.operations[0], plan, [], {
+    async execute() { return { request_started: true, status: 'completed', entity_id: 'created-A' }; },
+    async readback() { return successfulReadback(plan.operations[0], plan, { entityId: 'created-B' }); },
+  });
+  const { result } = await run(plan, { handlers: { 'article:create': handler } });
+  assert.equal(result.status, 'failed');
+  assert.equal(result.code, 'AUTHORITATIVE_READBACK_FAILED');
+  assert.match(result.problems.join('\n'), /verification_entity_id_mismatch/);
+  assert.equal(result.evidence.operations[0].runtime_entity_id, 'created-A');
+  assert.equal(result.evidence.operations[0].runtime_entity_id_source, 'execute_result');
+  assert.equal(result.evidence.operations[0].readback.passed, false);
+});
+
+function makeProductCreatePlan() {
+  const plan = keepOperations(makePlan(), 1);
+  const entityRef = 'product:new-fp';
+  const identity = { id: null, natural_key: { site_key: 'site-fixture', slug: 'new-fp' }, match_strategy: 'exact_natural_key' };
+  plan.desired_state[0] = {
+    entity_ref: entityRef, entity_type: 'product', intent: 'create', identity,
+    fields: {
+      name: { value: 'New FP', fact_status: 'inferred', source_refs: ['SRC-001'], claim_refs: ['CLAIM-ARTICLE-SUMMARY'], derivation: normalized(), clear_existing: false },
+      slug: { value: 'new-fp', fact_status: 'inferred', source_refs: ['SRC-001'], claim_refs: ['CLAIM-ARTICLE-SUMMARY'], derivation: normalized(), clear_existing: false },
+      description: { value: 'Fixture product description.', fact_status: 'inferred', source_refs: ['SRC-001'], claim_refs: ['CLAIM-ARTICLE-SUMMARY'], derivation: normalized(), clear_existing: false },
+    },
+  };
+  plan.desired_state = [plan.desired_state[0]];
+  plan.capability_snapshot.capabilities = [{ capability_id: 'CAP-product-create', entity_type: 'product', action: 'create', maturity: 'live_verified_current_deployment', evidence_refs: [runtimePath('40_evidence/capability.json')] }];
+  plan.diff = [{ operation_id: 'OP-PC-001', entity_ref: entityRef, resolved_intent: 'create', changed_fields: ['name'] }];
+  plan.operations = [{ operation_id: 'OP-PC-001', entity_ref: entityRef, entity_type: 'product', intent: 'create', identity: structuredClone(identity), field_refs: ['name'], capability_ref: 'CAP-product-create', expected_current_fingerprint: null, dependencies: [], mutation: true, publication_effect: 'private_draft', readback_requirements: ['concurrency.expected_current_fingerprint', 'product.complete_backend_field_readback', 'product.editor_reopen_health'] }];
+  plan.authorization_scope.operation_ids = ['OP-PC-001'];
+  return reseal(plan);
+}
+
+test('product create execute ID A with readback evidence bound to B fails closed (A/B fake PASS)', async () => {
+  const plan = makeProductCreatePlan();
+  const handler = makeHandler(plan.operations[0], plan, [], {
+    async execute() { return { request_started: true, status: 'completed', entity_id: 'prd-created-A' }; },
+    async readback() { return successfulReadback(plan.operations[0], plan, { entityId: 'prd-created-B' }); },
+  });
+  const { result } = await run(plan, { handlers: { 'product:create': handler } });
+  assert.equal(result.status, 'failed');
+  assert.equal(result.code, 'AUTHORITATIVE_READBACK_FAILED');
+  assert.match(result.problems.join('\n'), /verification_entity_id_mismatch/);
+  assert.equal(result.evidence.operations[0].runtime_entity_id, 'prd-created-A');
+});
+
+test('product create A/A binding passes and evidence records the execute-result identity', async () => {
+  const plan = makeProductCreatePlan();
+  const handler = makeHandler(plan.operations[0], plan, [], {
+    async execute() { return { request_started: true, status: 'completed', entity_id: 'prd-created-A' }; },
+    async readback() { return successfulReadback(plan.operations[0], plan, { entityId: 'prd-created-A' }); },
+  });
+  const { result } = await run(plan, { handlers: { 'product:create': handler } });
+  assert.equal(result.ok, true);
+  const row = result.evidence.operations[0];
+  assert.equal(row.status, 'readback_passed');
+  assert.equal(row.runtime_entity_id, 'prd-created-A');
+  assert.equal(row.runtime_entity_id_source, 'execute_result');
+  assert.ok(row.readback.checks.every((check) => check.entity_id === 'prd-created-A'));
+  assert.equal(validateAllinCmsLiveRunEvidence(result.evidence).ok, true);
+});
+
+test('create readback handlers actually receive the execute-result runtime identity, not a stale pre-execute context', async () => {
+  for (const [label, plan, handlerKey, createdId] of [
+    ['article', makeArticleCreatePlan(), 'article:create', 'created-A'],
+    ['product', makeProductCreatePlan(), 'product:create', 'prd-created-A'],
+  ]) {
+    const readbackArgs = [];
+    const handler = makeHandler(plan.operations[0], plan, [], {
+      async execute() { return { request_started: true, status: 'completed', entity_id: createdId }; },
+      async readback(args) {
+        readbackArgs.push(args);
+        // Bind every verification check to the identity the controller actually
+        // passed in: a stale null context fails verification instead of passing.
+        return successfulReadback(plan.operations[0], plan, { entityId: args.runtime_entity_id });
+      },
+    });
+    const { result } = await run(plan, { handlers: { [handlerKey]: handler } });
+    assert.equal(readbackArgs.length, 1, label);
+    assert.notEqual(readbackArgs[0].runtime_entity_id, null, `${label}: readback handler received a stale null runtime_entity_id`);
+    assert.equal(readbackArgs[0].runtime_entity_id, createdId, label);
+    assert.equal(readbackArgs[0].runtime_entity_id_source, 'execute_result', label);
+    assert.equal(result.ok, true, label);
+    const row = result.evidence.operations[0];
+    assert.equal(row.status, 'readback_passed', label);
+    assert.equal(row.runtime_entity_id, createdId, label);
+    assert.equal(row.runtime_entity_id_source, 'execute_result', label);
+    assert.ok(row.readback.checks.every((check) => check.entity_id === createdId), label);
+    assert.equal(validateAllinCmsLiveRunEvidence(result.evidence).ok, true, label);
+  }
+});
+
+test('article and product create without a non-empty execute entity_id fail closed without retry', async () => {
+  for (const [label, plan, handlerKey, transport] of [
+    ['article', makeArticleCreatePlan(), 'article:create', { request_started: true, status: 'completed' }],
+    ['article-empty', makeArticleCreatePlan(), 'article:create', { request_started: true, status: 'completed', entity_id: '   ' }],
+    ['product', makeProductCreatePlan(), 'product:create', { request_started: true, status: 'completed', entity_id: null }],
+  ]) {
+    let executeCount = 0;
+    let readbackCount = 0;
+    const handler = makeHandler(plan.operations[0], plan, [], {
+      async execute() { executeCount += 1; return transport; },
+      async readback() { readbackCount += 1; },
+    });
+    const { result } = await run(plan, { handlers: { [handlerKey]: handler } });
+    assert.equal(result.status, 'blocked', label);
+    assert.equal(result.code, 'CREATE_RUNTIME_ENTITY_ID_MISSING', label);
+    assert.equal(executeCount, 1, label);
+    assert.equal(readbackCount, 0, label);
+    assert.equal(result.evidence.operations[0].transport.request_started, true, label);
+    assert.equal(result.evidence.operations[0].transport.entity_id, null, label);
+    assert.match(result.evidence.operations[0].failure_message, /may have succeeded/, label);
+    assert.match(result.evidence.operations[0].failure_message, /retry is forbidden/, label);
+    assert.equal(validateAllinCmsLiveRunEvidence(result.evidence).ok, true, label);
+  }
+});
+
+test('standalone evidence validator rejects checks that bypass the runtime identity and legacy 1.0 evidence', async () => {
+  const plan = makeArticleCreatePlan();
+  const handler = makeHandler(plan.operations[0], plan, [], {
+    async execute() { return { request_started: true, status: 'completed', entity_id: 'created-A' }; },
+    async readback() { return successfulReadback(plan.operations[0], plan, { entityId: 'created-A' }); },
+  });
+  const { result } = await run(plan, { handlers: { 'article:create': handler } });
+  assert.equal(result.ok, true);
+  const drifted = structuredClone(result.evidence);
+  for (const check of drifted.operations[0].readback.checks) check.entity_id = 'created-B';
+  const driftProblems = validateAllinCmsLiveRunEvidence(drifted).problems.join('\n');
+  assert.match(driftProblems, /readback checks must bind exactly the operation runtime_entity_id/);
+  const legacy = structuredClone(result.evidence);
+  legacy.schema_version = '1.0';
+  assert.match(validateAllinCmsLiveRunEvidence(legacy).problems.join('\n'), /schema_version/);
+});
+
+test('update, publish and noop keep their plan identities and never require execute IDs', async () => {
+  {
+    const { result } = await run(makeUpdatePlan());
+    assert.equal(result.ok, true);
+    const row = result.evidence.operations[0];
+    assert.equal(row.runtime_entity_id, 'article-id-fixture');
+    assert.equal(row.runtime_entity_id_source, 'plan_exact_id');
+    assert.equal(row.transport.entity_id, null);
+  }
+  {
+    const { result } = await run(makePublishPlan());
+    assert.equal(result.ok, true);
+    const row = result.evidence.operations[0];
+    assert.equal(row.runtime_entity_id, 'article-id-fixture');
+    assert.equal(row.runtime_entity_id_source, 'plan_exact_id');
+    assert.equal(row.transport.entity_id, null);
+  }
+  {
+    const { result } = await run(makeReadOnlyPlan('noop'));
+    assert.equal(result.ok, true);
+    const row = result.evidence.operations[0];
+    assert.equal(row.runtime_entity_id, 'OP-READ-001-entity-id');
+    assert.equal(row.runtime_entity_id_source, 'authoritative_readback');
+  }
+});
+
+test('article create still fails closed without the exact canonical verification profile', async () => {
+  const plan = makeArticleCreatePlan();
+  plan.operations[0].readback_requirements = ['self-asserted-live'];
+  reseal(plan);
+  let executeCount = 0;
+  const handler = makeHandler(plan.operations[0], plan, [], {
+    async execute() { executeCount += 1; return { request_started: true, status: 'completed' }; },
+  });
+  const { result } = await run(plan, { handlers: { 'article:create': handler } });
+  assert.equal(result.code, 'CAPABILITY_ROUTE_BLOCK');
+  assert.match(result.problems.join('\n'), /must exactly match authoritative profile allincms.article.create/);
+  assert.equal(executeCount, 0);
+});
+
+function makeArticleCreateThenPublishPlan({ publishEntityRef = 'article:new-guide', publishIdentity = null } = {}) {
+  const plan = makeArticleCreatePlan();
+  const baseIdentity = structuredClone(plan.operations[0].identity);
+  const buyerEntity = publishEntityRef === 'article:new-guide' ? null : makePlan().desired_state.find((entity) => entity.entity_ref === publishEntityRef);
+  if (buyerEntity) plan.desired_state.push(buyerEntity);
+  const identity = publishIdentity ?? structuredClone(baseIdentity);
+  plan.operations.push({
+    operation_id: 'OP-AC-PUB-001', entity_ref: publishEntityRef, entity_type: 'article', intent: 'publish',
+    identity, field_refs: [], capability_ref: 'CAP-article-publish', expected_current_fingerprint: null,
+    dependencies: ['OP-AC-001'], mutation: true, publication_effect: 'publish_transition',
+    readback_requirements: ['article.backend_published_state', 'article.editor_reopen_health', 'article.public_url', 'article.anonymous_frontend_detail', 'article.visible_content_and_media'],
+  });
+  plan.capability_snapshot.capabilities.push({ capability_id: 'CAP-article-publish', entity_type: 'article', action: 'publish', maturity: 'live_verified_current_deployment', evidence_refs: [runtimePath('40_evidence/capability.json')] });
+  plan.diff.push({ operation_id: 'OP-AC-PUB-001', entity_ref: publishEntityRef, resolved_intent: 'publish', changed_fields: [] });
+  plan.authorization_scope.operation_ids = ['OP-AC-001', 'OP-AC-PUB-001'];
+  return reseal(plan);
+}
+
+test('same-entity_ref create then publish passes the verified runtime ID A to the publish operation', async () => {
+  const plan = makeArticleCreateThenPublishPlan();
+  const publishExecuteArgs = [];
+  const create = makeHandler(plan.operations[0], plan, [], {
+    async execute() { return { request_started: true, status: 'completed', entity_id: 'created-A' }; },
+    async readback() { return successfulReadback(plan.operations[0], plan, { entityId: 'created-A' }); },
+  });
+  const publish = makeHandler(plan.operations[1], plan, [], {
+    async execute(args) { publishExecuteArgs.push(args); return { request_started: true, status: 'completed' }; },
+    async readback() { return successfulReadback(plan.operations[1], plan, { entityId: 'created-A' }); },
+  });
+  const { result } = await run(plan, { handlers: { 'article:create': create, 'article:publish': publish } });
+  assert.equal(result.ok, true);
+  assert.equal(publishExecuteArgs.length, 1);
+  assert.equal(publishExecuteArgs[0].runtime_entity_id, 'created-A');
+  assert.equal(publishExecuteArgs[0].runtime_entity_id_source, 'authoritative_readback');
+  const [createRow, publishRow] = result.evidence.operations;
+  assert.equal(createRow.runtime_entity_id, 'created-A');
+  assert.equal(createRow.runtime_entity_id_source, 'execute_result');
+  assert.equal(publishRow.runtime_entity_id, 'created-A');
+  assert.equal(publishRow.runtime_entity_id_source, 'authoritative_readback');
+  assert.ok(publishRow.readback.checks.every((check) => check.entity_id === 'created-A'));
+  assert.equal(validateAllinCmsLiveRunEvidence(result.evidence).ok, true);
+});
+
+test('runtime identity is keyed by entity_ref and never blindly inherited from the previous operation', async () => {
+  const buyer = makePlan().desired_state.find((entity) => entity.entity_ref === 'article:buyer-guide');
+  const plan = makeArticleCreateThenPublishPlan({ publishEntityRef: 'article:buyer-guide', publishIdentity: structuredClone(buyer.identity) });
+  const publishExecuteArgs = [];
+  const create = makeHandler(plan.operations[0], plan, [], {
+    async execute() { return { request_started: true, status: 'completed', entity_id: 'created-A' }; },
+    async readback() { return successfulReadback(plan.operations[0], plan, { entityId: 'created-A' }); },
+  });
+  const publish = makeHandler(plan.operations[1], plan, [], {
+    async execute(args) { publishExecuteArgs.push(args); return { request_started: true, status: 'completed' }; },
+    async readback() { return successfulReadback(plan.operations[1], plan, { entityId: 'article-id-fixture' }); },
+  });
+  const { result } = await run(plan, { handlers: { 'article:create': create, 'article:publish': publish } });
+  assert.equal(result.ok, true);
+  assert.equal(publishExecuteArgs[0].runtime_entity_id, 'article-id-fixture');
+  assert.equal(publishExecuteArgs[0].runtime_entity_id_source, 'plan_exact_id');
+  assert.equal(result.evidence.operations[1].runtime_entity_id, 'article-id-fixture');
 });
 
 test('approved plans cannot add self-defined verification requirements beyond the canonical route profile', async () => {

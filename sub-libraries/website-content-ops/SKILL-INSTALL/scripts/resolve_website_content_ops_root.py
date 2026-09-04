@@ -4,7 +4,8 @@
 Resolution order is fail-closed and deterministic:
 1. ``--root`` (exact caller-provided full canonical source checkout)
 2. ``$WEBSITE_CONTENT_OPS_ROOT`` (full canonical source checkout)
-3. validated sibling/upward full-source discovery from ``--start`` or cwd
+3. validated full source adjacent to this installed Skill (``SKILL_ROOT.parent``)
+4. validated sibling/upward full-source discovery from ``--start`` or cwd
 
 The checked-in vendor bundle is retired and is not distributed. Full-source
 explicit/environment/discovery resolution is the only default path; when none
@@ -381,6 +382,15 @@ def resolve_root(
         return validate_source_root(env_root), "environment"
 
     errors: list[str] = []
+
+    # The installed Skill directory is a symlink/junction to SKILL-INSTALL/ in
+    # the complete source checkout. Resolve relative to the script before
+    # consulting the caller's unrelated working directory.
+    try:
+        return validate_source_root(SKILL_ROOT.parent), "skill-relative-source"
+    except ResolutionError as exc:
+        errors.append(str(exc))
+
     seen: set[Path] = set()
     for candidate in discovery_candidates(start or Path.cwd()):
         resolved = candidate.expanduser().resolve()

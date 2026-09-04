@@ -10,10 +10,22 @@ related: ["README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 name: allincms-bulk-content-upload
-description: Source-driven AllinCMS / LAICMS website content operations for creating or updating sites, products, taxonomy, media, and theme pages, and for updating exact existing articles from user-provided PDFs, DOCX files, spreadsheets, websites, images, briefs, or existing CMS records. Article create remains blocked by the canonical Registry. Use when an AI must resolve a verified Website Content Operations runtime, extract traceable claims, discover the current logged-in CMS and field/capability contracts, build an exact create/update/noop plan, execute approved API or Server Action mutations strictly serially, and verify backend/editor/frontend persistence. The Skill resolves a complete canonical source checkout (mother library sub-libraries/website-content-ops) as its primary runtime and is distributed from SKILL-INSTALL/ inside that library; the digest-verified runtime snapshot is retired pending the dist pipeline. It must not invent client facts or reuse sample payloads as current contracts.
+description: "用于 AllinCMS / LAICMS 建站、更新网站、产品上架、分类管理、标签管理、上传或替换产品图、创建文章、更新文章、CMS 批量导入或更新内容。Use whenever the user asks to build or update an AllinCMS/LAICMS site; create, update, import, or bulk-manage products, categories, tags, theme pages, articles, images, or media; or use PDFs, DOCX files, spreadsheets, websites, images, briefs, or existing CMS records as source material for those CMS operations. Resolve only the validated website-content-ops source runtime; discover the authenticated CMS, exact target, and live contracts; resolve mutations to create/update/noop; require approval; verify backend, editor, and frontend persistence; never invent client facts."
 ---
 
 # AllinCMS Bulk Content Upload
+
+## 0. READ-BEFORE-ACT 协议（对抗"读到旧结论就开干"）
+
+AI 不会通读所有规则——所以本 Skill 强制三件事：
+
+1. **结论行先查新鲜度**：本文件与 Registry 的 availability 结论可能滞后于平台实际能力。任何"XXX 不可用/BLOCK"的结论，动手走降级路径之前，必须先跑 `TOOLS/interface-kit/check-contract-freshness.py`（Registry ↔ 工具层 ↔ 部署 action 三方对照）并对 BLOCK 项尝试一次 ISS-111 式资格验证五步；漂移即升级 Registry 而不是走降级。
+   - 新任务在 Plan A 之前运行：`python3 TOOLS/interface-kit/check-contract-freshness.py --write-receipt <TASK_ROOT>/20_work/onepass-read-receipt.json`；同一次与每次恢复运行在 mutation 前运行 `--verify-receipt`。回执绑定必读文件精确 SHA-256；规则/Registry 变化后旧回执自动失效，必须重读并重签。**没有当前 receipt = 不得执行 Plan A/Plan B**。
+2. **最小必读集与结论行**（按任务类型取用，读完结论行再决定下钻）：
+   - 建站/灌内容全流程：本文件 §5 → `NEW-SITE-ONEPASS.md`（步骤 0-12）→ 步骤内引用的坑（ISS 条目）
+   - 文章发布：`NEW-SITE-ONEPASS.md` 步骤 8（资格验证五步+create+reviewed update）+ `ADAPTERS/cms/allincms/AI-START-HERE.md` 规则 23
+   - 计划/授权框架：`PLAYBOOKS/id-0005` + `TEMPLATES/content-operation-plan.md`
+3. **冲突下钻规则**：上层（Skill/入口）结论与下层（runbook/ISS/部署实测）冲突时，以下钻层的最新实测为准，并把上层的过时结论改掉（改完跑该文件的校验命令）。
 
 ## 1. Authority and dependency
 
@@ -41,6 +53,7 @@ Read only what the current step needs:
 2. `<SUB_LIBRARY_ROOT>/TEMPLATES/source-extraction.md` and `scripts/validate-source-extraction.mjs`;
 3. `<SUB_LIBRARY_ROOT>/TEMPLATES/content-operation-plan.md` and `scripts/validate-content-operation-plan.mjs`;
 4. `<SUB_LIBRARY_ROOT>/ADAPTERS/cms/allincms/AI-START-HERE.md` only when the target CMS is AllinCMS.
+5. For AllinCMS **new-site one-pass builds** (the "give AI one brief → get a full site" flow): `<SUB_LIBRARY_ROOT>/TOOLS/interface-kit/NEW-SITE-ONEPASS.md` is the mandatory execution runbook (steps 0-12, per-step inputs/commands/acceptance/artifacts), with `RUNBOOK-ANYONE.md` as the map and `MODULES.md` as the 37-block whitelist. Do not improvise step order; the runbook encodes every known pitfall (ISS-1xx) as acceptance gates.
 
 ## 2. User material is the run input
 
@@ -101,7 +114,7 @@ Plan B: site_operation, site scope
 → bind the real site identity
 → rediscover capability and current state
 → create/update taxonomy, media and products; update exact existing articles; create/update theme pages
-→ article.create remains blocked by the canonical Registry
+→ article.create after a per-deployment qualification run (ISS-111 five-step evidence, then create + reviewed update)
 ```
 
 Never invent a future site key and never combine site creation and content population in one plan. Plan A and Plan B have different target identities, digests and authorizations.
@@ -110,7 +123,7 @@ Never invent a future site key and never combine site creation and content popul
 
 Start read-only. Use the canonical Adapter's workspace preflight to check the current session, `user.id`, complete visible site list and exact target. Reuse the in-app browser only as the authenticated same-origin session transport: an authenticated preflight runs as a background credentialed API fetch and must not navigate to `/sites`, foreground a page, or click UI. If no same-origin transport exists, create only a background transport tab. Only if the API itself reports `login_required` may the host open and foreground the canonical sign-in page, guide the user to log in, and then repeat the API preflight. `authenticated` continues without visible navigation; `http_error`, `contract_drift`, or `pagination_incomplete` stop with their exact blocker and must not open the login page. Never infer login from an open tab, visible DOM, screenshot, or guessed site; after login, discard the old response and re-fetch `user.id` plus every declared site-list page through the API.
 
-Capability maturity is one of `live_verified_current_deployment`, `local_tested`, `exploration_only`, or `unsupported`. Every remote mutation requires an unexpired `live_verified_current_deployment` capability for the exact operation and deployment. Registry v2 (2026-08-27 reconciliation): site.create and product create/update/publish are registered canonically under the `fresh_live_verified_current_deployment` gate (single-deployment evidence, no cross-deployment claim); article.create and media metadata update remain `blocked`; media.create runs through a runtime wire-contract guard plus the verified dialog path and its writes are request-scoped (outside `deriveAllinCmsMutationBinding`), not structured-authorization. This Skill does not upgrade any maturity itself.
+Capability maturity is one of `live_verified_current_deployment`, `local_tested`, `exploration_only`, or `unsupported`. Every remote mutation requires an unexpired `live_verified_current_deployment` capability for the exact operation and deployment. Registry v2 (2026-08-27 reconciliation): site.create and product create/update/publish are registered canonically under the `fresh_live_verified_current_deployment` gate (single-deployment evidence, no cross-deployment claim); article.create is registered canonically under the `fresh_live_verified_current_deployment` gate since the 2026-09-03 qualification run (per-deployment action discovery plus per-create before/after/readback/editor evidence required; tool-layer transport implemented in full source checkout); media metadata update remains `blocked`; media.create runs through a runtime wire-contract guard plus the verified dialog path and its writes are request-scoped (outside `deriveAllinCmsMutationBinding`), not structured-authorization. This Skill does not upgrade any maturity itself.
 
 API / Server Action is preferred. UI is only for login, read-only contract discovery, explicitly approved fallback, or visual verification. UI is never a silent fallback.
 
@@ -120,7 +133,7 @@ Any drift, expiry, ambiguity, target change, source-byte change or request-may-h
 
 ### 6.5 Digest-bound content review gate for the supported flow
 
-For the **supported Skill/API flow**, every product `create|update` and article `update` that changes title/name, description/excerpt, body, specifications, media or relations must pass a distinct-reviewer record before remote mutation. **Article create remains BLOCKED by the canonical Registry** until its current-deployment create contract and reconciliation evidence are qualified. This is a cooperative fail-closed workflow contract, not a security sandbox: a malicious token holder can always construct raw HTTP outside the supported API.
+For the **supported Skill/API flow**, every product `create|update` and article `update` that changes title/name, description/excerpt, body, specifications, media or relations must pass a distinct-reviewer record before remote mutation. **Article create requires a fresh per-deployment qualification record** (action discovery plus per-create before/after/readback/editor evidence per ISS-111) plus a distinct-reviewer record, same as product create. `writing-module.py check` / shape validation / main-agent self-review do **not** satisfy distinct review. Immediately before create/update, run `content-review-gate.py verify` against the exact final business payload bytes; any content/Slate/media/category change invalidates the prior READY and requires a fresh independent review. This is a cooperative fail-closed workflow contract, not a security sandbox: a malicious token holder can always construct raw HTTP outside the supported API.
 
 ```text
 final business payload JSON + current readback/diff (update)
@@ -134,7 +147,7 @@ final business payload JSON + current readback/diff (update)
 → exact readback/frontend verification or reconcile_required (automatic_retry=false)
 ```
 
-Any business payload or source-byte change invalidates the prior READY by digest mismatch. `noop` does not require content review, but its current fingerprint still must match. Canonical entrypoints: `TOOLS/interface-kit/content_review_gate.py`, `content-review-gate.py`, `templates/content-review-record.template.json`, `live-capability-context.template.json`, article `ghostwriter-review-prompt.md`, and product `product-content-review-prompt.md` (ISS-102). Machine checks do not prove reviewer identity, human approval or real independence.
+Any business payload or source-byte change invalidates the prior READY by digest mismatch. `noop` does not require content review, but its current fingerprint still must match. Public-facing copy must not expose internal evidence vocabulary (`UNIT-###`, source-extraction, claim ledger, review record, payload digest). Keep exact IDs/locators in private review/evidence artifacts; public copy may use natural attribution such as “the company brochure” or “the technical table.” The content gate must scan this vocabulary before READY. Canonical entrypoints: `TOOLS/interface-kit/content_review_gate.py`, `content-review-gate.py`, `templates/content-review-record.template.json`, `live-capability-context.template.json`, article `ghostwriter-review-prompt.md`, and product `product-content-review-prompt.md` (ISS-102). Machine checks do not prove reviewer identity, human approval or real independence.
 
 ## 7. Verification and writeback
 

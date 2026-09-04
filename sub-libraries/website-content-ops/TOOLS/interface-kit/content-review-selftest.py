@@ -206,6 +206,10 @@ def main():
             "content":[{"type":"h2","id":"a","children":[{"text":"Confirmed"}]},
                        {"type":"p","id":"b","children":[{"text":"confirmed synthetic fact"}]}],
         }
+        internal_vocab = copy.deepcopy(article)
+        internal_vocab["content"][1]["children"][0]["text"] = "UNIT-016 says this"
+        assert any("internal evidence vocabulary" in problem for problem in gate.payload_checks(internal_vocab, "article"))
+
         # Request spy: evidence digest is computed from the exact raw bytes passed to _req.
         captured = {}
         api_spy = AllinCMS(token="synthetic")
@@ -225,11 +229,29 @@ def main():
         assert captured["path"] == "/synthetic-site/products/pid/update" and captured["action"] == _api_constants.UPSERT_PRODUCT
         captured.clear(); api_spy._publish_post_transport("synthetic-site", "synthetic-site-id", "postid", article)
         assert captured["path"] == "/synthetic-site/posts/postid/update" and captured["action"] == _api_constants.UPSERT_POST
-        try:
-            api_spy._create_post_transport("synthetic-site", "synthetic-site-id", article)
-            raise AssertionError("private article create transport bypassed Registry BLOCK")
-        except RuntimeError as exc:
-            assert "ARTICLE_CREATE_BLOCKED" in str(exc)
+        # Article create is canonical only on the full-source JS Controller (P0-3.1):
+        # every Python entry fails closed before review/projection/network — the spy _req
+        # must never be invoked. mutate_reviewed_post(target_id=None) refuses even before
+        # the review record exists (nonexistent path + None capability prove the guard
+        # precedes every review/capability stage).
+        canonical_error = "ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED"
+        guard_spy = AllinCMS(token="synthetic")
+        guard_calls = []
+        def guard_req(*call_args, **call_kwargs):
+            guard_calls.append((call_args, call_kwargs))
+            raise AssertionError("article create reached the network from Python")
+        guard_spy._req = guard_req
+        missing_review = os.path.join(td, "missing-article-create-review.json")
+        for label, invoke in (
+            ("_create_post_transport", lambda: guard_spy._create_post_transport("synthetic-site", "synthetic-site-id", article)),
+            ("_send_content_transport+CREATE_POST", lambda: guard_spy._send_content_transport("/synthetic-site/posts", api_contract.CREATE_POST, article)),
+            ("mutate_reviewed_post(target_id=None)", lambda: guard_spy.mutate_reviewed_post("synthetic-site", "synthetic-site-id", article, missing_review, None, target_id=None)),
+        ):
+            try:
+                invoke(); raise AssertionError(f"{label} did not fail closed")
+            except RuntimeError as exc:
+                assert canonical_error in str(exc), f"{label}: {exc}"
+        assert guard_calls == []
 
         # Article update wrapper uses the same strict boundary with a complete article payload.
         article_record = copy.deepcopy(record)
@@ -344,13 +366,37 @@ def main():
         assert transport_error["reconcile_required"] is True
         assert transport_error["evidence"]["automatic_retry"] is False
 
-        # Canonical Registry blocks article.create regardless of local review/capability.
+        # Even a strict create review record + a fresh create capability must not unlock
+        # Python article create (P0-3.1): canonical execution is the full-source JS
+        # Controller with three real providers; Python stays fail-closed with zero I/O.
+        article_create_record = copy.deepcopy(article_record)
+        article_create_record.update({"business_operation":"create", "mutation_phase":"create_and_publish",
+                                      "target_id":None})
+        article_create_record_path = os.path.join(td, "article-create-review.json"); write(article_create_record_path, article_create_record)
+        _, _, article_create_capability = make_capability(
+            "article-create", ["allincms.article.create", "allincms.article.publish"],
+            {"allincms.article.create":api_contract.CREATE_POST,
+             "allincms.article.publish":api_contract.UPSERT_POST})
+        for label, record_path, capability_context in (
+            ("strict create review record + create capability", article_create_record_path, article_create_capability),
+            ("update review record against create intent", article_record_path, article_create_capability),
+            ("create review record without create capability", article_create_record_path, article_capability)):
+            try:
+                api.mutate_reviewed_post("synthetic-site", "synthetic-site-id", article,
+                                         record_path, capability_context, target_id=None)
+                raise AssertionError(f"article.create executed through Python: {label}")
+            except RuntimeError as exc:
+                assert canonical_error in str(exc), f"{label}: {exc}"
+        api_article_create, article_create_calls = integration_api(article, "article", "new-post-id",
+            ['1:{"data":{"id":"new-post-id"}}', '1:{"data":{"status":"published"}}'])
         try:
-            api.mutate_reviewed_post("synthetic-site", "synthetic-site-id", article,
-                                     article_record_path, capability, target_id=None)
-            raise AssertionError("article.create bypassed Registry BLOCK")
+            api_article_create.mutate_reviewed_post("synthetic-site", "synthetic-site-id", article,
+                                                    article_create_record_path, article_create_capability,
+                                                    target_id=None)
+            raise AssertionError("article.create reached transports from Python")
         except RuntimeError as exc:
-            assert "ARTICLE_CREATE_BLOCKED" in str(exc)
+            assert canonical_error in str(exc), exc
+        assert article_create_calls == []  # spy _req never invoked
 
         duplicate = os.path.join(td, "duplicate.json"); open(duplicate,"w").write('{"a":1,"a":2}')
         nonfinite = os.path.join(td, "nan.json"); open(nonfinite,"w").write('{"a":NaN}')

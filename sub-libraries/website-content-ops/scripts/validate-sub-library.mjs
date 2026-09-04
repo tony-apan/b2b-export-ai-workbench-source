@@ -148,6 +148,37 @@ function parseFrontMatter(path, content) {
 function fieldValue(front, field) {
   return front && Object.hasOwn(front, field) ? front[field] : null;
 }
+function validateInstallableSkillMetadata() {
+  const rel = 'SKILL-INSTALL/SKILL.md';
+  const path = join(libraryRoot, rel);
+  if (!existsSync(path)) { fail(`${rel} is missing`); return; }
+  const parsed = parseFrontMatter(path, read(path));
+  if (!parsed) return;
+  const name = fieldValue(parsed, 'name');
+  const description = fieldValue(parsed, 'description');
+  if (name !== 'allincms-bulk-content-upload' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name) || name.length > 64) {
+    fail(`${rel} name must be the canonical lowercase kebab-case identifier`);
+  }
+  if (typeof description !== 'string' || !description.trim()) {
+    fail(`${rel} description must be a non-empty string`);
+    return;
+  }
+  if (description.length > 1024 || Buffer.byteLength(description, 'utf8') > 1024) {
+    fail(`${rel} description exceeds the 1024-character/UTF-8-byte host discovery limit`);
+  }
+  const prefix = description.slice(0, 250);
+  const triggerFamilies = [
+    ['CMS brand', /AllinCMS|LAICMS/i],
+    ['Chinese site task', /建站|更新网站/],
+    ['product/taxonomy', /产品|categor|tag/i],
+    ['article', /文章|article/i],
+    ['image/media', /图片|image|media/i],
+    ['bulk/import', /批量|bulk|import/i],
+  ];
+  for (const [label, pattern] of triggerFamilies) {
+    if (!pattern.test(prefix)) fail(`${rel} first 250 description characters miss trigger family: ${label}`);
+  }
+}
 function displaySourceClearanceValue(front, field) {
   return front && Object.hasOwn(front, field) ? JSON.stringify(front[field]) : 'missing';
 }
@@ -595,6 +626,7 @@ for (const path of markdownFiles) {
     for (const value of fieldArray(front, field, relative(libraryRoot, path))) checkLocalReference(path, value, `${field} reference`);
   }
 }
+validateInstallableSkillMetadata();
 validateStateProjections(libraryRoot, markdownFiles);
 validateSourcePublicationClearance(markdownFiles, releaseMode || prepareMode);
 validateSourceInventory(markdownFiles);

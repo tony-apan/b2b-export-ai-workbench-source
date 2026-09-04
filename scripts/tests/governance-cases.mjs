@@ -1833,7 +1833,7 @@ ${output}`);
         '--read-only',
         '--mount "type=bind,src=$subject,dst=/subject,readonly"',
         'node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs',
-        '--expected-tests 160',
+        '--expected-tests 172',
         'trusted signer allowlist contains an invalid fingerprint',
         'BLOCK: no trusted formal qualification test profile exists for sub-library',
         'tar --sort=name --mtime=',

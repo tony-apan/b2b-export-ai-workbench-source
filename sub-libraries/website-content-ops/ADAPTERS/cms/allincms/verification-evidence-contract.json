@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "title": "AllinCMS authoritative verification evidence contract",
   "boundary": "A passing check records structured evidence supplied by the live handler and bound to the current client task, site, entity and artifact digest. It does not make HTTP 200, a toast, a screenshot, or an author assertion sufficient by itself, and it does not prove SEO, inquiry or conversion.",
   "evidence_kinds": [
@@ -156,6 +156,21 @@
       "check_id": "site.owner_key_domain_readback",
       "evidence_kind": "backend_readback",
       "acceptance": "Read back the new site owner, generated site key, default domain and setupError from the authoritative account record."
+    },
+    {
+      "check_id": "article.create.before_after_unique_id_delta",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Prove exactly one new post ID appeared between complete before/after post lists of the same site."
+    },
+    {
+      "check_id": "article.create.backend_field_readback",
+      "evidence_kind": "backend_readback",
+      "acceptance": "Read back all submitted article fields, lifecycle state and the exact same-site post ID from the authoritative backend record."
+    },
+    {
+      "check_id": "article.create.editor_reopen_health",
+      "evidence_kind": "editor_reopen",
+      "acceptance": "Reopen the exact article editor (GET update page) and confirm it returns 200 non-sign-in with persisted content rather than only HTTP 200."
     }
   ],
   "profiles": [
@@ -257,6 +272,14 @@
         "site.before_after_unique_id_delta",
         "site.owner_key_domain_readback"
       ]
+    },
+    {
+      "capability_id": "allincms.article.create",
+      "required_check_ids": [
+        "article.create.before_after_unique_id_delta",
+        "article.create.backend_field_readback",
+        "article.create.editor_reopen_health"
+      ]
     }
   ],
   "artifact_contract": {
@@ -271,6 +294,7 @@
       "entity_ref",
       "entity_id"
     ],
+    "identity_binding": "Since contract 1.1 every operation evidence row carries runtime_entity_id plus runtime_entity_id_source (plan_exact_id, execute_result, authoritative_readback or unresolved). readback_passed requires a non-null runtime_entity_id and every structured check's entity_id must equal it; article:create and product:create IDs come from the execute result, and a natural key resolves only after its authoritative readback. 1.0 evidence cannot obtain this identity-bound PASS.",
     "time_binding": "captured_at must be within the operation execution window."
   },
   "read_only_profiles": [

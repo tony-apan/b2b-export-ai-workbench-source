@@ -31,11 +31,11 @@ test('Registry schema, references, safety declarations, source bindings, and pac
   assert.deepEqual(result.errors, []);
   assert.equal(result.ok, true);
   assert.deepEqual(result.summary, {
-    interfaces: 132,
-    esmBindings: 128,
+    interfaces: 141,
+    esmBindings: 137,
     cliBindings: 5,
-    canonical: 24,
-    blocked: 4,
+    canonical: 25,
+    blocked: 3,
     referenceScope: 'source',
   });
   assert.deepEqual(pkg.dependencies, { acorn: '8.15.0', ajv: '8.20.0', sharp: '0.35.3' });
@@ -294,7 +294,7 @@ test('capability routes are complete, executable routes use the serial controlle
   }
   assert.equal(routes.get('site:discover').execution_surface, 'minimal_adapter');
   assert.equal(routes.get('site:create').availability, 'canonical');
-  assert.equal(routes.get('article:create').availability, 'blocked');
+  assert.equal(routes.get('article:create').availability, 'canonical');
   assert.equal(routes.get('media:update').availability, 'blocked');
   for (const key of ['site:delete', 'category:delete', 'tag:delete', 'media:delete', 'article:unpublish', 'article:delete']) {
     const route = routes.get(key);
@@ -340,11 +340,13 @@ test('blocked and compatibility interfaces cannot appear as canonical defaults',
   const blocked = registry.interfaces.filter((item) => item.exposure === 'blocked');
   assert.deepEqual(blocked.map((item) => item.display_name).sort(), [
     'buildAllinCmsCreateSiteActionRequest',
-    'createPostDraft',
     'deleteAllinCmsMediaDirect',
     'updateAllinCmsMediaMetadataDirect',
   ]);
   assert.ok(blocked.every((item) => item.blocked_reason));
+  const createPostDraft = registry.interfaces.find((item) => item.interface_id === 'allincms.article-operations.create-post-draft');
+  assert.equal(createPostDraft.exposure, 'canonical');
+  assert.equal(createPostDraft.safety.mutation, true);
   assert.ok(registry.interfaces.filter((item) => item.exposure === 'canonical').every((item) => !item.alias_of));
   const siteRequestBuilder = blocked.find((item) => item.display_name === 'buildAllinCmsCreateSiteActionRequest');
   assert.equal(siteRequestBuilder.kind, 'builder');

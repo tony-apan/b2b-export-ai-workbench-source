@@ -16,6 +16,7 @@ SCRIPTS_DIR = SCRIPT.parent
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
+import resolve_website_content_ops_root as resolver_module  # noqa: E402
 from resolve_website_content_ops_root import (  # noqa: E402
     BLOCK_CODE,
     BUNDLED_RUNTIME_REQUIRED_PATHS,
@@ -155,19 +156,23 @@ class ResolverTests(unittest.TestCase):
 
     def test_upward_and_sibling_full_source_discovery(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
+            isolated_skill = Path(tmp) / "isolated-skill/SKILL-INSTALL"
+            isolated_skill.mkdir(parents=True)
             root = make_package(Path(tmp) / "repo/sub-libraries/website-content-ops")
             deep = Path(tmp) / "repo/wiki/00_meta"
             deep.mkdir(parents=True)
-            with patch.dict(os.environ, {}, clear=True):
+            with patch.dict(os.environ, {}, clear=True), patch.object(resolver_module, "SKILL_ROOT", isolated_skill):
                 self.assertEqual(resolve_root(start=deep), (root.resolve(), "upward-discovery"))
             sibling = Path(tmp) / "sibling/allincms-bulk-content-upload"
             sibling.mkdir(parents=True)
             canonical = make_package(Path(tmp) / "sibling/website-content-ops")
-            with patch.dict(os.environ, {}, clear=True):
+            with patch.dict(os.environ, {}, clear=True), patch.object(resolver_module, "SKILL_ROOT", isolated_skill):
                 self.assertEqual(resolve_root(start=sibling), (canonical.resolve(), "upward-discovery"))
 
     def test_no_full_source_and_no_explicit_bundle_blocks(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True), patch.object(
+            resolver_module, "SKILL_ROOT", Path(tmp) / "isolated-skill/SKILL-INSTALL"
+        ):
             with self.assertRaisesRegex(ResolutionError, rf"^{BLOCK_CODE}:.*vendor bundle is retired"):
                 resolve_root(start=tmp)
 
@@ -191,7 +196,9 @@ class ResolverTests(unittest.TestCase):
                 validate_root(incomplete)
 
     def test_explicit_bundle_root_remains_available_for_test_injection(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True), patch.object(
+            resolver_module, "SKILL_ROOT", Path(tmp) / "isolated-skill/SKILL-INSTALL"
+        ):
             bundle = make_bundle(Path(tmp) / "bundle")
             resolved, source = resolve_root(start=Path(tmp) / "none", bundle_root=bundle)
             self.assertEqual((resolved, source), (bundle.resolve(), "bundled-runtime"))
@@ -241,10 +248,13 @@ class ResolverTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as blocked_tmp:
             env = os.environ.copy()
             env.pop("WEBSITE_CONTENT_OPS_ROOT", None)
-            blocked_start = Path(blocked_tmp) / "isolated/no-runtime/here"
+            isolated_script = Path(blocked_tmp) / "isolated/SKILL-INSTALL/scripts/resolve_website_content_ops_root.py"
+            isolated_script.parent.mkdir(parents=True)
+            shutil.copy2(SCRIPT, isolated_script)
+            blocked_start = Path(blocked_tmp) / "unrelated-project"
             blocked_start.mkdir(parents=True)
             blocked = subprocess.run(
-                [sys.executable, str(SCRIPT), "--start", str(blocked_start), "--json"],
+                [sys.executable, str(isolated_script), "--start", str(blocked_start), "--json"],
                 check=False,
                 capture_output=True,
                 text=True,
@@ -254,9 +264,9 @@ class ResolverTests(unittest.TestCase):
             self.assertEqual(json.loads(blocked.stdout)["code"], BLOCK_CODE)
 
     @unittest.skipUnless(PYTHON_310, "Python 3.10+ interpreter required for installer test")
-    def test_install_py_from_isolated_full_source_copy_creates_link_without_dependencies(self) -> None:
+    def test_install_py_from_isolated_full_source_copy_resolves_from_unrelated_project(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            copied_source = Path(tmp) / "website-content-ops"
+            copied_source = Path(tmp) / "arbitrary-clone-name"
             shutil.copytree(
                 SOURCE_ROOT,
                 copied_source,
@@ -264,6 +274,8 @@ class ResolverTests(unittest.TestCase):
             )
             copied_skill = copied_source / "SKILL-INSTALL"
             install_root = Path(tmp) / "skills"
+            unrelated_project = Path(tmp) / "ordinary-project"
+            unrelated_project.mkdir()
             env = os.environ.copy()
             env.pop("WEBSITE_CONTENT_OPS_ROOT", None)
             completed = subprocess.run(
@@ -278,13 +290,17 @@ class ResolverTests(unittest.TestCase):
             self.assertEqual(link.resolve(), copied_skill.resolve())
             self.assertIn("Skipping npm ci and runtime self-tests", completed.stdout)
             resolved = subprocess.run(
-                [sys.executable, str(copied_skill / "scripts/resolve_website_content_ops_root.py"), "--start", str(copied_skill), "--json"],
+                [sys.executable, str(link / "scripts/resolve_website_content_ops_root.py"), "--start", str(unrelated_project), "--json"],
                 check=True,
                 capture_output=True,
                 text=True,
                 env=env,
+                cwd=unrelated_project,
             )
             payload = json.loads(resolved.stdout)
+            self.assertEqual(payload["source"], "skill-relative-source")
+            self.assertEqual(Path(payload["subLibraryRoot"]), copied_source.resolve())
+            self.assertTrue(payload["sourceCheckoutValidated"])
             self.assertFalse(payload["runtimeDependenciesInstalled"])
             self.assertFalse(payload["controllerExecutable"])
 

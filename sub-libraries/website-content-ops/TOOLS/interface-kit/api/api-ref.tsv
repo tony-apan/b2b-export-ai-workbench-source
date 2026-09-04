@@ -8,7 +8,7 @@ media.update	POST	/{slug}/media	7fa3dd69986bb5118a3f57f689958a669350829319	{"id"
 product.create	POST	/{slug}/products	7f63f8f470b449afbd792e0403802ceb33b964f4db	product 全字段+{"siteId"}	{"data":{"id"}}(draft)	media 扁平(ISS-021)/siteId(ISS-020)/draft slug=时间戳(ISS-022)	api._create_product_transport(...) [private]
 product.publish	POST	/{slug}/products/{id}/update	7f0d6abcdcec492a7e8587539e8d3f12e96a3d19ca	{...product,productId,mode:"publish"}	{"data":{"id","status":"published"}}	同上	api._publish_product_transport(...) [private]
 product.delete	POST	/{slug}/products	7ff4cdbd4b0334295d3cc7aba4767889363b4bcb45	{"id","siteId"}	flight	-	api.delete_product(...)
-post.create	BLOCKED	/{slug}/posts	7fdfe82861882e4f6ac3cfbf022bac07e0520fdae1	post 全字段+{"siteId"}	ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY	历史 wire observation only；当前不可执行	api._create_post_transport(...) raises BLOCKED
+post.create	CONTROLLED	/{slug}/posts	7fdfe82861882e4f6ac3cfbf022bac07e0520fdae1	post 全字段+{"siteId"}	create draft id + qualification/readback evidence	ISS-111 当前部署资格五步+strict review+fresh capability；无自动重试	api.mutate_reviewed_post(...,target_id=None) / canonical createPostDraft
 post.publish	POST	/{slug}/posts/{id}/update	7f205ad61951b1b4703378159b95d930e7e3f00b42	{...post,postId,mode:"publish"}	{"data":{"id","status":"published"}}	同 product	api._publish_post_transport(...) [private]
 post.delete	POST	/{slug}/posts	7f0be1853412ed6d5493ae2e4c1988bd78b88ca81e	{"id","siteId"}	flight	-	api.delete_post(...)
 design.commit	POST	/{slug}/themes/{themeId}/{pageId}/design	7ff107025e28118dfb6d8f0da06b3ae64fb0ed74b3	{"siteId","themeId","pageId","intent","pageDocument","globals","themeConfig"}	save->{"data":{"intent":"save"}}/publish->flight	globals 按页存(ISS-003)/模板页可编辑	api.save_home(...)
@@ -23,4 +23,4 @@ read.post	GET	/{slug}/posts/{id}/update?_rsc	-	-	defaultValues	-	api.read_post(.
 read.media	GET	/{slug}/media?_rsc	-	-	mediaLibraryItems	-	api.read_media_library(...)
 read.siteinfo	GET	/{slug}/site-info?_rsc	-	-	{site,user,sites}	-	api.read_site_info(...)
 product.mutate_reviewed	CONTROLLED	internal wrapper	-	business payload + strict review record + site/target/create|update	result + review context + business/wire digests	ISS-102	api.mutate_reviewed_product(...)
-post.mutate_reviewed	CONTROLLED	internal wrapper	-	final business payload + strict review record + fresh capability + exact existing target ID（update only；article.create BLOCK）	result + review context + business/wire digests	ISS-102	api.mutate_reviewed_post(...)
+post.mutate_reviewed	CONTROLLED	internal wrapper	-	final business payload + strict review record + fresh capability + target ID（create 时资格五步后生成；update 用 exact existing ID）	result + review context + business/wire digests	ISS-102	api.mutate_reviewed_post(...)

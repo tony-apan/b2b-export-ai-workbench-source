@@ -246,13 +246,13 @@ jobs:
               cat "$test_log"
               node scripts/verify-node-test-summary.mjs \
                 --log "$test_log" \
-                --expected-tests 160
+                --expected-tests 172
               runtime_output_sha256="$(sha256sum "$test_log" | awk '{print $1}')"
               runtime_output_bytes="$(wc -c < "$test_log" | tr -d '[:space:]')"
               runtime_output_lines="$(wc -l < "$test_log" | tr -d '[:space:]')"
               printf 'runtime_image_digest=%s\n' "$RUNTIME_IMAGE_DIGEST" >> "$GITHUB_OUTPUT"
               printf 'runtime_output_sha256=%s\nruntime_output_bytes=%s\nruntime_output_lines=%s\n' "$runtime_output_sha256" "$runtime_output_bytes" "$runtime_output_lines" >> "$GITHUB_OUTPUT"
-              printf 'expected_tests=160\npassed_tests=160\nfailed_tests=0\nskipped_tests=0\n' >> "$GITHUB_OUTPUT"
+              printf 'expected_tests=172\npassed_tests=172\nfailed_tests=0\nskipped_tests=0\n' >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "BLOCK: no trusted formal qualification test profile exists for sub-library $PACKAGE_ID" >&2

@@ -52,6 +52,35 @@ def install_commands() -> str:
     return "Install Node.js >=20.9.0 and npm from https://nodejs.org/"
 
 
+def validate_skill_metadata(skill_file: Path) -> str:
+    text = skill_file.read_text(encoding="utf-8")
+    name_match = re.search(r"^name:\s*([a-z0-9]+(?:-[a-z0-9]+)*)\s*$", text, re.MULTILINE)
+    description_match = re.search(r"^description:\s*(\"(?:[^\"\\]|\\.)*\")\s*$", text, re.MULTILINE)
+    if not name_match or not description_match:
+        raise InstallError("SKILL_METADATA_INVALID: name must be kebab-case and description must be one double-quoted line")
+    name = name_match.group(1)
+    if len(name) > 64:
+        raise InstallError("SKILL_METADATA_INVALID: name exceeds 64 characters")
+    try:
+        description = json.loads(description_match.group(1))
+    except json.JSONDecodeError as exc:
+        raise InstallError(f"SKILL_METADATA_INVALID: description is not valid JSON/YAML quoted text: {exc}") from exc
+    if not description or len(description) > 1024 or len(description.encode("utf-8")) > 1024:
+        raise InstallError("SKILL_METADATA_INVALID: description is empty or exceeds the 1024-character/UTF-8-byte host limit")
+    prefix = description[:250]
+    for label, pattern in (
+        ("CMS brand", r"AllinCMS|LAICMS"),
+        ("Chinese site task", r"建站|更新网站"),
+        ("product/taxonomy", r"产品|categor|tag"),
+        ("article", r"文章|article"),
+        ("image/media", r"图片|image|media"),
+        ("bulk/import", r"批量|bulk|import"),
+    ):
+        if not re.search(pattern, prefix, re.IGNORECASE):
+            raise InstallError(f"SKILL_METADATA_INVALID: first 250 description characters miss {label} trigger")
+    return name
+
+
 def canonical_paths() -> tuple[Path, Path, Path]:
     skill_root = Path(__file__).resolve().parent
     source_root = skill_root.parent
@@ -64,13 +93,12 @@ def canonical_paths() -> tuple[Path, Path, Path]:
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
         raise InstallError(f"{BLOCK_CODE}: missing {', '.join(missing)}")
+    validate_skill_metadata(skill_root / "SKILL.md")
     return skill_root, source_root, adapter
 
 
 def skill_name(skill_file: Path) -> str:
-    text = skill_file.read_text(encoding="utf-8")
-    match = re.search(r"^name:\s*[\"']?([^\s\"']+)", text, re.MULTILINE)
-    return match.group(1) if match else SKILL_NAME_FALLBACK
+    return validate_skill_metadata(skill_file)
 
 
 def parse_node_version(output: str) -> tuple[int, int, int] | None:

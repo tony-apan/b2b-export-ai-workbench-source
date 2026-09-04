@@ -43,7 +43,7 @@ related: ["../README.md"]
 
 ## 四、流程挂载位置
 - 前置收集（client-input-checklist.md）：必填项第五条"资料文件"注明 **最低 3 产品/4 文章**
-- brief validate（site_pipeline.py）：products<3 或本地文章计划 posts<4 → INVALID + 缺项提示；此门不授权远程 article.create（canonical Registry 当前 BLOCK）
+- brief validate（site_pipeline.py）：products<3 或本地文章计划 posts<4 → INVALID + 缺项提示；此门不授权远程 article.create；create 仍需当前部署 ISS-111 资格五步 + strict review + fresh capability
 - 验收（ONBOARDING 2.9 / ID-0007 B6）：`python3 site_pipeline.py gate <slug>` 数量门 + 空态 + 模板词 + 200 一键检查，任一不过 = 不开上线
 - 交付清单（delivery-manifest）：生成时先过 gate；不过则清单标记 "BLOCK: 数量不足（产品 N/文章 M）"
 

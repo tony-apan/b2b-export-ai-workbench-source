@@ -33,6 +33,7 @@ redaction_status: "safe-to-publish"
 | 2 | 客户**现有网站** | 提炼结构与语气（导航/品类/卖点/规格/真实图片 URL）；确认目标市场语言 | brief + 步骤 5 媒体清单 |
 | 3 | 书面 **brief / 聊天口述** | 原文即事实源；客户原话 = 文章痛点/代入感素材（写作前置 5 项之首） | brief 的 `brand/contact` + 文章 facts 集 |
 | 4 | **图片**（产品图/公司图/logo/封面） | 先分授权：客户自有 / CC 代找（记录 author+license）；每张定 title/alt/caption | 步骤 5 `upload_media` |
+| 4b | **图片型 PDF（无文字层）的图源** | `pdftoppm -r 220` 渲染整页 → 按 130dpi 预览定位的**相对坐标裁剪**产品/公司图（短边压 1600px JPEG q85）→ 拼 contact sheet **逐张目检去标题字残留**（通常需 2-3 轮精修）→ alt/title/caption 清单 | 步骤 5 上传；图永远从原 PDF 裁，不外找占位图 |
 | 5 | **已有 CMS 后台内容** | 仅续建/迁移用：先 `read_lists` 导出，避免重复 create 堆积草稿 | 步骤 3 选站 + 现状 diff |
 | 6 | **没有 / 不足** | 按 §1.2 必问清单问；AI 先执行素材推进策略（先自动提炼 → 不够给方案 → 仅剩不可推断的才问用户） | 缺口清单（标注 demo/待用户提供） |
 
@@ -45,7 +46,7 @@ redaction_status: "safe-to-publish"
 | Q1 | **公司/品牌名 + 目标市场语言**（含标语、品牌一句介绍） | 站名/slug/导航/SEO title 前缀全部依赖 |
 | Q2 | **真实联系方式**：邮箱（**必须真实可收件**）+ 电话 + WhatsApp + 地址/营业时间 | 表单链路与联系页、全站 globals 浮钮 |
 | Q3 | **产品/公司资料文件**（PDF/DOCX/网页/口述） | 唯一事实源；没有它只能全 demo，不可发布 |
-| Q4 | **首批内容范围确认**：产品 ≥3（名+一句话+规格+图）、文章主题/本地草稿 ≥4（或接受 demo 占位；**不等于允许远程新建**） | 本地内容计划门：products<3 或 posts<4 时 validate INVALID；remote article.create 仍由 Registry BLOCK |
+| Q4 | **首批内容范围确认**：产品 ≥3（名+一句话+规格+图）、文章主题/本地草稿 ≥4（或接受 demo 占位；**不等于允许远程新建**） | 本地内容计划门：products<3 或 posts<4 时 validate INVALID；remote article.create 只走 canonical JS Controller（Python fail-closed），provider/门不齐则本次 create BLOCK |
 | Q5 | **写作素材 + 图片授权**：客户原话/询盘片段 ≥3 条、每文章 2-3 个真实数据、图片自有或同意代找 CC | 缺 Q5 文章只能写通用介绍且必须标注 demo |
 
 动工前用户确认点（client-input-checklist 第四节）：站点名/slug 偏好、demo 值是否可接受、图片授权方式、首批内容范围。
@@ -63,6 +64,7 @@ redaction_status: "safe-to-publish"
   2. **浏览器手动取 Cookie（兜底，已验证）**：用户登录 workspace.laicms.com → DevTools → Cookies → 复制 `payload-token`。
   3. **浏览器配置文件提取（方向指引，未实测）**：详见 TOKEN-AUTH.md 方式三；优先 1/2。
   取到后 **`export WS_TOKEN=<token>`（跨平台推荐）**；或 token 文件（chmod 600）传路径。无 token = 全链路不可用。
+  - ⚠️ `AllinCMS(...)` 构造**必须关键字传参**：`AllinCMS(email='..', password='..')`——第一个位置参数是 `token`，位置传参会把邮箱当 token 静默失效（页面全部 307 回 /sign-in，2026-09-03 qualification run踩中，ISS-118 同族）。
 - **动作**：
   ```bash
   cd <IFK>
@@ -73,9 +75,10 @@ redaction_status: "safe-to-publish"
   python3 scan/scan-actions.py - /sites       # 部署更新后必扫 action id（42 位 hex；token 从 WS_TOKEN 读取，也支持文件路径）
   # ⚠️ 如果扫描发现 id 变了/新 action 出现 → 读 API-DISCOVERY.md（7 步摸索流程）
   python3 allincms_api.py <token> read-sites                  # 冒烟：站点列表 JSON
+  python3 check-contract-freshness.py [--live]                # 合同新鲜度四方对照（Registry/canonical JS/host driver/Python helper；可选 --live 实扫部署；漂移先修再干活）
   ```
-- **验收判据**：`verify` 输出 `VERIFY PASS`；`find` 相关坑已读；action id 与 `allincms_api.py` 常量一致。
-- **产物**：`70_evidence/00-preflight.txt`（verify/find/scan 输出快照）。
+- **验收判据**：`verify` 输出 `VERIFY PASS`；`find` 相关坑已读；action id 与 `allincms_api.py` 常量一致；`check-contract-freshness.py` 必须 PASS；`20_work/onepass-read-receipt.json` 已用 `--write-receipt` 生成并立刻 `--verify-receipt` PASS。没有 receipt 或 receipt stale = 不得进入 Plan A/Plan B。
+- **产物**：`70_evidence/00-preflight.txt`（verify/find/scan/freshness 输出快照）+ `20_work/onepass-read-receipt.json`（必读文件精确 SHA-256 回执；规则变动自动失效）。
 - **坑**：跳过 find 直接动手 = 重复已回填的坑（ISS-001/002/003/018/024/059 均为重复踩坑）；action id 用错**静默返回 `{}`**，不报错。
 
 ### 步骤 1 — 资料 → brief.json
@@ -135,7 +138,7 @@ redaction_status: "safe-to-publish"
   ```
 - **验收判据**：`read_media_library` 核对 10 字段（name/alt/url/path/size/mimeType…）；**URL 带扩展名**；license 记入证据。
 - **产物**：`70_evidence/media-manifest.md`（文件名 → URL/alt/license）；URL 回填 brief.json 的 media ref。
-- **坑**：URL 不带扩展名 → 运行时 404；同页不重复用同一张图（分类卡/hero 错开）。
+- **坑**：**`upload_media` 的 title/alt/caption 位置参数不生效**（multipart 只传文件+siteId）——上传后记录是文件名 stem，**必须逐张 `update_media` 回写** SEO 元数据并 read_media_library 复核（2026-09-03 qualification run：22 张 alt 全为 stem，回写后 22/22 生效）；URL 不带扩展名 → 运行时 404；同页不重复用同一张图（分类卡/hero 错开）；批量上传后以 read_media_library 为真源建 ref→{url,media_id} 映射表，产品 payload 的 media 用 `{source:"url", url:<CDN>}`（新站 ISS-105）。
 
 ### 步骤 6 — 分类 / 标签
 
@@ -147,7 +150,7 @@ redaction_status: "safe-to-publish"
   ```
 - **验收判据**：产品分类与文章分类**分开建**；cover=None 未 500；记录全部 id（后续 payload 用 **id 字符串数组**）。
 - **产物**：`70_evidence/taxonomy-ids.json`（name → id 映射）。
-- **坑**：cover 缺省报 validation error；payload 传 id 数组（读回是对象数组）；POST 报 transaction number mismatch → 浏览器打开对应 tab 拿新 router tree 再试。
+- **坑**：cover 缺省报 validation error；payload 传 id 数组（读回是对象数组）；**transaction number mismatch 竞态是间歇性的**（qualification run 中多次）：等 6-8s → read_lists 只读对账（确认远端不存在）→ 重试同一请求；连续两次竞态则 sleep 8s 再试；对账形状：categoryOptions/tagOptions 行是 `{label,value(id)}`（label=分类名，映射表按 name 存，组装 payload 时 slug→name→id 三段转换，ISS-118）。
 
 ### 步骤 7 — 产品 create/publish（每个产品一遍）
 
@@ -166,32 +169,59 @@ redaction_status: "safe-to-publish"
                                        target_id=None_or_pid)
   # create 时 wrapper 在审查后内部执行 create_draft → publish_update；update 直接 publish_update
   ```
+  > **capability context 批量刷新模板（ISS-117，每批 mutation 前执行，禁止复用上一批）**：
+  > ```python
+  > now = datetime.datetime.now(datetime.timezone.utc)
+  > stamp = now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+  > ev = {"deployment_id": <DEPLOY>, "site_key": S, "site_id": SID,
+  >       "verified_operations": sorted(required_ops),          # 与路由 gate 要求精确一致
+  >       "action_ids": {op: <对应 42hex 常量> for op in required_ops},
+  >       "observed_at": stamp}
+  > json.dump(ev, open(evp, "w"), indent=1)                     # 先写 evidence
+  > cap = {"status": "live_verified_current_deployment", "deployment_id": <DEPLOY>,
+  >        "site_key": S, "site_id": SID, "operations": sorted(required_ops),
+  >        "evidence_ref": "70_evidence/<capability-evidence>.json", "observed_at": stamp,
+  >        "expires_at": (now+timedelta(minutes=25)).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+  >        "runtime_scope_root": <TASK_ROOT 绝对路径>,
+  >        "evidence_digest": "sha256:" + hashlib.sha256(open(evp,'rb').read()).hexdigest(),
+  >        "client_id": client, "task_id": task}
+  > ```
+  > evidence 与 context 的 observed_at 必须同值；evidence 文件改动后 digest 必须重算；一批超 25 分钟即整批刷新。
 - **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态字段 `_status=='published'`（键名是 `_status`，ISS-108；create-only 草稿 `_status` 非 published 且**公网不可见**=ISS-105 另一面）；`read_product` 的 content **非空**；公网每个产品详情页 `<article>` 内至少 1 个实质 H2 + 正文事实短语 SSR，且相关产品模块真链接可点、无空态。
 - **产物**：`70_evidence/products/<slug>.json` + `<slug>-review.json`（最终 payload + 独立 reviewer READY 记录，digest 精确绑定；含 business_operation=create|update、site/target binding）。
 - **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；全量 update 必须从 current readback + brief 真源合并，**不得复用可能过期的存证 payload**，尤其 specifications/content/media（空数组会真清空后台，ISS-101）；合并后必须再归一化为**写接口形状**：media 从读回包裹/url 形状转 `source:"oss"+path`，categories/tags 从对象数组转 id 字符串数组，specifications/content 以 brief/COP 真源覆盖（不得把 read_product/read_lists 读形状原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接。
+  > **blockquote 两门矛盾（ISS-112，2026-09-03 qualification run）**：content_review_gate 要求 blockquote.children 嵌套 {type:p} 块，site_pipeline product-content 门空块判定只认 children[].text 平铺——同一 payload 无法同时过两门。**产品正文禁用 blockquote**，选型建议用 p 段（"Buyer tip: " 前缀）。
   > **跨站差异（ISS-105，2026-09-02 新建站实测）**：不是所有站都接受 `source:"oss"`。新建站产品 upsert 若 media=oss+path 会**静默拒绝整个 payload**（产品保持 Untitled）；`specifications.value` 有 200 字符上限（`validation.specifications.valueMax200`）。**写产品前先扫该站是否有 `createProductAction`**（若无只能走 update/upsert，即 `mutate_reviewed_product(target_id=draft id)`）；media 用 `{source:url, url:<CDN url>}`；长型号清单放 `content` 正文、specifications 只留短 value（≤200）；publish 后查 response 的 `validationErrors` 是否为空。API 读回媒体库能拿每张图的真实 `url`。
 
-### 步骤 8 — 文章 k3 写 + flash 审 + reviewed update（article.create BLOCK）
+### 步骤 8 — 文章 k3 写 + flash 审 + reviewed update（create canonical 于 full-source JS Controller）
 
-- **输入**：写作前置素材（client-input-checklist 第六节）+ COP 文章主题 + customization posts 节。**Canonical Registry 当前仍将 article.create 标为 BLOCK**：本步骤只允许更新 exact existing post ID；全新文章需停下并补齐 Registry 要求的 current-deployment create discovery/before-after 唯一 ID/完整读回/editor reopen 资格证据，不能因本地脚本曾成功就放行。
-- **干净账号分支**：若 `read_lists(posts)` 无可更新 exact-ID 文章，4 篇仍完成本地成稿+独立评审+review records，但**不远程创建**；主题构建时移除 Posts 导航、news/post-related 模块，并从 audit pages/count/FAQ article 断言中移除远程文章项，DELIVERY 首行记录 `article.create=BLOCK / local drafts ready`。不得保留空文章列表入口。
+- **输入**：写作前置素材（client-input-checklist 第六节）+ COP 文章主题 + customization posts 节。
+- **article.create 执行路由（P0-3.1 后唯一口径）**：Registry 合同仍是 `availability=canonical + fresh_live_verified_current_deployment`，但**唯一执行面是 full-source JS Controller**——用 `ADAPTERS/cms/allincms/content-run-controller.mjs` 跑 content plan，经 `content-plan-host-driver.mjs` 的 `article:create` handler 调 `article-operations.mjs#createPostDraft`，且宿主必须注入**三个真实 provider**：`articleBeforePostIdsProvider`（真实同站 before post-ID 快照，禁止伪造空快照）、`articleCreateReadbackProvider`（权威 backend 完整回读 + afterPostIds）、`articleEditorReopenProvider`（真实编辑器重开 200/authenticated/healthy）。**缺任一 provider 时本次 create BLOCK**（canonical 合同仍在，执行门不齐），不得降级到 Python。资格验证五步（合同扫描零漂移 / before-after 快照差集恰 1 / 完整回读 / 编辑器重开）即由这三道 provider 在 Controller 内落实；证据样例见 private qualification task `70_evidence/article-create-qualification.json`（ISS-111，2026-09-03 qualification site 实测）。
+- **Python fail-closed 边界（防第二执行面）**：`TOOLS/interface-kit/allincms_api.py` 不再提供文章 create——`_create_post_transport`、`_send_content_transport(..., CREATE_POST, ...)`、`mutate_reviewed_post(target_id=None)` 三处一律抛 `ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED`（任何 review/capability/network/readback 之前）；Python 只保留 **exact-ID reviewed update**（`mutate_reviewed_post(target_id=<exact_pid>)`）。create 后 draft slug 变时间戳，由 reviewed update 带正式 slug 覆盖。
+- **provider 不齐时的分支**：4 篇仍完成本地成稿+独立评审+review records，但**不远程创建**；主题构建时移除 Posts 导航、news/post-related 模块，并从 audit pages/count/FAQ article 断言中移除远程文章项，DELIVERY 首行记录 `article.create=BLOCK / local drafts ready`（注明缺哪个 provider）。不得保留空文章列表入口，也不得改用 Python 创建。
 - **动作**（五步链，入口 [writing/WRITING-INDEX.md](writing/WRITING-INDEX.md)）：
   ```bash
   python3 writing/writing-module.py outline 70_evidence/brief.json     # 六段式骨架（可选）
   # ① 主 AI 从源 PDF 提炼 facts（只用源内事实；禁止编价格/MOQ/认证/客户案例）
-  # ② 派【写作子 agent，模型=k3】：BRIEF.md（facts+主题+Slate 规范）+ article-writing-logic.md + PROGRESSION.md
+  # ② 派【写作子 agent】（子代理连续 Provider 失败≥2 次即主线程兜底直写，勿耗在重试）：
+  #    BRIEF.md（facts+主题+Slate 规范）+ article-writing-logic.md + PROGRESSION.md
   #    产出 70_evidence/posts/<slug>.json（字段全集 = templates/post-payload-example.json）
   # ③ 机器检查：python3 writing/writing-module.py check 70_evidence/posts/<slug>.json
   # ④ 派【评审子 agent，模型=flash】：templates/ghostwriter-review-prompt.md（5 维评分+最弱 3 处+钩子）→ READY / NEEDS_REWRITE
   # ⑤ NEEDS_REWRITE → 回改表达（不动事实）重审；READY 后对最终完整 post business payload（含
   #    title/slug/excerpt/order/coverImage/content/categories/tags）做 digest，产严格 review JSON；
-  # ⑥ 唯一受支持 mutation 入口（裸 create_post/publish_post fail-closed；article.create registry BLOCK）：
+  # ⑥ create：full-source JS Controller（content-run-controller + article:create handler +
+  #    articleBeforePostIdsProvider/articleCreateReadbackProvider/articleEditorReopenProvider，
+  #    缺 provider 本次 create BLOCK；Python 不得代发）；
+  # ⑥' create 拿到 exact post ID 后的 reviewed update（Python 唯一文章 mutation 入口）：
   api.mutate_reviewed_post(slug, site_id, post_payload, review_path, capability_context, target_id=exact_pid)
-  # 先 read_lists 查 exact slug；不存在则 BLOCK，不得创建（ISS-059/102）
+  # 先 read_lists 查 exact slug；无 exact ID 且 JS Controller provider 不齐则本次 create BLOCK，
+  # 不得创建（ISS-059/102/111，P0-3.1）
   ```
 - **验收判据**：`check` PASS + 评审 READY + 发布后抓取验证 **SSR**（FAQ 实质短语出现在公网 HTML）。
 - **产物**：`70_evidence/posts/<slug>.json` + `70_evidence/posts/<slug>-review.md`（人读评审报告）+ `70_evidence/posts/<slug>-review.json`（机器严格 context）。
-- **坑**：正文原生 Slate 类型 = `p|h2|h3|blockquote`（`heading`/`paragraph` 旧词法已禁用，ISS-060，用 writing-module.py 生成器保证）；正文内联 link 节点平铺渲染**无 `<a>`**——文章 CTA 放步骤 9 的页面级块；文章挂**文章分类** id，勿用产品分类 id。
+- **文章上线收尾链（发布≠完成，缺这步导航没有文章入口）**：① 全站 7 页 globals 的 header navigation 加回 `Articles`（含分类下拉）+ footer 加文章链接列（逐页 save+publish）；② home 恢复 `featured-news-list-editorial` 模块（children 插在 materials-1 后，结构照 MODULES.md）；③ audit config 更新：pages 加 `posts/{slug}`、count.posts=实数、faq_answers 改为文章页 FAQ 实测渲染短语；④ 公网逐篇 200+H2 SSR 验证后重跑完整 audit。文章 blockquote 用嵌套 p（ISS-112）；批量 capability context 每批刷新（ISS-117）。
+- **坑**：正文原生 Slate 类型 = `p|h2|h3|blockquote`（`heading`/`paragraph` 旧词法已禁用，ISS-060）；**blockquote.children 必须嵌套 `{type:"p",id,children}` 块**（ISS-112：平铺 text 被 content_review_gate 拒；writing-module 兼容嵌套）；正文内联 link 节点平铺渲染**无 `<a>`**——文章 CTA 放步骤 9 的页面级块；文章挂**文章分类** id，勿用产品分类 id；coverImage 是 media 对象（source:url+CDN url，新站见 ISS-105）。
 
 ### 步骤 9 — 主题 createTheme(default) + 7 页内容写入（save+publish）+ globals
 
@@ -215,6 +245,7 @@ redaction_status: "safe-to-publish"
 - **验收判据**：7 页 readback diff≈0；globals 7 页一致；公网无空态文案（`No content is available yet` 等——单品/单文时删详情页 related 模块）。
 - **产物**：`70_evidence/pages/<page>.json`（每页最终三件套存证，共 7 份）。
 - **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/+44-7911-123456`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取；**全局弹窗元素必须带 anchorId=header cta 锚点名，null 时公开站静默丢弃整树（ISS-094，builder 默认已带）**。
+  > **hero/carousel 隐藏商城槽位（ISS-113，2026-09-03 qualification run）**：hero-commerce 除显性字段外还有 productName/productDescription/productPriceLabel/campaignPills[].value/mediaMeta/actions[].label 六处；carousel slides 每项还有 price/product/primaryLabel/secondaryLabel 四处——不显式覆盖（可空串）服务端回填 demo 值（Weekender Tote/From $96/Materials and care 系），audit template 多轮才清完。serviceItems 结构为 icon+title+description；materials-1 的 actionLabel/actionTarget 也是隐藏槽（demo 值 "Read the material guide" 会被 audit template 抓）。落库前对照 ISS-113 清单**逐页逐模块**枚举 demo 词（`re.search` 打分脚本扫 doc JSON）一次性清零，不要等 audit 一轮轮揭露。
   > **globals 写入（ISS-106，2026-09-02 新建站实测）**：`save_home` 传**自建的 globals 结构**不会覆盖页面级 globals（readback 仍是旧值，因缺 children/anchorId 等被服务端回退用存储值）。正确做法：`read_page_document` 取 `ip['globals']`，**只改目标字段**（如 `header-dropdown-1.props.ctaTarget`、`footer-columns-1.props.brand`），其余原样回传 `save_home(intent=save)` → `readback` 确认 → `save_home(intent=publish)`。**导航 CTA 弹窗** = `ctaTarget: {type:"action", anchorId:"contact-form-dialog"}`（公网 `#contact-form-dialog`，参照弹窗站已验证）。涉及站点级/头部/footer 的可见改动，若页面级 publish 后公网未刷新，用后台主题设计器的 **Publish**（站点级）触发 CDN。
   > **网格列数=条目数 + 大标题规则（ISS-107，2026-09-02 实测）**：带 `columnCount` 的网格模块按列数**固定生成 N 列、条目不足不折叠**——3 列只填 2 条 proofRows → 公开站第三列只剩边框空白卡；4 列只填 2 个分类卡 → 右半幅约 540px 空白。提交前逐模块校验 `columnCount == len(items/proofRows/reviews/stats/values)`，改列数或补条目二选一。hero-commerce 大标题固定 72px 不随列宽缩放：长标题在窄列堆 6 行、连字符首词断孤儿行（"Wall-mounted"→"Wall-"独行），标题**避免连字符词开头、≤42 字符**。**模板固有行为登记不硬改**：hero 左列 content-between 中段空隙、产品卡 line-clamp 截断、奇数卡末行空位、吸顶导航 bg-background/95 半透明（滚动截图时底下内容 5% 透出，勿误判为重叠 bug）。**内联表单卡 formSlug 必填（ISS-110，2026-09-03 physolar 首页实测）**：contact-form-split 缺 formSlug 时公网只渲染表单卡外壳、同页 0 个 `<form>`；builder `contact_split()` 已带默认 `contact-inquiry`，audit form-render 已扩展为扫描所有含该模块的页面（不再只查 /contact-us）。
 
@@ -266,11 +297,12 @@ redaction_status: "safe-to-publish"
   python3 site_pipeline.py contact <slug> --config 70_evidence/<slug>-audit-config.json --real "<真实电话|邮箱|地址>"
   python3 site_pipeline.py product-content <slug> --config 70_evidence/<slug>-audit-config.json  # 独立扩展闸；audit 历史口径仍为 13 项
   # DELIVERY：templates/delivery-manifest.md → 70_evidence/DELIVERY-<slug>-<date>.md（链接表每行核验 200 + 已知事项照抄 RUNBOOK §9）
+  python3 onepass-completion-gate.py "$TASK"  # receipt/Plan A+B/回读/媒体/taxonomy/产品文章评审/路由/audit/DELIVERY 装配闸
   # 收尾：70_evidence/HANDOFF.md + 新坑回填 issues.tsv（fixed/boundary/pending）+ registry_tools.py verify + gen
   ```
-- **验收判据**：audit 13 项站内检查全 PASS（历史口径不变）+ product-content 独立扩展闸 PASS；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**。三门通过后、DELIVERY 签发前，另按 [templates/site-acceptance-v2.md](templates/site-acceptance-v2.md)（TPL-023，7 层 61 项 + 四轮对抗流程）逐项验收——判据="陌生买家能否完成询盘"，证据落盘 `70_evidence/acceptance-v2.md`。
+- **验收判据**：audit 13 项站内检查全 PASS（历史口径不变）+ product-content 独立扩展闸 PASS；gate PASS；contact PASS；DELIVERY 链接表**每行核验列非空且为 200**；`onepass-completion-gate.py "$TASK"` 输出 `ONEPASS_COMPLETION_STRUCTURE_PASS`。三门通过后、DELIVERY 签发前，另按 [templates/site-acceptance-v2.md](templates/site-acceptance-v2.md)（TPL-023，7 层 61 项 + 四轮对抗流程）逐项验收——判据="陌生买家能否完成询盘"，证据落盘 `70_evidence/acceptance-v2.md`。
 - **产物**：`<slug>-audit-config.json`、`audit-report.json`、`acceptance-v2.md`、`DELIVERY-<slug>-<date>.md`、`HANDOFF.md`（详见 §4）。
-- **坑**：没有 `--config` 的 audit 会用 Demo 基线误判新站（ISS-063）；公网 CDN 缓存 publish 后 5–10s 生效，验收以列表页数据源 + counter 为准。
+- **坑**：没有 `--config` 的 audit 会用 Demo 基线误判新站（ISS-063）；**faq_answers 断言短语必须逐字取自公网 FAQ 卡渲染文本**（校准方向=断言对齐现实，不是改内容迎合断言）；posts=0 时 faq-answer/cta/h2-semantic 三项文章断言无法通过（config 无开关）——DELIVERY 已知事项注记 N/A 及原因；`product_content` 是 **dict**（slug→{required_h2:int, fact_phrases:[]}）；公网 CDN 缓存 publish 后 5–10s 生效，验收以列表页数据源 + counter 为准；audit 连续 FAIL 时逐词 grep 公网 HTML 定位残留模块（template 词是渐进揭露的，一轮全清完再跑）。
 
 ---
 

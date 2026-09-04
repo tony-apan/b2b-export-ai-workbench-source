@@ -52,7 +52,7 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
 4 媒体：upload_media × N + update_media 回写 title/alt/caption
 5 分类/标签：create_category2（cover 显式 null）/ create_tag
 6 产品：最终 payload + 独立审查 READY/digest → mutate_reviewed_product（见 product prompt/record/gate）
-7 文章：仅更新 existing exact ID：k3 写 → distinct reviewer → strict record + fresh capability → mutate_reviewed_post；article.create Registry BLOCK
+7 文章：k3 写 → distinct reviewer → strict record + fresh capability；新文章先 ISS-111 资格五步→create draft→mutate_reviewed_post，已有文章直接 exact-ID update
 8 主题页：create_theme(default) -> 改 7 页 doc + globals -> 每页 save+publish -> set_theme_active -> apply_theme_routes
 9 每站审计配置（templates/site-audit-config.template.json 复制改名）-> audit/gate/contact 三门
 10 交付清单 DELIVERY-<slug>-<date>.md + HANDOFF.md + 回填 issues.tsv
@@ -68,7 +68,7 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
 | **根路径 `/` 修复=set_home_page**：`api.set_home_page(slug, site_id, theme_id, home_page_id)`（action=setHomePageAction，URL 必须是 `/{slug}/themes/{themeId}`）。**顺序：先 setThemeActive 再 set_home_page**（激活会清 homePageId）。其余路径（/{slug}/themes）返回 200 但静默无效 | ✅ **可修（2026-08-30 实测上线）** | allincms_api.set_home_page + 任务证据 `70_evidence/ROOT-PATH-ISSUE.md` 终局节 |
 | 正文内联 link 节点平铺渲染无 `<a>` | 文章 CTA 用**页面级块**（material-story-split actionTarget）做真链接 | MODULES.md link 行 |
 | 空字符串字段会被 zod 打回默认值（如 WhatsApp url 默认 `wa.me/+44-7911-123456`） | 删 demo 按钮=**移除元素**（children+elements 同删），不是置空 | 2026-08-30 实测（ISS-068） |
-| 旧流程 article create 空壳草稿后 publish；重复 create 曾堆积 Untitled Post | 当前仅允许 exact existing ID + strict review/capability 的 mutate_reviewed_post update；article.create Registry BLOCK | ISS-059/102 |
+| 旧流程 article create 空壳草稿后 publish；重复 create 曾堆积 Untitled Post | article create/update 均 canonical：create 先当前部署资格五步+唯一差集，拿 exact ID 后 strict review/capability→mutate_reviewed_post；不得重复 create | ISS-059/102 |
 | **createTheme(default) 会重新种入 3 demo 产品+3 demo 文章+6 demo 分类+7 demo 标签**（站点级，新记录 id 时间戳=创建时刻；taxonomy 同样种入且 0 引用也会公开出现在筛选下拉） | 每次重建主题后重跑全链清理（delete-demo-content.py）；audit count 项自动暴露 | ISS-071/074 |
 | 正文原生 Slate 类型 = `p|h2|h3|blockquote`（服务器存储形态；'heading'/'paragraph' 旧词法禁用） | 格式见 templates/post-payload-example.json；生成器 writing-module.py block/skeleton | ISS-060 |
 | 主题 id/页面 id 会变 | 一律 read_themes/read_pages/read_page_document 现取，勿猜 | allincms_api.read_themes |
@@ -129,7 +129,7 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 - 页面文档结构：`{"root":"page-root","elements":{...}}`；块类型白名单与 props 见 `templates/home-page-example.json`、allincms_blocks.py 与 MODULES.md（37 块注册表全集在 MODULES.md 开头）。
 - globals（header/footer/contact dialog/social button）**按页存储**：改 globals 后用同一份 globals_doc 对**全部 7 页**逐页 save+publish（Example 实测可靠做法；只 commit 一页不可保证全站一致）。
 - **globals 改动只改单字段回传（ISS-106）**：`read_page_document` 取 `page['globals']` → 改目标字段（如 `globals_doc['elements']['header-dropdown-1']['props']['ctaTarget']`、`footer-columns-1.props.brand`）→ 其余原样 `save_home(intent=save)` → `readback` 确认 → `save_home(intent=publish)`。**不要自建整个 globals 结构**（缺 children/anchorId 会被服务端回退用存储值，改动不生效）。**导航 CTA 弹窗** = `header-dropdown.props.ctaTarget = {type:"action", anchorId:"contact-form-dialog"}`（公网 `#contact-form-dialog`）；`{type:"custom",href:"/contact-us"}` 是跳页非弹窗。站点级/头部/品牌/菜单可见改动，若页面级 publish 后公网未刷新，用后台主题设计器顶部的**站点级 Publish**（而非仅 save_home）触发 CDN。
-- **文章页 CTA 真链接（仅已有 exact-ID 文章 update 分支）**：post-detail 页 `page-root.children` 追加 `cta-1` 元素（type `material-story-split`，actionTarget `{"type":"custom","href":"/contact-us?source=<site>-article"}`），同时替换 related-1 demo 文案。干净账号无 existing article 时 article.create Registry BLOCK，须移除 Posts 导航/news/post-detail/related 模块，不部署空文章入口。参考脚本仅作历史结构证据：`<task_dir>/70_evidence/scripts-*/fix-post-cta.py`。
+- **文章页 CTA 真链接（仅已有 exact-ID 文章 update 分支）**：post-detail 页 `page-root.children` 追加 `cta-1` 元素（type `material-story-split`，actionTarget `{"type":"custom","href":"/contact-us?source=<site>-article"}`），同时替换 related-1 demo 文案。干净账号先跑 ISS-111 资格五步；通过则 create+reviewed update 并保留 Posts 导航/news，失败且留有部署证据时才移除空文章入口。参考脚本仅作历史结构证据：`<task_dir>/70_evidence/scripts-*/fix-post-cta.py`。
 
 ## §4 产品（第 6 步展开）
 
@@ -160,7 +160,7 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 4) 派【评审子 agent，模型=GLM flash（flash）】：复制 templates/ghostwriter-review-prompt.md 填文派空白子 agent
    -> 5 维评分+最弱3处+钩子检查+READY/NEEDS_REWRITE
 5) NEEDS_REWRITE -> 回改表达（不动事实）重审；READY -> 下一步
-6) 先 read_lists resolve exact existing ID → 独立 review READY + fresh capability → mutate_reviewed_post update → 上线后 SSR；不存在则 article.create BLOCK
+6) 先 read_lists resolve exact existing ID → 独立 review READY + fresh capability → mutate_reviewed_post update → 上线后 SSR；不存在则先跑 ISS-111 资格五步后 create draft+reviewed update；资格失败才 BLOCK
 ```
 
 模型命名以宿主实际可用模型 id 为准：写作=K3 系（长文质量），评审=flash 系（快+挑剔）。

@@ -310,6 +310,11 @@ def payload_checks(payload, object_type):
             text = _validate_text_leaves(block.get("children"), path, problems)
         if not text.strip(): problems.append(f"{path} empty")
         if any(x in text for x in ("**", "](", "```")): problems.append(f"{path} markdown residue")
+        internal_terms = []
+        if re.search(r"\bUNIT-\d+\b", text, re.I): internal_terms.append("UNIT-ID")
+        for term in ("source-extraction", "claim ledger", "review record", "payload digest"):
+            if term in text.lower(): internal_terms.append(term)
+        if internal_terms: problems.append(f"{path} exposes internal evidence vocabulary: {sorted(set(internal_terms))}")
     return problems
 
 

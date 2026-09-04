@@ -22,7 +22,7 @@ This directory (`SKILL-INSTALL/`) is the installable **portable router** merged 
 2. Resolve the runtime with `scripts/resolve_website_content_ops_root.py`.
 3. Read the current step's SOP, Schema, validator, and AllinCMS Adapter from the resolved `<SUB_LIBRARY_ROOT>`.
 
-Resolution precedence is: explicit full source checkout, environment full source checkout, upward/sibling full source discovery. The digest-verified `vendor/website-content-ops-runtime` snapshot tier is **retired pending the dist pipeline** and is no longer distributed; if no full source checkout validates, stop with `CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED`. Never fall back to historical payloads, routes, UI workflows, or retired helpers.
+Resolution precedence is: explicit full source checkout, environment full source checkout, the validated full source adjacent to this installed Skill (`SKILL_ROOT.parent`), then upward/sibling full source discovery. The digest-verified `vendor/website-content-ops-runtime` snapshot tier is **retired pending the dist pipeline** and is no longer distributed; if no full source checkout validates, stop with `CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED`. Never fall back to historical payloads, routes, UI workflows, or retired helpers.
 
 ## Authority
 

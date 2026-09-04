@@ -15,13 +15,13 @@ AllinCMS / LAICMS 纯接口客户端（跨平台：macOS / Windows / Linux，Pyt
     api.create_category2(site_slug, site_id, name, slug, "products")
     api.upload_media(site_slug, site_id, "photo.jpg", title="...", alt="...")
     api.mutate_reviewed_product(site_slug, site_id, final_payload, review_json, capability_context, target_id=None_or_exact_id)
-    api.mutate_reviewed_post(site_slug, site_id, final_payload, review_json, capability_context, target_id=exact_existing_id)  # article.create BLOCK
+    api.mutate_reviewed_post(site_slug, site_id, final_payload, review_json, capability_context, target_id=exact_id)  # 仅 exact-ID update；article.create canonical 于 full-source JS Controller，Python fail-closed（P0-3.1）
     # 裸 create_*/publish_* 为 fail-closed 兼容壳；低层 _*transport 仅内部调用（ISS-102）
     api.save_home(site_slug, theme_id, page_id, site_id, doc, globals, cfg, intent="save"|"publish")
     api.create_theme(site_slug, site_id, name, preset="default"); api.set_theme_active(...); api.apply_theme_routes(...)
 零上下文建站总入口见 interface-kit/RUNBOOK-ANYONE.md。
 """
-import hashlib, json, os, re, ssl, sys, urllib.parse, urllib.request, urllib.error
+import hashlib, json, os, re, ssl, sys, time, urllib.parse, urllib.request, urllib.error
 
 
 # ---------- 跨平台 token 路径（Windows 兼容） ----------
@@ -405,7 +405,11 @@ class AllinCMS:
         return data.get("status") == "published"
     # ---------- 产品（受支持内容 mutation 只允许 reviewed + fresh capability 入口） ----------
     def _send_content_transport(self, path, action, envelope):
-        """Freeze one HTTP body, digest it, then send the exact same bytes."""
+        """Freeze one HTTP body, digest it, then send the exact same bytes.
+        Article create is refused here too：该 transport 被产品 create/update 与文章 update
+        共用，CREATE_POST 动作本身 canonical-controller-only（P0-3.1），请求前 fail-closed。"""
+        if action == CREATE_POST:
+            raise RuntimeError("ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED")
         import content_review_gate as _review
         body = json.dumps([envelope], ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
         pre = _review.request_evidence(path, action, body)
@@ -502,9 +506,15 @@ class AllinCMS:
         """⚠️ 破坏性/不可逆：删除产品记录。先 read_product/read_lists 核对目标；必须取得用户明确授权后再调。"""
         s, t = self._req(f"/{site_slug}/products", DELETE_PRODUCT, [{"id": product_id, "siteId": site_id}])
         return self._flight(t)
-    # ---------- 文章（article.create 权威 registry BLOCK；update 需 reviewed + fresh capability） ----------
+    # ---------- 文章（article.create canonical 于 full-source JS Controller；Python 仅 exact-ID update，P0-3.1） ----------
     def _create_post_transport(self, site_slug, site_id, post_payload):
-        raise RuntimeError("ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY")
+        """Python 不得发出文章 create 请求（第二执行面禁令，P0-3.1）。
+        canonical 执行面 = ADAPTERS/cms/allincms 的 content-run-controller.mjs +
+        content-plan-host-driver.mjs 'article:create' handler + article-operations.mjs
+        #createPostDraft，宿主注入三个真实 provider（articleBeforePostIdsProvider /
+        articleCreateReadbackProvider / articleEditorReopenProvider）；缺 provider 时本次
+        create BLOCK，不得降级到 Python。不做 payload projection、不发网络请求。"""
+        raise RuntimeError("ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED")
     def _publish_post_transport(self, site_slug, site_id, post_id, post_payload):
         import content_review_gate as _review
         payload = _review.project_wire_payload(post_payload, object_type="article", site_id=site_id,
@@ -516,20 +526,26 @@ class AllinCMS:
         raise RuntimeError("CONTENT_REVIEW_CONTEXT_REQUIRED: use mutate_reviewed_post")
     def mutate_reviewed_post(self, site_slug, site_id, business_payload, review_record_path,
                              capability_context, target_id=None):
-        """受支持文章 update 入口；article.create 依权威 registry 保持 BLOCK。"""
+        """受支持文章 exact-ID update 入口。target_id=None（create）不再由 Python 执行：
+        article.create canonical 于 full-source JS Controller（content-run-controller.mjs +
+        content-plan-host-driver.mjs 'article:create' handler + article-operations.mjs
+        #createPostDraft + 三个真实 provider）；Python 是第二执行面禁令对象，任何
+        review/capability/network/readback 之前先 fail-closed（P0-3.1）。"""
+        if target_id is None:
+            raise RuntimeError("ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED")
         import content_review_gate as _review
         self._safe_route_segment(site_slug, "site_slug")
-        if not target_id:
-            raise RuntimeError("ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY")
         self._safe_route_segment(target_id, "target_id")
+        operation = "update"
+        required_ops = {"allincms.article.update", "allincms.article.publish"}
         rc, ctx = _review.verify_payload_record(
             business_payload, review_record_path, expected_object_type="article",
-            expected_operation="update", expected_site_key=site_slug, expected_site_id=site_id,
+            expected_operation=operation, expected_site_key=site_slug, expected_site_id=site_id,
             expected_target_id=target_id)
         if rc: raise RuntimeError("CONTENT_REVIEW_REQUIRED_OR_STALE")
         cap_rc, cap_problems = _review.verify_live_capability(
             capability_context, deployment_id=DEPLOY, site_key=site_slug, site_id=site_id,
-            required_operations={"allincms.article.update", "allincms.article.publish"},
+            required_operations=required_ops,
             expected_action_ids={"allincms.article.update": UPSERT_POST,
                                  "allincms.article.publish": UPSERT_POST},
             expected_runtime_scope_root=ctx["runtime_scope_root"], expected_client_id=ctx["client_id"],

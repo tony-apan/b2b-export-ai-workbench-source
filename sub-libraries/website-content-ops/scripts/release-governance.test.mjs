@@ -17,7 +17,7 @@ const TRUSTED_RUNTIME_TEST_PROFILE = Object.freeze([
   Object.freeze({ file: 'upload-media-browser.test.mjs', tests: 47 }),
   Object.freeze({ file: 'article-image-binding.test.mjs', tests: 52 }),
   Object.freeze({ file: 'article-content-formats.test.mjs', tests: 13 }),
-  Object.freeze({ file: 'article-operations.test.mjs', tests: 48 }),
+  Object.freeze({ file: 'article-operations.test.mjs', tests: 60 }),
 ]);
 const TRUSTED_RUNTIME_TEST_PLAN = TRUSTED_RUNTIME_TEST_PROFILE.map(({ file }) => file);
 const TRUSTED_RUNTIME_TEST_COUNT = TRUSTED_RUNTIME_TEST_PROFILE.reduce((total, { tests }) => total + tests, 0);
@@ -41,7 +41,7 @@ const GOVERNANCE_TEST_PLAN = Object.freeze([
   'source inventory binds protected IDs, card digests, and derived-page backlinks and cannot be silently shrunk',
   'the sub-library builder binds selected files to commit provenance and rejects ignored, untracked, and modified inputs',
   'governance fixtures remain reproducible from immutable 0444/0555 freeze sources without masking setup failures',
-  'the formal runtime profile matches the adapter contract and exact 160-test plan',
+  'the formal runtime profile matches the adapter contract and exact 165-test plan',
   'pending source clearance independently blocks approval and artifact qualification even when package license is cleared',
   'frozen source-card identity, field, value, rename, and relocation attacks block approval and artifact qualification after self-consistent rebinding',
   'post-build frozen MANIFEST identity drift blocks approval and artifact qualification after self-consistent sidecar recomputation',
@@ -1258,21 +1258,21 @@ governanceTest('governance fixtures remain reproducible from immutable 0444/0555
   assert.match(result.stdout, new RegExp(String.raw`ok \d+ - ${testName}`));
 });
 
-governanceTest('the formal runtime profile matches the adapter contract and exact 160-test plan', () => {
+governanceTest('the formal runtime profile matches the adapter contract and exact 165-test plan', () => {
   const contract = JSON.parse(readFileSync(join(sourceRoot, 'ADAPTERS/cms/allincms/article-operations-contract.json'), 'utf8'));
   const localVerification = contract.localVerification;
-  assert.equal(localVerification.articleOperationsTests, 48);
+  assert.equal(localVerification.articleOperationsTests, 60);
   assert.equal(localVerification.articleContentFormatsTests, 13);
   assert.equal(localVerification.articleImageBindingTests, 52);
   assert.equal(localVerification.mediaUploadTests, 47);
   assert.equal(localVerification.totalTests, TRUSTED_RUNTIME_TEST_COUNT);
-  assert.equal(localVerification.lastVerified, '2026-09-02');
+  assert.equal(localVerification.lastVerified, '2026-09-04');
   assert.equal(localVerification.profileScope, 'article/media four-file specialized profile');
   assert.equal(localVerification.workspacePreflightTests, 21);
-  assert.equal(localVerification.contentRunControllerTests, 58);
+  assert.equal(localVerification.contentRunControllerTests, 60);
   assert.equal(localVerification.interfaceRegistryTests, 11);
-  assert.equal(localVerification.additionalDevSuiteTests, 17);
-  assert.equal(localVerification.adapterTotalTests, 267);
+  assert.equal(localVerification.additionalDevSuiteTests, 23);
+  assert.equal(localVerification.adapterTotalTests, 280);
   assert.equal(
     localVerification.totalTests
       + localVerification.workspacePreflightTests
@@ -1740,13 +1740,13 @@ governanceTest('formal qualification binds workflow tag identity and canonical a
   writeFileSync(fixture.evidencePath, baselineEvidence);
 
   const runtimeEvidenceAttacks = [
-    ['stale 156/156 count', (result) => { result.expected_tests = 156; result.passed_tests = 156; }, /runtime-tests expected_tests must be 160/],
-    ['stale 158/158 count', (result) => { result.expected_tests = 158; result.passed_tests = 158; }, /runtime-tests expected_tests must be 160/],
-    ['off-by-one low 159/159 count', (result) => { result.expected_tests = 159; result.passed_tests = 159; }, /runtime-tests expected_tests must be 160/],
-    ['off-by-one high 161/161 count', (result) => { result.expected_tests = 161; result.passed_tests = 161; }, /runtime-tests expected_tests must be 160/],
-    ['partial pass count', (result) => { result.passed_tests = 159; }, /must bind exact all-pass counts with no failed or skipped tests/],
-    ['non-zero failed count', (result) => { result.passed_tests = 159; result.failed_tests = 1; }, /must bind exact all-pass counts with no failed or skipped tests/],
-    ['non-zero skipped count', (result) => { result.passed_tests = 159; result.skipped_tests = 1; }, /must bind exact all-pass counts with no failed or skipped tests/],
+    ['stale 161/161 count', (result) => { result.expected_tests = 161; result.passed_tests = 161; }, /runtime-tests expected_tests must be 165/],
+    ['stale 163/163 count', (result) => { result.expected_tests = 163; result.passed_tests = 163; }, /runtime-tests expected_tests must be 165/],
+    ['off-by-one low 164/164 count', (result) => { result.expected_tests = 164; result.passed_tests = 164; }, /runtime-tests expected_tests must be 165/],
+    ['off-by-one high 166/166 count', (result) => { result.expected_tests = 166; result.passed_tests = 166; }, /runtime-tests expected_tests must be 165/],
+    ['partial pass count', (result) => { result.passed_tests = 164; }, /must bind exact all-pass counts with no failed or skipped tests/],
+    ['non-zero failed count', (result) => { result.passed_tests = 164; result.failed_tests = 1; }, /must bind exact all-pass counts with no failed or skipped tests/],
+    ['non-zero skipped count', (result) => { result.passed_tests = 164; result.skipped_tests = 1; }, /must bind exact all-pass counts with no failed or skipped tests/],
     ['reordered runtime test plan', (result) => { result.test_plan = [...TRUSTED_RUNTIME_TEST_PLAN].reverse(); }, /runtime-tests test_plan must exactly equal/],
   ];
   for (const [label, mutate, expected] of runtimeEvidenceAttacks) {

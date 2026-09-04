@@ -6,9 +6,33 @@
  * The caller must supply a current runtime contract from the authenticated deployment.
  */
 import { createAllinCmsActionClient, runActionWithRecovery } from './article-operations.mjs';
+import { deriveAllinCmsMutationBinding, validateAllinCmsMutationAuthorizationContext } from './mutation-authorization.mjs';
+// 2026-09-04 poisoning fix: this module used to destructured-share
+// markRequestStarted / createdRecordExpectedProblems /
+// extractCreateReadbackRecord out of article-operations.mjs's mutable
+// `_internal` export, so an external actor that imported article-operations
+// first could overwrite them before product's first import and silently skip
+// the post-request reconcile or accept create field drift. The shared
+// safety-critical primitives now come from dependency-free
+// content-mutation-primitives.mjs via named ESM imports (immutable bindings),
+// never through any mutable `_internal` object.
+import {
+  PRODUCT_CREATE_CONTRACT_FIELDS,
+  captureStableReadback,
+  createdRecordExpectedProblems,
+  extractCreateReadbackRecord,
+  markRequestStarted,
+  prepareStableCreatePayload,
+} from './content-mutation-primitives.mjs';
 
 export const WORKSPACE_ORIGIN = 'https://workspace.laicms.com';
 export const PRODUCT_MODES = Object.freeze(['update', 'publish', 'unpublish']);
+// P0-3.3a create canonical contract fields (10 + siteId) live in
+// content-mutation-primitives.mjs (PRODUCT_CREATE_CONTRACT_FIELDS) as the
+// single machine truth for both the product create expected comparison and
+// the host driver's desired-state strict field validation; callers can
+// neither add nor remove compared fields, and the bottom layer shares them
+// with article only via named imports.
 export const PRODUCT_FIELDS = Object.freeze([
   'name', 'slug', 'description', 'order', 'media', 'mediaList',
   'content', 'categories', 'tags', 'specifications', 'siteId', 'productId', 'mode',
@@ -126,12 +150,36 @@ function productRoute(siteKey, productId = null) {
   return productId ? `/${key}/products/${asNonEmptyString(productId, 'productId')}/update` : `/${key}/products`;
 }
 
+// P0-A: an injected client is transport only — it carries no authorization
+// exemption. Exactly like requireClient in article-operations.mjs, every
+// underlying send (the first attempt and every controlled retry) re-derives the
+// exact mutation binding from the live route/action/payload and validates the
+// structured authorizationContext against it immediately before the transport
+// fires. deriveAllinCmsMutationBinding/validateAllinCmsMutationAuthorizationContext
+// are the single machine truth from mutation-authorization.mjs (also used by the
+// native createAllinCmsActionClient path), so injected and native clients can
+// never disagree on what a valid authorization is. A validation failure throws
+// without requestStarted, so it propagates out of runActionWithRecovery instead
+// of turning into a reconciled/ambiguous result or a blind retry; only real
+// transport errors are marked requestStarted by the shared markRequestStarted.
 async function requireClient({ client, siteKey, runtime, request, authorizationContext }) {
   if (!client) {
     return createAllinCmsActionClient({ siteKey, runtime, request, authorizationContext });
   }
   if (typeof client.send !== 'function') throw new Error('AllinCMS action client is required');
-  return { send: (details) => client.send(details) };
+  return {
+    async send(details) {
+      const binding = deriveAllinCmsMutationBinding({ siteKey, ...details });
+      validateAllinCmsMutationAuthorizationContext(authorizationContext, {
+        expectedSiteKey: binding.siteKey, operation: binding.operation, target: binding.target,
+      });
+      try {
+        return await client.send(details);
+      } catch (error) {
+        throw markRequestStarted(error);
+      }
+    },
+  };
 }
 
 async function runProductMutation({
@@ -168,43 +216,109 @@ export function unpublishProduct(options) {
 
 export async function createProductDraft({
   client, siteKey, runtime, request, authorizationContext = null,
-  siteId, payload = { siteId }, expected, readback, refresh, beforeProductIds,
+  siteId, payload = { siteId }, expected, expectedMatch, readback, refresh, beforeProductIds,
   getCreatedProductId, getCreatedProductSiteId, getAfterProductIds,
   match, maxControlledRetries = 1,
 }) {
   siteId = assertSiteId(siteId);
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('product create payload must be an object');
-  if (Object.hasOwn(payload, 'siteId') && payload.siteId !== siteId) throw new Error('product create payload.siteId must match siteId');
+  // payload.siteId agreement with siteId is enforced descriptor-only inside
+  // prepareStableCreatePayload (the 2026-09-04 stable create payload rule);
+  // a [[Get]]-based check here would invoke hostile getters for nothing.
+  // P0-3.3a.1 fail-closed expected binding: canonical create never runs without
+  // an expected readback. `expected` must be a non-array object and must be the
+  // exact same object reference as `payload` (the canonical driver freezes one
+  // payload object and passes it as both). A missing, junk, or equal-but-
+  // separate expected value is refused before any client, provider, or request.
+  if (!expected || typeof expected !== 'object' || Array.isArray(expected)) {
+    throw new Error('product create expected must be a non-array object (missing expected, arrays and non-object values are refused before any request)');
+  }
+  if (expected !== payload) {
+    throw new Error('product create expected must be the same object reference as payload (an equal but separate expected object is refused before any request)');
+  }
+  // P0-3.3a.3: `expectedMatch` is no longer a parameter. The canonical
+  // expected comparison over the 10 contract fields + siteId is owned by this
+  // function itself (createdRecordExpectedProblems in article-operations.mjs)
+  // and runs on the bottom-extracted record (raw record or the known
+  // {record, afterIds} wrapper), so no caller can supply, replace, or waive it
+  // — not even with a predicate that always returns true. Supplying the
+  // removed parameter is refused loudly before any client, provider, or
+  // request so a legacy caller can never believe its own matcher still runs.
+  if (expectedMatch !== undefined && expectedMatch !== null) {
+    throw new Error('product create expectedMatch has been removed: the canonical expected comparison is owned by createProductDraft itself and cannot be supplied, replaced, or waived by any caller callback (use match only for extra AND-ed constraints)');
+  }
+  if (match !== undefined && match !== null && typeof match !== 'function') {
+    throw new Error('product create match must be a function when provided');
+  }
   if (typeof readback !== 'function') throw new Error('readback callback is required');
   if (typeof getCreatedProductId !== 'function') throw new Error('getCreatedProductId callback is required');
   if (typeof getCreatedProductSiteId !== 'function') throw new Error('getCreatedProductSiteId callback is required');
   if (typeof getAfterProductIds !== 'function') throw new Error('getAfterProductIds callback is required');
   if (!Array.isArray(beforeProductIds)) throw new Error('beforeProductIds snapshot is required');
   const knownProductIds = new Set(normalizeIdArray(beforeProductIds));
+  // B1 stable create payload: one synchronous prepare of the exact outgoing
+  // payload (10 contract fields + siteId) BEFORE any client/provider/request,
+  // exactly like article create. A driver that already prepared the branded
+  // frozen snapshot gets the very same object and payloadText back
+  // (idempotent re-prepare), and the historical `{...payload, siteId}`
+  // second construction is gone. After this point the caller's original
+  // object is never read again: the request payload, the authorization
+  // binding input, and the expected readback are all this one frozen
+  // snapshot plus its immutable payloadText.
+  const { snapshot, payloadText } = prepareStableCreatePayload('product', payload, siteId);
   const actionClient = await requireClient({ client, siteKey, runtime, request, authorizationContext });
-  const matcher = match || ((actual) => Boolean(actual && (!expected || JSON.stringify(actual) === JSON.stringify(expected))));
   let reconciledCreatedProductId = null;
   const result = await runActionWithRecovery({
     client: actionClient,
     route: productRoute(siteKey),
     actionName: 'productCreate',
-    payload: { ...payload, siteId },
-    expected,
+    payload: snapshot,
+    payloadText,
+    expected: snapshot,
     operation: 'product:create',
     readback,
     refresh,
     maxControlledRetries,
-    compare: (actual) => {
+    compare: (rawActual) => {
       reconciledCreatedProductId = null;
-      if (actual === null || actual === undefined) return { ok: false, exactAbsence: true, mismatches: ['created product is absent from readback'] };
+      if (rawActual === null || rawActual === undefined) return { ok: false, exactAbsence: true, mismatches: ['created product is absent from readback'] };
+      // B2 readback stabilization (same rule as article create): one
+      // synchronous descriptor-only capture; the canonical comparison and
+      // every caller getter consume this SAME stable copy, so a getter/proxy
+      // readback can never serve comparison A and ID extraction B.
+      let actual;
+      try {
+        actual = captureStableReadback(rawActual, 'created product readback');
+      } catch (stableError) {
+        return { ok: false, exactAbsence: false, mismatches: [`created product readback could not be captured as stable plain data (${stableError.message})`] };
+      }
       const mismatches = [];
       let createdProductId = null;
       let createdProductSiteId = null;
       let afterProductIds = [];
-      try {
-        if (!matcher(actual)) mismatches.push('created product did not match expected readback');
-      } catch (error) {
-        mismatches.push(`created product matcher failed: ${error.message}`);
+      // P0-3.3a.3: the canonical expected comparison is irreplaceable
+      // bottom-layer logic (shared with article create). The record is
+      // extracted here (raw record or the known {record, afterProductIds}
+      // host wrapper) and compared against the prepared snapshot over
+      // PRODUCT_CREATE_CONTRACT_FIELDS + siteId with no caller-supplied
+      // predicate anywhere on this channel. A custom `match` can only AND an
+      // additional constraint on top of this PASS, so a permissive `match`
+      // alone can never wave a drifted record through.
+      const canonicalProblems = createdRecordExpectedProblems(
+        extractCreateReadbackRecord(actual),
+        snapshot,
+        PRODUCT_CREATE_CONTRACT_FIELDS,
+        'product',
+      );
+      if (canonicalProblems.length > 0) {
+        mismatches.push(`created product did not match the canonical expected readback: ${canonicalProblems.join('; ')}`);
+      }
+      if (match !== undefined && match !== null) {
+        try {
+          if (!match(actual, snapshot)) mismatches.push('created product did not match the additional expected constraints');
+        } catch (error) {
+          mismatches.push(`created product additional match failed: ${error.message}`);
+        }
       }
       try {
         createdProductId = asNonEmptyString(getCreatedProductId(actual), 'created product ID');
@@ -240,9 +354,20 @@ function normalizeIdArray(value) {
   return value.map((id) => asNonEmptyString(id, 'productId'));
 }
 
-export const _internal = {
+// FROZEN test/diagnostic-only facade (2026-09-04 poisoning fix): mutation
+// throws TypeError in ESM strict mode and can never affect the lexical
+// functions or the named imports from content-mutation-primitives.mjs above.
+export const _internal = Object.freeze({
   productRoute,
   normalizeSpecifications,
   normalizeMediaUploadItem,
   normalizeMediaUploadItemList,
-};
+  // P0-A: the authorized injected-client wrapper is the security-critical seam
+  // (every underlying send re-validates the exact binding). Exposed for direct
+  // transport-level tests (per-retry re-validation, expiry across a second
+  // send) that the no-retry public product paths cannot reach on their own.
+  requireClient,
+  // P0-3.3a.3 shared canonical create-comparison internal (consumed by the
+  // host driver's desired-state strict field validation).
+  PRODUCT_CREATE_CONTRACT_FIELDS,
+});

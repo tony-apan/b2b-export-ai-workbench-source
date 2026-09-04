@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Machine-verifiable mandatory reading and gate sequence for zero-context AllinCMS new-site builds.",
+  "task": "allincms_new_site_one_pass",
+  "required_reading": [
+    {
+      "order": 1,
+      "path": "SKILL-INSTALL/SKILL.md",
+      "required_markers": [
+        "READ-BEFORE-ACT",
+        "check-contract-freshness.py",
+        "NEW-SITE-ONEPASS.md"
+      ]
+    },
+    {
+      "order": 2,
+      "path": "PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md",
+      "required_markers": [
+        "两阶段",
+        "AllinCMS 文章 create 的资格验证",
+        "automaticRetryAllowed=false"
+      ]
+    },
+    {
+      "order": 3,
+      "path": "ADAPTERS/cms/allincms/AI-START-HERE.md",
+      "required_markers": [
+        "文章 `postCreate` 资格验证",
+        "ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED",
+        "articleEditorReopenProvider",
+        "live_verified_current_deployment"
+      ]
+    },
+    {
+      "order": 4,
+      "path": "TOOLS/interface-kit/NEW-SITE-ONEPASS.md",
+      "required_markers": [
+        "步骤 0",
+        "步骤 12",
+        "ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED",
+        "articleBeforePostIdsProvider",
+        "articleEditorReopenProvider",
+        "DELIVERY"
+      ]
+    },
+    {
+      "order": 5,
+      "path": "ADAPTERS/cms/allincms/interface-registry.json",
+      "required_json_assertions": [
+        {
+          "capability_id": "allincms.article.create",
+          "availability": "canonical",
+          "execution_gate": "fresh_live_verified_current_deployment"
+        },
+        {
+          "capability_id": "allincms.product.create",
+          "availability": "canonical",
+          "execution_gate": "fresh_live_verified_current_deployment"
+        }
+      ]
+    }
+  ],
+  "required_preflight_commands": [
+    "python3 TOOLS/interface-kit/check-contract-freshness.py",
+    "node ADAPTERS/cms/allincms/scripts/validate-interface-registry.mjs",
+    "node ADAPTERS/cms/allincms/scripts/build-interface-index.mjs --check",
+    "python3 TOOLS/interface-kit/index/registry_tools.py verify"
+  ],
+  "completion_gates": [
+    "source extraction structure pass",
+    "Plan A create-site before/after unique-id delta pass",
+    "Plan B immutable authorization ready",
+    "product reviewed create/update and product-content gate pass",
+    "article create qualification five-step pass or deployment-evidence BLOCK with unlock attempt",
+    "seven-page globals and route activation pass",
+    "demo cleanup dry-run approval and reconciliation complete",
+    "audit/gate/contact/product-content pass or explicit platform-boundary evidence",
+    "DELIVERY content completeness checklist pass"
+  ],
+  "fail_closed_rules": [
+    "A document statement that a capability is BLOCKED is not deployment evidence.",
+    "A canonical Registry route without an executable canonical handler is CONTRACT_FRESHNESS_DRIFT.",
+    "No create request may retry after request_started without authoritative exact-absence proof; article create never auto-retries.",
+    "Unpublished COP content requires both deployment evidence and a recorded unlock attempt before delivery can be signed."
+  ]
+}

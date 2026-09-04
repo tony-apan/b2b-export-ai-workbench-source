@@ -62,8 +62,9 @@ Resolution order is deterministic:
 
 1. an exact full-source `--root` supplied by the caller;
 2. full-source `WEBSITE_CONTENT_OPS_ROOT`;
-3. upward discovery of `sub-libraries/website-content-ops` or a standalone `website-content-ops` package;
-4. the installed digest-verified bundled runtime under `vendor/website-content-ops-runtime`.
+3. the validated full source adjacent to this installed Skill (`SKILL_ROOT.parent`);
+4. upward discovery of `sub-libraries/website-content-ops` or a standalone package;
+5. an explicit digest-verified `--bundle-root` test fixture only (the checked-in vendor bundle is retired).
 
 The resolver accepts a full source root only when its manifest, runtime contract, Controller dependency closure, AllinCMS entry/contracts and required source files validate and the path is not below `dist/`. It accepts the bundled runtime only when `BUNDLE-MANIFEST.json`, the exact immutable file set, every byte size and SHA-256, package identity and recorded source commit validate. Runtime-created `node_modules/` is excluded from the immutable file-set comparison, while any symlink inside the immutable bundle is rejected.
 

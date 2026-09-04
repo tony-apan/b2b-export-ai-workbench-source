@@ -10,8 +10,8 @@
       "article-content-formats.test.mjs",
       "article-operations.test.mjs"
     ],
-    "tests": 160,
-    "note": "This is the frozen qualification set. Per-file: media 47, article-image 52, article-content 13, article-operations 48. Do not add files to the formal profile without a new governance + evidence cycle."
+    "tests": 172,
+    "note": "This is the frozen qualification set. Per-file: media 47, article-image 52, article-content 13, article-operations 60. Do not add files to the formal profile without a new governance + evidence cycle."
   },
   "devSuite": {
     "label": "npm test development suite (all adapter test files)",
@@ -25,23 +25,25 @@
       "interface-registry.test.mjs",
       "product-operations.test.mjs",
       "site-operations.test.mjs",
+      "stable-create-payload.test.mjs",
       "upload-media-browser.test.mjs",
       "workspace-preflight.test.mjs"
     ],
-    "tests": 267,
+    "tests": 361,
     "perFile": {
       "article-content-formats.test.mjs": 13,
       "article-image-binding.test.mjs": 52,
-      "article-operations.test.mjs": 48,
-      "content-plan-host-driver.test.mjs": 1,
-      "content-run-controller.test.mjs": 58,
+      "article-operations.test.mjs": 60,
+      "content-plan-host-driver.test.mjs": 35,
+      "content-run-controller.test.mjs": 70,
       "host-run-template.test.mjs": 2,
       "interface-registry.test.mjs": 11,
-      "product-operations.test.mjs": 9,
+      "product-operations.test.mjs": 26,
       "site-operations.test.mjs": 5,
+      "stable-create-payload.test.mjs": 19,
       "upload-media-browser.test.mjs": 47,
       "workspace-preflight.test.mjs": 21
     },
-    "note": "npm test runs this whole set. Verifying a fresh clone must show 267/267; the formal qualification remains the 160-file subset above."
+    "note": "npm test runs this whole set. Verifying a fresh clone must show 361/361; the formal qualification remains the 172-test subset above. 2026-09-04 P0-A: product-operations 15 -> 21 (injected-client authorization matrix: missing/boolean/expired/wrong-site/wrong-operation/wrong-target zero-send, valid exact single-send, retry-crossing-expiry rejected before transport, transport failure marked requestStarted without resend). 2026-09-04 poisoning fix: product-operations 21 -> 22 (child-process adversarial regression: preload article, poison _internal before product first import, transport error still requestStarted=true reconciled and create drift still rejected; _internal facades frozen). 2026-09-04 TOCTOU fix: product-operations 22 -> 24 (markRequestStarted never trusts/returns the original error — TOCTOU accessor true-twice-then-false with no-op setter, frozen error, hostile proxy descriptor trap, post-mark data mutation, cross-realm, plain Error and non-error inputs all return a fresh plain Error wrapper whose own requestStarted is non-writable non-configurable data true with getter-free descriptor message copies; adversarial transport errors on the injected and native paths still reconcile from readback with exactly one send and no resend). 2026-09-04 stable create payload B1+B2: +stable-create-payload.test.mjs 19 (338 -> 357; dev-suite only, the formal profile stays frozen at 172 with no new governance/evidence cycle: prepareStableCreatePayload branded frozen snapshot + immutable canonical payloadText matrix — 18 contract fields missing/wrong-type/extra, exotic nested values incl. Date/Map/Set/Error/RegExp/typedarray/class/cycle/symbol-key/non-enumerable/accessor/sparse/extra-array-key/proxy-trap, post-prepare and post-plan mutations, payloadText/digest/wire inner-byte equality, retry same string, readback getter/proxy A-B split refusal, flat URL (new-site, no size/mimeType)/OSS media positives, {type,value} write-refusal and single-sided wrapper type conflict, driver prepare-before-provider/auth with identical object handoff)."
   }
 }

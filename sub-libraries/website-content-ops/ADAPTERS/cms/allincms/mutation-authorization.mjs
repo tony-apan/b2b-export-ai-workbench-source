@@ -45,7 +45,26 @@ export function computeAllinCmsMutationTargetDigest(target) {
   return sha256(Buffer.from(canonicalJson(target), 'utf8'));
 }
 
-export function deriveAllinCmsMutationBinding({ siteKey, route, actionName, payload }) {
+// Create-action payload digest input (2026-09-04 stable create payload B2):
+// when the caller carries the prepared immutable payloadText, the digest is
+// the SHA-256 of exactly those UTF-8 bytes — the same string the native wire
+// body embeds as `[${payloadText}]` — and payloadText must equal the canonical
+// JSON serialization of the exact payload object, so the digest input and the
+// wire body can never diverge. Callers without a payloadText (update/delete
+// actions and legacy create bindings) keep hashing canonicalJson(payload).
+function createPayloadDigestInput(body, payloadText, actionName) {
+  const canonical = canonicalJson(body);
+  if (payloadText === undefined) return canonical;
+  if (typeof payloadText !== 'string') {
+    throw new Error(`${actionName} payloadText must be an immutable string when provided`);
+  }
+  if (payloadText !== canonical) {
+    throw new Error(`${actionName} payloadText must equal the canonical JSON serialization of the exact create payload (digest input and wire body must not diverge)`);
+  }
+  return payloadText;
+}
+
+export function deriveAllinCmsMutationBinding({ siteKey, route, actionName, payload, payloadText }) {
   const key = safeSiteKey(siteKey);
   const body = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
   let operation;
@@ -56,7 +75,7 @@ export function deriveAllinCmsMutationBinding({ siteKey, route, actionName, payl
     target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), post_id: nonEmptyString(body.postId, 'payload.postId') };
   } else if (actionName === 'postCreate') {
     operation = 'allincms.article.create-draft';
-    target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), payload_digest: sha256(Buffer.from(canonicalJson(body), 'utf8')) };
+    target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), payload_digest: sha256(Buffer.from(createPayloadDigestInput(body, payloadText, 'postCreate'), 'utf8')) };
   } else if (actionName === 'postDelete') {
     operation = 'allincms.article.delete';
     target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), post_id: nonEmptyString(body.id, 'payload.id') };
@@ -68,7 +87,7 @@ export function deriveAllinCmsMutationBinding({ siteKey, route, actionName, payl
     };
   } else if (actionName === 'productCreate') {
     operation = 'allincms.product.create';
-    target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), payload_digest: sha256(Buffer.from(canonicalJson(body), 'utf8')) };
+    target = { site_id: nonEmptyString(body.siteId, 'payload.siteId'), payload_digest: sha256(Buffer.from(createPayloadDigestInput(body, payloadText, 'productCreate'), 'utf8')) };
   } else if (actionName === 'productUpdate') {
     if (!['update', 'publish', 'unpublish'].includes(body.mode)) throw new Error('productUpdate mutation requires update, publish, or unpublish mode');
     operation = `allincms.product.${body.mode}`;

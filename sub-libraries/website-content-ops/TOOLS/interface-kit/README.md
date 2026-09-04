@@ -46,6 +46,22 @@ cd index && python3 registry_tools.py find <关键词>   # 找文档/脚本/模�
 - `allincms_blocks.py` —— 单页模块构建器（hero/carousel/catalog/faq/contact…）
 - 接口要点全集见 `MODULES.md`（块 schema）与 `api/API-INDEX.md`（接口索引）
 
+## 一条龙机器闸（新站必跑）
+
+```bash
+# Plan A 前：四方合同对照 + 生成精确必读回执
+python3 check-contract-freshness.py --write-receipt "$TASK/20_work/onepass-read-receipt.json"
+python3 check-contract-freshness.py --verify-receipt "$TASK/20_work/onepass-read-receipt.json"
+
+# 规则/Registry/handler 改动后：注入硬 BLOCK/缺 handler/receipt 篡改攻击
+python3 check-contract-freshness-selftest.py
+
+# DELIVERY 前：计划/回读/评审 digest/audit 基线/交付物装配闸
+python3 onepass-completion-gate.py "$TASK"
+```
+
+任一闸返回非 0 都不得开始 mutation 或签发 DELIVERY。`ONEPASS_COMPLETION_STRUCTURE_PASS` 只证明本地装配，不替代远程 CMS 与匿名前台证据。
+
 ## 快速开始
 ```python
 from allincms_api import AllinCMS
@@ -58,7 +74,7 @@ api.create_tag("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "Vacuum Insulated"
 api.upload_media("<demo-site-key>", "6a91e2fa8333e0ece4a6852e", "photo.jpg", title="demo")
 # 内容 mutation 唯一入口：final business payload + digest-bound independent review record
 api.mutate_reviewed_product("<demo-site-key>", SID, product_payload, product_review_json, capability_context, target_id=None_or_exact_id)
-api.mutate_reviewed_post("<demo-site-key>", SID, article_payload, article_review_json, capability_context, target_id=exact_existing_id)  # update only; article.create Registry BLOCK
+api.mutate_reviewed_post("<demo-site-key>", SID, article_payload, article_review_json, capability_context, target_id=exact_post_id)  # article.create 不走 Python：canonical=full-source JS Controller（content-plan-host-driver article:create + 三 provider），Python 一律 ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED；仅 exact-ID update（P0-3.1）
 # create_product/publish_product/create_post/publish_post 是 fail-closed 兼容壳；低层 transport 私有
 api.save_home("<demo-site-key>", "6a91e2fa8333e0ece4a68580", "6a91e2fa8333e0ece4a68762", "6a91e2fa8333e0ece4a6852e", doc, globals, cfg, intent="publish")
 
@@ -122,7 +138,7 @@ python allincms_api.py <token> read-info <site-slug>
    - 方式 A（推荐）：脚本 `AllinCMS(email, password)` 纯 API 登录——调 sign-in action（`7f04a5d5...`），成功分支从 **Set-Cookie** 提取 `payload-token`（ISS-083 已用真实凭据双路径实测）
    - 方式 B（兜底）：浏览器登录 `workspace.laicms.com` → DevTools → Application → Cookies → `payload-token` 值
    - 方式 C（方向指引，未实测）：从已登录浏览器配置文件提取（详见 TOKEN-AUTH.md 方式三）
-2. **受支持写操作**：纯 HTTP server action；产品 create/update 与 existing article update 仍须 strict review record + fresh capability；article.create Registry BLOCK
+2. **受支持写操作**：纯 HTTP server action；产品 create/update 与文章 create/update 均须 strict review record + fresh capability；文章 create 额外要求 ISS-111 当前部署资格五步
 3. **读操作**：全部 RSC 纯接口，无需浏览器/AppleScript/Playwright。读写闭环仅指 Registry 当前允许的受支持能力，不含新文章远程创建
 4. 新机器：复制完整 source 目录 → 安装 Python 3 → 获取 token → 完成 review/capability 前置后运行受支持流程；当前 release/dist 仍 BLOCK，不把 stale dist 当最新交付
 

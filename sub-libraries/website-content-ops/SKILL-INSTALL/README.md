@@ -27,7 +27,7 @@ website-content-ops 完整 canonical source checkout
   > references/ 和 scripts/ 中的历史辅助材料
 ```
 
-**source-only 是唯一 canonical 安装路径。** `vendor/website-content-ops-runtime` bundle 已退役且不随仓分发；安装器只接受自身父目录就是完整 `website-content-ops` 源码树的布局。resolver 仍支持显式 `--root`、`WEBSITE_CONTENT_OPS_ROOT`、并列 checkout 和向上发现完整 source checkout；无效的显式高优先级路径必须 fail-closed，不能回落到历史 payload、旧 UI 流程或 retired helper。找不到完整源码时返回：
+**source-only 是唯一 canonical 安装路径。** `vendor/website-content-ops-runtime` bundle 已退役且不随仓分发；安装器只接受自身父目录就是完整 `website-content-ops` 源码树的布局。resolver 按 `--root` → `WEBSITE_CONTENT_OPS_ROOT` → 已安装 Skill 相邻完整源码（`SKILL_ROOT.parent`）→ 并列/向上发现的顺序解析；无效的显式高优先级路径必须 fail-closed，不能回落到历史 payload、旧 UI 流程或 retired helper。找不到完整源码时返回：
 
 ```text
 CANONICAL_WEBSITE_CONTENT_OPS_ROOT_REQUIRED

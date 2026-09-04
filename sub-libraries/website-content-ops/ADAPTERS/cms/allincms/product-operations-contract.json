@@ -20,6 +20,8 @@
     "mode"
   ],
   "modes": ["update", "publish", "unpublish"],
+  "createPayloadRule": "2026-09-04 stable create payload B1/B2: product create accepts exactly the 10 contract fields plus siteId (missing and extra fields are refused). media must be non-null flat URL media (name, type='image', source='url', absolute http/https url; never path/size/mimeType) or flat OSS media (name, type='image', source='oss', path, non-negative integer size, mimeType; never url); mediaList is a dense array of the same union; a string/null alt is normalized to missing; the {type,value} editor wrapper is a readback-comparison shape only and is refused on the write path. The one prepared snapshot (prepareStableCreatePayload in content-mutation-primitives.mjs) plus its immutable canonical payloadText are the request payload, the authorization payload_digest input (SHA-256 over the exact UTF-8 payloadText), and the native wire body [payloadText]; the host driver prepares synchronously before any await/provider/auth and the bottom layer re-prepares idempotently. The adapter's byte guarantee ends at the input of the host request callback.",
+  "readbackWrapperRule": "create readback media may be flat or one {type,value} wrapper whose outer type must agree with the wrapped and expected effective type; the wrapper is comparison-only and never re-enters the write path.",
   "authorization": {
     "required": true,
     "scheme": "structured_context",

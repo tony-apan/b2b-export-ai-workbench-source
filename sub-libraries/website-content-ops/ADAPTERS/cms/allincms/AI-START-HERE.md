@@ -211,7 +211,7 @@ pagination.* / canCreate
 20. 草稿保存后即使 HTTP 200 和后台回读一致，也必须继续通过编辑页非 500、图片解码和 Caption 可见闸；任一失败不得报告成功。
 21. 正文图片绑定仍然只允许 `mode: "update"`；完整文章生命周期由 `article-operations.mjs` 单独执行。`publish` / `unpublish` / `delete` / taxonomy 写入必须单独明确授权，并遵守“请求后刷新、重读、状态不明不盲重发”的恢复规则。
 22. AllinCMS 当前已验证的是 Alt 后台字段持久化；文章编辑器 DOM 的 `<img>` 仍未输出 Alt。不得宣称公开主题 SEO Alt 已生效。
-23. 文章 `postCreate` 不是默认放行的远程动作：只有重新捕获当前部署的完整 create 合同，同时提供创建前后的完整文章 ID snapshot，证明差集恰好只有一个新 `postId`，且该 ID 与同站点创建记录精确一致，并显式传入 `createContractConfirmed: true` 时才允许调用；仅证明“某个 ID 以前不存在”不够，否则保持阻断。
+23. 文章 `postCreate` 资格验证已于当前部署完成（ISS-111，2026-09-03 qualification site：合同零漂移+前后快照差集恰 1+完整回读+编辑器重开 200，证据见 private qualification task `70_evidence/article-create-qualification.json`）；article.create 的唯一执行面是 full-source JS Controller（`content-run-controller.mjs` + `content-plan-host-driver.mjs` 的 `article:create` handler + `article-operations.mjs#createPostDraft`），宿主必须注入三个真实 provider：`articleBeforePostIdsProvider`/`articleCreateReadbackProvider`/`articleEditorReopenProvider`，缺 provider 时本次 create BLOCK。Python host helper 对 create 全面 fail-closed（P0-3.1）：`_create_post_transport`、`_send_content_transport+CREATE_POST`、`mutate_reviewed_post(target_id=None)` 一律抛 `ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED`，Python 仅保留 exact-ID reviewed update。每次 create 批次前刷新部署 action；未验证部署一律保持阻断。
 24. 分类 / 标签创建必须带当前站点 taxonomy snapshot，用同站点 slug 做请求前重复检查；snapshot 中每条记录都必须显式携带已证明的 `siteId`。若当前 RSC 记录省略 `siteId`，controller 必须先从精确站点页面上下文验证站点，再为每条记录补入该 `siteId`；不得把路由作用域当作隐式租户证明直接传给 adapter。任何记录缺失 `siteId` 时必须在请求前停止。写后回读必须同时证明非空唯一 ID、精确 `siteId`，以及本次提交的 `name / slug / description / cover / parent / order` 等全部适用字段。精确文章 taxonomy route 的回读可省略 `contentType`，此时只按 route-scoped `posts` 处理；若显式返回非 `posts` 值则停止。snapshot 缺失、字段丢失或无法确认唯一对象时停止。
 25. runtime 如果提供 `actions` 映射，缺少具体 action 必须 fail-closed；文章回读缺少状态或包含冲突状态时，不能把 HTTP 200 当成功。
 26. 本地控制测试通过不等于新的远程部署通过；每次部署或站点变化都要重新捕获运行时合同，并把远程证据与本地证据分开报告。
@@ -559,7 +559,7 @@ python3 -m json.tool media-operations-contract.redacted.json
 python3 -m json.tool article-image-binding-contract.json
 ```
 
-当前正式冻结的文章/媒体 runtime qualification profile 固定为四文件 160 项：47 项媒体测试、52 项文章图片测试、13 项正文格式测试、48 项文章生命周期与 taxonomy 测试；历史 158/158 已陈旧并必须拒绝。完整源码工作树的 `npm test` 另含 21 项 Workspace 登录/用户/站点/建站合同测试、58 项严格串行 Controller 测试和 11 项接口 Registry 测试，11 文件 dev suite 当前全量为 267/267；正式 160 项 profile 与完整 250 项开发回归不得互相替代。全量共同覆盖严格串行、授权时效与 TOCTOU 边界、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、taxonomy route-scoped `contentType`、跨 realm JSON 语义比较、封面 canonical 持久化字段与非空封面 payload 请求前完整性、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
+当前正式冻结的文章/媒体 runtime qualification profile 固定为四文件 165 项：47 项媒体测试、52 项文章图片测试、13 项正文格式测试、53 项文章生命周期与 taxonomy 测试；历史 158/158 已陈旧并必须拒绝。完整源码工作树的 `npm test` 另含 21 项 Workspace 登录/用户/站点/建站合同测试、60 项严格串行 Controller 测试和 11 项接口 Registry 测试，11 文件 dev suite 当前全量为 280/280；正式 165 项 profile 与完整 250 项开发回归不得互相替代。全量共同覆盖严格串行、授权时效与 TOCTOU 边界、延迟对账、禁止盲目重传、原子索引、单写者锁、断点恢复、A/B/A 复用、源文哈希和锚点防漂移、Caption 全数组结构预检、taxonomy route-scoped `contentType`、跨 realm JSON 语义比较、封面 canonical 持久化字段与非空封面 payload 请求前完整性、后台回读，以及 Slate 编辑器、图片数量、解码、Caption 和草稿状态健康闸。本地测试不替代真实部署证据。
 
 ## 当前边界
 

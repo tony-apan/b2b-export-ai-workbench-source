@@ -64,7 +64,20 @@ function operationSubject(plan, operation) {
 
 function operationSubjectDigest(plan, operation) { return digest(operationSubject(plan, operation)); }
 
+function planExactEntityId(operation) {
+  return typeof operation.identity?.id === 'string' && operation.identity.id.trim() !== '' ? operation.identity.id : null;
+}
+
+// article:create and product:create are the only intents whose runtime entity ID
+// must come from the execute result itself: the entity does not exist before the
+// request, so no plan identity can name it and a readback alone cannot prove the
+// verified record is the one this operation created.
+function createRequiresExecuteEntityId(operation) {
+  return operation.intent === 'create' && (operation.entity_type === 'article' || operation.entity_type === 'product');
+}
+
 function blankOperationEvidence(operation, plan, clock) {
+  const runtimeEntityId = planExactEntityId(operation);
   return {
     operation_id: operation.operation_id,
     entity_ref: operation.entity_ref,
@@ -72,6 +85,8 @@ function blankOperationEvidence(operation, plan, clock) {
     intent: operation.intent,
     capability_ref: operation.capability_ref,
     request_summary_digest: operationSubjectDigest(plan, operation),
+    runtime_entity_id: runtimeEntityId,
+    runtime_entity_id_source: runtimeEntityId === null ? 'unresolved' : 'plan_exact_id',
     preflight: {
       checked_at: timestamp(clock),
       plan_digest: plan.plan_digest,
@@ -86,7 +101,7 @@ function blankOperationEvidence(operation, plan, clock) {
     started_at: timestamp(clock),
     completed_at: null,
     status: 'preflight_passed',
-    transport: { request_started: false, status: 'not_started' },
+    transport: { request_started: false, status: 'not_started', entity_id: null },
     reconciliation: { performed: false, verdict: 'not_needed', authoritative: false, evidence_ref: null },
     readback: { performed: false, authoritative: false, passed: false, requirements: [], evidence_ref: null, checks: [] },
     failure_code: null,
@@ -116,6 +131,8 @@ export function validateAllinCmsLiveRunEvidence(evidence) {
     }
     if (row?.status === 'readback_passed') {
       if (!(row.readback?.performed === true && row.readback?.authoritative === true && row.readback?.passed === true && row.completed_at !== null)) problems.push(`$.operations[${index}] readback_passed requires completed authoritative readback evidence`);
+      if ((row.runtime_entity_id === null || row.runtime_entity_id === undefined) !== (row.runtime_entity_id_source === 'unresolved')) problems.push(`$.operations[${index}] runtime_entity_id and runtime_entity_id_source must agree`);
+      if (typeof row.runtime_entity_id !== 'string' || row.runtime_entity_id.trim() === '') problems.push(`$.operations[${index}] readback_passed requires a non-null runtime_entity_id (identity-bound PASS)`);
       const requirements = row.readback?.requirements ?? [];
       const checkIds = checks.map((check) => check?.check_id);
       if (checks.length === 0) problems.push(`$.operations[${index}] readback_passed requires structured verification checks`);
@@ -143,6 +160,7 @@ export function validateAllinCmsLiveRunEvidence(evidence) {
         else if (check?.evidence_kind !== definition.evidence_kind) problems.push(`$.operations[${index}].readback.checks[${checkIndex}] evidence_kind must match the verification contract`);
       }
       if (new Set(checks.map((check) => check?.entity_id)).size !== 1) problems.push(`$.operations[${index}] structured checks must bind one exact entity ID`);
+      if (checks.some((check) => check?.entity_id !== row.runtime_entity_id)) problems.push(`$.operations[${index}] readback checks must bind exactly the operation runtime_entity_id, not merely agree with each other`);
       for (const group of [
         ['media.persisted_url', 'media.anonymous_https_get', 'media.image_decode'],
         ['article.public_url', 'article.anonymous_frontend_detail', 'article.visible_content_and_media'],
@@ -277,7 +295,7 @@ function exactHttpsUrl(value, checkId) {
   }
 }
 
-async function verifyVerificationCheck(plan, operation, check, taskRoot, readEvidenceArtifact, operationStartedAt, checkedAt) {
+async function verifyVerificationCheck(plan, operation, check, taskRoot, readEvidenceArtifact, operationStartedAt, checkedAt, runtimeEntityId) {
   if (!check || typeof check !== 'object' || Array.isArray(check)) throw new Error('verification_check_invalid');
   const definition = verificationCheckById.get(check.check_id);
   if (!definition) throw new Error(`verification_check_unknown:${check.check_id}`);
@@ -288,7 +306,7 @@ async function verifyVerificationCheck(plan, operation, check, taskRoot, readEvi
   if (check.site_id !== plan.site_selector.site_id) throw new Error(`verification_site_id_mismatch:${check.check_id}`);
   if (check.entity_ref !== operation.entity_ref) throw new Error(`verification_entity_mismatch:${check.check_id}`);
   if (typeof check.entity_id !== 'string' || check.entity_id.trim() === '') throw new Error(`verification_entity_id_missing:${check.check_id}`);
-  if (operation.identity.id !== null && check.entity_id !== operation.identity.id) throw new Error(`verification_entity_id_mismatch:${check.check_id}`);
+  if (runtimeEntityId !== null && check.entity_id !== runtimeEntityId) throw new Error(`verification_entity_id_mismatch:${check.check_id}`);
   if (!sha256Pattern.test(check.artifact_digest) || !sha256Pattern.test(check.subject_digest)) throw new Error(`verification_digest_invalid:${check.check_id}`);
   if (check.subject_digest !== operationSubjectDigest(plan, operation)) throw new Error(`verification_subject_digest_mismatch:${check.check_id}`);
   const observedAt = Date.parse(check.observed_at);
@@ -308,7 +326,7 @@ async function verifyVerificationCheck(plan, operation, check, taskRoot, readEvi
   if (check.check_id === 'article.visible_content_and_media' && o.media_applicable === true && o.decoded !== true) throw new Error('article_required_media_decode_not_proven');
   if (['anonymous_resource', 'anonymous_frontend', 'image_fetch_decode'].includes(check.evidence_kind) || check.check_id === 'media.persisted_url') exactHttpsUrl(o.resource_url, check.check_id);
 
-  const rawArtifact = artifactBytes(await readEvidenceArtifact({ path: check.artifact_ref, check: structuredClone(check), operation, plan }));
+  const rawArtifact = artifactBytes(await readEvidenceArtifact({ path: check.artifact_ref, check: structuredClone(check), operation, plan, runtime_entity_id: runtimeEntityId }));
   if (bytesDigest(rawArtifact) !== check.artifact_digest) throw new Error(`verification_artifact_digest_mismatch:${check.check_id}`);
   let parsedArtifact;
   try { parsedArtifact = JSON.parse(rawArtifact.toString('utf8')); }
@@ -316,7 +334,7 @@ async function verifyVerificationCheck(plan, operation, check, taskRoot, readEvi
   if (stable(parsedArtifact) !== stable(verificationArtifactEnvelope(check))) throw new Error(`verification_artifact_envelope_mismatch:${check.check_id}`);
 }
 
-async function verifyReadback(plan, operation, readback, taskRoot, readEvidenceArtifact, operationStartedAt, checkedAt) {
+async function verifyReadback(plan, operation, readback, taskRoot, readEvidenceArtifact, operationStartedAt, checkedAt, runtimeEntityId) {
   if (!readback || readback.authoritative !== true || readback.ok !== true) throw new Error('authoritative_readback_failed');
   assertNoForbiddenRuntimeFields(readback, 'readback result');
   const requirements = Array.isArray(readback.requirements) ? readback.requirements : [];
@@ -328,8 +346,9 @@ async function verifyReadback(plan, operation, readback, taskRoot, readEvidenceA
   const checkIds = readback.checks.map((check) => check?.check_id);
   if (checkIds.some((checkId) => typeof checkId !== 'string' || checkId.trim() === '') || new Set(checkIds).size !== checkIds.length) throw new Error('verification_check_ids_invalid');
   if (stable([...checkIds].sort()) !== stable([...operation.readback_requirements].sort())) throw new Error('verification_checks_must_exactly_match_plan');
-  for (const check of readback.checks) await verifyVerificationCheck(plan, operation, check, taskRoot, readEvidenceArtifact, operationStartedAt, checkedAt);
+  for (const check of readback.checks) await verifyVerificationCheck(plan, operation, check, taskRoot, readEvidenceArtifact, operationStartedAt, checkedAt, runtimeEntityId);
   if (new Set(readback.checks.map((check) => check.entity_id)).size !== 1) throw new Error('verification_entity_id_drift');
+  if (runtimeEntityId !== null && readback.checks.some((check) => check.entity_id !== runtimeEntityId)) throw new Error('verification_entity_id_mismatch:runtime_entity_id');
   for (const group of [
     ['media.persisted_url', 'media.anonymous_https_get', 'media.image_decode'],
     ['article.public_url', 'article.anonymous_frontend_detail', 'article.visible_content_and_media'],
@@ -369,7 +388,7 @@ export async function runAllinCmsContentPlan({
   }
 
   const evidence = {
-    schema_version: '1.0', run_id: runId,
+    schema_version: '1.1', run_id: runId,
     client_id: snapshot.client_id, company_id: snapshot.company_id, task_id: snapshot.task_id,
     runtime_scope: snapshot.runtime_scope,
     plan_id: snapshot.plan_id, plan_digest: snapshot.plan_digest,
@@ -404,6 +423,11 @@ export async function runAllinCmsContentPlan({
   catch (error) { return { ok: false, status: 'failed', code: 'EVIDENCE_WRITE_FAILED', problems: [safeErrorMessage(error)], evidence }; }
 
   const priorReadbacks = new Map();
+  // Runtime identities are keyed by entity_ref and only recorded after that
+  // entity's authoritative readback passed; a later operation for the same
+  // entity_ref may reuse the verified ID but never blindly inherits whatever
+  // identity the previous operation happened to carry.
+  const runtimeIdentitiesByEntityRef = new Map();
   for (const operation of snapshot.operations) {
     evidence.current_operation_id = operation.operation_id;
     const row = blankOperationEvidence(operation, snapshot, clock);
@@ -429,6 +453,24 @@ export async function runAllinCmsContentPlan({
     try { handler = handlers?.[key]; assertHandler(handler, key, operation); }
     catch (error) { return stop('blocked', 'HANDLER_BLOCK', error, row); }
 
+    const verifiedEntityId = runtimeIdentitiesByEntityRef.get(operation.entity_ref) ?? null;
+    if (verifiedEntityId !== null && row.runtime_entity_id !== null && row.runtime_entity_id !== verifiedEntityId) {
+      return stop('blocked', 'RUNTIME_IDENTITY_CONFLICT', `plan exact ID ${row.runtime_entity_id} conflicts with the readback-verified runtime ID ${verifiedEntityId} for ${operation.entity_ref}`, row);
+    }
+    if (verifiedEntityId !== null && row.runtime_entity_id === null) {
+      row.runtime_entity_id = verifiedEntityId;
+      row.runtime_entity_id_source = 'authoritative_readback';
+    }
+
+    // The runtime identity context must be rebuilt at every handler call, never
+    // captured once before execute: a create binds runtime_entity_id from its
+    // execute result after the request, so a pre-execute snapshot would hand
+    // readback (and any later handler stage) a stale null identity.
+    const runtimeEntityContext = () => ({
+      runtime_entity_id: row.runtime_entity_id,
+      runtime_entity_id_source: row.runtime_entity_id_source,
+    });
+
     for (const dependency of operation.dependencies) {
       if (!priorReadbacks.has(dependency)) return stop('blocked', 'DEPENDENCY_READBACK_MISSING', `dependency ${dependency} has no authoritative readback`, row);
     }
@@ -436,7 +478,7 @@ export async function runAllinCmsContentPlan({
     if (operation.expected_current_fingerprint !== null) {
       if (typeof handler.readCurrent !== 'function') return stop('blocked', 'CURRENT_FINGERPRINT_READER_MISSING', `Handler ${key} requires readCurrent`, row);
       try {
-        const current = await handler.readCurrent({ plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks) });
+        const current = await handler.readCurrent({ plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks), ...runtimeEntityContext() });
         assertNoForbiddenRuntimeFields(current, 'readCurrent result');
         row.preflight.observed_current_fingerprint = current?.fingerprint ?? null;
         if (!sha256Pattern.test(current?.fingerprint ?? '') || current.fingerprint !== operation.expected_current_fingerprint) throw new Error('expected_current_fingerprint_mismatch');
@@ -456,7 +498,7 @@ export async function runAllinCmsContentPlan({
     if (operation.intent !== 'noop') {
       try {
         transport = await handler.execute({
-          plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks),
+          plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks), ...runtimeEntityContext(),
           authorization: Object.freeze({
             plan_id: snapshot.plan_id, plan_digest: snapshot.plan_digest,
             operation_id: operation.operation_id, target_scope: snapshot.authorization_scope.target_scope,
@@ -466,7 +508,14 @@ export async function runAllinCmsContentPlan({
         });
         try { assertNoForbiddenRuntimeFields(transport, 'transport result'); }
         catch (error) {
-          error.requestStarted = transport?.request_started !== false;
+          // Locked own data property: the catch below reads the own descriptor,
+          // so a polluted prototype accessor can never lie about this value.
+          Object.defineProperty(error, 'requestStarted', {
+            value: transport?.request_started !== false,
+            writable: false,
+            enumerable: false,
+            configurable: false,
+          });
           error.handlerOutputContractViolation = true;
           throw error;
         }
@@ -474,9 +523,16 @@ export async function runAllinCmsContentPlan({
         row.transport.status = ['completed', 'failed', 'unknown', 'not_started'].includes(transport?.status)
           ? transport.status
           : (row.transport.request_started ? 'unknown' : 'not_started');
+        row.transport.entity_id = typeof transport?.entity_id === 'string' && transport.entity_id.trim() !== '' ? transport.entity_id : null;
       } catch (error) {
         if (error?.handlerOutputContractViolation === true) handlerOutputContractViolation = error;
-        row.transport.request_started = error?.requestStarted !== false;
+        // Own-descriptor read with a fail-safe default: a missing own property
+        // means "the request may have started" (read-only reconciliation), and
+        // a polluted prototype accessor can never produce a false here — an
+        // own accessor's descriptor value is undefined, which also means true.
+        row.transport.request_started = error !== null && typeof error === 'object'
+          ? Object.getOwnPropertyDescriptor(error, 'requestStarted')?.value !== false
+          : true;
         row.transport.status = row.transport.request_started ? 'unknown' : 'failed';
         transport = { error };
       }
@@ -491,7 +547,7 @@ export async function runAllinCmsContentPlan({
       if (typeof handler.reconcile !== 'function') return stop('ambiguous', 'RECONCILIATION_HANDLER_MISSING', 'request may have started and no read-only reconcile handler exists', row);
       let reconciliation;
       try {
-        reconciliation = await handler.reconcile({ plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks) });
+        reconciliation = await handler.reconcile({ plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks), ...runtimeEntityContext() });
         assertNoForbiddenRuntimeFields(reconciliation, 'reconciliation result');
       } catch (error) { return stop('ambiguous', 'RECONCILIATION_FAILED', error, row); }
       const reconciliationRef = reconciliation?.evidence_ref ?? null;
@@ -506,10 +562,21 @@ export async function runAllinCmsContentPlan({
       if (row.reconciliation.verdict === 'not_applied') return stop('failed', 'WRITE_CONFIRMED_NOT_APPLIED', 'read-only reconciliation confirmed the write was not applied; no automatic retry is allowed', row);
     }
 
+    if (createRequiresExecuteEntityId(operation)) {
+      if (row.transport.entity_id === null) {
+        return stop('blocked', 'CREATE_RUNTIME_ENTITY_ID_MISSING', `${operation.entity_type}:create transport completed without a non-empty entity_id; the request may have succeeded, so the run fails closed and automatic retry is forbidden`, row);
+      }
+      if (row.runtime_entity_id !== null && row.runtime_entity_id !== row.transport.entity_id) {
+        return stop('blocked', 'CREATE_RUNTIME_ENTITY_ID_CONFLICT', `${operation.entity_type}:create execute returned entity_id ${row.transport.entity_id} but the operation was already bound to runtime ID ${row.runtime_entity_id}; fail closed without retry`, row);
+      }
+      row.runtime_entity_id = row.transport.entity_id;
+      row.runtime_entity_id_source = 'execute_result';
+    }
+
     let readback;
     try {
-      readback = await handler.readback({ plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks) });
-      await verifyReadback(snapshot, operation, readback, taskRoot, readEvidenceArtifact, row.started_at, timestamp(clock));
+      readback = await handler.readback({ plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks), ...runtimeEntityContext() });
+      await verifyReadback(snapshot, operation, readback, taskRoot, readEvidenceArtifact, row.started_at, timestamp(clock), row.runtime_entity_id);
     } catch (error) { return stop('failed', 'AUTHORITATIVE_READBACK_FAILED', error, row); }
 
     if (operation.intent !== 'noop') {
@@ -521,6 +588,15 @@ export async function runAllinCmsContentPlan({
       requirements: [...readback.requirements], evidence_ref: readback.evidence_ref,
       checks: structuredClone(readback.checks),
     };
+    // A natural-key identity (or a create that only reconciled ambiguously) resolves
+    // exclusively from the authoritative readback checks that just passed; an
+    // already-bound runtime ID (plan exact, execute result or inherited verified
+    // ID) was enforced to equal every check inside verifyReadback.
+    if (row.runtime_entity_id === null) {
+      row.runtime_entity_id = readback.checks[0].entity_id;
+      row.runtime_entity_id_source = 'authoritative_readback';
+    }
+    runtimeIdentitiesByEntityRef.set(operation.entity_ref, row.runtime_entity_id);
     row.status = 'readback_passed';
     row.completed_at = timestamp(clock);
     priorReadbacks.set(operation.operation_id, deepFreeze(structuredClone(readback)));

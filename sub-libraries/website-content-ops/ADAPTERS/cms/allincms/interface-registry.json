@@ -31,7 +31,7 @@
    "当前 dirty candidate 不是 Stable 或 Published。",
    "content-run-controller.mjs 只在完整子库源码 checkout 可用；它依赖子库 scripts，未进入最小 npm adapter package。",
    "任何远程 mutation 仍要求当前 deployment 的新鲜 live_verified_current_deployment capability；Registry 不提供永久远程能力。",
-   "2026-08-27 部署实测后：site.create 与 product create/update/publish 已注册 canonical + fresh_live_verified_current_deployment 门禁路由（单部署证据，不作跨部署声明）；article.create 与 media metadata update 路由仍 BLOCK；media.create 走 runtime wire-guard + 已验证对话框语义。",
+   "2026-09-03 部署实测后：site.create、article.create/update/publish 与 product create/update/publish 已注册 canonical + fresh_live_verified_current_deployment 门禁路由（单部署证据，不作跨部署声明）；article.create 每部署/批次仍须 ISS-111 五步资格证据；media metadata update 仍 BLOCK；media.create 走 runtime wire-guard + 已验证对话框语义。",
    "delete 与 unpublish 在通用 immutable plan / 薄 Skill 中全部 fail closed；底层导出被登记不等于可作为计划路由执行。",
    "npm test 与 test:* 属于验证 harness，不作为 Adapter 业务或查询 CLI 接口登记。"
   ]
@@ -2808,8 +2808,8 @@
    "domain": "article",
    "kind": "mutation_controller",
    "access": "write",
-   "exposure": "blocked",
-   "lifecycle": "experimental",
+   "exposure": "canonical",
+   "lifecycle": "active",
    "contract_version": "0.3.2-preview.1",
    "bindings": [
     {
@@ -2852,7 +2852,8 @@
     "level": "local_tested",
     "refs": [],
     "limitations": [
-     "仅证明当前本地 synthetic/unit profile；不外推为跨部署或生产稳定。"
+     "仅证明当前本地 synthetic/unit profile；不外推为跨部署或生产稳定。",
+     "Create capability qualified on the current deployment per ISS-111 (article-create-qualification.json); refresh qualification evidence per deployment before batches."
     ]
    },
    "safety": {
@@ -2861,7 +2862,7 @@
     "authorization": {
      "required": true,
      "scheme": "structured_context",
-     "operation": "allincms.article.create-draft",
+     "operation": "interface-specific",
      "binding_strength": "full_payload",
      "status": "partial"
     },
@@ -2873,7 +2874,6 @@
     "readback": "required",
     "frontend_verification": "conditional"
    },
-   "blocked_reason": "只有在精确站点完成 live postCreate 合同确认及 before/after 唯一新 ID 证明后才可启用。",
    "runtime_availability": "packaged"
   },
   {
@@ -9814,7 +9814,686 @@
     }
    ],
    "runtime_availability": "source_only"
-  }
+  },
+  {
+   "interface_id": "allincms.content-mutation-primitives.mark-request-started",
+   "display_name": "markRequestStarted",
+   "summary": "article/product 共享的传输错误 requestStarted 标记原语：真实传输失败被标记为 requestStarted=true 并进入 readback 对账而不是盲重抛。",
+   "domain": "article",
+   "kind": "converter",
+   "access": "transform",
+   "exposure": "internal",
+   "lifecycle": "active",
+   "runtime_availability": "packaged",
+   "contract_version": "0.3.2-preview.1",
+   "bindings": [
+    {
+     "type": "esm_export",
+     "module": "content-mutation-primitives.mjs",
+     "export_name": "markRequestStarted",
+     "role": "definition"
+    }
+   ],
+   "when_to_use": "仅供 Adapter 内部实现与诊断使用；article-operations 与 product-operations 以命名 ESM import 共享同一实现，禁止经可变对象转引。",
+   "keywords": [
+    "markRequestStarted",
+    "requestStarted",
+    "transport",
+    "reconcile",
+    "internal"
+   ],
+   "io_contract": {
+    "input": "传输层抛出的任意 error（或原始值）",
+    "output": "带 requestStarted=true 标注的原 error，或包裹原 error 的新 Error"
+   },
+   "contract_refs": [
+    {
+     "path": "article-operations-contract.json",
+     "note": "文章与分类标签机器合同（传输对词语义）",
+     "availability": "packaged"
+    },
+    {
+     "path": "product-operations-contract.json",
+     "note": "产品操作机器合同（传输对词语义）",
+     "availability": "packaged"
+    }
+   ],
+   "test_refs": [
+    {
+     "path": "product-operations.test.mjs",
+     "note": "投毒对抗 + P0-A 传输失败对账测试",
+     "availability": "source_only"
+    }
+   ],
+   "evidence": {
+    "level": "local_tested",
+    "refs": [],
+    "limitations": [
+     "仅证明当前本地 synthetic/unit profile（含 2026-09-04 投毒对抗回归）；不外推为跨部署或生产稳定。",
+     "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+    ]
+   },
+   "safety": {
+    "mutation": false,
+    "network_access": "none",
+    "authorization": {
+     "required": false,
+     "scheme": "none",
+     "operation": "not-applicable",
+     "binding_strength": "none",
+     "status": "pass"
+    },
+    "site_binding": "not_applicable",
+    "idempotency": "idempotent",
+    "request_may_have_succeeded": "not_applicable",
+    "automatic_retry": "none",
+    "ambiguous_result": "not_applicable",
+    "readback": "not_applicable",
+    "frontend_verification": "not_applicable"
+   }
+  },
+  {
+   "interface_id": "allincms.content-mutation-primitives.canonical-texts",
+   "display_name": "canonicalTexts",
+   "summary": "article/product 共享的 canonical 稳定文本序列化：对象键序无关、数组序严格、非 JSON 值按类型区分，供 create 回读比较与证据摘要使用。",
+   "domain": "article",
+   "kind": "converter",
+   "access": "transform",
+   "exposure": "internal",
+   "lifecycle": "active",
+   "runtime_availability": "packaged",
+   "contract_version": "0.3.2-preview.1",
+   "bindings": [
+    {
+     "type": "esm_export",
+     "module": "content-mutation-primitives.mjs",
+     "export_name": "canonicalTexts",
+     "role": "definition"
+    }
+   ],
+   "when_to_use": "仅供 Adapter 内部实现与诊断使用；create 比较器与 host driver 证据摘要以命名 ESM import 共享同一实现。",
+   "keywords": [
+    "canonicalTexts",
+    "canonical",
+    "compare",
+    "digest",
+    "internal"
+   ],
+   "io_contract": {
+    "input": "任意 JSON 语义值（对象、数组、标量、null/undefined）",
+    "output": "确定性的 canonical 文本表示"
+   },
+   "contract_refs": [
+    {
+     "path": "article-operations-contract.json",
+     "note": "文章与分类标签机器合同",
+     "availability": "packaged"
+    }
+   ],
+   "test_refs": [
+    {
+     "path": "product-operations.test.mjs",
+     "note": "canonical create 比较路径测试",
+     "availability": "source_only"
+    }
+   ],
+   "evidence": {
+    "level": "local_tested",
+    "refs": [],
+    "limitations": [
+     "仅证明当前本地 synthetic/unit profile（含 2026-09-04 投毒对抗回归）；不外推为跨部署或生产稳定。",
+     "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+    ]
+   },
+   "safety": {
+    "mutation": false,
+    "network_access": "none",
+    "authorization": {
+     "required": false,
+     "scheme": "none",
+     "operation": "not-applicable",
+     "binding_strength": "none",
+     "status": "pass"
+    },
+    "site_binding": "not_applicable",
+    "idempotency": "idempotent",
+    "request_may_have_succeeded": "not_applicable",
+    "automatic_retry": "none",
+    "ambiguous_result": "not_applicable",
+    "readback": "not_applicable",
+    "frontend_verification": "not_applicable"
+   }
+  },
+  {
+   "interface_id": "allincms.content-mutation-primitives.extract-create-readback-record",
+   "display_name": "extractCreateReadbackRecord",
+   "summary": "article/product create 回读记录的底层固定形态提取：识别 {record, afterIds} host 包装或裸记录，调用方回调无法选择被比较对象。",
+   "domain": "article",
+   "kind": "converter",
+   "access": "transform",
+   "exposure": "internal",
+   "lifecycle": "active",
+   "runtime_availability": "packaged",
+   "contract_version": "0.3.2-preview.1",
+   "bindings": [
+    {
+     "type": "esm_export",
+     "module": "content-mutation-primitives.mjs",
+     "export_name": "extractCreateReadbackRecord",
+     "role": "definition"
+    }
+   ],
+   "when_to_use": "仅供 Adapter 内部 create 路径使用；createPostDraft/createProductDraft 以命名 ESM import 共享同一提取规则。",
+   "keywords": [
+    "extractCreateReadbackRecord",
+    "readback",
+    "record",
+    "create",
+    "internal"
+   ],
+   "io_contract": {
+    "input": "create 后的权威回读值（裸记录或 {record, afterIds} 包装）",
+    "output": "被比较的底层记录对象（或原值）"
+   },
+   "contract_refs": [
+    {
+     "path": "article-operations-contract.json",
+     "note": "文章与分类标签机器合同",
+     "availability": "packaged"
+    },
+    {
+     "path": "product-operations-contract.json",
+     "note": "产品操作机器合同",
+     "availability": "packaged"
+    }
+   ],
+   "test_refs": [
+    {
+     "path": "product-operations.test.mjs",
+     "note": "wrapper/裸记录提取与漂移拒绝测试",
+     "availability": "source_only"
+    }
+   ],
+   "evidence": {
+    "level": "local_tested",
+    "refs": [],
+    "limitations": [
+     "仅证明当前本地 synthetic/unit profile（含 2026-09-04 投毒对抗回归）；不外推为跨部署或生产稳定。",
+     "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+    ]
+   },
+   "safety": {
+    "mutation": false,
+    "network_access": "none",
+    "authorization": {
+     "required": false,
+     "scheme": "none",
+     "operation": "not-applicable",
+     "binding_strength": "none",
+     "status": "pass"
+    },
+    "site_binding": "not_applicable",
+    "idempotency": "idempotent",
+    "request_may_have_succeeded": "not_applicable",
+    "automatic_retry": "none",
+    "ambiguous_result": "not_applicable",
+    "readback": "not_applicable",
+    "frontend_verification": "not_applicable"
+   }
+  },
+  {
+   "interface_id": "allincms.content-mutation-primitives.created-record-expected-problems",
+   "display_name": "createdRecordExpectedProblems",
+   "summary": "article/product create 不可替换的 canonical 期望比较器：合同字段 + siteId 逐字段比较，taxonomy 顺序无关、media 解一层包装，缺失字段即问题。",
+   "domain": "article",
+   "kind": "validator",
+   "access": "transform",
+   "exposure": "internal",
+   "lifecycle": "active",
+   "runtime_availability": "packaged",
+   "contract_version": "0.3.2-preview.1",
+   "bindings": [
+    {
+     "type": "esm_export",
+     "module": "content-mutation-primitives.mjs",
+     "export_name": "createdRecordExpectedProblems",
+     "role": "definition"
+    }
+   ],
+   "when_to_use": "仅供 Adapter 内部 create 路径使用；createPostDraft/createProductDraft 以命名 ESM import 共享同一实现，调用方 match 只能叠加约束。",
+   "keywords": [
+    "createdRecordExpectedProblems",
+    "expected",
+    "compare",
+    "create",
+    "drift",
+    "internal"
+   ],
+   "io_contract": {
+    "input": "提取后的回读记录、冻结的 expected payload、合同字段列表、实体 kind",
+    "output": "问题文案数组（空数组表示 PASS）"
+   },
+   "contract_refs": [
+    {
+     "path": "article-operations-contract.json",
+     "note": "文章与分类标签机器合同",
+     "availability": "packaged"
+    },
+    {
+     "path": "product-operations-contract.json",
+     "note": "产品操作机器合同",
+     "availability": "packaged"
+    }
+   ],
+   "test_refs": [
+    {
+     "path": "product-operations.test.mjs",
+     "note": "canonical 漂移拒绝与投毒对抗测试",
+     "availability": "source_only"
+    }
+   ],
+   "evidence": {
+    "level": "local_tested",
+    "refs": [],
+    "limitations": [
+     "仅证明当前本地 synthetic/unit profile（含 2026-09-04 投毒对抗回归）；不外推为跨部署或生产稳定。",
+     "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+    ]
+   },
+   "safety": {
+    "mutation": false,
+    "network_access": "none",
+    "authorization": {
+     "required": false,
+     "scheme": "none",
+     "operation": "not-applicable",
+     "binding_strength": "none",
+     "status": "pass"
+    },
+    "site_binding": "not_applicable",
+    "idempotency": "idempotent",
+    "request_may_have_succeeded": "not_applicable",
+    "automatic_retry": "none",
+    "ambiguous_result": "not_applicable",
+    "readback": "not_applicable",
+    "frontend_verification": "not_applicable"
+   }
+  },
+  {
+   "interface_id": "allincms.content-mutation-primitives.article-create-contract-fields",
+   "display_name": "ARTICLE_CREATE_CONTRACT_FIELDS",
+   "summary": "article create canonical 合同字段常量（8 字段 + siteId）：create 期望比较与 host driver desired-state 严格字段校验的唯一机器真源。",
+   "domain": "article",
+   "kind": "constant",
+   "access": "metadata",
+   "exposure": "internal",
+   "lifecycle": "active",
+   "runtime_availability": "packaged",
+   "contract_version": "0.3.2-preview.1",
+   "bindings": [
+    {
+     "type": "esm_export",
+     "module": "content-mutation-primitives.mjs",
+     "export_name": "ARTICLE_CREATE_CONTRACT_FIELDS",
+     "role": "definition"
+    }
+   ],
+   "when_to_use": "仅供 Adapter 内部实现与 host driver 使用；冻结数组，调用方既不能增加也不能删除被比较字段。",
+   "keywords": [
+    "ARTICLE_CREATE_CONTRACT_FIELDS",
+    "article",
+    "create",
+    "contract",
+    "constant",
+    "internal"
+   ],
+   "io_contract": {
+    "input": "无",
+    "output": "冻结的 canonical create 合同字段名数组"
+   },
+   "contract_refs": [
+    {
+     "path": "article-operations-contract.json",
+     "note": "文章与分类标签机器合同",
+     "availability": "packaged"
+    }
+   ],
+   "test_refs": [
+    {
+     "path": "content-plan-host-driver.test.mjs",
+     "note": "desired-state 严格字段校验测试",
+     "availability": "source_only"
+    }
+   ],
+   "evidence": {
+    "level": "local_tested",
+    "refs": [],
+    "limitations": [
+     "仅证明当前本地 synthetic/unit profile（含 2026-09-04 投毒对抗回归）；不外推为跨部署或生产稳定。",
+     "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+    ]
+   },
+   "safety": {
+    "mutation": false,
+    "network_access": "none",
+    "authorization": {
+     "required": false,
+     "scheme": "none",
+     "operation": "not-applicable",
+     "binding_strength": "none",
+     "status": "pass"
+    },
+    "site_binding": "not_applicable",
+    "idempotency": "idempotent",
+    "request_may_have_succeeded": "not_applicable",
+    "automatic_retry": "none",
+    "ambiguous_result": "not_applicable",
+    "readback": "not_applicable",
+    "frontend_verification": "not_applicable"
+   }
+  },
+   {
+    "interface_id": "allincms.content-mutation-primitives.product-create-contract-fields",
+    "display_name": "PRODUCT_CREATE_CONTRACT_FIELDS",
+    "summary": "product create canonical 合同字段常量（10 字段 + siteId）：create 期望比较与 host driver desired-state 严格字段校验的唯一机器真源。",
+    "domain": "product",
+    "kind": "constant",
+    "access": "metadata",
+    "exposure": "internal",
+    "lifecycle": "active",
+    "runtime_availability": "packaged",
+    "contract_version": "0.3.2-preview.1",
+    "bindings": [
+     {
+      "type": "esm_export",
+      "module": "content-mutation-primitives.mjs",
+      "export_name": "PRODUCT_CREATE_CONTRACT_FIELDS",
+      "role": "definition"
+     }
+    ],
+    "when_to_use": "仅供 Adapter 内部实现与 host driver 使用；冻结数组，调用方既不能增加也不能删除被比较字段。",
+    "keywords": [
+     "PRODUCT_CREATE_CONTRACT_FIELDS",
+     "product",
+     "create",
+     "contract",
+     "constant",
+     "internal"
+    ],
+    "io_contract": {
+     "input": "无",
+     "output": "冻结的 canonical create 合同字段名数组"
+    },
+    "contract_refs": [
+     {
+      "path": "product-operations-contract.json",
+      "note": "产品操作机器合同",
+      "availability": "packaged"
+     }
+    ],
+    "test_refs": [
+     {
+      "path": "content-plan-host-driver.test.mjs",
+      "note": "desired-state 严格字段校验测试",
+      "availability": "source_only"
+     }
+    ],
+    "evidence": {
+     "level": "local_tested",
+     "refs": [],
+     "limitations": [
+      "仅证明当前本地 synthetic/unit profile（含 2026-09-04 投毒对抗回归）；不外推为跨部署或生产稳定。",
+      "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+     ]
+    },
+    "safety": {
+     "mutation": false,
+     "network_access": "none",
+     "authorization": {
+      "required": false,
+      "scheme": "none",
+      "operation": "not-applicable",
+      "binding_strength": "none",
+      "status": "pass"
+     },
+     "site_binding": "not_applicable",
+     "idempotency": "idempotent",
+     "request_may_have_succeeded": "not_applicable",
+     "automatic_retry": "none",
+     "ambiguous_result": "not_applicable",
+     "readback": "not_applicable",
+     "frontend_verification": "not_applicable"
+    }
+   },
+   {
+    "interface_id": "allincms.content-mutation-primitives.prepare-stable-create-payload",
+    "display_name": "prepareStableCreatePayload",
+    "summary": "stable create payload B1 唯一 prepare 函数：同步 descriptor-only 复制输入为深冻结稳定 JSON snapshot + 单一不可变 canonical payloadText；article/product 底层 create 与 host driver 共用同一实现，重复 prepare 品牌化冻结 snapshot 原样返回。",
+    "domain": "article",
+    "kind": "validator",
+    "access": "transform",
+    "exposure": "internal",
+    "lifecycle": "active",
+    "runtime_availability": "packaged",
+    "contract_version": "0.3.2-preview.1",
+    "bindings": [
+     {
+      "type": "esm_export",
+      "module": "content-mutation-primitives.mjs",
+      "export_name": "prepareStableCreatePayload",
+      "role": "definition"
+     }
+    ],
+    "when_to_use": "仅供 Adapter 内部 create 路径使用；createPostDraft/createProductDraft 与 content-plan-host-driver 以命名 ESM import 共享，禁止经可变对象转引或重建第二语义。",
+    "keywords": [
+     "prepareStableCreatePayload",
+     "stable",
+     "create",
+     "snapshot",
+     "payloadText",
+     "frozen",
+     "internal"
+    ],
+    "io_contract": {
+     "input": "kind ('article'|'product')、payload（合同字段 + 可选匹配 siteId）、siteId",
+     "output": "{ snapshot: 深冻结稳定 JSON 快照（合同字段 + siteId，media 扁平化、alt 规范缺失）, payloadText: 不可变 canonical JSON 文本 }；任何缺失/多余/异型/exotic 输入在请求前抛错"
+    },
+    "contract_refs": [
+     {
+      "path": "article-operations-contract.json",
+      "note": "文章与分类标签机器合同（create 稳定 payload 规则）",
+      "availability": "packaged"
+     },
+     {
+      "path": "product-operations-contract.json",
+      "note": "产品操作机器合同",
+      "availability": "packaged"
+     }
+    ],
+    "test_refs": [
+     {
+      "path": "stable-create-payload.test.mjs",
+      "note": "stable create payload B1/B2 对抗矩阵测试",
+      "availability": "source_only"
+     }
+    ],
+    "evidence": {
+     "level": "local_tested",
+     "refs": [],
+     "limitations": [
+      "仅证明当前本地 synthetic/unit profile（含 2026-09-04 stable create payload 对抗矩阵）；不外推为跨部署或生产稳定。",
+      "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+     ]
+    },
+    "safety": {
+     "mutation": false,
+     "network_access": "none",
+     "authorization": {
+      "required": false,
+      "scheme": "none",
+      "operation": "not-applicable",
+      "binding_strength": "none",
+      "status": "pass"
+     },
+     "site_binding": "not_applicable",
+     "idempotency": "idempotent",
+     "request_may_have_succeeded": "not_applicable",
+     "automatic_retry": "none",
+     "ambiguous_result": "not_applicable",
+     "readback": "not_applicable",
+     "frontend_verification": "not_applicable"
+    }
+   },
+   {
+    "interface_id": "allincms.content-mutation-primitives.capture-stable-readback",
+    "display_name": "captureStableReadback",
+    "summary": "stable create payload B2 回读稳定投影：create 回读返回后立即做一次同步 descriptor-only 稳定复制，canonical 比较与全部 caller getter 消费同一快照，getter/accessor/proxy 变值无法造成比较 A、ID 提取 B。",
+    "domain": "article",
+    "kind": "converter",
+    "access": "transform",
+    "exposure": "internal",
+    "lifecycle": "active",
+    "runtime_availability": "packaged",
+    "contract_version": "0.3.2-preview.1",
+    "bindings": [
+     {
+      "type": "esm_export",
+      "module": "content-mutation-primitives.mjs",
+      "export_name": "captureStableReadback",
+      "role": "definition"
+     }
+    ],
+    "when_to_use": "仅供 Adapter 内部 create 回读路径使用；createPostDraft/createProductDraft 以命名 ESM import 共享同一捕获规则。",
+    "keywords": [
+     "captureStableReadback",
+     "readback",
+     "stable",
+     "snapshot",
+     "TOCTOU",
+     "internal"
+    ],
+    "io_contract": {
+     "input": "create 后的权威回读值（wrapper/record/ID 全量）与 label",
+     "output": "稳定纯数据深复制；任何 accessor/sparse/exotic/proxy trap 输入抛错（fail-closed）"
+    },
+    "contract_refs": [
+     {
+      "path": "article-operations-contract.json",
+      "note": "文章与分类标签机器合同（create 回读语义）",
+      "availability": "packaged"
+     },
+     {
+      "path": "product-operations-contract.json",
+      "note": "产品操作机器合同",
+      "availability": "packaged"
+     }
+    ],
+    "test_refs": [
+     {
+      "path": "stable-create-payload.test.mjs",
+      "note": "stable create payload B1/B2 对抗矩阵测试",
+      "availability": "source_only"
+     }
+    ],
+    "evidence": {
+     "level": "local_tested",
+     "refs": [],
+     "limitations": [
+      "仅证明当前本地 synthetic/unit profile（含 2026-09-04 stable create payload 对抗矩阵）；不外推为跨部署或生产稳定。",
+      "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+     ]
+    },
+    "safety": {
+     "mutation": false,
+     "network_access": "none",
+     "authorization": {
+      "required": false,
+      "scheme": "none",
+      "operation": "not-applicable",
+      "binding_strength": "none",
+      "status": "pass"
+     },
+     "site_binding": "not_applicable",
+     "idempotency": "idempotent",
+     "request_may_have_succeeded": "not_applicable",
+     "automatic_retry": "none",
+     "ambiguous_result": "not_applicable",
+     "readback": "not_applicable",
+     "frontend_verification": "not_applicable"
+    }
+   },
+   {
+    "interface_id": "allincms.content-mutation-primitives.canonical-stable-create-text",
+    "display_name": "canonicalStableCreateText",
+    "summary": "已校验稳定数据的 canonical 文本序列化（键排序、数组序严格）：prepareStableCreatePayload 的 payloadText 唯一生成器，与 mutation-authorization canonicalJson 字节一致。",
+    "domain": "article",
+    "kind": "converter",
+    "access": "transform",
+    "exposure": "internal",
+    "lifecycle": "active",
+    "runtime_availability": "packaged",
+    "contract_version": "0.3.2-preview.1",
+    "bindings": [
+     {
+      "type": "esm_export",
+      "module": "content-mutation-primitives.mjs",
+      "export_name": "canonicalStableCreateText",
+      "role": "definition"
+     }
+    ],
+    "when_to_use": "仅供 Adapter 内部实现与诊断使用；payloadText 与授权 digest 的 canonical 序列化唯一机器真源。",
+    "keywords": [
+     "canonicalStableCreateText",
+     "canonical",
+     "payloadText",
+     "digest",
+     "internal"
+    ],
+    "io_contract": {
+     "input": "已通过稳定校验的纯 JSON 数据",
+     "output": "canonical 文本（对象键排序、数组序严格、JSON.stringify 标量）"
+    },
+    "contract_refs": [
+     {
+      "path": "article-operations-contract.json",
+      "note": "文章与分类标签机器合同",
+      "availability": "packaged"
+     }
+    ],
+    "test_refs": [
+     {
+      "path": "stable-create-payload.test.mjs",
+      "note": "payloadText/digest/wire 字节一致测试",
+      "availability": "source_only"
+     }
+    ],
+    "evidence": {
+     "level": "local_tested",
+     "refs": [],
+     "limitations": [
+      "仅证明当前本地 synthetic/unit profile（含 2026-09-04 stable create payload 对抗矩阵）；不外推为跨部署或生产稳定。",
+      "仅供 Adapter 内部跨模块共享的安全关键实现使用，不构成对外稳定 API。"
+     ]
+    },
+    "safety": {
+     "mutation": false,
+     "network_access": "none",
+     "authorization": {
+      "required": false,
+      "scheme": "none",
+      "operation": "not-applicable",
+      "binding_strength": "none",
+      "status": "pass"
+     },
+     "site_binding": "not_applicable",
+     "idempotency": "idempotent",
+     "request_may_have_succeeded": "not_applicable",
+     "automatic_retry": "none",
+     "ambiguous_result": "not_applicable",
+     "readback": "not_applicable",
+     "frontend_verification": "not_applicable"
+    }
+   }
  ],
  "source_only_modules": [
   "content-plan-host-driver.mjs",
@@ -9985,22 +10664,22 @@
    "capability_id": "allincms.article.create",
    "entity_type": "article",
    "action": "create",
-   "availability": "blocked",
-   "execution_gate": "blocked",
+   "availability": "canonical",
+   "execution_gate": "fresh_live_verified_current_deployment",
    "default_interface_id": "allincms.article-operations.create-post-draft",
-   "controller_interface_id": null,
+   "controller_interface_id": "allincms.content-run-controller.run-allin-cms-content-plan",
    "verification_requirements": [
-    "fresh postCreate contract",
-    "before and after post ID snapshots",
-    "exactly one new post ID",
-    "same-site complete created-record readback",
-    "editor reopen"
+    "article.create.before_after_unique_id_delta",
+    "article.create.backend_field_readback",
+    "article.create.editor_reopen_health"
    ],
-   "reason": "Article create remains blocked until current-deployment create discovery and unique before/after reconciliation are supplied.",
+   "reason": "Article create qualified on the current deployment (ISS-111): live scan matched CREATE_POST with no drift, before/after snapshots showed exactly one new post id, full readback and editor reopen (200) recorded. Five Registry verification requirements met; evidence in customer runtime article-create-qualification.json.",
    "limitations": [
-    "Verified update or publish behavior must not be generalized to postCreate."
+    "Fresh qualification evidence (contract scan + unique before/after delta + editor reopen) must exist for the current deployment before each create batch.",
+    "Create produces a timestamped draft slug; publish via reviewed update carries the final slug.",
+    "Verified update or publish behavior must not be generalized beyond the recorded qualification deployment."
    ],
-   "execution_surface": "none"
+   "execution_surface": "full_source_checkout"
   },
   {
    "capability_id": "allincms.article.update",

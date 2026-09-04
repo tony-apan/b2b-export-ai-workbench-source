@@ -9,6 +9,21 @@
  */
 import { randomUUID } from 'node:crypto';
 import { deriveAllinCmsMutationBinding, validateAllinCmsMutationAuthorizationContext } from './mutation-authorization.mjs';
+// 2026-09-04 poisoning fix: article and product share markRequestStarted, the
+// canonical create record comparator/normalization, and the create contract
+// field constants ONLY through named ESM imports of this dependency-free
+// module. ESM export bindings are immutable, so no importer can overwrite the
+// shared implementation the way it could with the historical mutable
+// `_internal` object channel (see the frozen `_internal` facade below).
+import {
+  ARTICLE_CREATE_CONTRACT_FIELDS,
+  canonicalTexts,
+  captureStableReadback,
+  createdRecordExpectedProblems,
+  extractCreateReadbackRecord,
+  markRequestStarted,
+  prepareStableCreatePayload,
+} from './content-mutation-primitives.mjs';
 
 export {
   ALLINCMS_ARTICLE_FORMAT_SUPPORT,
@@ -24,6 +39,11 @@ export {
 
 export const WORKSPACE_ORIGIN = 'https://workspace.laicms.com';
 export const ARTICLE_MODES = Object.freeze(['update', 'publish', 'unpublish']);
+// P0-3.3a create canonical contract fields (8 + siteId) live in
+// content-mutation-primitives.mjs (ARTICLE_CREATE_CONTRACT_FIELDS) as the
+// single machine truth for both the article create expected comparison and
+// the host driver's desired-state strict field validation; shared cross-module
+// via named import only (never via the `_internal` facade).
 export const ARTICLE_FIELDS = Object.freeze([
   'title', 'slug', 'excerpt', 'order', 'coverImage',
   'categories', 'tags', 'content', 'siteId', 'postId', 'mode',
@@ -100,6 +120,15 @@ function sameJson(left, right) {
   // not JavaScript realm identity or prototype provenance.
   return JSON.stringify(normalizeComparableJson(left)) === JSON.stringify(normalizeComparableJson(right));
 }
+
+// Canonical stable text for create-readback comparison (canonicalTexts), the
+// bottom-owned create-readback record extraction
+// (extractCreateReadbackRecord), and the irreplaceable canonical expected
+// comparison (createdRecordExpectedProblems) moved to
+// content-mutation-primitives.mjs (2026-09-04 poisoning fix): product imports
+// them by name from that module, and this module re-imports the exact same
+// immutable bindings, so article and product can never drift apart and no
+// mutable `_internal` property sits on the sharing channel anymore.
 
 function readbackStatus(actual) {
   const values = ['status', '_status', 'state', 'publishStatus']
@@ -327,29 +356,20 @@ function normalizeResponse(response) {
   };
 }
 
-function markRequestStarted(error) {
-  if (error && typeof error === 'object') {
-    try {
-      error.requestStarted = error.requestStarted ?? true;
-      if (error.requestStarted === true) return error;
-    } catch {
-      // Fall through to a writable wrapper for frozen or cross-realm errors.
-    }
-  }
-  const wrapped = new Error(error?.message || String(error));
-  wrapped.cause = error;
-  wrapped.requestStarted = true;
-  return wrapped;
-}
+// markRequestStarted moved to content-mutation-primitives.mjs (2026-09-04
+// poisoning fix); imported by name above and shared bit-for-bit with
+// product-operations.mjs.
 
 export function createAllinCmsActionClient({ siteKey, runtime, request, authorizationContext = null }) {
   if (typeof request !== 'function') throw new Error('request callback is required');
   assertSiteKey(siteKey);
   return {
-    async send({ route, actionName, payload }) {
-      if (actionName === 'postCreate') throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
+    async send({ route, actionName, payload, payloadText }) {
       const contract = assertRuntime(runtime, actionName);
-      const binding = deriveAllinCmsMutationBinding({ siteKey, route, actionName, payload });
+      if (payloadText !== undefined && typeof payloadText !== 'string') {
+        throw new Error('payloadText must be an immutable string when provided');
+      }
+      const binding = deriveAllinCmsMutationBinding({ siteKey, route, actionName, payload, payloadText });
       validateAllinCmsMutationAuthorizationContext(authorizationContext, {
         expectedSiteKey: binding.siteKey, operation: binding.operation, target: binding.target,
       });
@@ -363,11 +383,19 @@ export function createAllinCmsActionClient({ siteKey, runtime, request, authoriz
           'next-router-state-tree': contract.routerTree,
           'x-deployment-id': contract.deploymentId,
         },
-        body: JSON.stringify([payload]),
+        // B2 stable create payload: when the caller carries the prepared
+        // payloadText, the wire body is EXACTLY `[${payloadText}]` — the same
+        // immutable string the authorization digest hashed — on the first send
+        // and on every controlled retry. Non-create callers keep the
+        // JSON.stringify body. The adapter's byte guarantee ends at the input
+        // of the host `request` callback handed this exact string: the actual
+        // socket bytes are the host transport's responsibility.
+        body: typeof payloadText === 'string' ? `[${payloadText}]` : JSON.stringify([payload]),
         siteKey,
         route,
         actionName,
         payload,
+        payloadText,
       };
       try {
         return normalizeResponse(await request(requestDetails));
@@ -389,6 +417,7 @@ export async function runActionWithRecovery({
   route,
   actionName,
   payload,
+  payloadText,
   expected,
   readback,
   refresh,
@@ -398,10 +427,16 @@ export async function runActionWithRecovery({
   retryOnExactAbsence = false,
   confirmExactAbsence,
 }) {
-  if (actionName === 'postCreate') throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
   if (!client?.send) throw new Error('AllinCMS action client is required');
   assertControlledRetryBudget(maxControlledRetries);
   if (typeof readback !== 'function') throw new Error('readback callback is required');
+  // B2: the prepared create payloadText is an immutable string held for the
+  // whole recovery loop, so the first send and every controlled retry hand
+  // the transport the identical string (the wire body and the digest input
+  // can never drift across attempts).
+  if (payloadText !== undefined && typeof payloadText !== 'string') {
+    throw new Error('payloadText must be an immutable string when provided');
+  }
   let attempt = 0;
   let lastResponse = null;
   let lastError = null;
@@ -409,9 +444,15 @@ export async function runActionWithRecovery({
     let requestStarted = false;
     try {
       requestStarted = true;
-      lastResponse = await client.send({ route, actionName, payload });
+      lastResponse = await client.send({ route, actionName, payload, payloadText });
     } catch (error) {
-      requestStarted = error?.requestStarted === true;
+      // Trust only an own, locked data property. An inherited
+      // `Object.prototype.requestStarted = true` (prototype pollution) must
+      // never upgrade a pre-send failure (e.g. an authorization refusal) into
+      // "a request was sent", which would route it into reconciliation.
+      requestStarted = error !== null
+        && typeof error === 'object'
+        && Object.getOwnPropertyDescriptor(error, 'requestStarted')?.value === true;
       if (!requestStarted) throw error;
       lastError = error;
       lastResponse = null;
@@ -505,7 +546,6 @@ async function requireClient({ client, siteKey, runtime, request, authorizationC
   if (typeof client.send !== 'function') throw new Error('AllinCMS action client is required');
   return {
     async send(details) {
-      if (details?.actionName === 'postCreate') throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
       const binding = deriveAllinCmsMutationBinding({ siteKey, ...details });
       validateAllinCmsMutationAuthorizationContext(authorizationContext, {
         expectedSiteKey: binding.siteKey, operation: binding.operation, target: binding.target,
@@ -558,8 +598,185 @@ export function unpublishPost(options) {
   return runArticleMutation({ ...options, mode: 'unpublish' });
 }
 
-export async function createPostDraft() {
-  throw new Error('ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY');
+function editorReopenProblems(evidence, createdPostId) {
+  if (!evidence || typeof evidence !== 'object' || Array.isArray(evidence)) {
+    return ['editor reopen evidence object is required'];
+  }
+  const problems = [];
+  if (Number(evidence.status) !== 200) problems.push('reopened article editor did not return HTTP 200');
+  if (evidence.authenticated !== true) problems.push('reopened article editor was not authenticated');
+  if (evidence.healthy !== true) problems.push('reopened article editor is not healthy');
+  if (evidence.postId !== createdPostId) problems.push('reopened article editor postId does not match the created article');
+  return problems;
+}
+
+export async function createPostDraft({
+  client, siteKey, runtime, request, authorizationContext = null,
+  siteId, payload = { siteId }, expected, expectedMatch, readback, refresh, beforePostIds,
+  getCreatedPostId, getCreatedPostSiteId, getAfterPostIds,
+  match, editorReopen, maxControlledRetries = 0,
+}) {
+  siteId = assertSiteId(siteId);
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('article create payload must be an object');
+  // payload.siteId agreement with siteId is enforced descriptor-only inside
+  // prepareStableCreatePayload (the 2026-09-04 stable create payload rule);
+  // a [[Get]]-based check here would invoke hostile getters for nothing.
+  // P0-3.3a.1 fail-closed expected binding: canonical create never runs without
+  // an expected readback. `expected` must be a non-array object and must be the
+  // exact same object reference as `payload` (the canonical driver freezes one
+  // payload object and passes it as both). A missing, junk, or equal-but-
+  // separate expected value is refused before any client, provider, or request.
+  if (!expected || typeof expected !== 'object' || Array.isArray(expected)) {
+    throw new Error('article create expected must be a non-array object (missing expected, arrays and non-object values are refused before any request)');
+  }
+  if (expected !== payload) {
+    throw new Error('article create expected must be the same object reference as payload (an equal but separate expected object is refused before any request)');
+  }
+  // P0-3.3a.3: `expectedMatch` is no longer a parameter. The canonical
+  // expected comparison over the 8 contract fields + siteId is owned by this
+  // function itself (see createdRecordExpectedProblems) and runs on the
+  // bottom-extracted record (raw record or the known {record, afterIds}
+  // wrapper), so no caller can supply, replace, or waive it — not even with a
+  // predicate that always returns true. Supplying the removed parameter is
+  // refused loudly before any client, provider, or request so a legacy caller
+  // can never believe its own matcher is still in charge.
+  if (expectedMatch !== undefined && expectedMatch !== null) {
+    throw new Error('article create expectedMatch has been removed: the canonical expected comparison is owned by createPostDraft itself and cannot be supplied, replaced, or waived by any caller callback (use match only for extra AND-ed constraints)');
+  }
+  if (match !== undefined && match !== null && typeof match !== 'function') {
+    throw new Error('article create match must be a function when provided');
+  }
+  if (typeof readback !== 'function') throw new Error('readback callback is required');
+  if (typeof getCreatedPostId !== 'function') throw new Error('getCreatedPostId callback is required');
+  if (typeof getCreatedPostSiteId !== 'function') throw new Error('getCreatedPostSiteId callback is required');
+  if (typeof getAfterPostIds !== 'function') throw new Error('getAfterPostIds callback is required');
+  if (typeof editorReopen !== 'function') throw new Error('editorReopen callback is required');
+  // Create is not safely retryable: a resend would duplicate the draft. The
+  // request either reconciles from readback or stops for manual intervention.
+  if (maxControlledRetries !== 0) throw new Error('article create does not allow controlled retries; maxControlledRetries must be 0');
+  if (!Array.isArray(beforePostIds)) throw new Error('beforePostIds snapshot is required');
+  const knownPostIds = new Set(normalizeIdArray(beforePostIds, 'beforePostIds'));
+  // B1 stable create payload: one synchronous prepare of the exact outgoing
+  // payload (8 contract fields + siteId) BEFORE any client/provider/request.
+  // A driver that already prepared the branded frozen snapshot gets the very
+  // same object and payloadText back (idempotent re-prepare), so the bottom
+  // layer can never rebuild a second, differently-semantic payload; the
+  // historical `{...payload, siteId}` second construction is gone. After this
+  // point the caller's original object is never read again: the request
+  // payload, the authorization binding input, and the expected readback are
+  // all this one frozen snapshot plus its immutable payloadText.
+  const { snapshot, payloadText } = prepareStableCreatePayload('article', payload, siteId);
+  const actionClient = await requireClient({ client, siteKey, runtime, request, authorizationContext });
+  let reconciledCreatedPostId = null;
+  const result = await runActionWithRecovery({
+    client: actionClient,
+    route: actionRoute(siteKey),
+    actionName: 'postCreate',
+    payload: snapshot,
+    payloadText,
+    expected: snapshot,
+    operation: 'post:create',
+    readback,
+    refresh,
+    maxControlledRetries: 0,
+    compare: (rawActual) => {
+      reconciledCreatedPostId = null;
+      if (rawActual === null || rawActual === undefined) return { ok: false, exactAbsence: true, mismatches: ['created article is absent from readback'] };
+      // B2 readback stabilization: one synchronous descriptor-only capture of
+      // the whole readback. The canonical comparison and every caller getter
+      // below consume this SAME stable copy, so a getter/proxy readback can
+      // never serve one record to the comparison (A) and a different record
+      // to ID extraction (B); accessors and trap-throwing proxies fail closed
+      // here without any getter ever being invoked.
+      let actual;
+      try {
+        actual = captureStableReadback(rawActual, 'created article readback');
+      } catch (stableError) {
+        return { ok: false, exactAbsence: false, mismatches: [`created article readback could not be captured as stable plain data (${stableError.message})`] };
+      }
+      const mismatches = [];
+      let createdPostId = null;
+      let createdPostSiteId = null;
+      let afterPostIds = [];
+      // P0-3.3a.3: the canonical expected comparison is irreplaceable
+      // bottom-layer logic. The record is extracted here (raw record or the
+      // known {record, afterPostIds} host wrapper) and compared against the
+      // prepared snapshot over ARTICLE_CREATE_CONTRACT_FIELDS + siteId
+      // with no caller-supplied predicate anywhere on this channel. A custom
+      // `match` can only AND an additional constraint on top of this PASS, so
+      // a permissive `match` alone can never wave a drifted record through.
+      const canonicalProblems = createdRecordExpectedProblems(
+        extractCreateReadbackRecord(actual),
+        snapshot,
+        ARTICLE_CREATE_CONTRACT_FIELDS,
+        'article',
+      );
+      if (canonicalProblems.length > 0) {
+        mismatches.push(`created article did not match the canonical expected readback: ${canonicalProblems.join('; ')}`);
+      }
+      if (match !== undefined && match !== null) {
+        try {
+          if (!match(actual, snapshot)) mismatches.push('created article did not match the additional expected constraints');
+        } catch (error) {
+          mismatches.push(`created article additional match failed: ${error.message}`);
+        }
+      }
+      try {
+        createdPostId = asNonEmptyString(getCreatedPostId(actual), 'created article ID');
+        reconciledCreatedPostId = createdPostId;
+      } catch (error) {
+        mismatches.push('created article ID is missing from readback');
+      }
+      try {
+        createdPostSiteId = asNonEmptyString(getCreatedPostSiteId(actual), 'created article siteId');
+      } catch (error) {
+        mismatches.push('created article siteId is missing from readback');
+      }
+      try {
+        afterPostIds = normalizeIdArray(getAfterPostIds(actual), 'after post ID snapshot');
+      } catch (error) {
+        mismatches.push(error.message);
+      }
+      const newPostIds = afterPostIds.filter((id) => !knownPostIds.has(id));
+      if (createdPostSiteId && createdPostSiteId !== siteId) mismatches.push('created article belongs to a different site');
+      if (newPostIds.length !== 1) mismatches.push(`expected exactly one new article ID after create, found ${newPostIds.length}`);
+      if (createdPostId && knownPostIds.has(createdPostId)) mismatches.push('readback ID already existed before create');
+      if (createdPostId && newPostIds.length === 1 && createdPostId !== newPostIds[0]) {
+        mismatches.push('created article ID does not match the sole before/after snapshot difference');
+      }
+      return { ok: mismatches.length === 0, exactAbsence: false, mismatches: [...new Set(mismatches)] };
+    },
+  });
+  if (!SUCCESS_STATUSES.has(result.status)) {
+    return { ...result, createdPostId: null, automaticRetryAllowed: false };
+  }
+  const createdPostId = asNonEmptyString(reconciledCreatedPostId, 'created article ID');
+  let editorReopenEvidence = null;
+  try {
+    editorReopenEvidence = await editorReopen(createdPostId);
+  } catch (error) {
+    return {
+      ...result,
+      status: 'stopped_manual_intervention',
+      createdPostId,
+      error: error.message,
+      editorReopen: null,
+      mismatches: [`editor reopen failed: ${error.message}`],
+      automaticRetryAllowed: false,
+    };
+  }
+  const reopenProblems = editorReopenProblems(editorReopenEvidence, createdPostId);
+  if (reopenProblems.length > 0) {
+    return {
+      ...result,
+      status: 'stopped_manual_intervention',
+      createdPostId,
+      editorReopen: editorReopenEvidence,
+      mismatches: reopenProblems,
+      automaticRetryAllowed: false,
+    };
+  }
+  return { ...result, createdPostId, editorReopen: editorReopenEvidence, automaticRetryAllowed: false };
 }
 
 export function deletePost({
@@ -711,11 +928,32 @@ export function makeProbeIdentity(prefix = 'codex-probe') {
   return `${prefix}-${randomUUID()}`;
 }
 
-export const _internal = {
+// Test/diagnostic-only facade. FROZEN since the 2026-09-04 poisoning fix:
+// before it, product-operations.mjs destructured markRequestStarted /
+// createdRecordExpectedProblems / extractCreateReadbackRecord out of this
+// mutable object at first import, so an external actor that imported this
+// module first could swap them and silently bypass product's transport-error
+// reconcile or canonical create comparison. Cross-module consumers now use
+// named imports from content-mutation-primitives.mjs instead; this facade is
+// read-only (assignment throws TypeError in ESM strict mode) and mutating it
+// can never affect the lexical functions above.
+export const _internal = Object.freeze({
   actionRoute,
   assertRuntime,
   normalizeResponse,
   taxonomyActionName,
   taxonomyRoute,
   validateSlateContent,
-};
+  // P0-3.3a.3 shared canonical create-comparison internals (single machine
+  // truth in content-mutation-primitives.mjs; exposed read-only for the host
+  // driver's desired-state strict field validation and diagnostics).
+  ARTICLE_CREATE_CONTRACT_FIELDS,
+  canonicalTexts,
+  createdRecordExpectedProblems,
+  extractCreateReadbackRecord,
+  // P0-A shared transport-error marking semantics: the same implementation
+  // from content-mutation-primitives.mjs that product-operations.mjs imports
+  // by name, so requestStarted=true transport semantics cannot drift per
+  // module and cannot be replaced through this facade.
+  markRequestStarted,
+});

@@ -43,14 +43,15 @@
       "unpublish": "return to draft with complete payload"
     },
     "actionName": "postUpdate",
-    "createRoute": null,
-    "createActionName": null,
+    "createRoute": "/{site_key}/posts",
+    "createActionName": "postCreate",
     "deleteRoute": "/{site_key}/posts?tab=list",
     "deleteActionName": "postDelete",
     "bodyEncoding": "JSON array containing one payload object",
     "coverImage": "current media record object; never assume URL-only shape; readback comparison uses the canonical persisted field subset",
     "content": "Slate node array; never Markdown or HTML string",
-    "createApiStatus": "blocked_unconditionally_by_canonical_registry",
+    "createApiStatus": "canonical_under_fresh_deployment_qualification_gate",
+    "createPayloadRule": "2026-09-04 stable create payload B1/B2: postCreate accepts exactly the 8 contract fields plus siteId (missing and extra fields are refused; the update-path merge semantics are unchanged). coverImage must be null or flat media: URL media (name, type='image', source='url', absolute http/https url; never path/size/mimeType) or OSS media (name, type='image', source='oss', path, non-negative integer size, mimeType; never url); a string/null alt is normalized to missing; the {type,value} editor wrapper is readback-only and refused on the write path. The one prepared snapshot (prepareStableCreatePayload in content-mutation-primitives.mjs) plus its immutable canonical payloadText are the request payload, the authorization payload_digest input (SHA-256 over the exact UTF-8 payloadText), and the native wire body [payloadText]; the host driver prepares synchronously before any await/provider/auth and the bottom layer re-prepares idempotently. The adapter's byte guarantee ends at the input of the host request callback.",
     "coverImagePersistedFields": [
       "name",
       "alt",
@@ -188,7 +189,7 @@
     "safeRetryRule": "only one controlled retry after an explicit fresh exact-absence confirmation; readback null alone is insufficient",
     "unresolvedRule": "stop with stopped_manual_intervention",
     "batchRule": "strict serial; skip completed keys; stop on first unresolved result",
-    "createRule": "postCreate and createPostDraft are blocked unconditionally by the canonical Interface Registry; no runtime action capture, snapshot, authorization, callback, or readback can enable article.create",
+    "createRule": "postCreate is canonical only under the Registry fresh-qualification gate: before any request, createPostDraft requires a current runtime action contract, an exact payload_digest authorization context, a duplicate-free beforePostIds snapshot, and the readback/getCreatedPostId/getCreatedPostSiteId/getAfterPostIds/editorReopen callbacks; after the single request, the readback must prove the exact expected fields, a non-empty created post ID, same-site ownership, a before/after snapshot difference of exactly one ID, and that the created ID equals that sole new ID; success additionally requires editorReopen(createdPostId) to return {status:200, authenticated:true, healthy:true, postId:<same>}, otherwise the result is stopped_manual_intervention; no automatic retry is allowed (maxControlledRetries must be 0) because the request may already have created the draft",
     "existingArticleRule": "postUpdate and taxonomy mutations never retry merely because a readback is null"
   },
   "verification": {
@@ -216,8 +217,12 @@
       "parent relationship for children"
     ],
     "create": [
-      "blocked unconditionally by the canonical Interface Registry",
-      "no request, readback, or retry is permitted"
+      "duplicate-free before snapshot of same-site post IDs taken before the request",
+      "exactly one new post ID in the after snapshot",
+      "created post ID equals the sole new ID and belongs to the exact site",
+      "exact expected field readback on the created record",
+      "editor reopen returns {status:200, authenticated:true, healthy:true, postId:<created>}",
+      "no automatic retry after the request has started"
     ],
     "publishedThemeWarnings": [
       "backend Slate image alt persistence does not prove frontend theme img alt propagation",
@@ -226,17 +231,17 @@
     ]
   },
   "localVerification": {
-    "articleOperationsTests": 48,
+    "articleOperationsTests": 60,
     "articleContentFormatsTests": 13,
     "articleImageBindingTests": 52,
     "mediaUploadTests": 47,
-    "totalTests": 160,
-    "lastVerified": "2026-09-02",
+    "totalTests": 172,
+    "lastVerified": "2026-09-04",
     "profileScope": "article/media four-file specialized profile",
     "workspacePreflightTests": 21,
-    "contentRunControllerTests": 58,
+    "contentRunControllerTests": 70,
     "interfaceRegistryTests": 11,
-    "additionalDevSuiteTests": 17,
-    "adapterTotalTests": 267
+    "additionalDevSuiteTests": 189,
+    "adapterTotalTests": 361
   }
 }

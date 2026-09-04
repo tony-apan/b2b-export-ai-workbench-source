@@ -22,7 +22,7 @@ related: ["../README.md"]
 ```text
 你是文案评审（空白视角，模拟挑剔的真实读者）。任务：评审下面这篇文章并给出可执行修改。
 约束（必须遵守）：
-- 只读我提供的**最终完整 article business payload JSON（当前受支持 remote mutation 仅 update；article.create Registry BLOCK）**（title/slug/excerpt/order/coverImage/content/categories/tags）、事实源/claim ledger，以及 update 时的 current readback/diff；不要添加任何未提供的事实、数字、认证或承诺（缺失信息只能标"[缺事实:...]"）
+- 只读我提供的**最终完整 article business payload JSON（create/update 均须 strict review；create 额外要求 ISS-111 当前部署资格五步）**（title/slug/excerpt/order/coverImage/content/categories/tags）、事实源/claim ledger，以及 update 时的 current readback/diff；不要添加任何未提供的事实、数字、认证或承诺（缺失信息只能标"[缺事实:...]"）
 - 标题/正文可另附可读副本，但不能替代最终 payload 全字段审查
 - 不写新文章，只输出评审表与改写示例
 评判标准（每项 1-5 分 + 一句话依据）：
@@ -46,4 +46,4 @@ related: ["../README.md"]
 1. 主 AI 按 article-writing-logic.md 出稿
 2. 本模板派空白子 agent → 取回评分/改写/钩子建议
 3. 主 AI 合并（改写只动表达；"缺事实"列表 → 回 client 资料补充或 demo 标注）
-4. 发布前跑 article-adversarial-checklist + validate_slate_content_shape + gate；对最终 payload 计算 digest，distinct reviewer 产严格 review JSON；当前只允许由 `mutate_reviewed_post` 在受支持 mutation 流程中更新 exact existing article，article.create Registry BLOCK
+4. 发布前跑 article-adversarial-checklist + validate_slate_content_shape + gate；对最终 payload 计算 digest，distinct reviewer 产严格 review JSON；create/update 均走 canonical article 流程：create 先资格五步并生成 exact ID，再由 `mutate_reviewed_post` 做 reviewed update/publish；资格未通过不得创建

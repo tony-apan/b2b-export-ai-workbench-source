@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "用户提供资料并要求新建或更新网站、文章、产品、分类、标签或媒体，且需要通过 CMS 接口执行时。"
 keywords: ["source driven", "CMS operation plan", "create update upsert", "desired state", "API first", "reconciliation"]
 generated_from: "../../PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md"
-generated_source_sha256: "441ca83133b0ce3e0544945074db8894de892b1583bf0b0208d5a8944d491929"
+generated_source_sha256: "ef5121559c5bed48e171cb715eafb600bdc12d90f8f2578ba68fbbb5a5cddec3"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime projection from PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md; canonical edits belong in the core package. -->
@@ -72,7 +72,7 @@ generated_by: "scripts/sync-workspace-template.mjs"
 | image | 视觉读取/OCR | 文件 digest、像素区域/对象区域 |
 | brief/chat | 原始文本快照 | 消息或段落定位 |
 
-摄取结果写入同一 task root 的 `source-extraction.json`；schema `1.1` 必须携带和三元身份一致的 `runtime_scope`，`source_location` 只能指向该 task root 内的规范化相对 POSIX 路径。绝对路径、URL、反斜线、`..`、query/fragment、percent-encoded path bytes、伪 `private-runtime/` 前缀或另一客户/任务路径全部 BLOCK。artifact 至少包含 `source_id`、owner/rights、method-use 与 publication clearance、source date/review-after、客户 scope、原始字节/快照 digest、提取器及版本、`captured_at`、精确 locator、提取片段 digest 和提取警告。Source Register 仍是人可读入口，但机器计划不能只靠另一个 Markdown 表的声明；这些来源边界必须进入被校验的 JSON。AI 从中生成的是 **claim candidate**，不是自动确认事实；OCR 低置信度、表格合并、网页动态内容、图片文字和跨来源冲突必须保留 warning，不能静默“修正”。如果宿主缺少对应能力，就把该来源标为未提取并 BLOCK 依赖它的字段，不得用通用默认值补齐。
+摄取结果写入同一 task root 的 `source-extraction.json`；schema `1.1` 必须携带和三元身份一致的 `runtime_scope`，`source_location` 只能指向该 task root 内的规范化相对 POSIX 路径。绝对路径、URL、反斜线、`..`、query/fragment、percent-encoded path bytes、伪 `private-runtime/` 前缀或另一客户/任务路径全部 BLOCK。artifact 至少包含 `source_id`、owner/rights、method-use 与 publication clearance、source date/review-after、客户 scope、原始字节/快照 digest、提取器及版本、`captured_at`、精确 locator、提取片段 digest 和提取警告。Source Register 仍是人可读入口，但机器计划不能只靠另一个 Markdown 表的声明；这些来源边界必须进入被校验的 JSON。AI 从中生成的是 **claim candidate**，不是自动确认事实；OCR 低置信度、表格合并、网页动态内容、图片文字和跨来源冲突必须保留 warning，不能静默“修正”。 `source_id/UNIT-###/claim ledger/extraction digest` 只进入私有证据与 review record；面向买家的正文不得泄露这些内部编号或审查术语。公开归因改写为自然语言（如“the company brochure”“the technical table”），并在最终内容评审中把内部术语 0 命中作为硬门。如果宿主缺少对应能力，就把该来源标为未提取并 BLOCK 依赖它的字段，不得用通用默认值补齐。
 
 ### 3.3 事实只允许五种状态
 
@@ -179,6 +179,23 @@ Plan B: site_operation（site scope）
 - `unsupported` 直接 BLOCK。
 
 当前 AllinCMS 产品能力仍以 Adapter 的实时 capability snapshot 为准；历史产品文档或模拟测试不能替代当前部署的 create → readback → update → publish → frontend 验证。
+
+### 6.5 AllinCMS 文章 create 的资格验证与双阶段执行（ISS-111）
+
+`article.create` 在 Registry 中为 `canonical + fresh_live_verified_current_deployment`，但**不是永久放行**。每个新部署先刷新 action discovery；随后**每篇 create 请求**都必须完成并落盘以下五项资格证据：
+
+```text
+scan current createPostDraftAction and match canonical action constant
+→ complete before post-ID snapshot
+→ exactly one create request (reviewed payload + create authorization)
+→ complete after post-ID snapshot; unique delta == 1 and exact same-site ID
+→ full created-record readback + exact editor reopen (200, authenticated, healthy)
+```
+
+通过后才进入第二阶段 `article:update/publish`：create 产生的 timestamp draft slug 必须由 reviewed update 带最终 slug 覆盖。任一项失败或 transport 结果歧义：只读对账、`automaticRetryAllowed=false`，不得盲目重发 create。 文章最终 business payload 必须由 distinct reviewer 审查并通过 `content-review-gate.py verify`；机器 shape check 和主执行 AI 自评不能替代独立审查。create 后若改任何正文块、封面或 taxonomy，旧 READY digest 立即失效，必须重审后再 update/publish。资格记录不是永久能力；deployment/action/payload/source digest/目标站点变化即失效并重跑。
+
+本路径必须使用 canonical `article-operations.mjs#createPostDraft` + `content-plan-host-driver` 的 `article:create` handler（宿主注入 `articleBeforePostIdsProvider` / `articleCreateReadbackProvider` / `articleEditorReopenProvider` 三个真实 provider，缺一即本次 create BLOCK）；`TOOLS/interface-kit/allincms_api.py` 对 article.create 全面 fail-closed（三处入口一律 `ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED`，P0-3.1），不能成为第二执行面，仅保留 exact-ID reviewed update。
+
 
 ## 7. current state、diff 与并发保护
 

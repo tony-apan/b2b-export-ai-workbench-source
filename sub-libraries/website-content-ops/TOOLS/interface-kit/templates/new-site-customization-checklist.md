@@ -44,7 +44,7 @@ keywords: ["new-site", "customization", "checklist", "166-fields", "demo-replace
 | ④ | 分类/标签 | create_category2（cover 显式 null）/ create_tag | allincms_api.py L273-283 |
 | ⑤ | 媒体 | upload_media + update_media 回写 title/alt/caption | allincms_api.py L285-297 |
 | ⑥ | 产品 | 独立审查 READY/digest → mutate_reviewed_product（create/update） | product-payload-example.json |
-| ⑦ | 文章 | existing article update：k3 写 + distinct reviewer + strict record/capability → mutate_reviewed_post；article.create Registry BLOCK；post-detail CTA 块 | post-payload-example.json、fix-post-cta.py |
+| ⑦ | 文章 | article create/update：k3 写 + distinct reviewer + strict record/capability；create 先 ISS-111 资格五步→draft→reviewed update；post-detail CTA 块 | post-payload-example.json、fix-post-cta.py |
 | ⑧ | 每站审计配置 | 复制模板按 COP 实填，audit/gate/contact 三命令都带 --config | site-audit-config.template.json |
 | ⑨ | set_home_page | 最后一步；顺序错误=根路径错误壳 | ROOT-PATH-ISSUE.md L48-70 |
 | ⑩ | demo 种子清理 | createTheme(default) 会重种 3 产品+3 文章+6 分类+7 标签（taxonomy 同样种入），每次建主题后重跑 `delete-demo-content.py`（全链） | RUNBOOK-ANYONE.md:60；ISS-071/074 |
@@ -398,7 +398,7 @@ keywords: ["new-site", "customization", "checklist", "166-fields", "demo-replace
 | 134 | `payload.excerpt` | 1 句摘要 ≤120 字符 | 各篇摘要 | 列表卡摘要 demo | post-payload-example.json:5 |
 | 135 | `payload.coverImage` | 扁平媒体格式（见 ⑤） | 每篇封面图 | demo 封面 | post-payload-example.json:7-15 |
 | 136 | `payload.content`（Slate） | **原生类型只允许 `p|h2|h3|blockquote`**；每非根元素必须带 `id` + `children:[{text}]`；`heading`/`paragraph` 旧词法禁用；**禁内联 link/列表/Markdown** | 每篇 700-1100 词，h2 编号章节 ≥3（Example 主文章 h2=7） | 非法块 → 整篇正文不渲染；内联 link 平铺无 `<a>` | post-payload-example.json:16-47；MODULES.md:109-124 |
-| 137 | 流程防重 | **先 `read_lists(slug,'posts')` 查 exact slug**：存在→strict review/capability→mutate_reviewed_post update；不存在→article.create Registry BLOCK（旧流程重复 create 曾堆积 Untitled 草稿） | — | 草稿堆积（ISS-059） | RUNBOOK-ANYONE.md:59 |
+| 137 | 流程防重 | **先 `read_lists(slug,'posts')` 查 exact slug**：存在→strict review/capability→mutate_reviewed_post update；不存在→先 ISS-111 资格五步，唯一 create draft 后 reviewed update（禁止重复 create 堆积 Untitled 草稿） | — | 草稿堆积（ISS-059） | RUNBOOK-ANYONE.md:59 |
 | 138 | `payload.categories/tags` | 文章分类/标签 id 数组 | `rf-testing-guides` + 文章标签 | 文章不显示在分类 | post-payload-example.json:48-49 |
 | 139 | post-detail CTA 块 | 见 ③.3.7 表 #112（`cta-1` material-story-split，actionTarget `/contact-us?source=<site>-article`） | `source=example-article`，SSR 验证 1 命中/文章页 | audit cta 项 FAIL；文章无询价出口 | fix-post-cta.py:31-54；AUDIT-FACT-MATRIX-20260829.md:23 |
 | 140 | post-detail related 文案 | 见 ③.3.7 表 #111（`related-1` demo "More from the journal"） | `Read next` / `More RF engineering guides` | demo 文案残留（曾漏网） | fix-post-cta.py:22-29 |
@@ -418,7 +418,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 
 | # | 配置字段 | 填什么 | Example 实样 | 不改的后果 | 来源 |
 |---|---|---|---|---|---|
-| 142 | `pages` | 导航页 + sitemap + **全部产品 slug；仅 existing reviewed-update 文章加入文章 slug** | `""`、`about-us`、`contact-us`、`products`、`sitemap.xml`、全部 `products/<slug>`；有 existing remote posts 时再加 `posts`/`posts/<slug>` | 页面漏检，或干净账号因 article.create BLOCK 误配空文章入口 | site-audit-config.template.json；ISS-102 |
+| 142 | `pages` | 导航页 + sitemap + **全部产品 slug；所有资格通过并 published 的文章加入文章 slug** | `""`、`about-us`、`contact-us`、`products`、`sitemap.xml`、全部 `products/<slug>`；有 existing remote posts 时再加 `posts`/`posts/<slug>` | 页面漏检，或资格失败时仍误配空文章入口 | site-audit-config.template.json；ISS-102 |
 | 143 | `count` | 该站实建数（**不是模板数**） | `{"products":7,"posts":3}` | 用默认 Demo 基线 3/4 → 假 FAIL（ISS-063） | site-audit-config.template.json:13；RUNBOOK-ANYONE.md:140 |
 | 144 | `fallback_article` / `primary_article` | 主文章 slug | `example-guide-slug-assembly` | h2 语义检查抓错页 | site-audit-config.template.json:14-15 |
 | 145 | `faq_answers` | 文章**必须 SSR 的实质事实短语**（非 FAQ 模块问题） | `["phase stability","67 ghz","vswr","request a quote"]` | 用默认皮筏艇短语 → 4/4 假 FAIL | site-audit-config.template.json:16-21；AUDIT-FACT-MATRIX-20260829.md:22 |
@@ -508,7 +508,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | ☐ | 7. 完整审计 | `python3 site_pipeline.py audit $SLUG --config $CFG --out 70_evidence/audit-report.json` | `"verdict": "PASS"`，problems 为空（13 项站内检查全过） |
 | ☐ | 8. globals 7 页一致 | 对 7 页循环 `read_page_document`，比对 `page['globals']` 的 header/footer JSON | 7 页 globals 完全相同（demo 文案 0） |
 | ☐ | 9. readback 深 diff | 每页 `save+publish` 后重读 document 与提交版 diff | 仅 `columnCount=N` 无害回填；`formSlug=""` 在表单块=断裂必修（ISS-076） |
-| ☐ | 10. 文章 CTA SSR（仅 existing reviewed-update 文章分支） | `curl -s $BASE/posts/<primary_article> \| grep -c "source=<site>-article"` | ≥1 命中；干净账号 article.create BLOCK 时本项 N/A 且 Posts 模块/入口移除 |
+| ☐ | 10. 文章 CTA SSR（create/update published 文章） | `curl -s $BASE/posts/<primary_article> \| grep -c "source=<site>-article"` | ≥1 命中；仅当前部署资格验证失败并留证时本项 N/A 且 Posts 模块/入口移除 |
 | ☐ | 11. sitemap 覆盖 | `curl -s $BASE/sitemap.xml` | 含全部远程实建产品；仅 existing reviewed-update 文章才含文章 slug；含根路径 `/` 条目 |
 | ☐ | 12. 交付清单 | 复制 `templates/delivery-manifest.md` → `70_evidence/DELIVERY-<slug>-<date>.md`，公开链接表逐行核 200 + 已知事项抄 ⑪ | 每行核验=200；BLOCK 如实记录 |
 

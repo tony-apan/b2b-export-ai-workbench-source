@@ -32,6 +32,7 @@ import {
   createAllinCmsMutationAuthorizationContext,
   deriveAllinCmsMutationBinding,
 } from './mutation-authorization.mjs';
+import { prepareStableCreatePayload } from './content-mutation-primitives.mjs';
 
 test('article operations entrypoint exposes the verified format matrix and Markdown converter', () => {
   assert.equal(ALLINCMS_ARTICLE_FORMAT_SUPPORT.verified.length, 12);
@@ -279,37 +280,364 @@ test('deletePost treats exact absence as success and uses list route', async () 
   const client = clientFor(); const result = await deletePost({ client, siteKey: 'demo-site', authorizationContext: articleAuth('delete'), siteId: ids.siteId, postId: ids.postId, readback: async () => null });
   assert.equal(result.status, 'mutation_succeeded'); assert.equal(client.calls[0].route, '/demo-site/posts?tab=list'); assert.deepEqual(client.calls[0].payload, { id: ids.postId, siteId: ids.siteId });
 });
-test('createPostDraft is blocked by canonical registry at implementation layer', async () => {
-  await assert.rejects(() => createPostDraft({ createContractConfirmed: true }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
-});
-test('createPostDraft and public action client block postCreate before side effects', async () => {
-  let sends = 0;
-  let readbacks = 0;
-  const client = { async send() { sends += 1; throw new Error('must not send'); } };
-  await assert.rejects(() => createPostDraft({
-    client,
+const createExtractors = {
+  getCreatedPostId: (actual) => actual?.record?.id,
+  getCreatedPostSiteId: (actual) => actual?.record?.siteId,
+  getAfterPostIds: (actual) => actual?.afterPostIds,
+};
+// P0-3.3a.3: the canonical expected comparison is owned by createPostDraft
+// itself — the bottom layer extracts the record (host {record, afterPostIds}
+// wrapper or bare record) and compares every contract field plus siteId. These
+// direct bottom-layer tests pass no matcher at all; `match` is only ever an
+// extra AND-ed constraint.
+// 2026-09-04 stable create payload B1: the authorization context is minted
+// over the exact prepared snapshot (the same object whose canonical
+// payloadText the bottom layer sends), mirroring the canonical driver handoff.
+function createDraftBase(overrides = {}) {
+  // Mirrors the canonical driver: one payload object (contract fields plus
+  // siteId) is passed as both `payload` and `expected`, by reference.
+  const payload = { ...base, siteId: ids.siteId };
+  const prepared = prepareStableCreatePayload('article', payload, ids.siteId);
+  return {
     siteKey: 'demo-site',
-    authorizationContext: createDraftAuth({ siteId: ids.siteId }),
-    createContractConfirmed: true,
+    authorizationContext: createDraftAuth(prepared.snapshot),
     siteId: ids.siteId,
-    payload: { siteId: ids.siteId },
-    beforePostIds: [],
-    readback: async () => { readbacks += 1; return null; },
-  }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
-  const actionClient = createAllinCmsActionClient({
-    siteKey: 'demo-site', runtime,
-    authorizationContext: createDraftAuth({ siteId: ids.siteId }),
-    request: async () => { sends += 1; return { status: 200, contentType: 'text/x-component' }; },
-  });
-  await assert.rejects(() => actionClient.send({
-    route: '/demo-site/posts', actionName: 'postCreate', payload: { siteId: ids.siteId },
-  }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
-  await assert.rejects(() => runActionWithRecovery({
-    client, route: '/demo-site/posts', actionName: 'postCreate', payload: { siteId: ids.siteId },
-    expected: {}, operation: 'post:create', readback: async () => { readbacks += 1; return null; },
-  }), /ARTICLE_CREATE_BLOCKED_BY_CANONICAL_REGISTRY/);
-  assert.equal(sends, 0);
-  assert.equal(readbacks, 0);
+    payload,
+    expected: payload,
+    beforePostIds: ['post-1', 'post-2'],
+    ...createExtractors,
+    editorReopen: async (postId) => ({ status: 200, authenticated: true, healthy: true, postId }),
+    ...overrides,
+  };
+}
+test('createPostDraft proves the sole before/after delta, same site, and editor reopen evidence', async () => {
+  let created = null;
+  const client = clientFor({ onSend: async ({ payload }) => { created = { ...payload, id: 'post-new-1' }; } });
+  const reopened = [];
+  const result = await createPostDraft(createDraftBase({
+    client,
+    readback: async () => ({ record: created, afterPostIds: ['post-2', 'post-1', 'post-new-1'] }),
+    editorReopen: async (postId) => { reopened.push(postId); return { status: 200, authenticated: true, healthy: true, postId }; },
+  }));
+  assert.equal(result.status, 'mutation_succeeded');
+  assert.equal(result.createdPostId, 'post-new-1');
+  assert.equal(result.editorReopen.postId, 'post-new-1');
+  assert.deepEqual(reopened, ['post-new-1']);
+  assert.equal(result.automaticRetryAllowed, false);
+  assert.equal(client.calls.length, 1);
+  assert.equal(client.calls[0].route, '/demo-site/posts');
+  assert.equal(client.calls[0].actionName, 'postCreate');
+  // 2026-09-04 stable create payload: the wire payload is the prepared frozen
+  // snapshot (cover alt is normalized away), not the raw spread of `base`.
+  const prepared = prepareStableCreatePayload('article', { ...base, siteId: ids.siteId }, ids.siteId);
+  assert.deepEqual(client.calls[0].payload, prepared.snapshot);
+});
+test('createPostDraft sends postCreate through the runtime action client under the exact payload digest', async () => {
+  let received = null;
+  const created = { ...base, siteId: ids.siteId, id: 'post-new-9' };
+  const result = await createPostDraft(createDraftBase({
+    runtime,
+    request: async (details) => { received = details; return { status: 200, contentType: 'text/x-component' }; },
+    beforePostIds: ['post-1'],
+    readback: async () => ({ record: created, afterPostIds: ['post-1', 'post-new-9'] }),
+  }));
+  assert.equal(result.status, 'mutation_succeeded');
+  assert.equal(received.url, 'https://workspace.laicms.com/demo-site/posts');
+  assert.equal(received.headers['next-action'], 'create-action');
+  assert.equal(received.headers['x-deployment-id'], 'd'.repeat(40));
+  // B2: the native wire body is exactly [payloadText] and the inner bytes are
+  // the canonical serialization of the sent frozen snapshot.
+  const prepared = prepareStableCreatePayload('article', { ...base, siteId: ids.siteId }, ids.siteId);
+  assert.equal(received.body, `[${prepared.payloadText}]`);
+  assert.deepEqual(JSON.parse(received.body), [prepared.snapshot]);
+});
+test('createPostDraft refuses a payload that drifts from the authorization digest before any request', async () => {
+  const client = clientFor();
+  await assert.rejects(() => createPostDraft(createDraftBase({
+    client,
+    authorizationContext: createDraftAuth({ ...base, siteId: ids.siteId, title: '另一篇文章' }),
+    readback: async () => null,
+  })), /target_digest|payload/);
+  assert.equal(client.calls.length, 0);
+});
+test('createPostDraft blocks duplicate snapshots, multi-delta results, cross-site records, and field drift', async () => {
+  await assert.rejects(() => createPostDraft(createDraftBase({
+    client: clientFor(),
+    beforePostIds: ['post-1', ' post-1 '],
+    readback: async () => null,
+  })), /duplicate IDs/);
+  const cases = [
+    {
+      label: 'two new IDs after create',
+      record: { ...base, siteId: ids.siteId, id: 'post-new-1' },
+      afterPostIds: ['post-1', 'post-2', 'post-new-1', 'post-new-2'],
+      pattern: /exactly one new article ID after create, found 2/,
+    },
+    {
+      label: 'created record belongs to another site',
+      record: { ...base, siteId: 'other-site', id: 'post-new-1' },
+      afterPostIds: ['post-1', 'post-2', 'post-new-1'],
+      pattern: /different site/,
+    },
+    {
+      label: 'created ID is not the sole snapshot difference',
+      record: { ...base, siteId: ids.siteId, id: 'post-9' },
+      afterPostIds: ['post-1', 'post-2', 'post-new-1'],
+      pattern: /sole before\/after snapshot difference/,
+    },
+    {
+      label: 'created record drifted from the expected fields',
+      record: { ...base, siteId: ids.siteId, id: 'post-new-1', title: '丢失标题' },
+      afterPostIds: ['post-1', 'post-2', 'post-new-1'],
+      pattern: /did not match the canonical expected readback/,
+    },
+  ];
+  for (const testCase of cases) {
+    const client = clientFor();
+    const result = await createPostDraft(createDraftBase({
+      client,
+      readback: async () => ({ record: testCase.record, afterPostIds: testCase.afterPostIds }),
+    }));
+    assert.equal(result.status, 'stopped_manual_intervention', testCase.label);
+    assert.equal(result.createdPostId, null, testCase.label);
+    assert.equal(result.automaticRetryAllowed, false, testCase.label);
+    assert.equal(client.calls.length, 1, testCase.label);
+    assert.match(result.mismatches.join('; '), testCase.pattern, testCase.label);
+  }
+});
+test('createPostDraft fails closed before any request when required inputs are missing', async () => {
+  for (const drop of ['readback', 'getCreatedPostId', 'getCreatedPostSiteId', 'getAfterPostIds', 'editorReopen']) {
+    const client = clientFor();
+    const options = createDraftBase({ client, readback: async () => null });
+    delete options[drop];
+    await assert.rejects(() => createPostDraft(options), /callback is required/, drop);
+    assert.equal(client.calls.length, 0, drop);
+  }
+  for (const [label, mutate, pattern] of [
+    ['payload not an object', (options) => { options.payload = ['not-an-object']; }, /payload must be an object/],
+    ['payload siteId conflict', (options) => { options.payload.siteId = 'other-site'; }, /must match siteId/],
+    ['expected missing (P0-3.3a.1)', (options) => { delete options.expected; }, /expected must be a non-array object/],
+    ['expected explicit undefined (P0-3.3a.1)', (options) => { options.expected = undefined; }, /expected must be a non-array object/],
+    ['expected equal but separate object (P0-3.3a.1)', (options) => { options.expected = { ...options.payload }; }, /same object reference/],
+    ['expectedMatch supplied (P0-3.3a.3)', (options) => { options.expectedMatch = () => true; }, /expectedMatch has been removed/],
+    ['match not a function (P0-3.3a.2)', (options) => { options.match = 'permissive-string'; }, /match must be a function/],
+    ['before snapshot missing', (options) => { delete options.beforePostIds; }, /beforePostIds snapshot is required/],
+    ['retry budget non-zero', (options) => { options.maxControlledRetries = 1; }, /maxControlledRetries must be 0/],
+  ]) {
+    const client = clientFor();
+    const options = createDraftBase({ client, readback: async () => null });
+    mutate(options);
+    await assert.rejects(() => createPostDraft(options), pattern, label);
+    assert.equal(client.calls.length, 0, label);
+  }
+});
+test('createPostDraft refuses a non-object or array expected before any request', async () => {
+  // P0-3.3a: a junk expected value (array, string, number, explicit null) would
+  // silently degrade readback verification, so it is refused before the request.
+  for (const [label, expected] of [['array', ['title']], ['string', 'title'], ['number', 3], ['null', null]]) {
+    const client = clientFor();
+    await assert.rejects(
+      () => createPostDraft(createDraftBase({ client, expected, readback: async () => null })),
+      /expected must be a non-array object/,
+      label,
+    );
+    assert.equal(client.calls.length, 0, label);
+  }
+});
+test('createPostDraft sends zero requests without expected or with an equal-but-separate expected object (P0-3.3a.1)', async () => {
+  // Fail-closed: canonical create never runs without a bound expected readback,
+  // and the expected readback must be the exact payload object reference (the
+  // canonical driver passes one frozen object as both). Both refusals happen
+  // before any client, provider, or request.
+  for (const [label, mutate, pattern] of [
+    ['no expected', (options) => { options.expected = undefined; }, /expected must be a non-array object/],
+    ['null expected', (options) => { options.expected = null; }, /expected must be a non-array object/],
+    ['equal but separate expected object', (options) => { options.expected = { ...options.payload }; }, /same object reference/],
+  ]) {
+    const client = clientFor();
+    const options = createDraftBase({
+      client,
+      readback: async () => ({ record: { ...base, siteId: ids.siteId, id: 'post-new-1' }, afterPostIds: ['post-1', 'post-2', 'post-new-1'] }),
+    });
+    mutate(options);
+    await assert.rejects(() => createPostDraft(options), pattern, label);
+    assert.equal(client.calls.length, 0, label);
+  }
+});
+test('createPostDraft rejects a drifted record even when a permissive custom match returns true (P0-3.3a.3, driver-style wrapper readback)', async () => {
+  // The bottom layer owns the canonical expected comparison: even a match that
+  // always returns true cannot wave a field-drifted created record through,
+  // and no expectedMatch predicate exists that a caller could forge.
+  const client = clientFor();
+  const result = await createPostDraft(createDraftBase({
+    client,
+    match: () => true,
+    readback: async () => ({
+      record: { ...base, siteId: ids.siteId, id: 'post-new-1', title: '丢失标题' },
+      afterPostIds: ['post-1', 'post-2', 'post-new-1'],
+    }),
+  }));
+  assert.equal(result.status, 'stopped_manual_intervention');
+  assert.equal(result.createdPostId, null);
+  assert.equal(result.automaticRetryAllowed, false);
+  assert.equal(client.calls.length, 1);
+  assert.match(result.mismatches.join('; '), /did not match the canonical expected readback/);
+  assert.match(result.mismatches.join('; '), /title drifted from the frozen expected payload/);
+});
+test('createPostDraft refuses every forged expectedMatch callback before any request (P0-3.3a.3)', async () => {
+  // The public expectedMatch parameter is deleted: the canonical comparison
+  // is bottom-layer logic, so supplying a permissive (or any) predicate is a
+  // hard pre-request refusal — the historical `() => true` forgery bypass
+  // cannot even reach the request.
+  for (const [label, expectedMatch] of [
+    ['always-true predicate', () => true],
+    ['always-false predicate', () => false],
+    ['throwing predicate', () => { throw new Error('boom'); }],
+    ['non-function junk', 'permissive-string'],
+  ]) {
+    const client = clientFor();
+    await assert.rejects(
+      () => createPostDraft(createDraftBase({
+        client,
+        expectedMatch,
+        readback: async () => ({ record: { ...base, siteId: ids.siteId, id: 'post-new-1' }, afterPostIds: ['post-1', 'post-2', 'post-new-1'] }),
+      })),
+      /expectedMatch has been removed/,
+      label,
+    );
+    assert.equal(client.calls.length, 0, label);
+  }
+});
+test('createPostDraft compares a bare raw record readback by default and cannot be bypassed there (P0-3.3a.3)', async () => {
+  // Raw-record readback is natively supported (no wrapper, no extractor, no
+  // matcher option), and the same irreplaceable comparison runs on it: a
+  // drifted raw record plus a permissive match still stops.
+  const rawGetters = {
+    getCreatedPostId: (actual) => actual?.id,
+    getCreatedPostSiteId: (actual) => actual?.siteId,
+    getAfterPostIds: () => ['post-1', 'post-2', 'post-new-1'],
+  };
+  let created = null;
+  const client = clientFor({ onSend: async ({ payload }) => { created = { ...payload, id: 'post-new-1' }; } });
+  const pass = await createPostDraft(createDraftBase({
+    client,
+    ...rawGetters,
+    readback: async () => created,
+  }));
+  assert.equal(pass.status, 'mutation_succeeded');
+  assert.equal(pass.createdPostId, 'post-new-1');
+
+  const driftClient = clientFor();
+  const drift = await createPostDraft(createDraftBase({
+    client: driftClient,
+    ...rawGetters,
+    match: () => true,
+    readback: async () => ({ ...base, siteId: ids.siteId, id: 'post-new-1', slug: 'drifted-slug' }),
+  }));
+  assert.equal(drift.status, 'stopped_manual_intervention');
+  assert.equal(driftClient.calls.length, 1);
+  assert.match(drift.mismatches.join('; '), /slug drifted from the frozen expected payload/);
+
+  // A raw record missing one contract field is never defaulted into a pass.
+  const missingClient = clientFor();
+  const incomplete = { ...base, siteId: ids.siteId, id: 'post-new-1' };
+  delete incomplete.excerpt;
+  const missing = await createPostDraft(createDraftBase({
+    client: missingClient,
+    ...rawGetters,
+    readback: async () => incomplete,
+  }));
+  assert.equal(missing.status, 'stopped_manual_intervention');
+  assert.match(missing.mismatches.join('; '), /excerpt is missing from the created article record/);
+});
+test('createPostDraft fails closed on an empty or non-object wrapper record and on readback errors (P0-3.3a.3)', async () => {
+  for (const [label, record, pattern] of [
+    ['wrapper record null', null, /readback record must be a non-array object/],
+    // 2026-09-04 stable create payload B2: an undefined-valued readback key is
+    // refused by the stable capture itself (JSON data never carries undefined);
+    // an explicit undefined record therefore fails closed even earlier.
+    ['wrapper record undefined', undefined, /could not be captured as stable plain data/],
+    ['wrapper record string', 'not-a-record', /readback record must be a non-array object/],
+    ['wrapper record array', ['not-a-record'], /readback record must be a non-array object/],
+  ]) {
+    const client = clientFor();
+    const result = await createPostDraft(createDraftBase({
+      client,
+      readback: async () => ({ record, afterPostIds: ['post-1', 'post-2', 'post-new-1'] }),
+    }));
+    assert.equal(result.status, 'stopped_manual_intervention', label);
+    assert.equal(result.createdPostId, null, label);
+    assert.equal(client.calls.length, 1, label);
+    assert.match(result.mismatches.join('; '), pattern, label);
+  }
+  const throwingClient = clientFor();
+  const failed = await createPostDraft(createDraftBase({
+    client: throwingClient,
+    readback: async () => { throw new Error('readback transport exploded'); },
+  }));
+  assert.equal(failed.status, 'stopped_manual_intervention');
+  assert.equal(failed.readbackError, 'readback transport exploded');
+  assert.equal(failed.automaticRetryAllowed, false);
+  assert.equal(throwingClient.calls.length, 1);
+});
+test('createPostDraft passes with the same-reference expected and the bottom-owned canonical comparison', async () => {
+  // Legitimate positive path: expected is the exact payload object and the
+  // bottom layer compares every contract field of the extracted record itself.
+  const options = createDraftBase({});
+  assert.equal(options.expected, options.payload, 'the fixture must bind expected to the exact payload reference');
+  let created = null;
+  const client = clientFor({ onSend: async ({ payload }) => { created = { ...payload, id: 'post-new-1' }; } });
+  const result = await createPostDraft({ ...options, client, readback: async () => ({ record: created, afterPostIds: ['post-1', 'post-2', 'post-new-1'] }) });
+  assert.equal(result.status, 'mutation_succeeded');
+  assert.equal(result.createdPostId, 'post-new-1');
+  assert.equal(client.calls.length, 1);
+});
+test('createPostDraft stops without resend when the reopened editor is not healthy', async () => {
+  for (const [label, reopen, pattern] of [
+    ['HTTP 404 editor', async (postId) => ({ status: 404, authenticated: false, healthy: false, postId }), /HTTP 200/],
+    ['wrong post editor', async () => ({ status: 200, authenticated: true, healthy: true, postId: 'other-post' }), /does not match the created article/],
+    ['unauthenticated editor', async (postId) => ({ status: 200, authenticated: false, healthy: true, postId }), /not authenticated/],
+  ]) {
+    let created = null;
+    const client = clientFor({ onSend: async ({ payload }) => { created = { ...payload, id: 'post-new-1' }; } });
+    let reopens = 0;
+    const result = await createPostDraft(createDraftBase({
+      client,
+      readback: async () => ({ record: created, afterPostIds: ['post-1', 'post-2', 'post-new-1'] }),
+      editorReopen: async (postId) => { reopens += 1; return reopen(postId); },
+    }));
+    assert.equal(result.status, 'stopped_manual_intervention', label);
+    assert.equal(result.automaticRetryAllowed, false, label);
+    assert.equal(result.createdPostId, 'post-new-1', label);
+    assert.equal(reopens, 1, label);
+    assert.equal(client.calls.length, 1, label);
+    assert.match(result.mismatches.join('; '), pattern, label);
+  }
+});
+test('createPostDraft never blindly resends after a transport exception', async () => {
+  let sends = 0;
+  const lost = { async send() { sends += 1; throw new Error('connection lost after send'); } };
+  const unknown = await createPostDraft(createDraftBase({
+    client: lost,
+    readback: async () => null,
+  }));
+  assert.equal(unknown.status, 'stopped_manual_intervention');
+  assert.equal(unknown.requestStarted, true);
+  assert.equal(unknown.automaticRetryAllowed, false);
+  assert.equal(sends, 1);
+  let record = null;
+  let recoveringSends = 0;
+  const recovering = {
+    async send({ payload }) { recoveringSends += 1; record = { ...payload, id: 'post-new-1' }; throw new Error('connection lost after send'); },
+  };
+  const recovered = await createPostDraft(createDraftBase({
+    client: recovering,
+    readback: async () => ({ record, afterPostIds: ['post-1', 'post-new-1'] }),
+  }));
+  assert.equal(recovered.status, 'reconciled_success');
+  assert.equal(recovered.createdPostId, 'post-new-1');
+  assert.equal(recovered.automaticRetryAllowed, false);
+  assert.equal(recoveringSends, 1);
 });
 test('category create verifies every supplied field, exact ID, and site ownership', async () => {
   let current = null; const client = clientFor({ onSend: async ({ payload }) => { current = { ...payload, id: ids.categoryId }; } });

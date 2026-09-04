@@ -23,7 +23,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "1.0"
+      "const": "1.1"
     },
     "run_id": {
       "type": "string",
@@ -156,6 +156,8 @@
         "intent",
         "capability_ref",
         "request_summary_digest",
+        "runtime_entity_id",
+        "runtime_entity_id_source",
         "preflight",
         "started_at",
         "completed_at",
@@ -198,6 +200,21 @@
         },
         "request_summary_digest": {
           "$ref": "#/$defs/sha256"
+        },
+        "runtime_entity_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "runtime_entity_id_source": {
+          "enum": [
+            "plan_exact_id",
+            "execute_result",
+            "authoritative_readback",
+            "unresolved"
+          ]
         },
         "preflight": {
           "type": "object",
@@ -279,7 +296,8 @@
           "additionalProperties": false,
           "required": [
             "request_started",
-            "status"
+            "status",
+            "entity_id"
           ],
           "properties": {
             "request_started": {
@@ -292,6 +310,13 @@
                 "failed",
                 "unknown"
               ]
+            },
+            "entity_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
             }
           }
         },
