@@ -64,7 +64,7 @@ redaction_status: "safe-to-publish"
 - 图片先做来源、用途、版权、命名和 alt 清单；
 - PicGo 必须先单图验证，GUI 与 CLI 配置不一致时停止；
 - CMS 默认草稿；安装、发布、覆盖、删除、批量和全局设置必须由人确认；
-- 不索取或记录明文凭据、完整配置、cookie 或 session；
+- AI 不得主动索取、记录或持久化明文凭据/cookie/session；用户主动提供时仅按 [TOKEN-AUTH](ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md) 受控通道使用（环境变量注入，或 600 权限临时文件用后即删），不进聊天记录、文件、日志或仓库；
 - 发布后检查真实页面，不把命令成功或后台成功当成唯一证据。
 
 ## README-only 与 durable page 规则

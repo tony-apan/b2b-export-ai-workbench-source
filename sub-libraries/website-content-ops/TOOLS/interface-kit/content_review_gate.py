@@ -2,8 +2,11 @@
 """Digest-bound review context shared by CLI and AllinCMS mutation wrappers (ISS-102).
 
 Identity boundary: validates stable actor IDs and evidence pointers, not human identity or true independence.
-Canonicalization profile: python-json-nfc-v1 (string NFC, string object keys, finite integers only,
-object keys sorted, list order preserved, duplicate JSON keys rejected).
+Canonicalization profile: python-json-float-v2 (string NFC, string object keys, finite integers and
+finite floats allowed, NaN/Inf rejected, object keys sorted, list order preserved, duplicate JSON keys
+rejected). v1 (python-json-nfc-v1) rejected all floats; float-free payloads digest identically under
+both profiles. Structural comparison (see _json_tree_equal) additionally treats int/float as one
+numeric family while keeping bools strictly separate from numbers.
 """
 import datetime as _dt
 import hashlib
@@ -14,7 +17,7 @@ import re
 import unicodedata
 
 SCHEMA_VERSION = "1.0"
-CANONICALIZATION = "python-json-nfc-v1"
+CANONICALIZATION = "python-json-float-v2"
 PROJECTION_VERSION = "allincms-content-wire-v1"
 OBJECTS = {"product", "article"}
 OPERATIONS = {"create", "update"}
@@ -63,7 +66,9 @@ def _normalize(value):
             raise ValueError("integer exceeds cross-language safe range")
         return value
     if isinstance(value, float):
-        raise ValueError("floats are not allowed; use integer or decimal string")
+        if not math.isfinite(value):
+            raise ValueError("non-finite floats (NaN/Inf) are not allowed")
+        return value
     if isinstance(value, list):
         return [_normalize(x) for x in value]
     if isinstance(value, dict):
@@ -87,6 +92,27 @@ def canonical_bytes(payload):
 
 def payload_digest(payload):
     return "sha256:" + hashlib.sha256(canonical_bytes(payload)).hexdigest()
+
+
+def _json_tree_equal(a, b):
+    """Structural equality for already-loaded JSON trees (ISS-131 passthrough contract).
+
+    Differences from canonical_bytes comparison: bool is strictly separate from numbers
+    (True != 1), int and float are one numeric family (1 == 1.0), dict key sets must be
+    equal, list order is preserved. No NFC normalization and no canonical re-serialization,
+    so platform readbacks that differ only in number encoding still compare equal.
+    NaN never equals anything (IEEE 754 semantics preserved)."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return isinstance(a, bool) and isinstance(b, bool) and a is b
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return a == b
+    if isinstance(a, str) or isinstance(b, str):
+        return isinstance(a, str) and isinstance(b, str) and a == b
+    if isinstance(a, dict) and isinstance(b, dict):
+        return set(a) == set(b) and all(_json_tree_equal(a[key], b[key]) for key in a)
+    if isinstance(a, list) and isinstance(b, list):
+        return len(a) == len(b) and all(_json_tree_equal(x, y) for x, y in zip(a, b))
+    return a is None and b is None
 
 
 def wire_digest(envelope, *, endpoint=None, action_id=None):
@@ -249,7 +275,7 @@ def _validate_text_leaves(children, path, problems):
     return "".join(out)
 
 
-def payload_checks(payload, object_type):
+def payload_checks(payload, object_type, *, skip_content_shape=False):
     problems = []
     unknown_business = sorted(set(payload) - BUSINESS_KEYS[object_type])
     if unknown_business: problems.append(f"{object_type} payload unknown/wire-only fields: {unknown_business}")
@@ -273,7 +299,17 @@ def payload_checks(payload, object_type):
     else:
         forbidden = sorted(set(payload) & {"name", "description", "specifications", "media", "mediaList", "productId"})
         if forbidden: problems.append(f"article payload contains product fields: {forbidden}")
-    content = payload.get("content") or []
+    # Content presence/non-empty checks above stay unconditional; only the Slate shape
+    # walk is skippable (ISS-131 update-only passthrough mode).
+    if not skip_content_shape:
+        problems += _content_shape_problems(payload.get("content"))
+    return problems
+
+
+def _content_shape_problems(content):
+    """Slate whitelist shape walk for tool-generated content (ISS-102 contract)."""
+    problems = []
+    content = content or []
     seen_ids = set()
     def add_id(value, path):
         if not isinstance(value, str) or not value:
@@ -327,6 +363,73 @@ def _valid_rfc3339(value):
         return False
 
 
+def content_passthrough_checks(payload, record, runtime_root):
+    """Update-only verbatim content passthrough (ISS-131 option b).
+
+    The payload content is NOT rebuilt to the Slate whitelist; instead it must be
+    digest-anchored to a review artifact inside the runtime scope that carries the
+    exact content tree, and the mutation must be an update (create has no
+    authoritative readback to anchor the passthrough against). Caller additionally
+    requires an accepted WARN finding at location "content"."""
+    problems = []
+    if record.get("business_operation") != "update":
+        problems.append("content_passthrough requires business_operation update (create has no authoritative readback)")
+    has_flag, has_ref = "content_passthrough" in record, "content_passthrough_ref" in record
+    if has_flag != has_ref:
+        problems.append("content_passthrough and content_passthrough_ref must be provided together")
+        return problems
+    if not has_flag:
+        return problems
+    flag = record.get("content_passthrough")
+    ref_field = record.get("content_passthrough_ref")
+    if not isinstance(flag, bool) or flag is not True:
+        problems.append("content_passthrough flag must be boolean true")
+        return problems
+    if (not isinstance(ref_field, dict) or set(ref_field) != {"ref", "digest"}
+            or not str(ref_field.get("ref", "")).strip()
+            or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(ref_field.get("digest", "")))):
+        problems.append("content_passthrough_ref invalid (requires ref + sha256:[0-9a-f]{64} digest)")
+        return problems
+    # Same scope/digest discipline as fact_source_refs; relative refs resolve against
+    # the runtime scope root (capability evidence_ref precedent).
+    raw_ref = str(ref_field["ref"])
+    artifact_path = os.path.realpath(os.path.abspath(os.path.expanduser(raw_ref)) if os.path.isabs(raw_ref)
+                                     else os.path.abspath(os.path.join(runtime_root, raw_ref)))
+    if not (isinstance(runtime_root, str) and runtime_root and os.path.isdir(runtime_root)):
+        problems.append("content_passthrough_ref requires a valid runtime scope root")
+        return problems
+    if not _is_within(runtime_root, artifact_path):
+        problems.append("content_passthrough_ref outside runtime scope")
+        return problems
+    if not os.path.isfile(artifact_path):
+        problems.append(f"content_passthrough_ref missing: {artifact_path}")
+        return problems
+    with open(artifact_path, "rb") as artifact_file:
+        artifact_bytes = artifact_file.read()
+    if "sha256:" + hashlib.sha256(artifact_bytes).hexdigest() != ref_field["digest"]:
+        problems.append("content_passthrough_ref digest mismatch")
+        return problems
+    try:
+        artifact = json.loads(artifact_bytes.decode("utf-8"), object_pairs_hook=_pairs_no_duplicates,
+                              parse_constant=lambda x: (_ for _ in ()).throw(ValueError(f"non-finite number: {x}")))
+    except Exception as exc:
+        problems.append(f"content_passthrough artifact invalid JSON: {exc}")
+        return problems
+    if not isinstance(artifact, dict) or set(artifact) != {"object_type", "target_id", "content"}:
+        problems.append('content_passthrough artifact contract must be exactly {"object_type","target_id","content"}')
+        return problems
+    if artifact.get("object_type") != record.get("object_type"):
+        problems.append("content_passthrough artifact object_type mismatch")
+    if artifact.get("target_id") != record.get("target_id"):
+        problems.append("content_passthrough artifact target_id mismatch")
+    artifact_content = artifact.get("content")
+    if not isinstance(artifact_content, list):
+        problems.append("content_passthrough artifact content must be a list")
+    elif not _json_tree_equal(artifact_content, payload.get("content")):
+        problems.append("content_passthrough artifact content differs from payload content")
+    return problems
+
+
 def verify_payload_record(payload, record_path, *, expected_object_type, expected_operation,
                           expected_site_key, expected_site_id, expected_target_id):
     record = load_json_strict(record_path)
@@ -341,7 +444,7 @@ def verify_payload_record(payload, record_path, *, expected_object_type, expecte
     }
     missing = sorted(required_fields - set(record))
     if missing: problems.append(f"record missing fields: {missing}")
-    unknown = sorted(set(record) - required_fields - {"note"})
+    unknown = sorted(set(record) - required_fields - {"note", "content_passthrough", "content_passthrough_ref"})
     if unknown: problems.append(f"record unknown fields: {unknown}")
     if record.get("schema_version") != SCHEMA_VERSION: problems.append("schema_version mismatch")
     if record.get("canonicalization") != CANONICALIZATION: problems.append("canonicalization mismatch")
@@ -416,7 +519,18 @@ def verify_payload_record(payload, record_path, *, expected_object_type, expecte
             if not isinstance(finding.get("evidence"), str) or not finding["evidence"].strip(): problems.append(f"finding[{i}].evidence invalid")
             if finding.get("severity") in {"P0", "P1"} and finding.get("status") != "resolved": problems.append(f"finding[{i}] unresolved blocker")
     if record.get("verdict") != "READY": problems.append("verdict is not READY")
-    problems += payload_checks(payload, expected_object_type)
+    passthrough_requested = "content_passthrough" in record or "content_passthrough_ref" in record
+    passthrough = False
+    if passthrough_requested:
+        problems += content_passthrough_checks(payload, record, runtime_root)
+        passthrough = (record.get("content_passthrough") is True
+                       and isinstance(record.get("content_passthrough_ref"), dict))
+        if passthrough and not (isinstance(findings, list) and any(
+                isinstance(finding, dict) and finding.get("severity") == "WARN"
+                and finding.get("location") == "content" and finding.get("status") == "accepted_warn"
+                for finding in findings)):
+            problems.append('content passthrough requires a WARN/accepted_warn finding at location "content"')
+    problems += payload_checks(payload, expected_object_type, skip_content_shape=passthrough)
     if problems:
         print("CONTENT_REVIEW FAIL:")
         for item in problems: print("  -", item)
@@ -439,5 +553,8 @@ def verify_payload_record(payload, record_path, *, expected_object_type, expecte
         "review_record_path": record_path,
         "reviewer_identity_status": "not_verified",
     }
+    if passthrough:
+        context["content_passthrough"] = True
+        context["content_passthrough_artifact_digest"] = record["content_passthrough_ref"].get("digest")
     print(f"CONTENT_REVIEW PASS: {expected_object_type}/{expected_operation} {payload.get('slug')} {actual_digest}")
     return 0, context

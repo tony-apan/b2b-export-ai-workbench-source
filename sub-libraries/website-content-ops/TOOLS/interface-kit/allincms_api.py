@@ -427,6 +427,21 @@ class AllinCMS:
         if object_type == "product" and out.get("mediaList") is None: out["mediaList"] = []
         if out.get("tags") is None: out["tags"] = []
         return out
+    def _read_content_snapshot(self, site_slug, target_id, object_type):
+        """fresh GET /{slug}/{resource}/{id}/update → defaultValues.content + {status, raw_digest}
+        （ISS-131 选项 b：透传 mutation transport 前的 fresh 内容快照）。"""
+        resource = "products" if object_type == "product" else "posts"
+        status, raw = self.get_page(f"/{site_slug}/{resource}/{target_id}/update")
+        raw_digest = "sha256:" + hashlib.sha256(raw.encode("utf-8")).hexdigest()
+        content = None
+        try:
+            box = find_json(rsc_records(raw), "defaultValues")
+            if isinstance(box, dict) and isinstance(box.get("defaultValues"), dict):
+                content = box["defaultValues"].get("content")
+        except Exception:
+            content = None
+        return {"status": status, "raw_digest": raw_digest, "content": content}
+
     def _authoritative_content_readback(self, site_slug, target_id, business_payload, object_type):
         resource = "products" if object_type == "product" else "posts"
         import content_review_gate as _review
@@ -447,7 +462,10 @@ class AllinCMS:
                 raise ValueError("authoritative list readback data is not a list")
             exact_rows = [row for row in rows if isinstance(row, dict) and row.get("id") == target_id]
             list_status = (exact_rows[0].get("status") or exact_rows[0].get("_status")) if len(exact_rows) == 1 else None
-            exact_match = _review.canonical_bytes(normalized) == _review.canonical_bytes(business_payload)
+            # Structural tree equality (ISS-131): platform readbacks may re-encode numbers
+            # (1 vs 1.0); canonical_bytes comparison would push a successful passthrough
+            # update into the reconcile loop. Bool stays strictly separate from numbers.
+            exact_match = _review._json_tree_equal(normalized, business_payload)
             normalized_digest = _review.payload_digest(normalized)
         except Exception as exc:
             exact_match = False
@@ -460,6 +478,45 @@ class AllinCMS:
         evidence["readback_evidence_digest"] = _review.payload_digest(evidence)
         return (evidence.get("detail_http_status") == 200 and evidence.get("list_http_status") == 200
                 and exact_match and len(exact_rows) == 1 and list_status == "published"), evidence
+
+    def _content_passthrough_guard(self, site_slug, target_id, business_payload, object_type, ctx, evidence, resource):
+        """ISS-131 选项 b：透传 update 在 transport 前对权威编辑态做 fresh 树等比重验。
+        快照与已审 content 不等（平台侧已漂移）→ 零 API write，返回 reconcile dict；
+        相等 → 返回 None 继续 transport。evidence 双锚点：审查 artifact digest + fresh 快照 digest。"""
+        import content_review_gate as _review
+        evidence["content_passthrough"] = True
+        evidence["content_passthrough_artifact_digest"] = ctx.get("content_passthrough_artifact_digest")
+        try:
+            snapshot = self._read_content_snapshot(site_slug, target_id, object_type)
+        except Exception as exc:
+            # 网络异常发生在 transport 前：结构化返回让批处理调用方拿到 reconcile 合同（P2-F2）。
+            evidence["content_passthrough_stale"] = True
+            evidence["content_passthrough_snapshot_error"] = f"{type(exc).__name__}: {exc}"
+            return {"result": None, "evidence": evidence, "request_may_have_succeeded": False,
+                    "reconcile_required": True,
+                    "reconcile": {"resource": resource, "site_key": site_slug, "target_id": target_id,
+                                  "expected_slug": business_payload.get("slug"), "readback_required": True,
+                                  "content_passthrough_stale": True,
+                                  "snapshot_error": evidence["content_passthrough_snapshot_error"]}}
+        evidence["content_passthrough_fresh_http_status"] = snapshot.get("status")
+        evidence["content_passthrough_fresh_digest"] = snapshot.get("raw_digest")
+        if snapshot.get("status") != 200:
+            # 非 200 错误体即使碰巧解析出相等 content 也不可信（P2-F1）。
+            evidence["content_passthrough_stale"] = True
+            return {"result": None, "evidence": evidence, "request_may_have_succeeded": False,
+                    "reconcile_required": True,
+                    "reconcile": {"resource": resource, "site_key": site_slug, "target_id": target_id,
+                                  "expected_slug": business_payload.get("slug"), "readback_required": True,
+                                  "content_passthrough_stale": True,
+                                  "snapshot_http_status": snapshot.get("status")}}
+        if _review._json_tree_equal(snapshot.get("content"), business_payload.get("content")):
+            return None
+        evidence["content_passthrough_stale"] = True
+        return {"result": None, "evidence": evidence, "request_may_have_succeeded": False,
+                "reconcile_required": True,
+                "reconcile": {"resource": resource, "site_key": site_slug, "target_id": target_id,
+                              "expected_slug": business_payload.get("slug"), "readback_required": True,
+                              "content_passthrough_stale": True}}
 
     @staticmethod
     def _safe_route_segment(value, label):
@@ -564,6 +621,10 @@ class AllinCMS:
                         "reconcile": {"resource":"products", "site_key":site_slug, "target_id":new_id,
                                       "expected_slug":business_payload.get("slug"), "readback_required":True}}
             return {"result": published, "evidence": evidence, "reconcile_required": False}
+        if ctx.get("content_passthrough"):
+            stale = self._content_passthrough_guard(site_slug, target_id, business_payload, "product",
+                                                    ctx, evidence, "products")
+            if stale: return stale
         published, request_evidence = self._publish_product_transport(site_slug, site_id, target_id, business_payload)
         evidence.update({"target_id": target_id, "publish_request": request_evidence})
         if not self._content_transport_confirmed(published, request_evidence):
@@ -709,6 +770,10 @@ class AllinCMS:
         evidence = {"review_context": ctx, "capability_context": capability_context,
                     "wire_projection_version": _review.PROJECTION_VERSION, "automatic_retry": False,
                     "target_id": target_id}
+        if ctx.get("content_passthrough"):
+            stale = self._content_passthrough_guard(site_slug, target_id, business_payload, "article",
+                                                    ctx, evidence, "posts")
+            if stale: return stale
         published, request_evidence = self._publish_post_transport(site_slug, site_id, target_id, business_payload)
         evidence["publish_request"] = request_evidence
         if not self._content_transport_confirmed(published, request_evidence):

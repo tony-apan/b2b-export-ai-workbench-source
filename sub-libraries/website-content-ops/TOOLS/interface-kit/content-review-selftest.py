@@ -398,6 +398,161 @@ def main():
             assert canonical_error in str(exc), exc
         assert article_create_calls == []  # spy _req never invoked
 
+        # ISS-131 option b: update-only content passthrough for platform-key content
+        # (align/lineHeight float/indent/listStyleType/inline "a" nodes). The Slate
+        # whitelist is NOT relaxed; passthrough must be explicitly requested, artifact
+        # anchored, WARN accepted, and mutation-only.
+        platform_content = [
+            {"type": "p", "id": "pc1", "align": "center", "lineHeight": 1.5, "indent": 2,
+             "children": [{"text": "Confirmed synthetic fact", "bold": True},
+                          {"type": "a", "id": "pc2", "url": "/contact-us",
+                           "children": [{"text": "contact", "indent": 1}]}]},
+            {"type": "ul", "id": "pc3", "listStyleType": "decimal",
+             "children": [{"type": "li", "id": "pc4", "children": [{"text": "item one"}]}]},
+        ]
+        passthrough_payload = copy.deepcopy(payload)
+        passthrough_payload["content"] = copy.deepcopy(platform_content)
+        artifact = {"object_type": "product", "target_id": "synthetic-target-id",
+                    "content": copy.deepcopy(platform_content)}
+        artifact_path = os.path.join(td, "platform-content-artifact.json"); write(artifact_path, artifact)
+        artifact_digest = "sha256:" + hashlib.sha256(open(artifact_path, "rb").read()).hexdigest()
+        passthrough_record = copy.deepcopy(record)
+        passthrough_record.update({
+            "business_payload_digest": gate.payload_digest(passthrough_payload),
+            "content_passthrough": True,
+            "content_passthrough_ref": {"ref": "platform-content-artifact.json", "digest": artifact_digest},
+            "findings": [{"severity": "WARN", "location": "content",
+                          "evidence": "platform-key content forwarded verbatim; artifact " + artifact_digest,
+                          "status": "accepted_warn"}],
+        })
+        passthrough_record_path = os.path.join(td, "passthrough-review.json"); write(passthrough_record_path, passthrough_record)
+
+        def pt_verify(pp, rr, **overrides):
+            rp = os.path.join(td, "pt-case.json"); write(rp, rr)
+            return gate.verify_payload_record(
+                pp, rp, expected_object_type=overrides.get("object_type", "product"),
+                expected_operation=overrides.get("operation", "update"),
+                expected_site_key=overrides.get("site_key", "synthetic-site"),
+                expected_site_id=overrides.get("site_id", "synthetic-site-id"),
+                expected_target_id=overrides.get("target_id", "synthetic-target-id"))
+
+        pt_rc, pt_ctx = pt_verify(passthrough_payload, passthrough_record)
+        assert pt_rc == 0 and pt_ctx["content_passthrough"] is True
+        assert pt_ctx["content_passthrough_artifact_digest"] == artifact_digest
+
+        def pt_case(name, payload_mut=None, record_mut=None, artifact_mut=None, redigest=True, **overrides):
+            pp, rr = copy.deepcopy(passthrough_payload), copy.deepcopy(passthrough_record)
+            art = copy.deepcopy(artifact)
+            if payload_mut: payload_mut(pp)
+            if record_mut: record_mut(rr)
+            if artifact_mut: artifact_mut(art)
+            art_path = os.path.join(td, "pt-artifact.json"); write(art_path, art)
+            if redigest and isinstance(rr.get("content_passthrough_ref"), dict):
+                rr["content_passthrough_ref"]["ref"] = "pt-artifact.json"
+                rr["content_passthrough_ref"]["digest"] = "sha256:" + hashlib.sha256(open(art_path, "rb").read()).hexdigest()
+            rr["business_payload_digest"] = gate.payload_digest(pp)
+            assert pt_verify(pp, rr, **overrides)[0] == 1, name
+        pt_case("passthrough payload differs from artifact by one character",
+                payload_mut=lambda p: p["content"][0]["children"][0].update(text="Confirmed synthetic factx"))
+        pt_case("passthrough artifact missing",
+                record_mut=lambda r: r["content_passthrough_ref"].update(ref="missing-artifact.json"), redigest=False)
+        pt_case("passthrough artifact digest mismatch",
+                record_mut=lambda r: r["content_passthrough_ref"].update(digest="sha256:" + "0" * 64), redigest=False)
+        outside_path = os.path.join(tempfile.gettempdir(), "pt-outside-runtime-scope-artifact.json")
+        write(outside_path, artifact)
+        pt_case("passthrough artifact outside runtime scope",
+                record_mut=lambda r: r["content_passthrough_ref"].update(
+                    ref=outside_path,
+                    digest="sha256:" + hashlib.sha256(open(outside_path, "rb").read()).hexdigest()),
+                redigest=False)
+        pt_case("passthrough artifact target_id mismatch",
+                artifact_mut=lambda a: a.update(target_id="other-target-id"))
+        pt_case("passthrough artifact object_type mismatch",
+                artifact_mut=lambda a: a.update(object_type="article"))
+        pt_case("passthrough artifact content not a list",
+                artifact_mut=lambda a: a.update(content={"not": "a list"}))
+        pt_case("passthrough flag without ref", record_mut=lambda r: r.pop("content_passthrough_ref"), redigest=False)
+        pt_case("passthrough ref without flag", record_mut=lambda r: r.pop("content_passthrough"))
+        pt_case("passthrough without accepted WARN finding",
+                record_mut=lambda r: r.update(findings=[]))
+        pt_case("passthrough WARN finding not accepted_warn",
+                record_mut=lambda r: r.update(findings=[{"severity": "WARN", "location": "content",
+                                                         "evidence": "x", "status": "resolved"}]))
+        pt_case("passthrough content missing still fails", payload_mut=lambda p: p.pop("content"))
+        pt_case("passthrough does not exempt producer==reviewer",
+                record_mut=lambda r: r.update(reviewer_id=r["producer_id"]))
+        pt_case("platform content without passthrough markers fails whitelist",
+                record_mut=lambda r: (r.pop("content_passthrough"), r.pop("content_passthrough_ref"),
+                                      r.update(findings=[])), redigest=False)
+        pt_case("passthrough bool-int strictness: bold 1 vs true",
+                payload_mut=lambda p: p["content"][0]["children"][0].update(bold=1))
+        pt_case("passthrough record used for create",
+                record_mut=lambda r: r.update(business_operation="create", mutation_phase="create_and_publish",
+                                              target_id=None),
+                artifact_mut=lambda a: a.update(target_id=None),
+                operation="create", target_id=None)
+
+        # Article passthrough verify-level PASS (same contract on the posts side).
+        article_passthrough_payload = copy.deepcopy(article)
+        article_passthrough_payload["content"] = copy.deepcopy(platform_content)
+        article_artifact = {"object_type": "article", "target_id": "synthetic-post-id",
+                            "content": copy.deepcopy(platform_content)}
+        article_artifact_path = os.path.join(td, "article-platform-content-artifact.json"); write(article_artifact_path, article_artifact)
+        article_artifact_digest = "sha256:" + hashlib.sha256(open(article_artifact_path, "rb").read()).hexdigest()
+        article_passthrough_record = copy.deepcopy(article_record)
+        article_passthrough_record.update({
+            "business_payload_digest": gate.payload_digest(article_passthrough_payload),
+            "content_passthrough": True,
+            "content_passthrough_ref": {"ref": "article-platform-content-artifact.json",
+                                        "digest": article_artifact_digest},
+            "findings": [{"severity": "WARN", "location": "content",
+                          "evidence": "platform-key content forwarded verbatim; artifact " + article_artifact_digest,
+                          "status": "accepted_warn"}],
+        })
+        article_passthrough_record_path = os.path.join(td, "article-passthrough-review.json")
+        write(article_passthrough_record_path, article_passthrough_record)
+        apt_rc, apt_ctx = pt_verify(article_passthrough_payload, article_passthrough_record,
+                                    object_type="article", target_id="synthetic-post-id")
+        assert apt_rc == 0 and apt_ctx["content_passthrough"] is True
+
+        # Mutation level: fresh platform-key snapshot matches -> transport sends the
+        # platform content verbatim (float lineHeight survives the whole chain).
+        api_pt, pt_calls = integration_api(passthrough_payload, "product", "synthetic-target-id",
+                                           ['1:{"data":{"status":"published"}}'])
+        pt_out = api_pt.mutate_reviewed_product("synthetic-site", "synthetic-site-id", passthrough_payload,
+                                                passthrough_record_path, capability, target_id="synthetic-target-id")
+        assert pt_out["reconcile_required"] is False
+        assert len(pt_calls) == 1
+        sent_envelope = json.loads(pt_calls[0]["raw_data"].decode("utf-8"))[0]
+        assert sent_envelope["content"] == platform_content
+        assert b'"lineHeight":1.5' in pt_calls[0]["raw_data"]
+        assert b'"listStyleType":"decimal"' in pt_calls[0]["raw_data"]
+        assert pt_out["evidence"]["content_passthrough"] is True
+        assert pt_out["evidence"]["content_passthrough_artifact_digest"] == artifact_digest
+        assert str(pt_out["evidence"]["content_passthrough_fresh_digest"]).startswith("sha256:")
+        # Fresh snapshot drifted from the reviewed content -> zero API writes + reconcile.
+        drifted_content = copy.deepcopy(platform_content)
+        drifted_content[0]["align"] = "left"
+        api_pt_stale, pt_stale_calls = integration_api(
+            passthrough_payload, "product", "synthetic-target-id", [],
+            readback_business={**passthrough_payload, "content": drifted_content})
+        pt_stale = api_pt_stale.mutate_reviewed_product("synthetic-site", "synthetic-site-id", passthrough_payload,
+                                                        passthrough_record_path, capability,
+                                                        target_id="synthetic-target-id")
+        assert pt_stale["reconcile_required"] is True
+        assert pt_stale["evidence"]["content_passthrough_stale"] is True
+        assert pt_stale["request_may_have_succeeded"] is False
+        assert pt_stale_calls == []
+        # Article passthrough mutation: fresh match -> one posts write with platform keys.
+        api_pt_post, pt_post_calls = integration_api(article_passthrough_payload, "article", "synthetic-post-id",
+                                                     ['1:{"data":{"status":"published"}}'])
+        pt_post_out = api_pt_post.mutate_reviewed_post("synthetic-site", "synthetic-site-id",
+                                                       article_passthrough_payload,
+                                                       article_passthrough_record_path, article_capability,
+                                                       target_id="synthetic-post-id")
+        assert pt_post_out["reconcile_required"] is False and len(pt_post_calls) == 1
+        assert b'"listStyleType":"decimal"' in pt_post_calls[0]["raw_data"]
+
         duplicate = os.path.join(td, "duplicate.json"); open(duplicate,"w").write('{"a":1,"a":2}')
         nonfinite = os.path.join(td, "nan.json"); open(nonfinite,"w").write('{"a":NaN}')
         for path in (duplicate, nonfinite):
@@ -405,9 +560,22 @@ def main():
             except ValueError: pass
         assert gate.payload_digest({"x":"é"}) == gate.payload_digest({"x":"e\u0301"})
         assert gate.payload_digest({"x":[1,2]}) != gate.payload_digest({"x":[2,1]})
-        for invalid in ({"x": 9007199254740992}, {"x": "\ud800"}, {"x": 1.25}):
+        # Float contract (python-json-float-v2): finite floats digest; NaN/Inf still rejected;
+        # float-free payloads keep their python-json-nfc-v1 digest bit-for-bit.
+        assert gate.payload_digest({"x":[1,2]}) == "sha256:036b898f9248c0e83d645e262473d1d93b3085400b881ff658928b81ca06de91"
+        assert gate.payload_digest({"x":"é"}) == "sha256:97f06f396a709c3a29824e1cc794eeb98e2d1a262d7d455439d286d42803f0fe"
+        assert gate.payload_digest({"x": 1.25}) == "sha256:" + hashlib.sha256(b'{"x":1.25}').hexdigest()
+        for invalid in ({"x": 9007199254740992}, {"x": "\ud800"}, {"x": float("nan")},
+                        {"x": float("inf")}, {"x": float("-inf")}):
             try: gate.payload_digest(invalid); raise AssertionError(f"accepted invalid canonical value: {invalid!r}")
             except (ValueError, UnicodeError): pass
+        # Structural equality contract: bool strictly separate from numbers; int/float one family.
+        assert gate._json_tree_equal({"lineHeight": 1.5}, {"lineHeight": 1.5}) is True
+        assert gate._json_tree_equal({"lineHeight": 1}, {"lineHeight": 1.0}) is True
+        assert gate._json_tree_equal({"bold": 1}, {"bold": True}) is False
+        assert gate._json_tree_equal({"a": [1, 2]}, {"a": [2, 1]}) is False
+        assert gate._json_tree_equal({"a": 1, "b": 2}, {"b": 2, "a": 1}) is True
+        assert gate._json_tree_equal({"a": 1}, {"a": 1, "b": 2}) is False
         from unittest.mock import patch
         with patch("content_review_gate.os.path.commonpath", side_effect=ValueError("different drives")):
             assert gate._is_within("C:\\runtime", "D:\\evidence") is False
