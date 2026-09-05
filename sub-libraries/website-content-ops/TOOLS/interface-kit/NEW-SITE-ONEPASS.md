@@ -4,8 +4,8 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-01"
-sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30"]
+last_updated: "2026-09-05"
+sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表/执行路径决策树）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30", "2026-09-04 双机实战（macOS+Windows 10 field build）"]
 related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-customization-checklist.md", "MODULES.md", "writing/WRITING-INDEX.md"]
 description: AllinCMS 建站工具包文档（NEW-SITE-ONEPASS.md）
 visibility: "public"
@@ -33,7 +33,7 @@ redaction_status: "safe-to-publish"
 | 2 | 客户**现有网站** | 提炼结构与语气（导航/品类/卖点/规格/真实图片 URL）；确认目标市场语言 | brief + 步骤 5 媒体清单 |
 | 3 | 书面 **brief / 聊天口述** | 原文即事实源；客户原话 = 文章痛点/代入感素材（写作前置 5 项之首） | brief 的 `brand/contact` + 文章 facts 集 |
 | 4 | **图片**（产品图/公司图/logo/封面） | 先分授权：客户自有 / CC 代找（记录 author+license）；每张定 title/alt/caption | 步骤 5 `upload_media` |
-| 4b | **图片型 PDF（无文字层）的图源** | `pdftoppm -r 220` 渲染整页 → 按 130dpi 预览定位的**相对坐标裁剪**产品/公司图（短边压 1600px JPEG q85）→ 拼 contact sheet **逐张目检去标题字残留**（通常需 2-3 轮精修）→ alt/title/caption 清单 | 步骤 5 上传；图永远从原 PDF 裁，不外找占位图 |
+| 4b | **图片型 PDF（无文字层）的图源** | `pdftoppm -r 220` 渲染整页 → 按 130dpi 预览定位的**相对坐标裁剪**产品/公司图（短边压 1600px JPEG q85）→ 拼 contact sheet **逐张目检去标题字残留**（通常需 2-3 轮精修）→ alt/title/caption 清单；**Windows 无 poppler 时用 `pypdf page.images` 提取嵌入图作平替**（ISS-121）；宣传页整页裁剪图带字=素材质量上限，产品主图需求早提示客户给干净图 | 步骤 5 上传；图永远从原 PDF 裁，不外找占位图 |
 | 5 | **已有 CMS 后台内容** | 仅续建/迁移用：先 `read_lists` 导出，避免重复 create 堆积草稿 | 步骤 3 选站 + 现状 diff |
 | 6 | **没有 / 不足** | 按 §1.2 必问清单问；AI 先执行素材推进策略（先自动提炼 → 不够给方案 → 仅剩不可推断的才问用户） | 缺口清单（标注 demo/待用户提供） |
 
@@ -110,13 +110,17 @@ redaction_status: "safe-to-publish"
 - **输入**：`brief.site`（name/description）。
 - **动作**：
   ```python
-  api.create_site(name, description)        # 只建站；绝不与内容填充合一步
+  api.create_site(name, description)        # 只建站；绝不与内容填充合一步；description ≤200 字符（超长被 zod 拒，P1/ISS-120 族）
   site = api.read_sites()["sites"][0]       # 校验唯一新站；slug 从响应或 read_sites 取
   ```
   站点已存在（续建/迁移）→ `read_sites` 选目标站，跳过 create。
-- **验收判据**：拿到**真实** `site_id`/`site_key`；`read_sites` 可见唯一新站。
+  **slug namespace 建站前预检（ISS-124）**：拿到 slug 后、批量写内容前跑
+  `python3 "$IFK/check-slug-namespace.py" <slug>`——产品 slug 与分类/tag slug 同名会在
+  publish 才报 `validation.slug.duplicate`（ISS-084）；新站的 demo taxonomy 与续建站的
+  既有 taxonomy 都在检测范围内，冲突清单非空（exit 1）先改命名计划再动工。
+- **验收判据**：拿到**真实** `site_id`/`site_key`；`read_sites` 可见唯一新站；slug 预检 exit 0。
 - **产物**：`70_evidence/<slug>-plan-a-readback.json`（site_id/site_key/账号 owner 读回证据）。
-- **坑**：账号非首站时 createSite 只给 blank 主题（0 页）——不要指望自动 7 页，步骤 9 必须手工 `create_theme`。
+- **坑**：账号非首站时 createSite 只给 blank 主题（0 页）——不要指望自动 7 页，步骤 9 必须手工 `create_theme`；`create_site` description ≤200 字符。
 
 ### 步骤 4 — 填「新站改造清单」（customization checklist）
 
@@ -130,27 +134,31 @@ redaction_status: "safe-to-publish"
 ### 步骤 5 — 媒体上传 + alt 回写
 
 - **输入**：素材文件（客户图/CC 图）+ customization 的 media 节。
-- **动作**：
+- **动作**（推荐一步两段式封装，ISS-122）：
   ```python
-  r  = api.upload_media(slug, site_id, file_path, title, alt, caption)   # multipart _1_files
-  api.update_media(slug, media_id, site_id, title, alt, caption)         # 上传后立即回写
-  api.read_media_library(slug)                                           # 核对
+  r = api.upload_media_with_meta(slug, site_id, file_path, title, alt, caption)  # 上传→媒体库按 name 对账→update_media 回写
+  # r = {id, url, path, title, alt}；内部已处理 media_urls 累积陷阱与最新记录匹配
+  api.read_media_library(slug)                                           # 抽查核对（键为 {status, media}）
   ```
+  手工两步等价写法：`upload_media(...)` → `update_media(slug, media_id, site_id, title, alt, caption)`（upload 的 title/alt 位置参数不生效）。
 - **验收判据**：`read_media_library` 核对 10 字段（name/alt/url/path/size/mimeType…）；**URL 带扩展名**；license 记入证据。
 - **产物**：`70_evidence/media-manifest.md`（文件名 → URL/alt/license）；URL 回填 brief.json 的 media ref。
-- **坑**：**`upload_media` 的 title/alt/caption 位置参数不生效**（multipart 只传文件+siteId）——上传后记录是文件名 stem，**必须逐张 `update_media` 回写** SEO 元数据并 read_media_library 复核（2026-09-03 qualification run：22 张 alt 全为 stem，回写后 22/22 生效）；URL 不带扩展名 → 运行时 404；同页不重复用同一张图（分类卡/hero 错开）；批量上传后以 read_media_library 为真源建 ref→{url,media_id} 映射表，产品 payload 的 media 用 `{source:"url", url:<CDN>}`（新站 ISS-105）。
+- **坑**：**`upload_media` 的 title/alt/caption 位置参数不生效**（multipart 只传文件+siteId）——上传后记录是文件名 stem，**必须回写** SEO 元数据（`upload_media_with_meta` 已内置）并复核（2026-09-03 qualification run：22 张 alt 全为 stem，回写后 22/22 生效）；**`media_urls` 是历史累积全量勿当本次结果**（ISS-019/122）；URL 不带扩展名 → 运行时 404；同页不重复用同一张图（分类卡/hero 错开）；批量上传后以 read_media_library 为真源建 ref→{url,media_id} 映射表，产品 payload 的 media 用 `{source:"url", url:<CDN>}`（新站 ISS-105）；串行快传可能出现记录错位/缺失（ISS-109）——逐张对账后再进下一张。
 
 ### 步骤 6 — 分类 / 标签
 
 - **输入**：customization 的 taxonomy 节。
-- **动作**：
+- **动作**（推荐 safe 封装：内置对账 + transaction 竞态退避重试，ISS-123）：
   ```python
-  api.create_category2(slug, site_id, name, slug, content_type='products'|'posts', description='', order=0, cover=None)  # cover 显式 None
-  api.create_tag(slug, site_id, name, slug, description='')
+  from allincms_api import create_taxonomy_safe
+  r = create_taxonomy_safe(api, slug, site_id, "category", name, cslug, content_type='products'|'posts')  # cover 显式 None
+  r = create_taxonomy_safe(api, slug, site_id, "tag", name, cslug, content_type='products'|'posts')
+  # r = {kind, name, slug, content_type, id, already_exists, attempts, flight}；id 来自回读
   ```
-- **验收判据**：产品分类与文章分类**分开建**；cover=None 未 500；记录全部 id（后续 payload 用 **id 字符串数组**）。
+  手工等价：`api.create_category2(slug, site_id, name, slug, content_type=..., cover=None)` / `api.create_tag(...)`，但需自带对账与重试。
+- **验收判据**：产品分类与文章分类**分开建**；cover=None 未 500；记录全部 id（后续 payload 用 **id 字符串数组**）；建完重跑 `check-slug-namespace.py` 确认与产品 slug 计划无冲突。
 - **产物**：`70_evidence/taxonomy-ids.json`（name → id 映射）。
-- **坑**：cover 缺省报 validation error；payload 传 id 数组（读回是对象数组）；**transaction number mismatch 竞态是间歇性的**（qualification run 中多次）：等 6-8s → read_lists 只读对账（确认远端不存在）→ 重试同一请求；连续两次竞态则 sleep 8s 再试；对账形状：categoryOptions/tagOptions 行是 `{label,value(id)}`（label=分类名，映射表按 name 存，组装 payload 时 slug→name→id 三段转换，ISS-118）。
+- **坑**：cover 缺省报 validation error；payload 传 id 数组（读回是对象数组）；**transaction number mismatch 竞态是间歇性的**（qualification run 中多次）——`create_taxonomy_safe` 已内置"每轮先 read_lists 对账确认不存在 → create → 回读取 id；失败含 transaction number 时 sleep 5→8→13s 重试"；手工路径配方：等 6-8s → read_lists 只读对账（确认远端不存在）→ 重试**同一**请求，勿换参数；对账形状：categoryOptions/tagOptions 行是 `{label,value(id)}`（label=分类名，映射表按 name 存，组装 payload 时 slug→name→id 三段转换，ISS-118）。
 
 ### 步骤 7 — 产品 create/publish（每个产品一遍）
 
@@ -169,7 +177,13 @@ redaction_status: "safe-to-publish"
                                        target_id=None_or_pid)
   # create 时 wrapper 在审查后内部执行 create_draft → publish_update；update 直接 publish_update
   ```
-  > **capability context 批量刷新模板（ISS-117，每批 mutation 前执行，禁止复用上一批）**：
+  > **capability context 刷新（ISS-117/125，每批 mutation 前执行，禁止复用上一批）**：
+  > ```python
+  > # 推荐封装（2026-09-04 起）：观察 action id → 写 70_evidence/ 证据 → 返回自检过的 context
+  > capability_context = api.refresh_product_capability(slug, site_id, TASK_ROOT, client, task,
+  >                                                    operation='create'|'update')  # 站内无产品返回 None
+  > ```
+  > 手写模板（等价底层，字段缺一不可）：
   > ```python
   > now = datetime.datetime.now(datetime.timezone.utc)
   > stamp = now.strftime("%Y-%m-%dT%H:%M:%S+00:00")

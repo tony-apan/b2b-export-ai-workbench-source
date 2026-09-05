@@ -4,8 +4,8 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-01"
-sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..065"]
+last_updated: "2026-09-05"
+sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..129", "2026-09-04 双机实战（macOS+Windows 10 field build）"]
 related: ["ONBOARDING-PIPELINE.md", "writing/WRITING-INDEX.md", "MODULES.md"]
 description: AllinCMS 建站工具包文档（RUNBOOK-ANYONE.md）
 visibility: "public"
@@ -78,6 +78,11 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
 | **截图报障先排"导航穿透"**：吸顶导航 bg-background/95 半透明，滚动截图必有 5% 内容透出的鬼影；视觉模型会误读字符（6800→9600）和乱排区块序 | 定性前用浏览器 evaluate 量 section getBoundingClientRect + computed gridTemplateColumns，grep 公开 HTML 核对内容；模板固有行为（content-between 空隙/line-clamp 截断/奇数末行空位）登记不硬改 | 2026-09-02 三截图诊断实测（ISS-107） |
 | **产品改名/字段级 update 全自动可行**：payload=GET `/{slug}/products/{id}/update` 的 defaultValues 归一化后只改目标字段；配 per-product 审查记录 + 新鲜 capability（≤30min，evidence digest 绑定）走 mutate_reviewed_product(target_id) | 实测 14/14 零 reconcile、全量 canonical readback 匹配；readback 证据键名是 `business_exact_match`（不是 exact_match） | 2026-09-02 批量改名实测（rename-results.json） |
 | **激活/生效状态键名（ISS-108，勿猜勿用 isActive）**：theme 行 `active`(bool，**`isActive` 不存在，恒 None**)、`homePageId`、`homePagePublished`(bool)；page 行 `enabled`(bool)/`isHome`/`_status`；route 行 `status=='bound'`；product 行 `_status=='published'`（create-only 草稿不可见=ISS-105 另一面） | 判断是否生效只准用实测键名；**theme.homePagePublished 可免 curl 直接判根路径发布状态**；`active:True` 的主题仍要核对 homePageId 非空 | 2026-09-02 read_themes/read_pages/read_lists 实测键名 |
+| **create_site 的 description ≤200 字符**（P1，超长被 zod 拒） | 站点描述写一句定位语，长文案留给 about 页/SEO description | 2026-09-04 双机实战（macOS+Windows 10 field build） |
+| **Git Bash（MSYS）会把 `-` 开头参数转成路径**（E4/ISS-120）：`python x.py -c ...`、带 `-xxx` 的参数被展开成 `C:/Program Files/Git/...` | 命令前加 `MSYS_NO_PATHCONV=1`，或改用 cmd/PowerShell 跑同一条命令 | 2026-09-04 a Windows 10 field build |
+| **capability 每批重建（P9/G2，ISS-117/125）**：live capability ≤30 分钟过期且字段双层严格相等，手拼模板易错 | 每批产品 mutation 前调 `api.refresh_product_capability(site_slug, site_id, task_root, client_id, task_id)`（内部观察 action id→写 70_evidence/→返回自检过的 context；create/update 操作集分开刷） | 2026-09-04 双机实战 |
+| **CDN 滞后先分清后端/边缘（V8）**：公开站没变 ≠ 写失败——先 readback 后端（read_page_document/read_lists）：后端已新=边缘 CDN 缓存（等待/重取即可），后端也旧=写入没落地（回 §2.1 诊断树） | 验收顺序固定：后端 readback → 边缘 curl/抓取；不要只盯公网连续硬刷 | 2026-09-04 双机实战 |
+| **registry capability_routes 声明 blocked ≠ 代理层实际不可用（ISS-129）**：某实战案例 delete_site 被标 blocked，直连实测成功 | 重要动作以真实请求小步验证为准（先读对账再执行）；破坏性动作无论声明如何都须用户明确授权 | 2026-09-04 双机实战（delete_site 实测成功） |
 
 ### §2.1 「改动不生效」诊断树（未激活/未发布/未启用，按序查）
 
@@ -180,6 +185,56 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 - **createTheme(default) 会重种 3+3 demo（ISS-071/074）**：审计前先跑 `python3 delete-demo-content.py <slug> [--dry-run]`（全链：产品+文章+分类+标签；带引用护栏）。
 - **⚠️ 删除授权门（TERRA）**：一切删除类操作（delete_site/product/post/theme/category/tag/delete-demo-content.py 非 dry-run）**执行前必须取得用户/客户明确授权**；先 --dry-run 列清单确认，再授权执行。
 - verdict FAIL 且问题非 BLOCK → 先修再交付；**没有 --config 的 audit 会用 Demo 基线误判新站（ISS-063）**。
+
+### §8.1 执行路径决策树（按操作类型选执行面；两机实战 2026-09-04，ISS-127）
+
+```text
+要做的操作是哪类？按序对号入座，不要跨面降级：
+
+1) article.create（远程新建文章）
+   → 唯一执行面 = canonical JS Controller（content-run-controller.mjs + article:create
+     handler + 三真实 provider：beforePostIds/readback/editorReopen）。
+   → 当前 transport 示例仅 macOS+Chrome 可用；Windows 等无 transport 的宿主 =
+     BLOCK（三 provider 不可伪造，设计如此）。BLOCK 分支：本地成稿+独立评审+
+     review records 照做，不远程创建，DELIVERY 首行记录 article.create=BLOCK。
+   → 禁止降级：Python 直发（第二执行面禁令）与伪造 provider 快照都不可。
+2) 产品 create/update/publish（interface-kit reviewed 入口）
+   → 全可用、跨平台（macOS/Windows/Linux 均纯 HTTP）：strict review record +
+     fresh capability → mutate_reviewed_product；capability 用
+     refresh_product_capability 每批重建（≤30 分钟窗）。
+   → 跨站差异先 scan：无 createProductAction 的新站走 update/upsert 路径（ISS-105）。
+3) 删站 / 删 taxonomy（delete_site / delete_category / delete_tag）
+   → allincms_api 直连实测可用（ISS-129：registry 标 blocked 不代表不可用，
+     以真实请求小步验证为准）。
+   → ⚠️ 破坏性/不可逆：先 read_sites/read_lists 对账目标，必须取得用户明确授权。
+4) taxonomy 创建（分类/标签）
+   → create_taxonomy_safe（对账+transaction 竞态重试，ISS-123）；
+     或手动配方：read_lists 对账 → create → 回读 label/value 取 id。
+5) 媒体上传
+   → upload_media_with_meta（两段式：上传→媒体库对账→SEO 元数据回写，ISS-122）；
+     勿信响应 media_urls（历史累积全量）。
+```
+
+决策树口径：执行面由操作类型决定，不由"哪台机器在手"决定——机器只决定 article.create
+是否 BLOCK（transport 可用性），产品/删除/taxonomy/媒体在任何平台都走 interface-kit 直连。
+
+### §8.2 品牌化 demo 残留扫描词库（ISS-128；新站落库前对 doc JSON 全文 re.search 一次清零）
+
+> 除 MODULES/site_pipeline 的 TEMPLATE_WORDS/DEMO_CONTACTS 词表外，品牌化模板还有一层
+> "看起来不像 demo 的 demo"（公司名/栏目名/人名/城市），audit 模板词项抓不全，落库前手工/脚本扫一遍：
+
+| 类别 | 词（小写、子串匹配） | 说明 |
+|---|---|---|
+| 模板公司名 | northstar、commerce editorial | 品牌/刊名占位（公司名张力处按客户指示替换） |
+| 地址/发货地 | ships from san francisco | 模板默认发货地文案 |
+| 栏目/导航名 | journal、guides、new arrivals、collections | 文章/指南/上新/合集类栏目默认名 |
+| 社媒外链 | instagram、wa.me 4477、wa.me/44 | 默认社媒与 WhatsApp 占位号段 |
+| demo 人名 | maya c. | 评价/作者位占位人名 |
+| 商城槽位（ISS-113） | weekender、waxed canvas、from $96、materials and care、new season | hero/carousel 隐藏商城字段回填 |
+
+扫描口径：对每页 document+globals JSON 序列化后逐词 `re.search`（大小写不敏感）；命中即
+显式传值（多数可空串）或删元素（zod default 项置空无效，ISS-068）；不可 props 化的模板
+编译文案（面包屑/工具栏/表单字段标签）登记边界不硬改。
 
 ## §9 已知平台 BLOCK 与回落（交付时照抄到"已知事项"）
 

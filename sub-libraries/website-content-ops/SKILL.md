@@ -133,8 +133,11 @@ redaction_status: "safe-to-publish"
 9. **模板固有行为登记不硬改**：hero 左列 content-between 中段空隙、产品卡 line-clamp 截断、奇数卡末行空位、吸顶导航 bg-background/95 半透明（滚动截图时底下内容 5% 透出=鬼影，**勿误判为重叠 bug**）。
 10. **用户截图报障诊断套路**：先排导航穿透鬼影 → 浏览器 evaluate 量 section `getBoundingClientRect` + `computed gridTemplateColumns` 定位到元素（视觉模型会误读字符、乱排区块序）→ grep 公开 HTML 核对内容是否真缺失 → 区分"数据可修"（columnCount/条目/文案）与"模板限制"（登记）。
 11. **激活/生效状态键名（勿猜勿用 isActive）**：theme 行激活键是 `active`(bool)——**`isActive` 不存在，取它恒 None**，会误判"没有激活主题"；theme 行还有 `homePageId`/`homePagePublished`(bool，免 curl 直接判根路径发布)；page 行 `enabled`/`_status`；route 行 `status=='bound'`；product 行 `_status=='published'`（create-only 草稿公网不可见）。"改动不生效"按 RUNBOOK **§2.1 诊断树**九步按序查（主题 active→homePageId→homePagePublished→page enabled→route bound→页面 publish readback→站点级 Publish→产品 _status→CDN），先诊断再动手。
+12. **Windows 平台能力矩阵（2026-09-04 a Windows 10 field build 实测）**：产品 create/update（interface-kit reviewed 入口）**全可用跨平台**；article.create 在 Windows 下 **BLOCK**（canonical JS Controller 的三 provider transport 当前示例仅 macOS+Chrome，provider 不可伪造=设计如此）——按本地成稿+评审+DELIVERY 记 BLOCK 分支交付，禁止降级 Python 直发；删站/删 taxonomy 经 allincms_api 直连**实测可用**（registry 标 blocked 不代表不可用）。执行面选择一律按 RUNBOOK **§8.1 执行路径决策树**。
+13. **capability 每批刷新（≤30 分钟过期）**：每批产品 mutation 前用 `api.refresh_product_capability(site_slug, site_id, task_root, client_id, task_id, operation='create'|'update')` 重建 context（内部观察 action id、写 70_evidence/ 证据并自检；站内无产品返回 None）；create/update 操作集分开刷，禁止复用上一批；批量中途超窗整批刷新。
+14. **品牌化 demo 残留扫描**：模板还有一层"看着不像 demo 的 demo"（模板公司名 Northstar/Commerce editorial、Ships from San Francisco、栏目名 Journal/Guides/New arrivals/Collections、instagram/wa.me 4477 社媒占位、demo 人名 Maya C.，及 ISS-113 商城槽位词）——新站落库前对每页 document+globals JSON 按词库 `re.search` 一次清零，词库全表见 RUNBOOK **§8.2**；不可 props 化的模板编译文案登记边界不硬改。
 
-以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树）与 `NEW-SITE-ONEPASS.md` 步骤 7/9/10。
+以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108/120..129）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树 + §8.1 执行路径决策树 + §8.2 demo 残留词库）与 `NEW-SITE-ONEPASS.md` 步骤 3/5/6/7/9/10。
 
 ### 上传前必须取得精确授权
 

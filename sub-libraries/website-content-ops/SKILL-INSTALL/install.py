@@ -118,7 +118,12 @@ def require_runtimes() -> tuple[str, str, str]:
             "Node.js >=20.9.0 and npm are required. Run:\n  "
             + install_commands().replace("\n", "\n  ")
         )
-    probe = subprocess.run([node, "--version"], capture_output=True, text=True, check=False)
+    # encoding/errors：子进程输出（npm/cmd/mklink）可能是 GBK 等本地编码；
+    # 强制 utf-8+replace 只求"永不因解码失败崩溃"，乱码仅影响展示（ISS-120）。
+    probe = subprocess.run(
+        [node, "--version"], capture_output=True, text=True,
+        encoding="utf-8", errors="replace", check=False,
+    )
     version_text = (probe.stdout or probe.stderr).strip()
     version = parse_node_version(version_text)
     if probe.returncode != 0 or version is None or version < MIN_NODE:
@@ -140,6 +145,8 @@ def run_checked(command: Sequence[str], *, cwd: Path, label: str) -> None:
         cwd=cwd,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if completed.returncode == 0:
@@ -158,6 +165,8 @@ def source_digest(source_root: Path) -> str:
         ["git", "-C", str(source_root), "rev-parse", "HEAD"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     value = completed.stdout.strip()
@@ -223,10 +232,16 @@ def remove_link_only(path: Path) -> None:
 
 def create_link(link: Path, source: Path) -> None:
     if platform.system() == "Windows":
+        # cmd /c mklink 的 stdout/stderr 是控制台本地编码（中文 Windows=GBK）；
+        # 若按别的编码严格解码会抛 UnicodeDecodeError——此时 junction 往往已创建成功，
+        # 安装实际成功却被误报失败（ISS-120，a Windows 10 field build 实测）。
+        # errors="replace" 保证解码永不抛异常，失败细节只用于展示。
         completed = subprocess.run(
             ["cmd", "/c", "mklink", "/J", str(link), str(source)],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         if completed.returncode != 0:

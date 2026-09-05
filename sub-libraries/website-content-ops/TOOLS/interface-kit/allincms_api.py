@@ -13,6 +13,9 @@ AllinCMS / LAICMS 纯接口客户端（跨平台：macOS / Windows / Linux，Pyt
     # 无账号密码时兜底（方式二）：浏览器登录后取 Cookie payload-token → AllinCMS(token=...)；三法详见 ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md
     api.create_category2(site_slug, site_id, name, slug, "posts")      # 分类（cover 显式传 None）
     api.create_category2(site_slug, site_id, name, slug, "products")
+    create_taxonomy_safe(api, site_slug, site_id, "category"|"tag", name, slug, "posts"|"products")  # 对账+transaction 竞态重试（ISS-123）
+    api.upload_media_with_meta(site_slug, site_id, "photo.jpg", title, alt)   # 两段式：上传→媒体库对账→update_media 回写（ISS-122）
+    cap = api.refresh_product_capability(site_slug, site_id, task_root, client_id, task_id)  # 每批产品 mutation 前重建（30 分钟过期，ISS-125）
     api.upload_media(site_slug, site_id, "photo.jpg", title="...", alt="...")
     api.mutate_reviewed_product(site_slug, site_id, final_payload, review_json, capability_context, target_id=None_or_exact_id)
     api.mutate_reviewed_post(site_slug, site_id, final_payload, review_json, capability_context, target_id=exact_id)  # 仅 exact-ID update；article.create canonical 于 full-source JS Controller，Python fail-closed（P0-3.1）
@@ -340,6 +343,46 @@ class AllinCMS:
     def update_media(self, site_slug, media_id, site_id, title, alt="", caption=""):
         s, t = self._req(f"/{site_slug}/media", UPDATE_MEDIA, [{"id": media_id, "siteId": site_id, "title": title, "alt": alt, "caption": caption}])
         return self._flight(t)
+    def upload_media_with_meta(self, site_slug, site_id, file_path, title, alt, caption=""):
+        """上传+回写 SEO 元数据一步完成（两段式封装，ISS-122）：
+        upload_media → read_media_library 按 name 匹配最新项 → update_media 回写 title/alt/caption
+        → 返回 {id, url, path, title, alt}。
+        ⚠️ upload_media 返回的 media_urls 是**历史累积全量**（每次含所有历史 URL），勿当本次结果
+        （ISS-019/109）；本方法以 read_media_library 的记录为唯一真源（键为 {status, media}，
+        行在 media 里）。upload_media 的 title/alt/caption 位置参数本身不生效（multipart 只传
+        文件+siteId），所以上传后必须 update_media 回写——即"上传=两段式"。
+        同名多记录取 createdAt/updatedAt 最新一条；找不到匹配记录时抛 RuntimeError
+        （串行快传可能出现记录错位/缺失，按 ISS-109 逐张对账后再重试）。"""
+        fname = os.path.basename(file_path)
+        stem = os.path.splitext(fname)[0]
+        self.upload_media(site_slug, site_id, file_path)   # 第一段：传文件（title/alt 经 update 回写）
+        lib = self.read_media_library(site_slug)           # 第二段：媒体库对账（真源）
+        exact = [r for r in (lib.get("media") or []) if isinstance(r, dict) and r.get("name") == fname]
+        loose = [r for r in (lib.get("media") or []) if isinstance(r, dict) and r.get("name") == stem and r not in exact]
+        rows = exact or loose   # 精确文件名优先；stem 仅在无精确匹配时兜底（防 photo.png 顶掉 photo.jpg）
+        if not rows:
+            raise RuntimeError(
+                f"upload_media_with_meta: read_media_library 未发现 name={fname!r} 的记录——"
+                "media_urls 是历史累积全量不可当本次结果；若疑似串扰/缺失按 ISS-109 逐张对账后重试")
+        def _ts(row):
+            # 解析为绝对时刻再比较（字典序会误判 +08:00 与 Z 形式），无法解析的行排最后
+            from datetime import datetime
+            for key in ("createdAt", "updatedAt", "created", "updated"):
+                value = row.get(key)
+                if not (isinstance(value, str) and value):
+                    continue
+                try:
+                    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+                except ValueError:
+                    continue
+            return datetime.min.replace(tzinfo=datetime.timezone.utc)
+        row = max(rows, key=_ts)   # 同名取解析后最新一条
+        media_id = row.get("id")
+        if not media_id:
+            raise RuntimeError(f"upload_media_with_meta: 匹配记录缺 id 字段：{ {k: row.get(k) for k in ('name', 'url', 'path')} }")
+        self.update_media(site_slug, media_id, site_id, title, alt, caption)
+        return {"id": media_id, "url": row.get("url"), "path": row.get("path"),
+                "title": title, "alt": alt}
     def _normalize_content_readback(self, record, object_type):
         import content_review_gate as _review
         allowed = _review.BUSINESS_KEYS[object_type]
@@ -506,6 +549,85 @@ class AllinCMS:
         """⚠️ 破坏性/不可逆：删除产品记录。先 read_product/read_lists 核对目标；必须取得用户明确授权后再调。"""
         s, t = self._req(f"/{site_slug}/products", DELETE_PRODUCT, [{"id": product_id, "siteId": site_id}])
         return self._flight(t)
+    def refresh_product_capability(self, site_slug, site_id, task_root, client_id, task_id,
+                                   ttl_minutes=25, operation="create"):
+        """重建产品 mutation 的 live capability context（ISS-117/125，两机实战沉淀）。
+        **每批 mutation 前必须重建**——capability 30 分钟过期（gate 上限 30，默认 ttl 25），
+        禁止复用上一批的 context；批量中途超窗即整批刷新。
+
+        内部动作：① GET /{slug}/products 列表页 RSC 观察当前部署是否仍携带 CREATE_PRODUCT
+        action id（operation='create' 时必须命中；未命中≈新站无 createProductAction，按 ISS-105
+        改走 update/upsert 路径）；② 取首个产品 GET /{slug}/products/{id}/update 编辑页观察
+        UPSERT_PRODUCT action id。然后把 evidence 写入 <task_root>/70_evidence/ 并返回
+        verify_live_capability 可直接接受的 capability context dict（含 evidence_digest）。
+
+        operation='create' → operations={allincms.product.create, allincms.product.publish}；
+        operation='update' → {allincms.product.update, allincms.product.publish}（两者都必须
+        与 mutate_reviewed_product 的 required_operations 精确一致，不能合并成三操作集）。
+        站内无产品时返回 None 并提示（UPSERT_PRODUCT 只在产品编辑页可观察——需先有产品）。
+        task_root 即 runtime_scope_root：review record 与 evidence 都必须落在其下。"""
+        import content_review_gate as _review
+        import datetime as _dt
+        if operation not in ("create", "update"):
+            raise ValueError("operation must be 'create' or 'update'")
+        if not 1 <= ttl_minutes <= 30:
+            raise ValueError("ttl_minutes must be within (0, 30] —— capability 窗口上限 30 分钟")
+        ops = sorted({"create": ("allincms.product.create", "allincms.product.publish"),
+                      "update": ("allincms.product.update", "allincms.product.publish")}[operation])
+        actions = {"allincms.product.create": CREATE_PRODUCT,
+                   "allincms.product.update": UPSERT_PRODUCT,
+                   "allincms.product.publish": UPSERT_PRODUCT}
+        s1, t1 = self.get_page(f"/{site_slug}/products")
+        if s1 != 200:
+            raise RuntimeError(f"refresh_product_capability: /{site_slug}/products HTTP {s1}（token/站点状态先排查）")
+        has_create_action = CREATE_PRODUCT in t1
+        if operation == "create" and not has_create_action:
+            raise RuntimeError(
+                "refresh_product_capability: 当前列表页 RSC 未观察到 createProductAction —— "
+                "该站可能只有 upsertProductAction（ISS-105），改走 update/upsert：先 create 得 draft id，"
+                "再 mutate_reviewed_product(target_id=draft_id) + operation='update'")
+        listing = self.read_lists(site_slug, "products")
+        rows = [r for r in (listing.get("data") or []) if isinstance(r, dict) and r.get("id")]
+        if not rows:
+            print("refresh_product_capability: 站内无产品——UPSERT_PRODUCT 只能在产品编辑页观察，"
+                  "需先有至少 1 个产品（draft 也行）再刷新 capability；返回 None。")
+            return None
+        s2, t2 = self.get_page(f"/{site_slug}/products/{rows[0]['id']}/update")
+        if s2 != 200 or UPSERT_PRODUCT not in t2:
+            raise RuntimeError(
+                f"refresh_product_capability: 首个产品编辑页未观察到 upsertProductAction"
+                f"（HTTP {s2}）——部署可能已更新，重扫 action id（scan/scan-actions.py）后再试")
+        root = os.path.abspath(task_root)
+        ev_dir = os.path.join(root, "70_evidence")
+        os.makedirs(ev_dir, exist_ok=True)
+        now = _dt.datetime.now(_dt.timezone.utc)
+        stamp = now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        ev_name = f"capability-product-{operation}-{now.strftime('%Y%m%dT%H%M%SZ')}.json"
+        ev_path = os.path.join(ev_dir, ev_name)
+        evidence = {"deployment_id": DEPLOY, "site_key": site_slug, "site_id": site_id,
+                    "verified_operations": ops,
+                    "action_ids": {op: actions[op] for op in ops},
+                    "observed_at": stamp}
+        with open(ev_path, "w", encoding="utf-8") as fh:
+            json.dump(evidence, fh, indent=1, sort_keys=True)
+            fh.write("\n")
+        with open(ev_path, "rb") as fh:
+            digest = "sha256:" + hashlib.sha256(fh.read()).hexdigest()
+        context = {"status": "live_verified_current_deployment", "deployment_id": DEPLOY,
+                   "site_key": site_slug, "site_id": site_id, "operations": ops,
+                   "evidence_ref": f"70_evidence/{ev_name}", "observed_at": stamp,
+                   "expires_at": (now + _dt.timedelta(minutes=ttl_minutes)).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+                   "runtime_scope_root": root, "evidence_digest": digest,
+                   "client_id": client_id, "task_id": task_id}
+        rc, problems = _review.verify_live_capability(
+            context, deployment_id=DEPLOY, site_key=site_slug, site_id=site_id,
+            required_operations=set(ops), expected_action_ids={op: actions[op] for op in ops},
+            expected_runtime_scope_root=root, expected_client_id=client_id, expected_task_id=task_id)
+        if rc:
+            raise RuntimeError("CAPABILITY_SELF_CHECK_FAILED: " + "; ".join(problems))
+        print(f"refresh_product_capability: {operation} ops={ops} evidence={ev_path} "
+              f"expires_at={context['expires_at']}（每批 mutation 前重建，30 分钟过期）")
+        return context
     # ---------- 文章（article.create canonical 于 full-source JS Controller；Python 仅 exact-ID update，P0-3.1） ----------
     def _create_post_transport(self, site_slug, site_id, post_payload):
         """Python 不得发出文章 create 请求（第二执行面禁令，P0-3.1）。
@@ -706,6 +828,78 @@ class AllinCMS:
 
 def site_slug(site_id):
     raise NotImplementedError("callers must pass site_slug explicitly")
+
+
+def create_taxonomy_safe(api, slug, site_id, kind, name, cslug, content_type="posts", retries=3):
+    """taxonomy（分类/标签）安全创建：写前/重试前 read_lists 对账 + transaction 竞态退避重试
+    （模块级便捷函数，ISS-024/086/123 两机实战沉淀）。
+
+    已知症状：create_category2/create_tag 偶发 "Given transaction number X does not match
+    active transaction number Y"（Mongo 事务错位，间歇性），且 create 响应常为 {} 无 id，
+    易误判成败。本函数固化实测配方：
+      每次尝试前 read_lists 对账（label=分类名/value=id，确认远端确实不存在，已存在直接复用）
+      → create → readback 按 label 找 id（ISS-086：id 只能从回读拿）
+      → 未确认且错误文本含 "transaction number" → sleep 5→8→13s 重试（retries=3 默认）
+      → 其他错误/重试耗尽 → RuntimeError（带最后一次响应，供人工判断）。
+
+    kind: 'category'（create_category2，cover 显式 None）| 'tag'（create_tag）；
+    content_type: 'posts' | 'products'（产品域 taxonomy 必须传 'products'，标签按域隔离）。
+    对账按 label（=name）匹配——categoryOptions/tagOptions 行不含 slug（ISS-118），
+    所以 name 撞名即视为已存在；slug 查重在调用方 brief 阶段做（check-slug-namespace.py）。
+    返回 {kind, name, slug, content_type, id, already_exists, attempts, flight}。"""
+    if kind not in ("category", "tag"):
+        raise ValueError("kind must be 'category' or 'tag'")
+    if content_type not in ("posts", "products"):
+        raise ValueError("content_type must be 'posts' or 'products'")
+    resource = "posts" if content_type == "posts" else "products"
+    options_key = "categoryOptions" if kind == "category" else "tagOptions"
+    delays = (5, 8, 13)
+
+    def _find_existing():
+        listing = api.read_lists(slug, resource)
+        for row in (listing.get(options_key) or []):
+            if isinstance(row, dict) and row.get("label") == name and row.get("value"):
+                return row.get("value")
+        return None
+
+    last_flight, last_error = None, ""
+    for attempt in range(int(retries) + 1):
+        existing = _find_existing()
+        if existing:
+            return {"kind": kind, "name": name, "slug": cslug, "content_type": content_type,
+                    "id": existing, "already_exists": True, "attempts": attempt, "flight": last_flight}
+        try:
+            if kind == "category":
+                last_flight = api.create_category2(slug, site_id, name, cslug,
+                                                   content_type=content_type, cover=None)
+            else:
+                last_flight = api.create_tag(slug, site_id, name, cslug, content_type=content_type)
+        except Exception as exc:
+            last_error = f"{type(exc).__name__}: {exc}"
+            last_flight = None
+        found = _find_existing()
+        if found:
+            return {"kind": kind, "name": name, "slug": cslug, "content_type": content_type,
+                    "id": found, "already_exists": False, "attempts": attempt + 1, "flight": last_flight}
+        err_text = last_error or (json.dumps(last_flight, ensure_ascii=False, default=str)
+                                  if last_flight is not None else "")
+        retryable = "transaction number" in err_text.lower()
+        if attempt < int(retries) and retryable:
+            delay = delays[min(attempt, len(delays) - 1)]
+            print(f"create_taxonomy_safe[{kind}/{name}]: transaction mismatch（attempt {attempt + 1}），"
+                  f"sleep {delay}s 后对账重试：{err_text[:160]}")
+            time.sleep(delay)
+            continue
+        if attempt < int(retries) and not retryable and not err_text:
+            # 无错误文本也未回读到（列表刷新滞后）：短等一次再进下一轮（对账会再查）
+            time.sleep(2)
+            continue
+        raise RuntimeError(
+            f"create_taxonomy_safe[{kind}/{name}] 未能确认创建（attempts={attempt + 1}）："
+            f"last_flight={json.dumps(last_flight, ensure_ascii=False, default=str) if last_flight is not None else None} "
+            f"error={last_error or '(无错误文本，回读未命中 label)'}——若疑似竞态可手动重跑本函数；"
+            "勿盲目重复 create（先 read_lists 对账）")
+    raise RuntimeError("create_taxonomy_safe: unreachable retries exhaustion")
 
 def _cli():
     """跨平台命令行入口（Windows: python allincms_api.py ...；示例见 README.md）。"""

@@ -34,7 +34,7 @@ related: ["README.md"]
 | category-showcase-grid | 分类卡片网格 | sectionLabel, headline, supportingCopy, items[], columnCount | 标题+副标右侧；N 列图卡（图+名称+描述+箭头） |
 | hero-commerce | 商品 Hero | eyebrow, title, description, secondaryNote, media, fit, mediaCaption, mediaKicker, mediaMeta, productName, productDescription, productPriceLabel, **actions[], serviceItems[], campaignPills[]** | 左文案+右图；图下规格面板（name/desc/price 卡）；左下 3 项服务列表；右信息药丸 pills（label+value） |
 | feature-grid-proof | 特性网格 | eyebrow, heading, description, proofRows[], columnCount | N 列卡（label 编号/标题/描述/meta + 左下 action 链接） |
-| featured-product-list-showcase | 精选产品列表 | sectionLabel, headline, supportingCopy, merchandisingNote, ctaLabel, ctaTarget, productActionLabel, featuredProductActionLabel, fit, associatedListPage, associatedDetailPage, categorySlug, sortOrder | 标题区+CTA 按钮；特色产品大卡（图+标签+名称+价格+按钮） |
+| featured-product-list-showcase | 精选产品列表 | sectionLabel, headline, supportingCopy, merchandisingNote, ctaLabel, ctaTarget, productActionLabel, featuredProductActionLabel, fit, associatedListPage, associatedDetailPage, **categorySlug（空串=显示全部产品；只接受分类 slug——误填产品 slug 会整区空态，2026-09-04 双机实战）**, sortOrder | 标题区+CTA 按钮；特色产品大卡（图+标签+名称+价格+按钮） |
 | full-product-list-filtered | 全产品筛选列表 | associatedDetailPage, pageSize, showToolbar, sortOrder, columnCount, productActionLabel, fit | 筛选工具栏+产品网格 |
 | material-story-split | 材质故事分栏 | sectionLabel, headline, supportingCopy, media, fit, notes[], actionLabel, actionTarget | 左图右文（或交替）；notes 列表项；底部 action 链接 |
 | social-proof-quotes | 用户评价 | sectionLabel, headline, ratingLabel, reviews[], columnCount | 评分星标+平均分；N 列评价卡（quote+name+detail） |

@@ -3,7 +3,7 @@ carousel-campaign	Campaigns	carousel(); slide(); service_item()	DOC-003	slides[]
 category-showcase-grid	Catalog	category_grid(); category_item()	DOC-003	items[]（name/desc/media/target）	N 列图卡（图+名+描述+箭头）	verified	EV-005
 hero-commerce	Heroes	hero()	DOC-003	actions[]/serviceItems[]/campaignPills[] 必须显式（回填坑）	左文右图+规格面板+服务3项+信息药丸	verified	EV-005
 feature-grid-proof	Proof	feature_grid(); feature_row()	DOC-003	proofRows[]（label/title/desc/meta/action）	N 列卡（编号+字+meta+action 链接）	verified	EV-005
-featured-product-list-showcase	Products	product_showcase()	DOC-003	associatedListPage/DetailPage/categorySlug/sortOrder	标题区+CTA+特色产品大卡	verified	EV-005
+featured-product-list-showcase	Products	product_showcase()	DOC-003	associatedListPage/DetailPage/categorySlug(空=全部；误填产品 slug 非分类 slug→空态)/sortOrder	标题区+CTA+特色产品大卡	verified	EV-005
 full-product-list-filtered	Products	product_list()	DOC-003	pageSize/showToolbar/sortOrder/columnCount	筛选工具栏+产品网格	verified	EV-005
 material-story-split	Story	material_split(); material_note()	DOC-003	notes[]（title/desc）	左图右文+notes 列表+action	verified	EV-005
 social-proof-quotes	Proof	proof_quotes(); review()	DOC-003	reviews[]（quote/name/detail）+ratingLabel	评分星标+N 列评价卡	verified	EV-005
