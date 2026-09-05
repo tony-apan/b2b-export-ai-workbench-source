@@ -5,7 +5,7 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-01"
+last_updated: "2026-09-06"
 sources: ["示例客户 全流程实战 2026-08-29/30（纯 API 登录成功+失败双路径实测）", "ISS-083"]
 related: ["../../../../TOOLS/interface-kit/RUNBOOK-ANYONE.md", "../../../../TOOLS/interface-kit/NEW-SITE-ONEPASS.md"]
 visibility: "public"
@@ -131,6 +131,7 @@ print([s["name"] for s in sites.get("sites", [])])   # 能列出站点 = token �
 | token 是凭据 | 等同登录态——不推送到公开仓库、不贴到公开文档 |
 | token 有效期 | Payload 默认 JWT 有过期时间——过期后 read 会 401/空，重取即可 |
 | 凭据位置 | 推荐 `WS_TOKEN` 环境变量（跨平台）；token 文件须 chmod 600（/tmp 重启清空） |
+| 用完作废 | 任务收尾/凭据交接完成时**提醒用户退出登录或轮换改密作废本次 token**（口径对齐子库 README 一键块："换 token 后密码即弃并提醒我改密"） |
 | 多账号 | 每个账号的 token 独立，不要混用——切换账号时重取 |
 
 ---

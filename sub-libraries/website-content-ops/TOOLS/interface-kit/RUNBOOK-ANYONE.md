@@ -4,7 +4,7 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-05"
+last_updated: "2026-09-06"
 sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..133", "2026-09-04 双机实战（macOS+Windows 10 field build）", "2026-09-05 跨账号实证（Apply Theme UI 崩溃对照 + 读侧解析陷阱 + SEO 边界清单）"]
 related: ["ONBOARDING-PIPELINE.md", "writing/WRITING-INDEX.md", "MODULES.md"]
 description: AllinCMS 建站工具包文档（RUNBOOK-ANYONE.md）
@@ -196,9 +196,12 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 1) article.create（远程新建文章）
    → 唯一执行面 = canonical JS Controller（content-run-controller.mjs + article:create
      handler + 三真实 provider：beforePostIds/readback/editorReopen）。
-   → 当前 transport 示例仅 macOS+Chrome 可用；Windows 等无 transport 的宿主 =
-     BLOCK（三 provider 不可伪造，设计如此）。BLOCK 分支：本地成稿+独立评审+
-     review records 照做，不远程创建，DELIVERY 首行记录 article.create=BLOCK。
+   → transport 已跨平台（b290b84，P0-3.3b）：article-create-providers.mjs 三 provider
+     纯 Node fetch（无浏览器/AppleScript，macOS/Windows/Linux 通用），host-run-template
+     注入 authCookie 即自动装配。**首次真实站点使用前跑一次三 provider 集成冒烟**。
+     宿主既不注入 provider 钩子又不注入 authCookie 时 = BLOCK（三 provider 不可伪造，
+     设计如此）。BLOCK 分支：本地成稿+独立评审+review records 照做，不远程创建，
+     DELIVERY 首行记录 article.create=BLOCK。
    → 禁止降级：Python 直发（第二执行面禁令）与伪造 provider 快照都不可。
 2) 产品 create/update/publish（interface-kit reviewed 入口）
    → 全可用、跨平台（macOS/Windows/Linux 均纯 HTTP）：strict review record +
@@ -217,8 +220,9 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
      勿信响应 media_urls（历史累积全量）。
 ```
 
-决策树口径：执行面由操作类型决定，不由"哪台机器在手"决定——机器只决定 article.create
-是否 BLOCK（transport 可用性），产品/删除/taxonomy/媒体在任何平台都走 interface-kit 直连。
+决策树口径：执行面由操作类型决定，不由"哪台机器在手"决定——article.create 的 BLOCK 条件
+是宿主既未注入 provider 钩子又未注入 authCookie（b290b84 后三 provider 纯 Node fetch 跨平台，
+transport 可用性与机器无关），产品/删除/taxonomy/媒体在任何平台都走 interface-kit 直连。
 
 ### §8.2 品牌化 demo 残留扫描词库（ISS-128；新站落库前对 doc JSON 全文 re.search 一次清零）
 

@@ -4,7 +4,7 @@ type: "doc"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-01"
+last_updated: "2026-09-06"
 canonical_entry: "README.md"
 description: AllinCMS 建站工具包文档（README.md）
 visibility: "public"
@@ -30,7 +30,7 @@ cd index && python3 registry_tools.py find <关键词>   # 找文档/脚本/模�
 ## 安装与依赖（新环境第 0 步）
 1. 依赖全景：**runtime = 零第三方依赖（Python stdlib）**；docs-parse（解析用户 PDF/DOCX/PPTX/XLSX）= 选装 4 包；canonical 校验 = 选装 Node ≥18；截图 = 本机 Chrome
 2. 安装：`python3 install-deps.py --yes && python3 install-deps.py --verify`（检测+安装+复检）
-3. 自检：`python3 index/registry_tools.py verify` → PASS；`python3 allincms_api.py <token> read-sites` 冒烟
+3. 自检：`python3 index/registry_tools.py verify` → PASS；`WS_TOKEN=<token> python3 allincms_api.py - read-sites` 冒烟（"-" = 从 WS_TOKEN 读 token）
 4. **5 分钟连通冒烟（推荐，免手动取 token）**：账号开通后（无账号见子库 [CONTACT.md](../../CONTACT.md)），用环境变量传邮箱密码（勿写进命令行历史/脚本/日志）：
    ```bash
    WS_EMAIL=you@example.com WS_PASSWORD='...' python3 -c "import os; from allincms_api import AllinCMS; api=AllinCMS(email=os.environ['WS_EMAIL'], password=os.environ['WS_PASSWORD']); s=api.read_sites()['sites']; print(len(s),'sites:', [x.get('slug') for x in s][:5])"
@@ -92,15 +92,18 @@ api.read_site_info("<demo-site-key>")        # 站点信息 + user
 
 ### CLI（换机/脚本直接跑，Windows 同命令）
 ```bash
-python allincms_api.py <token> read-sites
-python allincms_api.py <token> read-posts <site-slug>
-python allincms_api.py <token> read-products <site-slug>
-python allincms_api.py <token> read-pages <site-slug> <themeId>
-python allincms_api.py <token> read-doc <site-slug> <themeId> <pageId>
-python allincms_api.py <token> read-product <site-slug> <productId>
-python allincms_api.py <token> read-post <site-slug> <postId>
-python allincms_api.py <token> read-media <site-slug>
-python allincms_api.py <token> read-info <site-slug>
+# token 传法（对齐 scan-actions.py）：'-' = 从 WS_TOKEN 环境变量读（跨平台推荐先 export WS_TOKEN=<token>）；
+# 也可直接传 payload-token JWT 字面量。
+export WS_TOKEN=<token>
+python allincms_api.py - read-sites
+python allincms_api.py - read-posts <site-slug>
+python allincms_api.py - read-products <site-slug>
+python allincms_api.py - read-pages <site-slug> <themeId>
+python allincms_api.py - read-doc <site-slug> <themeId> <pageId>
+python allincms_api.py - read-product <site-slug> <productId>
+python allincms_api.py - read-post <site-slug> <postId>
+python allincms_api.py - read-media <site-slug>
+python allincms_api.py - read-info <site-slug>
 ```
 
 ## Runtime Forms（全站表单：contact 页 + CTA 弹窗共用）
@@ -150,5 +153,5 @@ python allincms_api.py <token> read-info <site-slug>
 ## 已验证 / 待验证
 - ✅ 已验证（curl/Python 纯接口实测）：建站/删站、建分类（posts+products）/标签、上传媒体/改元数据、建/删/发布产品、建/删/发布文章、首页设计器 save/publish；RSC 读：站点/文章/产品/分类选项/标签选项/页面列表/routes/设计器 document+globals+themeConfig/产品编辑态/文章编辑态/媒体库/站点信息
 - ✅ 对抗验证：RSC 读回首页 document 与发布保底(flask-home-doc-new.json)及构建器重建(blocks-rebuilt-home.json) 模块类型集合、root children 序列完全一致；产品分类/文章分类读回与已知 id 一致（产品=产品，文章=文章）
-- ⚠️ 待验证：登录成功分支（无真实密码——用户确认跳过）；文章中分类 `parentId` 语义（读回为 `$undefined`，写入无 parent 需求）
+- ⚠️ 待验证：文章中分类 `parentId` 语义（读回为 `$undefined`，写入无 parent 需求）。登录成功分支不再列为待验证——2026-08-30 已用真实凭据双路径实测通过（ISS-083；错误凭据干净报错 + 真实凭据 Set-Cookie 提取 JWT 后读写全通），详见 [TOKEN-AUTH.md](../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md)
 - 📌 观察项：产品分类下拉含测试残留 "Test Product Cat"（`6a91facb8333e0ece4a6c104`），若需清理需删除分类接口（未提供/未探索）

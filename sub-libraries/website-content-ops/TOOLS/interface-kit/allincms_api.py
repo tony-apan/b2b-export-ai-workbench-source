@@ -1000,23 +1000,33 @@ def create_taxonomy_safe(api, slug, site_id, kind, name, cslug, content_type="po
     raise RuntimeError("create_taxonomy_safe: unreachable retries exhaustion")
 
 def _cli():
-    """跨平台命令行入口（Windows: python allincms_api.py ...；示例见 README.md）。"""
+    """跨平台命令行入口（Windows: python allincms_api.py ...；示例见 README.md）。
+
+    token 参数三种给法：payload-token JWT 字面量、'-'（从 WS_TOKEN 环境变量读，对齐
+    scan-actions.py；先 export WS_TOKEN=<token>）或 '-' 且 WS_TOKEN 缺省时报错退出。
+    """
     args = sys.argv[1:]
     if len(args) < 2 or args[1] in ("help", "-h", "--help"):
         print(__doc__)
         print("用法:")
-        print("  python allincms_api.py <token> read-sites")
-        print("  python allincms_api.py <token> read-posts <site-slug>")
-        print("  python allincms_api.py <token> read-products <site-slug>")
-        print("  python allincms_api.py <token> read-pages <site-slug> <themeId>")
-        print("  python allincms_api.py <token> read-doc <site-slug> <themeId> <pageId>")
-        print("  python allincms_api.py <token> read-product <site-slug> <productId>")
-        print("  python allincms_api.py <token> read-post <site-slug> <postId>")
-        print("  python allincms_api.py <token> read-media <site-slug>")
-        print("  python allincms_api.py <token> read-info <site-slug>")
-        print("  示例详见 README.md；token 为工作台登录后的 payload-token JWT。")
+        print("  python allincms_api.py <token|-> read-sites        # '-' = 从 WS_TOKEN 环境变量读 token")
+        print("  python allincms_api.py <token|-> read-posts <site-slug>")
+        print("  python allincms_api.py <token|-> read-products <site-slug>")
+        print("  python allincms_api.py <token|-> read-pages <site-slug> <themeId>")
+        print("  python allincms_api.py <token|-> read-doc <site-slug> <themeId> <pageId>")
+        print("  python allincms_api.py <token|-> read-product <site-slug> <productId>")
+        print("  python allincms_api.py <token|-> read-post <site-slug> <postId>")
+        print("  python allincms_api.py <token|-> read-media <site-slug>")
+        print("  python allincms_api.py <token|-> read-info <site-slug>")
+        print("  示例详见 README.md；token 为工作台登录后的 payload-token JWT；传 '-' 时从 WS_TOKEN 环境变量读取（对齐 scan-actions.py）。")
         return
-    token, cmd = args[0], args[1]
+    token_arg, cmd = args[0], args[1]
+    if token_arg == "-":
+        token_arg = (os.environ.get("WS_TOKEN") or "").strip()
+        if not token_arg:
+            print("token: 传 '-' 需先 export WS_TOKEN=<payload-token>；或直接传 token 字面量")
+            return 1
+    token = token_arg
     api = AllinCMS(token=token)
     out = None
     if cmd == "read-sites":
@@ -1042,4 +1052,4 @@ def _cli():
     print(json.dumps(out, ensure_ascii=False, indent=2, default=str)[:20000])
 
 if __name__ == "__main__":
-    _cli()
+    raise SystemExit(_cli() or 0)

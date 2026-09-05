@@ -4,7 +4,7 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-05"
+last_updated: "2026-09-06"
 sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表/执行路径决策树）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30", "2026-09-04 双机实战（macOS+Windows 10 field build）"]
 related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-customization-checklist.md", "MODULES.md", "writing/WRITING-INDEX.md"]
 description: AllinCMS 建站工具包文档（NEW-SITE-ONEPASS.md）
@@ -51,6 +51,8 @@ redaction_status: "safe-to-publish"
 
 动工前用户确认点（client-input-checklist 第四节）：站点名/slug 偏好、demo 值是否可接受、图片授权方式、首批内容范围。
 
+> **非英语站注意（Q1 目标市场语言非英语时，如西语站）**：① **slug 含重音字符（é/ó/ñ）**：落库前先 NFD 去重音再生成 slug（如 `cerámica`→`ceramica`），写前用该站实测一次——`check-slug-namespace.py` 的 slugify 对非 ASCII 折叠为 `-`（不做重音折叠，见该函数注释）；② **平台 UI 字符串（面包屑/列表工具栏/表单字段标签）硬编码英文不可 props 化**（ISS-128）——开工前提前告知客户此边界；③ **html lang 平台锁死默认 zh-CN**（ISS-133，登记 BOUNDARY 不硬改）。
+
 ---
 
 ## §2 一条龙执行链（步骤 0–12，共 13 步）
@@ -64,6 +66,7 @@ redaction_status: "safe-to-publish"
   2. **浏览器手动取 Cookie（兜底，已验证）**：用户登录 workspace.laicms.com → DevTools → Cookies → 复制 `payload-token`。
   3. **浏览器配置文件提取（方向指引，未实测）**：详见 TOKEN-AUTH.md 方式三；优先 1/2。
   取到后 **`export WS_TOKEN=<token>`（跨平台推荐）**；或 token 文件（chmod 600）传路径。无 token = 全链路不可用。
+  - **认证分流互认（与 [AI-START-HERE.md](../../ADAPTERS/cms/allincms/AI-START-HERE.md) §0 同口径，2026-09-06）**：interface-kit 纯 API 登录（邮箱+密码→token）=无浏览器宿主的 canonical 路径；浏览器 session preflight=有浏览器宿主路径；两路等效，宿主按能力自选，不得两路都拒绝。
   - ⚠️ `AllinCMS(...)` 构造**必须关键字传参**：`AllinCMS(email='..', password='..')`——第一个位置参数是 `token`，位置传参会把邮箱当 token 静默失效（页面全部 307 回 /sign-in，2026-09-03 qualification run踩中，ISS-118 同族）。
 - **动作**：
   ```bash
@@ -74,11 +77,11 @@ redaction_status: "safe-to-publish"
   python3 index/registry_tools.py find <客户品类关键词>        # 历史坑：现象→根因→修复链
   python3 scan/scan-actions.py - /sites       # 部署更新后必扫 action id（42 位 hex；token 从 WS_TOKEN 读取，也支持文件路径）
   # ⚠️ 如果扫描发现 id 变了/新 action 出现 → 读 API-DISCOVERY.md（7 步摸索流程）
-  python3 allincms_api.py <token> read-sites                  # 冒烟：站点列表 JSON
+  python3 allincms_api.py - read-sites                     # 冒烟：站点列表 JSON（"-" = 从 WS_TOKEN 读 token，对齐 scan-actions.py；否则该参数为 token 字面量）
   python3 check-contract-freshness.py [--live]                # 合同新鲜度四方对照（Registry/canonical JS/host driver/Python helper；可选 --live 实扫部署；漂移先修再干活）
   ```
 - **验收判据**：`verify` 输出 `VERIFY PASS`；`find` 相关坑已读；action id 与 `allincms_api.py` 常量一致；`check-contract-freshness.py` 必须 PASS；`20_work/onepass-read-receipt.json` 已用 `--write-receipt` 生成并立刻 `--verify-receipt` PASS。没有 receipt 或 receipt stale = 不得进入 Plan A/Plan B。
-- **产物**：`70_evidence/00-preflight.txt`（verify/find/scan/freshness 输出快照）+ `20_work/onepass-read-receipt.json`（必读文件精确 SHA-256 回执；规则变动自动失效）。
+- **产物**：`70_evidence/00-preflight.txt`（verify/find/scan/freshness 输出快照）+ `20_work/onepass-read-receipt.json`（必读文件精确 SHA-256 回执；规则变动自动失效）。凭据用完（任务收尾/交接完成）**提醒用户退出登录或轮换改密作废本次 token**（口径对齐子库 README 一键块"换 token 后密码即弃并提醒我改密"，详见 TOKEN-AUTH.md 安全要点）。
 - **坑**：跳过 find 直接动手 = 重复已回填的坑（ISS-001/002/003/018/024/059 均为重复踩坑）；action id 用错**静默返回 `{}`**，不报错。
 
 ### 步骤 1 — 资料 → brief.json
@@ -211,6 +214,7 @@ redaction_status: "safe-to-publish"
 
 - **输入**：写作前置素材（client-input-checklist 第六节）+ COP 文章主题 + customization posts 节。
 - **article.create 执行路由（P0-3.1 后唯一口径）**：Registry 合同仍是 `availability=canonical + fresh_live_verified_current_deployment`，但**唯一执行面是 full-source JS Controller**——用 `ADAPTERS/cms/allincms/content-run-controller.mjs` 跑 content plan，经 `content-plan-host-driver.mjs` 的 `article:create` handler 调 `article-operations.mjs#createPostDraft`，且宿主必须注入**三个真实 provider**：`articleBeforePostIdsProvider`（真实同站 before post-ID 快照，禁止伪造空快照）、`articleCreateReadbackProvider`（权威 backend 完整回读 + afterPostIds）、`articleEditorReopenProvider`（真实编辑器重开 200/authenticated/healthy）。**缺任一 provider 时本次 create BLOCK**（canonical 合同仍在，执行门不齐），不得降级到 Python。资格验证五步（合同扫描零漂移 / before-after 快照差集恰 1 / 完整回读 / 编辑器重开）即由这三道 provider 在 Controller 内落实；证据样例见 private qualification task `70_evidence/article-create-qualification.json`（ISS-111，2026-09-03 qualification site 实测）。
+- **host-run-template 装配提示（P0-3.3b，b290b84）**：宿主未显式注入 provider 钩子但注入 `authCookie`（payload-token 值）时，`ADAPTERS/cms/allincms/host-run-template.mjs` 的 `runAllinCmsHostPlanTemplate({plan, runtime, hooks, transport, evidencePath, authCookie, providerOrigin, fetchFn})` 自动从 `article-create-providers.mjs`（纯 Node fetch，无浏览器/AppleScript，macOS/Windows/Linux 通用）装配三真实 provider；显式钩子逐槽优先，既无钩子又无 authCookie 保持 fail-closed（BLOCK）。首次在真实站点使用前跑一次三 provider 集成冒烟。
 - **Python fail-closed 边界（防第二执行面）**：`TOOLS/interface-kit/allincms_api.py` 不再提供文章 create——`_create_post_transport`、`_send_content_transport(..., CREATE_POST, ...)`、`mutate_reviewed_post(target_id=None)` 三处一律抛 `ARTICLE_CREATE_CANONICAL_CONTROLLER_REQUIRED`（任何 review/capability/network/readback 之前）；Python 只保留 **exact-ID reviewed update**（`mutate_reviewed_post(target_id=<exact_pid>)`）。create 后 draft slug 变时间戳，由 reviewed update 带正式 slug 覆盖。
 - **provider 不齐时的分支**：4 篇仍完成本地成稿+独立评审+review records，但**不远程创建**；主题构建时移除 Posts 导航、news/post-related 模块，并从 audit pages/count/FAQ article 断言中移除远程文章项，DELIVERY 首行记录 `article.create=BLOCK / local drafts ready`（注明缺哪个 provider）。不得保留空文章列表入口，也不得改用 Python 创建。
 - **动作**（五步链，入口 [writing/WRITING-INDEX.md](writing/WRITING-INDEX.md)）：

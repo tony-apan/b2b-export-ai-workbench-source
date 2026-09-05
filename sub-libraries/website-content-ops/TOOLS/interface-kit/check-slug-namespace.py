@@ -27,7 +27,12 @@ from allincms_api import AllinCMS, _read_token
 
 
 def slugify(text):
-    """label → 平台惯例 slug：小写、非字母数字折叠为 -、去首尾 -。"""
+    """label → 平台惯例 slug：小写、非字母数字折叠为 -、去首尾 -。
+
+    非 ASCII 折叠局限：CJK（中日韩）整段折叠为 '-'（去首尾后可能为空串）；重音拉丁
+    （é/ó/ñ 等）也折叠为 '-' 而非去重音（'cerámica'→'cer-mica'，é≠e）——非英语站
+    （西语等）落库前先自行 NFD 去重音再生成 slug，写前实测一次（NEW-SITE-ONEPASS
+    非英语站注意①）。"""
     return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", str(text or "").lower())).strip("-")
 
 

@@ -5,7 +5,7 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-08-13"
+last_updated: "2026-09-06"
 sources: ["media-operations-contract.redacted.json", "article-image-binding-contract.json", "direct-delete-verification.redacted.md", "Observed signed-in upload and draft-binding runs 2026-07-27", "Local fault tests 2026-07-27", "Tony default browser, login handoff, site discovery, and interface fallback decision 2026-07-30"]
 related: ["../../../REFERENCES/ALLINCMS-OFFICIAL-TUTORIAL-INDEX.json", "README.md", "content-run-controller.mjs", "live-run-evidence.schema.json", "INTERFACE-INDEX.md", "interface-registry.json", "interface-registry.schema.json", "media-metadata-and-ai-vision-sop.md", "article-operations.md", "upload-media-browser.mjs", "article-image-binding.mjs", "article-operations.mjs", "article-operations-contract.json", "upload-media-browser.test.mjs", "article-image-binding.test.mjs", "article-operations.test.mjs", "interface-registry.test.mjs", "media-operations-contract.redacted.json", "article-image-binding-contract.json", "../../image-upload-routing.md"]
 confidence: "high-for-observed-upload-contract-medium-for-new-local-recovery-layer"
@@ -61,6 +61,8 @@ checkAllinCmsMediaRuntime()
 ## 0. 默认启动、登录交接与回落路由
 
 任何电脑、任何 AI 收到 AllinCMS 站点发现、建站、媒体或文章任务后，先执行这一节。**登录状态、当前用户和网站列表默认由接口判断；页面 DOM 只用于登录交接和异常诊断。** 机器合同、代码和字段说明见 [Workspace API-first 前置检查](workspace-preflight.md)、[workspace-preflight.mjs](workspace-preflight.mjs) 与 [workspace-preflight-contract.json](workspace-preflight-contract.json)。
+
+> **认证分流互认（与 interface-kit 同口径，2026-09-06）**：interface-kit 纯 API 登录（邮箱+密码→token，见完整子库源码 `docs/TOKEN-AUTH.md` 方式一）=无浏览器宿主的 canonical 路径；本节浏览器 session preflight=有浏览器宿主路径；两路等效，宿主按能力自选，不得两路都拒绝。
 
 ### 0.1 API-first Workspace 前置检查
 
