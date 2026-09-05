@@ -24,9 +24,9 @@ redaction_status: "safe-to-publish"
 - Registry：v2
 - Adapter package：`0.3.2-preview.1`
 - Release scope：`preview-blocked`
-- 固化范围：141 个接口记录（137 个 ESM export binding + 5 个 CLI）
+- 固化范围：143 个接口记录（139 个 ESM export binding + 5 个 CLI）
 - 审查：`PASS`，2026-08-12；104 个 ESM export bindings（含 2 个完整源码 checkout Controller binding）加 4 个可操作 CLI 全量登记；每个接口声明运行分发面，并提供 22 条实体 × 动作能力路由。
-- 暴露分层：canonical 25 / supported 54 / compatibility 12 / internal 47 / blocked 3
+- 暴露分层：canonical 25 / supported 54 / compatibility 12 / internal 49 / blocked 3
 
 ### 必须保留的限制
 
@@ -172,7 +172,7 @@ redaction_status: "safe-to-publish"
 | `allincms.article-image-binding.internal-internal` | `article-image-binding.mjs#_internal` | internal_bundle | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-image-binding-contract.json` [packaged] |
 | `allincms.article-image-binding.save-allin-cms-article-draft-direct` | `article-image-binding.mjs#saveAllinCmsArticleDraftDirect` | mutation_primitive | write | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-image-binding-contract.json` [packaged] |
 
-### 文章（35）
+### 文章（37）
 
 | Interface ID | Binding | 类型 | 访问 | 暴露 | 生命周期 | 运行分发 | 证据 | 何时使用 | 合同与可用性 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -194,6 +194,7 @@ redaction_status: "safe-to-publish"
 | `allincms.article-operations.publishable-body-start-marker` | `article-operations.mjs#PUBLISHABLE_BODY_START_MARKER` | constant | metadata | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
 | `allincms.article-operations.publishable-article-markdown-to-allin-cms-slate` | `article-operations.mjs#publishableArticleMarkdownToAllinCmsSlate` | converter | transform | **compatibility** | active | packaged | local_tested | 仅为兼容旧调用从 article-operations.mjs 导入；新代码使用 alias_of 指向的真源。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
 | `allincms.article-operations.internal-internal` | `article-operations.mjs#_internal` | internal_bundle | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-create-providers.default-origin` | `article-create-providers.mjs#ALLINCMS_ARTICLE_PROVIDERS_DEFAULT_ORIGIN` | constant | metadata | **internal** | active | packaged | local_tested | 仅供装配与诊断核对默认 origin；不得据此绕过 origin 注入，也不得把站点公开域当作编辑域使用。 | `article-operations-contract.json` [packaged] |
 | `allincms.content-mutation-primitives.article-create-contract-fields` | `content-mutation-primitives.mjs#ARTICLE_CREATE_CONTRACT_FIELDS` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现与 host driver 使用；冻结数组，调用方既不能增加也不能删除被比较字段。 | `article-operations-contract.json` [packaged] |
 | `allincms.article-operations.article-fields` | `article-operations.mjs#ARTICLE_FIELDS` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
 | `allincms.article-operations.article-modes` | `article-operations.mjs#ARTICLE_MODES` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
@@ -203,6 +204,7 @@ redaction_status: "safe-to-publish"
 | `allincms.article-operations.compare-expected-readback` | `article-operations.mjs#compareExpectedReadback` | controller | orchestrate | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
 | `allincms.article-operations.cover-image-persisted-fields` | `article-operations.mjs#COVER_IMAGE_PERSISTED_FIELDS` | constant | metadata | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
 | `allincms.article-operations.create-allin-cms-action-client` | `article-operations.mjs#createAllinCmsActionClient` | mutation_primitive | write | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |
+| `allincms.article-create-providers.create-article-create-providers` | `article-create-providers.mjs#createArticleCreateProviders` | factory | read | **internal** | active | packaged | local_tested | 仅供 content-plan-host-driver / host-run-template 的 article:create 装配与诊断使用；RSC flight 解析语义移植自 TOOLS/interface-kit/allincms_api.py（rsc_records/find_json/read_lists/read_post），结构漂移与解析失败一律 fail-closed 抛错，禁止当对外稳定 API 或回退测试 fixture 使用。 | `article-operations-contract.json` [packaged] |
 | `allincms.content-mutation-primitives.created-record-expected-problems` | `content-mutation-primitives.mjs#createdRecordExpectedProblems` | validator | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部 create 路径使用；createPostDraft/createProductDraft 以命名 ESM import 共享同一实现，调用方 match 只能叠加约束。 | `article-operations-contract.json` [packaged]<br>`product-operations-contract.json` [packaged] |
 | `allincms.content-mutation-primitives.extract-create-readback-record` | `content-mutation-primitives.mjs#extractCreateReadbackRecord` | converter | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部 create 路径使用；createPostDraft/createProductDraft 以命名 ESM import 共享同一提取规则。 | `article-operations-contract.json` [packaged]<br>`product-operations-contract.json` [packaged] |
 | `allincms.article-operations.make-probe-identity` | `article-operations.mjs#makeProbeIdentity` | builder | transform | **internal** | active | packaged | local_tested | 仅供 Adapter 内部实现、诊断或兼容路径使用。 | `article-operations-contract.json` [packaged]<br>`article-operations.md` [packaged] |

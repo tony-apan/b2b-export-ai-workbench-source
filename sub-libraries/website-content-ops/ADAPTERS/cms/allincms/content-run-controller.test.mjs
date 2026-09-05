@@ -501,6 +501,45 @@ test('update fingerprint mismatch blocks before execute', async () => {
   const { result } = await run(plan, { handlers: { 'article:update': handler } }); assert.equal(result.code, 'CURRENT_FINGERPRINT_BLOCK'); assert.equal(executeCount, 0);
 });
 
+test('update execute receives the deep-frozen current record captured from the same readCurrent snapshot (P0-3.4)', async () => {
+  const plan = makeUpdatePlan();
+  const operation = plan.operations[0];
+  const providerRecord = { title: 'Current Title', slug: 'buyer-guide', order: 7, categories: [{ id: 'cat-1' }], nested: { deep: ['x'] } };
+  const seen = [];
+  const handler = makeHandler(operation, plan, [], {
+    async readCurrent() { return { fingerprint: operation.expected_current_fingerprint, record: providerRecord }; },
+    async execute(args) {
+      seen.push(args.current_record);
+      // Deep-frozen anti-tamper: the handler cannot rewrite the baseline the
+      // payload will be built on, at any depth.
+      assert.ok(Object.isFrozen(args.current_record));
+      assert.ok(Object.isFrozen(args.current_record.nested));
+      assert.throws(() => { args.current_record.title = 'mutated'; }, TypeError);
+      return { request_started: true, status: 'completed' };
+    },
+  });
+  const { result } = await run(plan, { handlers: { 'article:update': handler } });
+  assert.equal(result.ok, true, JSON.stringify(result.problems ?? result).slice(0, 300));
+  assert.deepEqual(seen, [providerRecord]);
+  // The provider's live object mutating after readCurrent can never reach the
+  // captured snapshot execute already consumed.
+  providerRecord.title = 'MUTATED AFTER READCURRENT';
+  assert.equal(seen[0].title, 'Current Title');
+});
+
+test('readCurrent without a record hands execute a null current_record and the run still passes (P0-3.4)', async () => {
+  const plan = makeUpdatePlan();
+  const operation = plan.operations[0];
+  const seen = [];
+  const handler = makeHandler(operation, plan, [], {
+    async readCurrent() { return { fingerprint: operation.expected_current_fingerprint }; },
+    async execute(args) { seen.push(args.current_record); return { request_started: true, status: 'completed' }; },
+  });
+  const { result } = await run(plan, { handlers: { 'article:update': handler } });
+  assert.equal(result.ok, true);
+  assert.deepEqual(seen, [null]);
+});
+
 test('handler cannot mutate the frozen plan snapshot', async () => {
   const plan = keepOperations(makePlan(), 1); const handler = makeHandler(plan.operations[0], plan, [], { async execute({ plan: snapshot }) { assert.throws(() => { snapshot.authorization_scope.target_key = 'other'; }, TypeError); return { request_started: true, status: 'completed' }; } });
   const { result } = await run(plan, { handlers: { 'category:create': handler } }); assert.equal(result.ok, true); assert.equal(result.evidence.target.key, 'site-fixture');

@@ -100,7 +100,7 @@ def test_make_resolved_gap_rejects_sensitive_proof_path() -> None:
     Args.site_key = "mysite01"
     Args.gap_ledger = ""
     Args.resolved_gap = [
-        "fieldLabel=posts.post-detail-route|proof=<tmp>|note=Later public proof superseded this route issue."
+        "fieldLabel=posts.post-detail-route|proof=<tmp>/authorization-post-route.json|note=Later public proof superseded this route issue."
     ]
 
     try:

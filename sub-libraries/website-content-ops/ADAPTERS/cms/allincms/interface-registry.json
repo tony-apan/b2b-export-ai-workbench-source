@@ -10493,7 +10493,151 @@
      "readback": "not_applicable",
      "frontend_verification": "not_applicable"
     }
+   },
+  {
+   "interface_id": "allincms.article-create-providers.create-article-create-providers",
+   "display_name": "createArticleCreateProviders",
+   "summary": "article:create 三个真实 provider 的纯 HTTP 工厂（跨平台 Node fetch + payload-token Cookie，Windows/macOS/Linux 通用）：beforePostIds（/{siteKey}/posts 列表 RSC 快照，支持分页翻页）、createReadback（/{id}/update RSC defaultValues 全字段 + after 快照组装 {record, afterPostIds}）、editorReopen（同 URL HTML 断言 200 + 非 sign-in 重定向 + 编辑上下文）。",
+   "domain": "article",
+   "kind": "factory",
+   "access": "read",
+   "exposure": "internal",
+   "lifecycle": "active",
+   "runtime_availability": "packaged",
+   "contract_version": "0.3.2-preview.1",
+   "bindings": [
+    {
+     "type": "esm_export",
+     "module": "article-create-providers.mjs",
+     "export_name": "createArticleCreateProviders",
+     "role": "definition"
+    }
+   ],
+   "when_to_use": "仅供 content-plan-host-driver / host-run-template 的 article:create 装配与诊断使用；RSC flight 解析语义移植自 TOOLS/interface-kit/allincms_api.py（rsc_records/find_json/read_lists/read_post），结构漂移与解析失败一律 fail-closed 抛错，禁止当对外稳定 API 或回退测试 fixture 使用。",
+   "keywords": [
+    "createArticleCreateProviders",
+    "RSC",
+    "provider",
+    "payload-token",
+    "article",
+    "internal"
+   ],
+   "io_contract": {
+    "input": "{ siteKey, siteId, authCookie(payload-token 值), origin?默认 workspace 域, fetchFn?, maxListPages? }",
+    "output": "{ beforePostIds, createReadback, editorReopen } 三个 provider；缺 cookie、坏 origin、坏路径段或 fetchFn 非函数在请求前抛错"
+   },
+   "contract_refs": [
+    {
+     "path": "article-operations-contract.json",
+     "note": "文章与分类标签机器合同（create 回读 record 形态与传输对词语义）",
+     "availability": "packaged"
+    }
+   ],
+   "test_refs": [
+    {
+     "path": "article-create-providers.test.mjs",
+     "note": "合成 RSC flight fixture：正常解析/分页/漂移 fail-closed/302 sign-in/非 200/无 cookie + driver 与 host-run-template 集成",
+     "availability": "source_only"
+    }
+   ],
+   "evidence": {
+    "level": "local_tested",
+    "refs": [],
+    "limitations": [
+     "仅证明当前本地 synthetic RSC fixture profile（2026-09-06）；未做真实站点冒烟，分页 page 参数与 flight 结构漂移按 fail-closed 处理，不外推为跨部署或生产稳定。",
+     "仅供 Adapter 内部 article:create 装配使用，不构成对外稳定 API。"
+    ]
+   },
+   "safety": {
+    "mutation": false,
+    "network_access": "read_only",
+    "authorization": {
+     "required": true,
+     "scheme": "delegated",
+     "operation": "workspace-payload-token-read",
+     "binding_strength": "delegated",
+     "status": "pass"
+    },
+    "site_binding": "required",
+    "idempotency": "idempotent",
+    "request_may_have_succeeded": "not_applicable",
+    "automatic_retry": "none",
+    "ambiguous_result": "stop_manual",
+    "readback": "not_applicable",
+    "frontend_verification": "not_applicable"
    }
+  },
+  {
+   "interface_id": "allincms.article-create-providers.default-origin",
+   "display_name": "ALLINCMS_ARTICLE_PROVIDERS_DEFAULT_ORIGIN",
+   "summary": "article:create provider 的默认 workspace origin 常量（https://workspace.laicms.com）：posts 列表与编辑路由在 workspace 域而非站点公开域，与 allincms_api.py ORIGIN 一致；可用工厂 origin 注入覆盖。",
+   "domain": "article",
+   "kind": "constant",
+   "access": "metadata",
+   "exposure": "internal",
+   "lifecycle": "active",
+   "runtime_availability": "packaged",
+   "contract_version": "0.3.2-preview.1",
+   "bindings": [
+    {
+     "type": "esm_export",
+     "module": "article-create-providers.mjs",
+     "export_name": "ALLINCMS_ARTICLE_PROVIDERS_DEFAULT_ORIGIN",
+     "role": "definition"
+    }
+   ],
+   "when_to_use": "仅供装配与诊断核对默认 origin；不得据此绕过 origin 注入，也不得把站点公开域当作编辑域使用。",
+   "keywords": [
+    "ALLINCMS_ARTICLE_PROVIDERS_DEFAULT_ORIGIN",
+    "origin",
+    "workspace",
+    "constant",
+    "internal"
+   ],
+   "io_contract": {
+    "input": "无",
+    "output": "冻结字符串 'https://workspace.laicms.com'"
+   },
+   "contract_refs": [
+    {
+     "path": "article-operations-contract.json",
+     "note": "文章与分类标签机器合同（路由 origin 语义）",
+     "availability": "packaged"
+    }
+   ],
+   "test_refs": [
+    {
+     "path": "article-create-providers.test.mjs",
+     "note": "默认 origin 常量断言",
+     "availability": "source_only"
+    }
+   ],
+   "evidence": {
+    "level": "local_tested",
+    "refs": [],
+    "limitations": [
+     "仅断言默认值与 allincms_api.py ORIGIN 一致；真实部署 origin 变化必须通过工厂 origin 注入，不跟随本常量自动适配。"
+    ]
+   },
+   "safety": {
+    "mutation": false,
+    "network_access": "none",
+    "authorization": {
+     "required": false,
+     "scheme": "none",
+     "operation": "not-applicable",
+     "binding_strength": "none",
+     "status": "pass"
+    },
+    "site_binding": "not_applicable",
+    "idempotency": "idempotent",
+    "request_may_have_succeeded": "not_applicable",
+    "automatic_retry": "none",
+    "ambiguous_result": "not_applicable",
+    "readback": "not_applicable",
+    "frontend_verification": "not_applicable"
+   }
+  }
  ],
  "source_only_modules": [
   "content-plan-host-driver.mjs",

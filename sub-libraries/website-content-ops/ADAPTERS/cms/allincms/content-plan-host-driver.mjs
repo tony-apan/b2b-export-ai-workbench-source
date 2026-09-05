@@ -20,7 +20,11 @@
  * - `readback(...)` MUST return `{ requirements, evidence_ref, checks }` with
  *   checks matching `verification-evidence-contract.json` check semantics (the
  *   controller re-validates requirements against profiles and artifact digests);
- * - `readCurrent(...)` returns `{ fingerprint }` (sha256:64hex) for update intents;
+ * - `readCurrent(...)` returns `{ fingerprint }` (sha256:64hex) for update
+ *   intents; article/product update operations that carry field_refs
+ *   additionally require `{ fingerprint, record }` from the same snapshot
+ *   (P0-3.4: the record is the authoritative baseline for the partial update
+ *   overlay; without it the run fails closed before any request);
  * - `reconcile(...)` returns `{ performed, verdict: 'applied'|'not_applied',
  *   authoritative, evidence_ref }` and must be read-only.
  *
@@ -75,7 +79,7 @@ import { createAllinCmsMutationAuthorizationContext, deriveAllinCmsMutationBindi
 // bottom create functions share the exact same prepare function (named ESM
 // import, immutable binding), so the driver-side and bottom-layer payloads,
 // validations, and payload texts can never drift apart.
-import { prepareStableCreatePayload } from './content-mutation-primitives.mjs';
+import { prepareStableCreatePayload, captureStableReadback } from './content-mutation-primitives.mjs';
 
 // P0-3.3a.3: the canonical create contract field lists (8 article / 10
 // product) and the comparison canonical text come from the bottom operation
@@ -186,6 +190,197 @@ function productCreatePayloadFromDesired(entity) {
 function preparedCreatePayload(plan, operation, siteId, kind, buildFromDesired) {
   const entity = requireUniqueDesiredEntity(plan, operation);
   return prepareStableCreatePayload(kind, buildFromDesired(entity), siteId);
+}
+
+// ---------------------------------------------------------------------------
+// P0-3.4 partial update overlay (article:update / product:update only).
+//
+// An update operation whose plan carries non-empty `field_refs` is a partial
+// update: the outgoing update payload — and therefore the expected readback,
+// which the bottom layer derives from the exact same payload object — is the
+// AUTHORITATIVE current record captured by readCurrent (the same snapshot
+// whose fingerprint matched the plan expectation) with ONLY the field_refs
+// fields overlaid from desired state. Fields the plan does not mention keep
+// their current values; they are never defaulted to ''/null/[] (the legacy
+// whole-record semantics that could silently clear content, taxonomy, media
+// or mediaList). A field is cleared only when its desired wrapper declares
+// clear_existing:true, and then with the typed empty value (array -> [],
+// media/coverImage -> null, string -> '', order -> 0). Every refusal below
+// fails closed BEFORE any request and carries a locked own
+// requestStarted:false so the controller records a failed-not-started run
+// instead of an ambiguous one. Operations without field_refs keep the
+// unchanged legacy full-field desired-state behavior.
+// ---------------------------------------------------------------------------
+
+function partialUpdateRefusal(message) {
+  const error = new Error(message);
+  // Locked own data property: the controller reads the own descriptor, so the
+  // pre-request refusal can never be upgraded into "a request may have
+  // started" by a polluted prototype accessor.
+  Object.defineProperty(error, 'requestStarted', {
+    value: false,
+    writable: false,
+    enumerable: false,
+    configurable: false,
+  });
+  return error;
+}
+
+// Typed clear values for clear_existing:true overlays, per contract field.
+const ARTICLE_UPDATE_CLEAR_VALUES = Object.freeze({
+  excerpt: '', order: 0, coverImage: null, categories: [], tags: [], content: [],
+});
+const PRODUCT_UPDATE_CLEAR_VALUES = Object.freeze({
+  order: 0, media: null, mediaList: [], content: [], categories: [], tags: [], specifications: [],
+});
+// Required non-empty fields may be overlaid with a real value but never cleared.
+const ARTICLE_UPDATE_NON_CLEARABLE = Object.freeze(['title', 'slug']);
+const PRODUCT_UPDATE_NON_CLEARABLE = Object.freeze(['name', 'slug', 'description']);
+
+function overlayTaxonomyIds(record, field, kind) {
+  const value = record[field];
+  if (!Array.isArray(value)) {
+    throw partialUpdateRefusal(`${kind}:update current record ${field} must be an array of taxonomy IDs or {id} objects (got ${value === null || value === undefined ? String(value) : typeof value}); an incomplete current record is refused before any request and is never defaulted to []`);
+  }
+  return value.map((entry, index) => {
+    if (typeof entry === 'string') {
+      if (!entry.trim()) throw partialUpdateRefusal(`${kind}:update current record ${field}[${index}] is an empty taxonomy ID`);
+      return entry.trim();
+    }
+    if (entry && typeof entry === 'object' && !Array.isArray(entry) && typeof entry.id === 'string' && entry.id.trim()) return entry.id.trim();
+    throw partialUpdateRefusal(`${kind}:update current record ${field}[${index}] must be a taxonomy ID string or an {id} object`);
+  });
+}
+
+// Baseline projection of the authoritative current record onto the payload
+// contract fields. Every contract field must be an own field of the record: a
+// missing field would otherwise flow into the payload builder's `??`/null
+// defaults and silently clear that field on the wire.
+function articleUpdateBaseline(record) {
+  for (const field of ARTICLE_CREATE_CONTRACT_FIELDS) {
+    if (!Object.hasOwn(record, field)) {
+      throw partialUpdateRefusal(`article:update current record is missing the contract field ${field} (all [${ARTICLE_CREATE_CONTRACT_FIELDS.join(', ')}] must be present; a partial current record is refused before any request instead of being defaulted)`);
+    }
+  }
+  return {
+    title: record.title,
+    slug: record.slug,
+    excerpt: record.excerpt,
+    order: record.order,
+    coverImage: record.coverImage,
+    categories: overlayTaxonomyIds(record, 'categories', 'article'),
+    tags: overlayTaxonomyIds(record, 'tags', 'article'),
+    content: record.content,
+  };
+}
+
+function productUpdateBaseline(record) {
+  for (const field of PRODUCT_CREATE_CONTRACT_FIELDS) {
+    if (!Object.hasOwn(record, field)) {
+      throw partialUpdateRefusal(`product:update current record is missing the contract field ${field} (all [${PRODUCT_CREATE_CONTRACT_FIELDS.join(', ')}] must be present; a partial current record is refused before any request instead of being defaulted)`);
+    }
+  }
+  return {
+    name: record.name,
+    slug: record.slug,
+    description: record.description,
+    order: record.order,
+    media: record.media,
+    mediaList: record.mediaList,
+    content: record.content,
+    categories: overlayTaxonomyIds(record, 'categories', 'product'),
+    tags: overlayTaxonomyIds(record, 'tags', 'product'),
+    specifications: record.specifications,
+  };
+}
+
+// Desired-value overlay for exactly the field_refs fields. clear_existing:true
+// applies the typed clear value; without it the wrapper must carry a real
+// value — null/undefined would either be silently replaced by the current
+// value by the payload builder's `??` chain or silently clear a nullable
+// media field, so undeclared empty overlay values are refused.
+function desiredOverlayValues(entity, fieldRefs, kind, clearValues, nonClearable) {
+  const wrappers = entity?.fields;
+  if (!wrappers || typeof wrappers !== 'object' || Array.isArray(wrappers)) {
+    throw partialUpdateRefusal(`${kind}:update overlay requires the desired_state entity to carry a fields object (got ${wrappers === null || wrappers === undefined ? String(wrappers) : typeof wrappers})`);
+  }
+  const overrides = {};
+  for (const field of fieldRefs) {
+    const clearable = Object.hasOwn(clearValues, field);
+    if (!clearable && !nonClearable.includes(field)) {
+      throw partialUpdateRefusal(`${kind}:update field_refs includes the unknown contract field ${JSON.stringify(field)} (a silently-ignored overlay key is refused before any request)`);
+    }
+    const wrapper = wrappers[field];
+    if (!wrapper || typeof wrapper !== 'object' || Array.isArray(wrapper)) {
+      throw partialUpdateRefusal(`${kind}:update field_refs includes ${JSON.stringify(field)} but the desired_state entity carries no field wrapper for it`);
+    }
+    if (wrapper.clear_existing === true) {
+      if (!clearable) {
+        throw partialUpdateRefusal(`${kind}:update field ${JSON.stringify(field)} declares clear_existing:true but it is a required non-empty field that cannot be cleared`);
+      }
+      overrides[field] = clearValues[field];
+      continue;
+    }
+    if (wrapper.value === null || wrapper.value === undefined) {
+      throw partialUpdateRefusal(`${kind}:update desired field ${JSON.stringify(field)} carries an empty value without clear_existing:true; declare clear_existing:true to clear it or supply a real value (an undeclared empty overlay is refused before any request)`);
+    }
+    overrides[field] = wrapper.value;
+  }
+  return overrides;
+}
+
+// The update-handler input selector: overlay mode for non-empty field_refs
+// (current-record baseline + desired overlays), unchanged legacy full-field
+// desired-state defaults otherwise.
+function updateInputsFor(kind, entity, operation, currentRecord, legacyDefaults, clearValues, nonClearable) {
+  const fieldRefs = Array.isArray(operation?.field_refs) ? operation.field_refs : [];
+  if (fieldRefs.length === 0) return { defaults: legacyDefaults(entity), overrides: null };
+  if (!currentRecord || typeof currentRecord !== 'object' || Array.isArray(currentRecord)) {
+    throw partialUpdateRefusal(`${kind}:update with field_refs requires the authoritative current record captured by readCurrent (current_record is ${currentRecord === null || currentRecord === undefined ? String(currentRecord) : typeof currentRecord}); refusing to build a partial update over an empty baseline — no request is sent`);
+  }
+  // Reuse the same one-shot stable-data projection as the create readback
+  // chain (captureStableReadback): a getter/proxy/exotic current record is
+  // refused once, here, and everything downstream consumes only this
+  // captured copy.
+  let stableCurrent;
+  try {
+    stableCurrent = captureStableReadback(currentRecord, `${kind} update current record`);
+  } catch (error) {
+    throw partialUpdateRefusal(`${kind}:update current record is not stable plain data (${error.message}); refusing before any request`);
+  }
+  return {
+    defaults: kind === 'article' ? articleUpdateBaseline(stableCurrent) : productUpdateBaseline(stableCurrent),
+    overrides: desiredOverlayValues(entity, fieldRefs, kind, clearValues, nonClearable),
+  };
+}
+
+// readCurrent record gate for overlay-mode updates: the authoritative current
+// record must be captured together with the fingerprint, in the same
+// snapshot, or the run fails closed here — before any request can be
+// attempted.
+function requireOverlayCurrentRecord(kind, operation, current) {
+  if (!Array.isArray(operation?.field_refs) || operation.field_refs.length === 0) return current;
+  const record = current?.record;
+  if (!record || typeof record !== 'object' || Array.isArray(record)) {
+    throw new Error(`${kind}:update readCurrent must return { fingerprint, record } carrying the authoritative current record when the operation declares field_refs (record is ${record === undefined || record === null ? String(record) : typeof record}); a partial update without its current-record baseline is refused before any request`);
+  }
+  return current;
+}
+
+// readCurrent wrapper for overlay-mode updates: the provider's whole result
+// is projected ONCE through captureStableReadback (getters/proxies/exotics
+// refuse, plain data is copied), the record gate runs on that captured copy,
+// and the captured copy is what the controller sees — so the driver's gate
+// and the controller's current_record capture can never be served two
+// different records by an access-timing provider. Legacy (no-field_refs)
+// operations keep the provider's result verbatim.
+function overlayAwareReadCurrent(kind, operation, fingerprintProvider, providerArgs) {
+  return Promise.resolve(fingerprintProvider(providerArgs)).then((provided) => {
+    if (!Array.isArray(operation?.field_refs) || operation.field_refs.length === 0) return provided;
+    const stable = captureStableReadback(provided, `${kind}:update readCurrent result`);
+    requireOverlayCurrentRecord(kind, operation, stable);
+    return stable;
+  });
 }
 
 function normalizeIdSnapshot(value, providerLabel) {
@@ -622,10 +817,19 @@ export function createAllinCmsPlanHandlerSet({
       readback: ({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source }) => readbackProvider({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source, siteKey, siteId }),
     },
     'article:update': {
-      readCurrent: async ({ plan, operation }) => fingerprintProvider({ plan, operation, siteKey, siteId }),
-      execute: async ({ plan, operation, runtime_entity_id }) => {
+      readCurrent: ({ plan, operation }) => overlayAwareReadCurrent('article', operation, fingerprintProvider, { plan, operation, siteKey, siteId }),
+      execute: async ({ plan, operation, runtime_entity_id, current_record }) => {
         const entity = plan.desired_state.find((d) => d.entity_ref === operation.entity_ref);
-        await savePostDraft({ siteKey, runtime, request, authorizationContext: authz(plan, operation, runtime_entity_id), postId: runtime_entity_id ?? operation.identity.id, siteId, defaults: articleFieldsFromEntity(entity), readback: () => adapterReadback(plan, operation, runtime_entity_id), refresh: async () => {}, maxControlledRetries: 0 });
+        // P0-3.4 partial update overlay: with field_refs the one outgoing
+        // payload (and the expected readback the bottom layer derives from
+        // that same payload object) is the authoritative current-record
+        // baseline with only the field_refs fields overlaid from desired
+        // state (typed clear only with clear_existing:true); without
+        // field_refs the legacy full-field desired-state behavior is
+        // unchanged. A missing/unstable current record fails closed before
+        // the authorization and before any request.
+        const inputs = updateInputsFor('article', entity, operation, current_record, articleFieldsFromEntity, ARTICLE_UPDATE_CLEAR_VALUES, ARTICLE_UPDATE_NON_CLEARABLE);
+        await savePostDraft({ siteKey, runtime, request, authorizationContext: authz(plan, operation, runtime_entity_id), postId: runtime_entity_id ?? operation.identity.id, siteId, defaults: inputs.defaults, ...(inputs.overrides === null ? {} : { overrides: inputs.overrides }), readback: () => adapterReadback(plan, operation, runtime_entity_id), refresh: async () => {}, maxControlledRetries: 0 });
         return { request_started: true, status: 'completed' };
       },
       readback: ({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source }) => readbackProvider({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source, siteKey, siteId }),
@@ -639,10 +843,18 @@ export function createAllinCmsPlanHandlerSet({
       readback: ({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source }) => readbackProvider({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source, siteKey, siteId }),
     },
     'product:update': {
-      readCurrent: async ({ plan, operation }) => fingerprintProvider({ plan, operation, siteKey, siteId }),
-      execute: async ({ plan, operation, runtime_entity_id }) => {
+      readCurrent: ({ plan, operation }) => overlayAwareReadCurrent('product', operation, fingerprintProvider, { plan, operation, siteKey, siteId }),
+      execute: async ({ plan, operation, runtime_entity_id, current_record }) => {
         const entity = plan.desired_state.find((d) => d.entity_ref === operation.entity_ref);
-        await saveProductDraft({ siteKey, runtime, request, authorizationContext: authz(plan, operation, runtime_entity_id), productId: runtime_entity_id ?? operation.identity.id, siteId, defaults: fromEntity(entity), readback: () => adapterReadback(plan, operation, runtime_entity_id), refresh: async () => {}, maxControlledRetries: 0 });
+        // P0-3.4 partial update overlay (same rule as article:update): with
+        // field_refs the payload and its expected readback are the current
+        // record baseline plus only the field_refs overlays — media and
+        // mediaList are never unconditionally emptied; clear_existing:true
+        // applies the typed clear. Without field_refs the legacy full-field
+        // desired-state behavior is unchanged. A missing/unstable current
+        // record fails closed before the authorization and before any request.
+        const inputs = updateInputsFor('product', entity, operation, current_record, fromEntity, PRODUCT_UPDATE_CLEAR_VALUES, PRODUCT_UPDATE_NON_CLEARABLE);
+        await saveProductDraft({ siteKey, runtime, request, authorizationContext: authz(plan, operation, runtime_entity_id), productId: runtime_entity_id ?? operation.identity.id, siteId, defaults: inputs.defaults, ...(inputs.overrides === null ? {} : { overrides: inputs.overrides }), readback: () => adapterReadback(plan, operation, runtime_entity_id), refresh: async () => {}, maxControlledRetries: 0 });
         return { request_started: true, status: 'completed' };
       },
       readback: ({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source }) => readbackProvider({ plan, operation, observed, priorReadbacks, runtime_entity_id, runtime_entity_id_source, siteKey, siteId }),

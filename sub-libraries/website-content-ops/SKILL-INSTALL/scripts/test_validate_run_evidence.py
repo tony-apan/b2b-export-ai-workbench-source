@@ -4376,7 +4376,7 @@ def summary_with_product_probe_next_action() -> dict:
                 "--verification-plan 'verify backend product draft and capture save request before any publish' "
                 "--cleanup-plan 'no automatic cleanup; request separate cleanup authorization' "
                 "--authorization-source '<paste current user authorization text here>' "
-                "--output <tmp>/allincms-mysite01-products-probe-authorization.json"
+                f"--output {tempfile.gettempdir()}/allincms-mysite01-products-probe-authorization.json"
             ),
             "preMutationGateCommand": (
                 "python3 skills/allincms-bulk-content-upload/scripts/check_pre_mutation_gate.py "
@@ -6612,7 +6612,7 @@ def test_browser_stage_authorization_package_for_create_site() -> None:
     assert "创建站点" in package["suggestedAuthorizationText"]
     assert "make_authorization_record.py --action create_site" in package["authorizationRecordCommand"]
     assert "check_pre_mutation_gate.py --action create_site" in package["preMutationGateCommand"]
-    assert "--preflight <tmp>/allincms-create-site-preflight.json" in package["preMutationGateCommand"]
+    assert "--preflight '<tmp>/allincms-create-site-preflight.json'" in package["preMutationGateCommand"]
     assert "<paste current user authorization text here>" in package["authorizationRecordCommand"]
     assert validate_browser_stage_authorization_package(package, packet, create_preflight_evidence(), now=GATE_NOW) == []
 
@@ -8696,7 +8696,7 @@ def test_browser_stage_authorization_package_for_theme_launch_real_target_emits_
     assert "<paste current user authorization text here>" in package["authorizationRecordCommand"]
     assert "授权 Codex" not in package["authorizationRecordCommand"]
     assert "check_pre_mutation_gate.py --action save_design" in package["preMutationGateCommand"]
-    assert "--preflight <tmp>/allincms-created-site-evidence.json" in package["preMutationGateCommand"]
+    assert "--preflight '<tmp>/allincms-created-site-evidence.json'" in package["preMutationGateCommand"]
 
 
 def test_browser_stage_authorization_package_for_create_theme_page_real_target() -> None:
@@ -10074,6 +10074,7 @@ def test_browser_stage_result_builder_inherits_packet_required_proof(tmp_path: P
         proof_recorded = ""
         blocking_issues = ""
         operator_note = "redacted proof captured"
+        browser_stage_mutated_remote = False
 
     result = build_browser_stage_result_from_packet(Args)
     assert result["stageId"] == "refresh_readonly_site_evidence"
@@ -10127,6 +10128,7 @@ def test_browser_stage_result_builder_rejects_partial_without_blocker(tmp_path: 
         proof_recorded = "expected status map"
         blocking_issues = ""
         operator_note = ""
+        browser_stage_mutated_remote = False
 
     try:
         build_browser_stage_result_from_packet(Args)
@@ -10178,6 +10180,7 @@ def test_browser_stage_result_builder_rejects_manual_completed_missing_required_
         proof_recorded = "closed create dialog"
         blocking_issues = ""
         operator_note = ""
+        browser_stage_mutated_remote = False
 
     try:
         build_browser_stage_result_from_packet(Args)
@@ -10229,6 +10232,7 @@ def test_browser_stage_result_builder_rejects_unredacted_operator_note(tmp_path:
         proof_recorded = ""
         blocking_issues = ""
         operator_note = "account owner tony@example.com confirmed"
+        browser_stage_mutated_remote = False
 
     try:
         build_browser_stage_result_from_packet(Args)
@@ -10314,7 +10318,7 @@ def test_apply_stage_result_cli_inline_rejects_missing_packet_required_proof(tmp
     result = subprocess.run(
         [
             "python3",
-            "skills/allincms-bulk-content-upload/scripts/apply_browser_stage_result.py",
+            str(Path(__file__).resolve().parent / "apply_browser_stage_result.py"),
             "--ledger",
             str(ledger_path),
             "--packet",

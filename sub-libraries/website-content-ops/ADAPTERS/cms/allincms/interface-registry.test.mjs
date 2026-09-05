@@ -31,8 +31,8 @@ test('Registry schema, references, safety declarations, source bindings, and pac
   assert.deepEqual(result.errors, []);
   assert.equal(result.ok, true);
   assert.deepEqual(result.summary, {
-    interfaces: 141,
-    esmBindings: 137,
+    interfaces: 143,
+    esmBindings: 139,
     cliBindings: 5,
     canonical: 25,
     blocked: 3,

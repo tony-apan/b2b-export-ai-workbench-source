@@ -475,6 +475,17 @@ export async function runAllinCmsContentPlan({
       if (!priorReadbacks.has(dependency)) return stop('blocked', 'DEPENDENCY_READBACK_MISSING', `dependency ${dependency} has no authoritative readback`, row);
     }
 
+    // P0-3.4 partial update overlay: alongside the fingerprint, capture the
+    // authoritative current record the SAME readCurrent snapshot produced (the
+    // one whose fingerprint just matched the plan expectation) as a deep-frozen
+    // clone — the same isolation pattern as isolatedReadbacks. The record is
+    // handed to execute as `current_record` so an update handler can baseline
+    // the outgoing payload on the authoritative current values; a later
+    // mutation of the provider's live object can never change what execute
+    // sees. A readCurrent result without a record keeps current_record null
+    // (read-only or legacy handlers); overlay-mode update handlers must fail
+    // closed on a null record themselves before any request.
+    let currentRecord = null;
     if (operation.expected_current_fingerprint !== null) {
       if (typeof handler.readCurrent !== 'function') return stop('blocked', 'CURRENT_FINGERPRINT_READER_MISSING', `Handler ${key} requires readCurrent`, row);
       try {
@@ -482,6 +493,7 @@ export async function runAllinCmsContentPlan({
         assertNoForbiddenRuntimeFields(current, 'readCurrent result');
         row.preflight.observed_current_fingerprint = current?.fingerprint ?? null;
         if (!sha256Pattern.test(current?.fingerprint ?? '') || current.fingerprint !== operation.expected_current_fingerprint) throw new Error('expected_current_fingerprint_mismatch');
+        if (current?.record !== undefined && current?.record !== null) currentRecord = deepFreeze(structuredClone(current.record));
       } catch (error) { return stop('blocked', 'CURRENT_FINGERPRINT_BLOCK', error, row); }
     }
 
@@ -498,7 +510,7 @@ export async function runAllinCmsContentPlan({
     if (operation.intent !== 'noop') {
       try {
         transport = await handler.execute({
-          plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks), ...runtimeEntityContext(),
+          plan: snapshot, operation, observed, priorReadbacks: isolatedReadbacks(priorReadbacks), ...runtimeEntityContext(), current_record: currentRecord,
           authorization: Object.freeze({
             plan_id: snapshot.plan_id, plan_digest: snapshot.plan_digest,
             operation_id: operation.operation_id, target_scope: snapshot.authorization_scope.target_scope,

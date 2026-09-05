@@ -1237,3 +1237,428 @@ test('product:create rejects a created record missing any of the 10 contract fie
     );
   }
 });
+
+// ---- P0-3.4 partial update overlay (article:update / product:update) ----
+//
+// Authoritative current record + only the operation.field_refs desired values
+// (+ typed clear for clear_existing:true) = the one update payload, which is
+// also the expected readback value through the unchanged bottom-layer chain.
+// Unmentioned fields keep their current values and are never defaulted to
+// ''/null/[]; a missing or unstable current record fails closed with zero
+// requests.
+
+function makeArticleUpdatePlanFixture({ fieldRefs = ['title'], mutate = null } = {}) {
+  const identity = { id: 'post-77', natural_key: { site_key: 'synthetic-site', slug: 'existing-guide' }, match_strategy: 'exact_id' };
+  const wrapper = (value, extra = {}) => ({ value, clear_existing: false, ...extra });
+  const plan = {
+    plan_id: 'COP-host-driver-article-update',
+    authorization_scope: {
+      status: 'approved', actor: 'Test Human',
+      approved_at: new Date(Date.now() - 60000).toISOString(),
+      expires_at: new Date(Date.now() + 28 * 60000).toISOString(),
+    },
+    desired_state: [{
+      entity_ref: 'article:existing-guide', entity_type: 'article', intent: 'update', identity,
+      fields: {
+        title: wrapper('Updated Guide Title'),
+        slug: wrapper('existing-guide'),
+        excerpt: wrapper('Existing excerpt.'),
+        content: wrapper([{ type: 'p', children: [{ text: '被替换的正文' }], id: 'node-new' }]),
+        categories: wrapper(null, { clear_existing: true }),
+        tags: wrapper(null, { clear_existing: true }),
+      },
+    }],
+    operations: [{ operation_id: 'OP-AU-001', entity_ref: 'article:existing-guide', entity_type: 'article', intent: 'update', identity: structuredClone(identity), field_refs: [...fieldRefs] }],
+  };
+  if (mutate) mutate(plan);
+  return plan;
+}
+
+const ARTICLE_UPDATE_CURRENT_RECORD = () => ({
+  title: 'Existing Guide', slug: 'existing-guide', excerpt: 'Existing excerpt.', order: 7,
+  coverImage: { name: 'cover.webp', alt: '封面', type: 'image', source: 'oss', path: 'site/cover.webp', size: 42, mimeType: 'image/webp' },
+  categories: [{ id: 'cat-1' }, { id: 'cat-2' }], tags: ['tag-9'],
+  content: [{ type: 'p', children: [{ text: '既有正文' }], id: 'node-1' }],
+  siteId: 'sid-1', id: 'post-77',
+});
+
+function articleUpdateHarness({ fieldRefs = ['title'], mutate = null, omitCurrent = false, currentRecord = ARTICLE_UPDATE_CURRENT_RECORD(), readbackFromPayload = (payload) => ({ ...structuredClone(payload), status: 'draft' }) } = {}) {
+  const plan = makeArticleUpdatePlanFixture({ fieldRefs, mutate });
+  const runtime = { routerTree: '[]', deploymentId: 'd'.repeat(40), actions: { postUpdate: { actionId: 'u'.repeat(42), routerTree: '[]', deploymentId: 'd'.repeat(40) } } };
+  const requested = [];
+  const request = async (details) => { requested.push(details); return { status: 200, ok: true, contentType: 'text/x-component' }; };
+  const handlers = createAllinCmsPlanHandlerSet({
+    siteKey: 'synthetic-site', siteId: 'sid-1', runtime, request,
+    backendReadback: async () => (requested.length > 0 ? readbackFromPayload(structuredClone(requested[0].payload)) : null),
+    readbackProvider: async () => { throw new Error('readbackProvider must not be used when backendReadback is provided'); },
+  });
+  const context = { plan, operation: plan.operations[0], ...(omitCurrent ? {} : { current_record: currentRecord }) };
+  return { plan, handlers, requested, context };
+}
+
+test('article:update partial overlay sends the current-record baseline with only field_refs overlaid (P0-3.4)', async () => {
+  const h = articleUpdateHarness();
+  const result = await h.handlers['article:update'].execute(h.context);
+  assert.deepEqual(result, { request_started: true, status: 'completed' });
+  assert.equal(h.requested.length, 1);
+  assert.match(h.requested[0].url, /synthetic-site\/posts\/post-77\/update$/);
+  // Field-by-field: only title carries the desired value; every other field
+  // keeps the authoritative current value ({id} taxonomy normalized to IDs)
+  // and nothing is defaulted to ''/null/[].
+  const payload = h.requested[0].payload;
+  assert.deepEqual(payload, {
+    title: 'Updated Guide Title',
+    slug: 'existing-guide',
+    excerpt: 'Existing excerpt.',
+    order: 7,
+    coverImage: { name: 'cover.webp', alt: '封面', type: 'image', source: 'oss', path: 'site/cover.webp', size: 42, mimeType: 'image/webp' },
+    categories: ['cat-1', 'cat-2'],
+    tags: ['tag-9'],
+    content: [{ type: 'p', children: [{ text: '既有正文' }], id: 'node-1' }],
+    siteId: 'sid-1', postId: 'post-77', mode: 'update',
+  });
+  // expected = the same synthesized payload (tree-equal comparison chain):
+  // a backend record that echoes the payload passes, and a record that drifts
+  // on a PRESERVED field (content) is rejected by the bottom-layer comparison
+  // over that field.
+  const drifted = articleUpdateHarness({
+    readbackFromPayload: (payload) => ({ ...structuredClone(payload), content: [{ type: 'p', children: [{ text: '被篡改的正文' }], id: 'node-1' }], status: 'draft' }),
+  });
+  await drifted.handlers['article:update'].execute(drifted.context);
+  assert.equal(drifted.requested.length, 1, 'the drifted-preserving-field run still sends exactly one request (no retry)');
+});
+
+test('article:update clear_existing overlays apply the typed clear and leave every other field on its current value', async () => {
+  const h = articleUpdateHarness({ fieldRefs: ['title', 'tags'] });
+  const result = await h.handlers['article:update'].execute(h.context);
+  assert.deepEqual(result, { request_started: true, status: 'completed' });
+  assert.equal(h.requested.length, 1);
+  const payload = h.requested[0].payload;
+  assert.equal(payload.title, 'Updated Guide Title');
+  assert.deepEqual(payload.tags, [], 'clear_existing:true tags must be typed-cleared to []');
+  assert.deepEqual(payload.categories, ['cat-1', 'cat-2'], 'uncleared taxonomy keeps the current value');
+  assert.deepEqual(payload.content, [{ type: 'p', children: [{ text: '既有正文' }], id: 'node-1' }], 'unmentioned content keeps the current value');
+});
+
+test('article:update overlay fails closed without a current record and sends zero requests', async () => {
+  const h = articleUpdateHarness({ omitCurrent: true });
+  await assert.rejects(
+    () => h.handlers['article:update'].execute(h.context),
+    (error) => {
+      const descriptor = Object.getOwnPropertyDescriptor(error, 'requestStarted');
+      assert.equal(descriptor?.value, false, 'a pre-request refusal must lock requestStarted:false');
+      assert.equal(descriptor?.writable, false);
+      assert.match(error.message, /current_record is undefined.*no request is sent/);
+      return true;
+    },
+  );
+  assert.equal(h.requested.length, 0, 'no request may be sent without the authoritative current record');
+  const nullRecord = articleUpdateHarness({ omitCurrent: true });
+  nullRecord.context.current_record = null;
+  await assert.rejects(() => nullRecord.handlers['article:update'].execute(nullRecord.context), /current_record is null/);
+  assert.equal(nullRecord.requested.length, 0);
+});
+
+test('article:update readCurrent refuses an overlay plan whose fingerprint snapshot carries no record', async () => {
+  const plan = makeArticleUpdatePlanFixture();
+  const noRecord = createAllinCmsPlanHandlerSet({
+    siteKey: 'synthetic-site', siteId: 'sid-1',
+    runtime: { routerTree: '[]', deploymentId: 'd'.repeat(40), actions: {} }, request: async () => ({}),
+    readbackProvider: async () => ({ ok: true, authoritative: true, requirements: [], evidence_ref: 'unused', checks: [] }),
+    fingerprintProvider: async () => ({ fingerprint: H('9') }),
+  });
+  await assert.rejects(() => noRecord['article:update'].readCurrent({ plan, operation: plan.operations[0] }), /readCurrent must return \{ fingerprint, record \}/);
+  // One-shot capture (captureStableReadback): the controller only ever sees
+  // the captured copy, so mutating the provider's live object after
+  // readCurrent can never change the baseline, and an accessor-based record
+  // (access-timing two-record attack) is refused outright.
+  const providerResult = { fingerprint: H('9'), record: ARTICLE_UPDATE_CURRENT_RECORD() };
+  const withRecord = createAllinCmsPlanHandlerSet({
+    siteKey: 'synthetic-site', siteId: 'sid-1',
+    runtime: { routerTree: '[]', deploymentId: 'd'.repeat(40), actions: {} }, request: async () => ({}),
+    readbackProvider: async () => ({ ok: true, authoritative: true, requirements: [], evidence_ref: 'unused', checks: [] }),
+    fingerprintProvider: async () => providerResult,
+  });
+  const current = await withRecord['article:update'].readCurrent({ plan, operation: plan.operations[0] });
+  assert.equal(current.fingerprint, H('9'));
+  assert.equal(current.record.title, 'Existing Guide');
+  providerResult.record.title = 'MUTATED AFTER READCURRENT';
+  assert.equal(current.record.title, 'Existing Guide', 'the captured copy must be isolated from the provider object');
+  const accessorHostile = createAllinCmsPlanHandlerSet({
+    siteKey: 'synthetic-site', siteId: 'sid-1',
+    runtime: { routerTree: '[]', deploymentId: 'd'.repeat(40), actions: {} }, request: async () => ({}),
+    readbackProvider: async () => ({ ok: true, authoritative: true, requirements: [], evidence_ref: 'unused', checks: [] }),
+    fingerprintProvider: async () => ({ fingerprint: H('9'), get record() { return ARTICLE_UPDATE_CURRENT_RECORD(); } }),
+  });
+  await assert.rejects(() => accessorHostile['article:update'].readCurrent({ plan, operation: plan.operations[0] }), /not stable plain data|accessor/);
+  // A no-field_refs operation (legacy) accepts a fingerprint-only snapshot.
+  const legacyPlan = makeArticleUpdatePlanFixture({ fieldRefs: [] });
+  const fingerprintOnly = await noRecord['article:update'].readCurrent({ plan: legacyPlan, operation: legacyPlan.operations[0] });
+  assert.deepEqual(fingerprintOnly, { fingerprint: H('9') });
+});
+
+test('article:update overlay refuses non-stable or incomplete current records before any request', async () => {
+  // Accessor-property record (getter): captureStableReadback refuses it once,
+  // before the authorization and before any request.
+  const hostile = ARTICLE_UPDATE_CURRENT_RECORD();
+  Object.defineProperty(hostile, 'title', { get() { return 'Existing Guide'; }, enumerable: true, configurable: true });
+  const h = articleUpdateHarness({ currentRecord: hostile });
+  await assert.rejects(() => h.handlers['article:update'].execute(h.context), /not stable plain data|accessor/);
+  assert.equal(h.requested.length, 0);
+  // Current record missing a contract field: refused instead of defaulting
+  // that field (which would silently clear it on the wire).
+  for (const field of ['title', 'slug', 'excerpt', 'order', 'coverImage', 'categories', 'tags', 'content']) {
+    const incomplete = articleUpdateHarness({
+      currentRecord: (() => { const record = ARTICLE_UPDATE_CURRENT_RECORD(); delete record[field]; return record; })(),
+    });
+    await assert.rejects(
+      () => incomplete.handlers['article:update'].execute(incomplete.context),
+      (error) => { assert.match(error.message, new RegExp(`missing the contract field ${field}`), field); return true; },
+      field,
+    );
+    assert.equal(incomplete.requested.length, 0, field);
+  }
+});
+
+test('article:update overlay refuses unknown field_refs fields and clear_existing on required fields before any request', async () => {
+  const unknown = articleUpdateHarness({ mutate: (plan) => { plan.operations[0].field_refs = ['ghostField']; } });
+  await assert.rejects(() => unknown.handlers['article:update'].execute(unknown.context), /unknown contract field "ghostField"/);
+  assert.equal(unknown.requested.length, 0);
+  const clearTitle = articleUpdateHarness({ mutate: (plan) => { plan.desired_state[0].fields.title = { value: null, clear_existing: true }; plan.operations[0].field_refs = ['title']; } });
+  await assert.rejects(() => clearTitle.handlers['article:update'].execute(clearTitle.context), /required non-empty field that cannot be cleared/);
+  assert.equal(clearTitle.requested.length, 0);
+  const nullWithoutClear = articleUpdateHarness({ mutate: (plan) => { plan.desired_state[0].fields.content = { value: null, clear_existing: false }; plan.operations[0].field_refs = ['content']; } });
+  await assert.rejects(() => nullWithoutClear.handlers['article:update'].execute(nullWithoutClear.context), /empty value without clear_existing:true/);
+  assert.equal(nullWithoutClear.requested.length, 0);
+});
+
+test('article:update without field_refs keeps the legacy full-field desired-state payload (P0-3.4 regression)', async () => {
+  const h = articleUpdateHarness({ fieldRefs: [], currentRecord: ARTICLE_UPDATE_CURRENT_RECORD() });
+  const result = await h.handlers['article:update'].execute(h.context);
+  assert.deepEqual(result, { request_started: true, status: 'completed' });
+  assert.equal(h.requested.length, 1);
+  // Exactly the pre-P0-3.4 behavior: the desired entity projected by
+  // articleFieldsFromEntity with its ?? defaults (missing order -> 0,
+  // coverImage -> null, clear_existing arrays -> []), ignoring the current
+  // record entirely.
+  assert.deepEqual(h.requested[0].payload, {
+    title: 'Updated Guide Title', slug: 'existing-guide', excerpt: 'Existing excerpt.', order: 0,
+    coverImage: null, categories: [], tags: [], content: [{ type: 'p', children: [{ text: '被替换的正文' }], id: 'node-new' }],
+    siteId: 'sid-1', postId: 'post-77', mode: 'update',
+  });
+});
+
+function makeProductUpdatePlanFixture({ fieldRefs = ['name'], mutate = null } = {}) {
+  const identity = { id: 'prd-1', natural_key: { site_key: 'synthetic-site', slug: 'fp-qc60' }, match_strategy: 'exact_id' };
+  const wrapper = (value, extra = {}) => ({ value, clear_existing: false, ...extra });
+  const plan = {
+    plan_id: 'COP-host-driver-product-update',
+    authorization_scope: {
+      status: 'approved', actor: 'Test Human',
+      approved_at: new Date(Date.now() - 60000).toISOString(),
+      expires_at: new Date(Date.now() + 28 * 60000).toISOString(),
+    },
+    desired_state: [{
+      entity_ref: 'product:fp-qc60', entity_type: 'product', intent: 'update', identity,
+      fields: {
+        name: wrapper('FP-QC60 Updated'),
+        slug: wrapper('fp-qc60'),
+        mediaList: wrapper(null, { clear_existing: true }),
+      },
+    }],
+    operations: [{ operation_id: 'OP-PU-001', entity_ref: 'product:fp-qc60', entity_type: 'product', intent: 'update', identity: structuredClone(identity), field_refs: [...fieldRefs] }],
+  };
+  if (mutate) mutate(plan);
+  return plan;
+}
+
+const PRODUCT_UPDATE_CURRENT_RECORD = () => ({
+  name: 'FP-QC60', slug: 'fp-qc60', description: 'Current fixture description.', order: 3,
+  media: { type: 'image', value: { name: 'fp-qc60.webp', alt: null, type: 'image', source: 'url', url: 'https://assets.example.invalid/s/fp-qc60.webp' } },
+  mediaList: [{ type: 'image', value: { name: 'gallery-1.webp', alt: null, type: 'image', source: 'url', url: 'https://assets.example.invalid/s/gallery-1.webp' } }],
+  content: [{ type: 'p', children: [{ text: '产品正文' }] }],
+  categories: [{ id: 'cat-1' }], tags: ['tag-1'], specifications: [{ key: 'Rated power', value: '500W' }],
+  siteId: 'sid-1', id: 'prd-1',
+});
+
+function productUpdateHarness({ fieldRefs = ['name'], mutate = null, omitCurrent = false, currentRecord = PRODUCT_UPDATE_CURRENT_RECORD(), readbackFromPayload = (payload) => structuredClone(payload) } = {}) {
+  const plan = makeProductUpdatePlanFixture({ fieldRefs, mutate });
+  const runtime = { routerTree: '[]', deploymentId: 'd'.repeat(40), actions: { productUpdate: { actionId: 'v'.repeat(42), routerTree: '[]', deploymentId: 'd'.repeat(40) } } };
+  const requested = [];
+  const request = async (details) => { requested.push(details); return { status: 200, ok: true, contentType: 'text/x-component' }; };
+  const handlers = createAllinCmsPlanHandlerSet({
+    siteKey: 'synthetic-site', siteId: 'sid-1', runtime, request,
+    backendReadback: async () => (requested.length > 0 ? readbackFromPayload(structuredClone(requested[0].payload)) : null),
+    readbackProvider: async () => { throw new Error('readbackProvider must not be used when backendReadback is provided'); },
+  });
+  const context = { plan, operation: plan.operations[0], ...(omitCurrent ? {} : { current_record: currentRecord }) };
+  return { plan, handlers, requested, context };
+}
+
+test('product:update partial overlay preserves current media/mediaList/taxonomy; only name is overlaid (P0-3.4)', async () => {
+  const h = productUpdateHarness();
+  const result = await h.handlers['product:update'].execute(h.context);
+  assert.deepEqual(result, { request_started: true, status: 'completed' });
+  assert.equal(h.requested.length, 1);
+  assert.match(h.requested[0].url, /synthetic-site\/products\/prd-1\/update$/);
+  // mediaList is the headline regression: it used to be unconditionally [] on
+  // every product update (whole-record clear risk); now it keeps the current
+  // list unless it is an explicit clear_existing overlay.
+  assert.deepEqual(h.requested[0].payload, {
+    name: 'FP-QC60 Updated', slug: 'fp-qc60', description: 'Current fixture description.', order: 3,
+    media: { name: 'fp-qc60.webp', alt: null, type: 'image', source: 'url', url: 'https://assets.example.invalid/s/fp-qc60.webp' },
+    mediaList: [{ name: 'gallery-1.webp', alt: null, type: 'image', source: 'url', url: 'https://assets.example.invalid/s/gallery-1.webp' }],
+    content: [{ type: 'p', children: [{ text: '产品正文' }] }],
+    categories: ['cat-1'], tags: ['tag-1'], specifications: [{ key: 'Rated power', value: '500W' }],
+    siteId: 'sid-1', productId: 'prd-1', mode: 'update',
+  });
+});
+
+test('product:update clear_existing mediaList is typed-cleared while media and taxonomy keep current values', async () => {
+  const h = productUpdateHarness({ fieldRefs: ['name', 'mediaList'] });
+  const result = await h.handlers['product:update'].execute(h.context);
+  assert.deepEqual(result, { request_started: true, status: 'completed' });
+  assert.equal(h.requested.length, 1);
+  const payload = h.requested[0].payload;
+  assert.equal(payload.name, 'FP-QC60 Updated');
+  assert.deepEqual(payload.mediaList, [], 'clear_existing:true mediaList must be typed-cleared to []');
+  assert.deepEqual(payload.media, { name: 'fp-qc60.webp', alt: null, type: 'image', source: 'url', url: 'https://assets.example.invalid/s/fp-qc60.webp' }, 'unmentioned media keeps the current value');
+  assert.deepEqual(payload.categories, ['cat-1']);
+  assert.deepEqual(payload.specifications, [{ key: 'Rated power', value: '500W' }]);
+});
+
+test('product:update overlay fails closed without a current record and sends zero requests', async () => {
+  const h = productUpdateHarness({ omitCurrent: true });
+  await assert.rejects(
+    () => h.handlers['product:update'].execute(h.context),
+    (error) => {
+      const descriptor = Object.getOwnPropertyDescriptor(error, 'requestStarted');
+      assert.equal(descriptor?.value, false, 'a pre-request refusal must lock requestStarted:false');
+      assert.equal(descriptor?.writable, false);
+      assert.match(error.message, /current_record is undefined.*no request is sent/);
+      return true;
+    },
+  );
+  assert.equal(h.requested.length, 0, 'no request may be sent without the authoritative current record');
+});
+
+// ---- P0-3.4 controller+driver integration: partial update end to end ----
+
+function makeArticleUpdateRunPlan() {
+  const plan = makePlan();
+  const identity = { id: 'post-77', natural_key: { site_key: 'synthetic-site', slug: 'existing-guide' }, match_strategy: 'exact_id' };
+  const claimEvidence = { source_id: 'SRC-001', source_digest: H('b'), extraction_id: 'SX-001', unit_id: 'UNIT-1', locator: 'x', extraction_digest: H('u') };
+  plan.claim_ledger.push({ claim_id: 'CLAIM-AU-TITLE', status: 'confirmed', source_refs: ['SRC-001'], evidence_refs: [claimEvidence], value: 'Updated Guide Title', notes: '' });
+  plan.capability_snapshot.capabilities = [{ capability_id: 'allincms.article.update', entity_type: 'article', action: 'update', maturity: 'live_verified_current_deployment', evidence_refs: [runtimePath('70_evidence/basis.json')] }];
+  plan.desired_state = [{
+    entity_ref: 'article:existing-guide', entity_type: 'article', intent: 'update', identity,
+    fields: {
+      title: { value: 'Updated Guide Title', fact_status: 'confirmed', source_refs: ['SRC-001'], claim_refs: ['CLAIM-AU-TITLE'], derivation: { mode: 'direct', notes: '' }, clear_existing: false },
+    },
+  }];
+  plan.diff = [{ operation_id: 'OP-AU-001', entity_ref: 'article:existing-guide', resolved_intent: 'update', changed_fields: ['title'] }];
+  plan.operations = [{ operation_id: 'OP-AU-001', entity_ref: 'article:existing-guide', entity_type: 'article', intent: 'update', identity: structuredClone(identity), field_refs: ['title'], capability_ref: 'allincms.article.update', expected_current_fingerprint: H('9'), dependencies: [], mutation: true, publication_effect: 'private_draft', readback_requirements: ['concurrency.expected_current_fingerprint', 'article.complete_backend_field_readback', 'article.editor_reopen_health', 'article.taxonomy_media_binding_readback'] }];
+  plan.authorization_scope.operation_ids = ['OP-AU-001'];
+  return reseal(plan);
+}
+
+function articleUpdateRunHarness({ fingerprintProvider }) {
+  const tmp = mkdtempSync(join(tmpdir(), 'acrun-update-'));
+  mkdirSync(join(tmp, '70_evidence'), { recursive: true });
+  const plan = makeArticleUpdateRunPlan();
+  const SITE_KEY = plan.site_selector.site_key;
+  const SITE_ID = plan.site_selector.site_id;
+  const runtime = { routerTree: '[]', deploymentId: 'd'.repeat(40), actions: { postUpdate: { actionId: 'u'.repeat(42), routerTree: '[]', deploymentId: 'd'.repeat(40) } } };
+  const requested = [];
+  const request = async (details) => { requested.push(details); return { status: 200, ok: true, contentType: 'text/x-component' }; };
+  const toTmp = (path) => join(tmp, path.replace('customer-runtime/10_clients/fluxpedal-synthetic/30_tasks/synthetic-task/', ''));
+  const handlers = createAllinCmsPlanHandlerSet({
+    siteKey: SITE_KEY, siteId: SITE_ID, runtime, request,
+    fingerprintProvider,
+    // The backend readback echoes the synthesized payload plus the draft
+    // status: the bottom layer compares it tree-equal against the same
+    // payload object it sent, so a completed run proves expected == payload.
+    backendReadback: async ({ runtime_entity_id }) => ({
+      ...structuredClone(requested[0]?.payload ?? {}),
+      siteId: SITE_ID, postId: runtime_entity_id ?? 'post-77', id: runtime_entity_id ?? 'post-77', status: 'draft',
+    }),
+    readbackProvider: async ({ plan: readbackPlan, operation }) => {
+      const checks = operation.readback_requirements.map((checkId, idx) => {
+        const ts = new Date().toISOString();
+        const kind = checkId === 'concurrency.expected_current_fingerprint' ? 'concurrency_match'
+          : checkId === 'article.editor_reopen_health' ? 'editor_reopen' : 'backend_readback';
+        const subjectObj = {
+          operation_id: operation.operation_id, entity_ref: operation.entity_ref, entity_type: operation.entity_type,
+          intent: operation.intent, identity: operation.identity, field_refs: operation.field_refs,
+          publication_effect: operation.publication_effect, capability_ref: operation.capability_ref,
+          expected_current_fingerprint: operation.expected_current_fingerprint, dependencies: operation.dependencies,
+          desired_entity: readbackPlan.desired_state.find((d) => d.entity_ref === operation.entity_ref),
+        };
+        const subjectDigest = digest(subjectObj);
+        const obs = {
+          backend_authoritative: kind === 'backend_readback' || kind === 'concurrency_match' ? true : null,
+          exact_match: true, duplicate_count: null,
+          current_fingerprint: kind === 'concurrency_match' ? operation.expected_current_fingerprint : null,
+          http_status: null, content_type: null, resource_url: null, anonymous: null, decoded: null,
+          editor_healthy: kind === 'editor_reopen' ? true : null, media_applicable: null,
+        };
+        const envelope = { schema_version: '1.0', check_id: checkId, evidence_kind: kind, captured_at: ts, site_key: SITE_KEY, site_id: SITE_ID, entity_ref: operation.entity_ref, entity_id: operation.identity.id, subject_digest: subjectDigest, method: 'host-readback', observed_result: JSON.stringify({ ok: true }), observations: obs };
+        const ref = runtimePath(`70_evidence/au-check-${operation.operation_id}-${idx}.json`);
+        writeFileSync(toTmp(ref), JSON.stringify(envelope));
+        return { check_id: checkId, evidence_kind: kind, passed: true, artifact_ref: ref, artifact_digest: `sha256:${createHash('sha256').update(JSON.stringify(envelope)).digest('hex')}`, artifact_media_type: 'application/json', observed_at: ts, site_key: SITE_KEY, site_id: SITE_ID, entity_ref: operation.entity_ref, entity_id: operation.identity.id, subject_digest: subjectDigest, method: 'host-readback', observed_result: JSON.stringify({ ok: true }), observations: obs };
+      });
+      return { ok: true, authoritative: true, requirements: operation.readback_requirements, evidence_ref: runtimePath('70_evidence/au-check-OP-AU-001-0.json'), checks };
+    },
+    writeEvidenceArtifact: async ({ path, bytes }) => { mkdirSync(dirname(toTmp(path)), { recursive: true }); writeFileSync(toTmp(path), bytes); },
+  });
+  const evidencePath = runtimePath('70_evidence/run.json');
+  const preflight = async () => ({
+    login_status: 'authenticated', user_id: 'uid-1', site_key: SITE_KEY, site_id: SITE_ID,
+    deployment_fingerprint: H('dep'), capability_ids: ['allincms.article.update'],
+  });
+  const readEvidenceArtifact = async (arg) => readFileSync(toTmp(typeof arg === 'string' ? arg : arg?.path));
+  const writeEvidence = async ({ path, evidence }) => {
+    mkdirSync(dirname(toTmp(path)), { recursive: true });
+    writeFileSync(toTmp(path), JSON.stringify(evidence));
+    return { ok: true, evidence_ref: path };
+  };
+  const params = { plan, handlers, preflight, writeEvidence, readEvidenceArtifact, evidencePath, runId: 'ACRUN-driver-update-test-001' };
+  return { params, requested, tmp };
+}
+
+test('controller+driver article:update partial overlay run completes and sends the synthesized payload (P0-3.4)', async () => {
+  const h = articleUpdateRunHarness({ fingerprintProvider: async () => ({ fingerprint: H('9'), record: ARTICLE_UPDATE_CURRENT_RECORD() }) });
+  const result = await runAllinCmsContentPlan(h.params);
+  assert.equal(result.ok, true, JSON.stringify(result.problems ?? result).slice(0, 400));
+  assert.equal(result.status, 'completed');
+  assert.equal(result.evidence.operations.length, 1);
+  assert.equal(result.evidence.operations[0].status, 'readback_passed');
+  assert.equal(result.evidence.operations[0].preflight.observed_current_fingerprint, H('9'));
+  assert.equal(h.requested.length, 1);
+  // Same field-by-field synthesized payload as the direct handler test: the
+  // authoritative current record captured at readCurrent baselines the
+  // request, only title is overlaid.
+  assert.deepEqual(h.requested[0].payload, {
+    title: 'Updated Guide Title',
+    slug: 'existing-guide',
+    excerpt: 'Existing excerpt.',
+    order: 7,
+    coverImage: { name: 'cover.webp', alt: '封面', type: 'image', source: 'oss', path: 'site/cover.webp', size: 42, mimeType: 'image/webp' },
+    categories: ['cat-1', 'cat-2'],
+    tags: ['tag-9'],
+    content: [{ type: 'p', children: [{ text: '既有正文' }], id: 'node-1' }],
+    siteId: 'sid-1', postId: 'post-77', mode: 'update',
+  });
+  rmSync(h.tmp, { recursive: true, force: true });
+});
+
+test('controller+driver article:update blocks with zero requests when readCurrent carries no current record (P0-3.4 fail-closed)', async () => {
+  const h = articleUpdateRunHarness({ fingerprintProvider: async () => ({ fingerprint: H('9') }) });
+  const result = await runAllinCmsContentPlan(h.params);
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 'blocked');
+  assert.equal(result.code, 'CURRENT_FINGERPRINT_BLOCK');
+  assert.match(result.problems.join('\n'), /readCurrent must return \{ fingerprint, record \}/);
+  assert.equal(h.requested.length, 0, 'a partial update without its current-record baseline must send zero requests');
+  rmSync(h.tmp, { recursive: true, force: true });
+});

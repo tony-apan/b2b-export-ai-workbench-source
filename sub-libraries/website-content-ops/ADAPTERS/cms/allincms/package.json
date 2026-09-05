@@ -18,6 +18,7 @@
     "article-operations-contract.json",
     "article-operations.md",
     "article-operations.mjs",
+    "article-create-providers.mjs",
     "content-mutation-primitives.mjs",
     "interface-registry.json",
     "interface-registry.schema.json",

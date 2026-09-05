@@ -48,10 +48,10 @@ def path_text_present(path_value: str, text: str) -> bool:
     if resolved:
         variants.add(resolved)
     for value in list(variants):
-        if value.startswith("/private<tmp>/"):
-            variants.add("<tmp>/" + value.removeprefix("/private<tmp>/"))
-        elif value.startswith("<tmp>/"):
-            variants.add("/private<tmp>/" + value.removeprefix("<tmp>/"))
+        if value.startswith("/private/tmp/"):
+            variants.add("/tmp/" + value.removeprefix("/private/tmp/"))
+        elif value.startswith("/tmp/"):
+            variants.add("/private/tmp/" + value.removeprefix("/tmp/"))
     return any(value and value in text for value in variants)
 
 
