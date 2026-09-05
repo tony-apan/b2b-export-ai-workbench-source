@@ -124,6 +124,39 @@ def find_json_all(records, *needles):
             found.append(r)
     return found
 
+
+def pick_names(rows):
+    """taxonomy 行列表 -> [name, ...]（ISS-132①，防读侧 PARSING 误报）。
+    平台两类 taxonomy 行形态统一取名：
+      {id, name}   —— read_product/read_post 的 defaultValues.categories/tags 元素（**无 slug 字段**，
+                      硬编码取 slug 会得到全 None → 误报"全无分类"）
+      {label, value} — read_lists 的 categoryOptions/tagOptions 行（label=分类名，value=id）
+    行缺 name/label 或非 dict 时跳过该行（不猜不抛）。"""
+    names = []
+    for row in (rows or []):
+        if not isinstance(row, dict):
+            continue
+        name = row.get("name") or row.get("label")
+        if name:
+            names.append(name)
+    return names
+
+
+def get_payload(obj, *keys):
+    """按序返回 obj 中首个存在且非 None 的键的值（ISS-132②，防读侧 PARSING 误报）。
+    读路径包裹键不统一：read_product→('product', 'defaultValues')、read_lists→('data',)、
+    read_sites→('sites',)，调用方不要手猜包裹键，例：
+        get_payload(api.read_lists(slug, 'products'), 'data', 'products')
+        get_payload(api.read_product(slug, pid), 'product', 'defaultValues')
+    obj 非 dict 或全部键未命中时返回 None（不猜默认值，缺数据交给上层显式报错）。"""
+    if not isinstance(obj, dict):
+        return None
+    for key in keys:
+        if key in obj and obj[key] is not None:
+            return obj[key]
+    return None
+
+
 class AllinCMS:
     def __init__(self, token=None, email=None, password=None):
         self.token = token

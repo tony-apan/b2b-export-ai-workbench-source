@@ -10,7 +10,7 @@
   python site_pipeline.py diff a.json b.json           # 深度 diff（readback 对抗比对）
   python site_pipeline.py gate <slug> --config <cfg>           # 上线门（数量/200/空态/模板词）
   python site_pipeline.py contact <slug> --config <cfg> --real "..."  # demo 联系方式门
-  python site_pipeline.py audit <slug> --config <cfg> --out r.json  # 13 项对抗审计（必带每站 --config）
+  python site_pipeline.py audit <slug> --config <cfg> --out r.json  # 13 项对抗审计 + soft-404 第 14 项附加探针（必带每站 --config）
   python site_pipeline.py product-content <slug> --config <cfg>    # 独立产品正文合同闸（不改 audit 13 项口径）
 """
 import json, os, re, sys
@@ -365,7 +365,8 @@ def contact_gate(base_url, check_values="", config=None):
 def audit(site_slug, base_url=None, html_dir=None, out=None, config=None):
     """综合对抗审计（优于 gate）：内容/前端/SEO 一体检查，输出 PASS/FAIL 与机器可读 JSON。
     覆盖：数量、200、空态、模板词、demo 联系方式、FAQ 答案 SSR、真实 CTA、
-          单位统一、绝对化词、Markdown 残留(](与#)、正文 h2 语义、根路径 home 回归、表单渲染。
+          单位统一、绝对化词、Markdown 残留(](与#)、正文 h2 语义、根路径 home 回归、表单渲染；
+          附加第 14 项 soft-404 探针（ISS-132④，不改前 13 项历史口径）。
     用法：python3 site_pipeline.py audit <slug> [--config site-audit-config.json] [--out audit-report.json]
     说明：--config 必带每站基线（ISS-063）；缺省= Demo 基线，新站会误判。"""
     import urllib.request, ssl
@@ -417,6 +418,28 @@ def audit(site_slug, base_url=None, html_dir=None, out=None, config=None):
     home_raw = htmls.get("home.html", "")
     add("root-home", "__next_error__" not in home_raw and len(home_raw) > 10000,
         "根路径 / 渲染真实首页" if "__next_error__" not in home_raw else "根路径 / 是错误壳（用 set_home_page 修复，见 RUNBOOK §2）")
+    # soft-404 探针（ISS-132④，第 14 项附加输出——不改上方 13 项历史口径）：
+    # 请求 1 个 config['pages'] 之外的随机不存在路径；HTTP 200 且（长度 < 正常页/10 或含错误壳特征）
+    # = 平台软 404（200 错误壳冒充正常响应，SEO 收录/对账都会被误导）。正常页长度取本次已抓页面的中位数。
+    probe = f"soft404-probe-{os.urandom(8).hex()}"
+    probe_st, probe_txt = fetch(base_url + "/" + probe)
+    page_lens = sorted(len(t) for t in htmls.values() if t)
+    normal_len = page_lens[len(page_lens) // 2] if page_lens else 0
+    if probe_st == 0:
+        add("soft404", None, f"探针请求失败（{probe_txt}），跳过")
+    elif probe_st != 200:
+        add("soft404", True, f"不存在路径返回真实 HTTP {probe_st}（非软 404）")
+    else:
+        shell_marks = [m for m in ("__next_error__", "allin cms runtime") if m in probe_txt.lower()]
+        is_soft404 = bool(shell_marks) or (normal_len > 0 and len(probe_txt) < normal_len / 10)
+        # BOUNDARY 裁决（与 lang/canonical/JSON-LD 同类）：平台级软 404 记入 detail
+        # 但不计入 FAIL verdict——本平台所有站均为软 404，计 FAIL 会使 audit 永久红。
+        # 仍要求 DELIVERY 如实登记该平台边界（ISS-132④/ISS-128）。
+        add("soft404", True,
+            (f"平台软 404 BOUNDARY（len={len(probe_txt)} vs 正常页中位={normal_len}，"
+             f"壳特征={'/'.join(shell_marks) or '仅长度判据'}）——登记不阻断，交付须披露"
+             if is_soft404 else
+             f"不存在路径 200 但非错误壳（len={len(probe_txt)}，正常页中位={normal_len}）"))
     # 表单渲染（ISS-076/ISS-110）：contact-us 必须有真实 <form>；任何页面的 contact-form-split 卡（含首页底部）
     # 若同页 0 个 <form> 即 formSlug 断裂——静态 HTML 里该模块类型名必然可见，可精确检测
     contact_raw = htmls.get("contact-us.html", "")

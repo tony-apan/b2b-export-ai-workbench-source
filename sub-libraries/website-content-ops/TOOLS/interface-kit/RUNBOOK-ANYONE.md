@@ -5,7 +5,7 @@ status: "Working"
 owner: "AI"
 created: "2026-08-30"
 last_updated: "2026-09-05"
-sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..129", "2026-09-04 双机实战（macOS+Windows 10 field build）"]
+sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..133", "2026-09-04 双机实战（macOS+Windows 10 field build）", "2026-09-05 跨账号实证（Apply Theme UI 崩溃对照 + 读侧解析陷阱 + SEO 边界清单）"]
 related: ["ONBOARDING-PIPELINE.md", "writing/WRITING-INDEX.md", "MODULES.md"]
 description: AllinCMS 建站工具包文档（RUNBOOK-ANYONE.md）
 visibility: "public"
@@ -83,6 +83,8 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
 | **capability 每批重建（P9/G2，ISS-117/125）**：live capability ≤30 分钟过期且字段双层严格相等，手拼模板易错 | 每批产品 mutation 前调 `api.refresh_product_capability(site_slug, site_id, task_root, client_id, task_id)`（内部观察 action id→写 70_evidence/→返回自检过的 context；create/update 操作集分开刷） | 2026-09-04 双机实战 |
 | **CDN 滞后先分清后端/边缘（V8）**：公开站没变 ≠ 写失败——先 readback 后端（read_page_document/read_lists）：后端已新=边缘 CDN 缓存（等待/重取即可），后端也旧=写入没落地（回 §2.1 诊断树） | 验收顺序固定：后端 readback → 边缘 curl/抓取；不要只盯公网连续硬刷 | 2026-09-04 双机实战 |
 | **registry capability_routes 声明 blocked ≠ 代理层实际不可用（ISS-129）**：某实战案例 delete_site 被标 blocked，直连实测成功 | 重要动作以真实请求小步验证为准（先读对账再执行）；破坏性动作无论声明如何都须用户明确授权 | 2026-09-04 双机实战（delete_site 实测成功） |
+| **工作台 Apply Theme UI 崩溃 ≠ 服务端故障（ISS-130）**：点 Apply Theme 报 NotFoundError: insertBefore（React DOM 渲染崩溃），Theme 无法 Active、Routes Unbound，易被误判"平台故障等修复" | 主题绑定固定走 API 三步 `apply_theme_routes` → `set_theme_active` → `set_home_page`（§3 顺序）；同部署另一新站一次成功（active=True/homePagePublished/全路由 200）——UI 层崩溃不影响 Server Action 通道 | 2026-09-05 跨账号实证（某 coffee 实战站） |
+| **SEO 可控/边界分层（ISS-133）**：可控★=description/excerpt（meta description 实测一致）/alt/slug/发布态；平台⛔=title 后缀（站点名+品牌句平台拼接，改产品名不可达≤60）/html lang 平台默认/canonical 全站缺失/JSON-LD 全站 0/分类查询页 title、desc 与列表页重复/首页多 H1 | SEO 诊断输出分"可控★/平台⛔/误报⚠"三层并给 ACTIONS 优先列；平台⛔项登记 BOUNDARY 照抄已知事项，不当站内待修项 | 2026-09-05 某 SEO 实战站实测 |
 
 ### §2.1 「改动不生效」诊断树（未激活/未发布/未启用，按序查）
 
@@ -230,6 +232,7 @@ python3 site_pipeline.py contact <slug> --config <cfg> --real "<真实电话|邮
 | 栏目/导航名 | journal、guides、new arrivals、collections | 文章/指南/上新/合集类栏目默认名 |
 | 社媒外链 | instagram、wa.me 4477、wa.me/44 | 默认社媒与 WhatsApp 占位号段 |
 | demo 人名 | maya c. | 评价/作者位占位人名 |
+| 占位邮箱（2026-09-05 补） | you@example.com | 表单/页脚联系位占位邮箱（demo 联系方式层；命中即替换为用户真实邮箱，勿留在联系位） |
 | 商城槽位（ISS-113） | weekender、waxed canvas、from $96、materials and care、new season | hero/carousel 隐藏商城字段回填 |
 
 扫描口径：对每页 document+globals JSON 序列化后逐词 `re.search`（大小写不敏感）；命中即

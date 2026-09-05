@@ -5,8 +5,8 @@ type: "skill"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-01"
-sources: ["README.md", "AGENTS.md", "START-HERE.md", "PLAYBOOK.md", "QA-CHECKLIST.md"]
+last_updated: "2026-09-05"
+sources: ["README.md", "AGENTS.md", "START-HERE.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "TOOLS/interface-kit/index/issues.tsv ISS-131"]
 related: ["README.md", "AGENTS.md", "START-HERE.md", "MANIFEST.md", "RUNTIME-CONTRACT.json", "ADAPTERS/cms/allincms/README.md", "QA-CHECKLIST.md", "VERSION.md"]
 audience: ["Claude", "Codex", "可读取本地文件的 AI agent"]
 state_source: "MANIFEST.md"
@@ -136,8 +136,9 @@ redaction_status: "safe-to-publish"
 12. **Windows 平台能力矩阵（2026-09-04 a Windows 10 field build 实测）**：产品 create/update（interface-kit reviewed 入口）**全可用跨平台**；article.create 在 Windows 下 **BLOCK**（canonical JS Controller 的三 provider transport 当前示例仅 macOS+Chrome，provider 不可伪造=设计如此）——按本地成稿+评审+DELIVERY 记 BLOCK 分支交付，禁止降级 Python 直发；删站/删 taxonomy 经 allincms_api 直连**实测可用**（registry 标 blocked 不代表不可用）。执行面选择一律按 RUNBOOK **§8.1 执行路径决策树**。
 13. **capability 每批刷新（≤30 分钟过期）**：每批产品 mutation 前用 `api.refresh_product_capability(site_slug, site_id, task_root, client_id, task_id, operation='create'|'update')` 重建 context（内部观察 action id、写 70_evidence/ 证据并自检；站内无产品返回 None）；create/update 操作集分开刷，禁止复用上一批；批量中途超窗整批刷新。
 14. **品牌化 demo 残留扫描**：模板还有一层"看着不像 demo 的 demo"（模板公司名 Northstar/Commerce editorial、Ships from San Francisco、栏目名 Journal/Guides/New arrivals/Collections、instagram/wa.me 4477 社媒占位、demo 人名 Maya C.，及 ISS-113 商城槽位词）——新站落库前对每页 document+globals JSON 按词库 `re.search` 一次清零，词库全表见 RUNBOOK **§8.2**；不可 props 化的模板编译文案登记边界不硬改。
+15. **更新已有站 content 受 gate 白名单限制（ISS-131）**：线上真实 content 含 align/lineHeight/url/indent/listStyleType/嵌套 children 等平台键，而 payload_checks 白名单仅认 {p,h2,h3,blockquote}+纯文本叶——更新已有站 content 必 FAIL。三选项：a) 容忍平台键（放宽=削弱安全门）；b) 单字段更新+content 原样透传（字节等于 readback 才放行，evidence 标 content_passthrough）；c) 诊断输出 No API write 请后台改。**代码未改，需独立对抗周期再动**；规避：更新已有站暂只能后台改 content，API 侧更新走不含 content 的单字段 payload。
 
-以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108/120..129）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树 + §8.1 执行路径决策树 + §8.2 demo 残留词库）与 `NEW-SITE-ONEPASS.md` 步骤 3/5/6/7/9/10。
+以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108/120..129、131）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树 + §8.1 执行路径决策树 + §8.2 demo 残留词库）与 `NEW-SITE-ONEPASS.md` 步骤 3/5/6/7/9/10。
 
 ### 上传前必须取得精确授权
 
