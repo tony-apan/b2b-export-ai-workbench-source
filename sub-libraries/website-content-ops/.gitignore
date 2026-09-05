@@ -20,3 +20,6 @@ credentials/
 customer-runtime/
 secrets/
 browser-profiles/
+
+# pytest cache（测试运行产物，永不入库）
+.pytest_cache/
