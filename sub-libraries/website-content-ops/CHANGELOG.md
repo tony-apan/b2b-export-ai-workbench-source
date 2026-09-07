@@ -15,6 +15,8 @@ redaction_status: "safe-to-publish"
 
 ## 0.4.0-preview.2 — 2026-09-07
 
+**Published**：namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2` → commit `4802f7ae538a`；GitHub prerelease 已创建。Scope=`website-content-ops`，非 Stable。
+
 0.3.2-preview.1（唯一历史公开版，2026-07-30 独立公开仓 Public Preview）之后进入本库的全部改动均为**未发布候选**：`release_status: BLOCK`、`preview_publication_status: Ready`、候选身份未分配；下一正式 Preview 候选计划分配 `0.4.0-preview.2`，使用 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`。本节按日期合并 2026-08-01 / 2026-08-30 / 2026-09-03 / 2026-09-07 四段工作树记录（信息保留，逐段标注日期）。
 
 ### Invalid historical tag incident — 2026-09-07（ISS-141）

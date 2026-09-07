@@ -13,21 +13,21 @@ redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "historical_published_version", "historical_published_tag", "current_candidate_identity", "current_candidate_snapshot", "current_candidate_version"]
 release_status: "Preview"
-preview_publication_status: "Ready"
-historical_published_version: "0.3.2-preview.1"
-historical_published_tag: "v0.3.2-preview.1"
-current_candidate_identity: "website-content-ops-0.4.0-preview.2"
-current_candidate_snapshot: "clean-committed-tree"
-current_candidate_version: "0.4.0-preview.2"
+preview_publication_status: "Published"
+historical_published_version: "0.4.0-preview.2"
+historical_published_tag: "v0.4.0-preview.2"
+current_candidate_identity: "unassigned"
+current_candidate_snapshot: "dirty-working-tree"
+current_candidate_version: null
 ---
 # Version
 
 - Package ID：`website-content-ops`
-- Version：`0.3.2-preview.1`
+- Version：`0.4.0-preview.2`
 - Version meaning：legacy compatibility 字段，仅指 immutable historical published artifact，不是当前 candidate version。
-- Current candidate identity：`website-content-ops-0.4.0-preview.2`；snapshot：`clean-committed-tree`；version：`0.4.0-preview.2`（2026-09-07，Ready for Public Preview publication）。
+- Current candidate identity：`unassigned`；snapshot：`dirty-working-tree`；version：`null`（发布后已清空，等待下一候选）。
 - Historical published version：`0.3.2-preview.1`；tag：`v0.3.2-preview.1`；独立公开仓 Public Preview（2026-07-30）。这是唯一的历史公开事实。
-- Publication：`release_status: Preview`、`preview_publication_status: Ready`、`license_status: cleared`；非 Stable，生产动作仍需逐次批准。
+- Publication：`release_status: Preview`、`preview_publication_status: Published`、`license_status: cleared`；非 Stable，生产动作仍需逐次批准。
 - Changelog：[CHANGELOG.md](CHANGELOG.md)
 - Release guide：[RELEASE.md](RELEASE.md)
 - Update URL：`https://fluxpedal.example/content-lab/updates`（虚拟演示）

@@ -1249,11 +1249,18 @@ ${output}`);
     run({ root, timeoutMs }) {
       const outputPath = join(root, '.governance-fixtures/router-sub-output.txt');
       mkdirSync(dirname(outputPath), { recursive: true });
-      const historicalTag = 'sub-library/website-content-ops/v0.3.2-preview.1';
-
       const manifestPath = join(root, 'sub-libraries/website-content-ops/MANIFEST.md');
       const versionPath = join(root, 'sub-libraries/website-content-ops/VERSION.md');
       const registryPath = join(root, 'sub-libraries/registry.json');
+      const manifestSource = readFileSync(manifestPath, 'utf8');
+      const historicalVersion = manifestSource.match(/^historical_published_version: "([^"]+)"$/m)?.[1];
+      const historicalVersionTag = manifestSource.match(/^historical_published_tag: "([^"]+)"$/m)?.[1];
+      if (!historicalVersion || historicalVersionTag !== `v${historicalVersion}`) {
+        throw new Error('fixture requires a valid historical published version/tag in MANIFEST.md');
+      }
+      const historicalTag = `sub-library/website-content-ops/${historicalVersionTag}`;
+      const candidateVersion = '9.9.9-fixture';
+      const candidateTag = `sub-library/website-content-ops/v${candidateVersion}`;
       // 场景 1：无论真实仓当前是未分配态还是已分配 Preview 候选态，
       // fixture 都先显式降为 unassigned/BLOCK，再验证路由拒绝。测试不与
       // 仓库当前发布阶段耦合（准备发版时切状态不应让治理用例本身漂移）。
@@ -1283,7 +1290,7 @@ ${output}`);
         replaceExact(path, 'release_status: "BLOCK"', 'release_status: "Ready"');
         replaceExact(path, 'current_candidate_identity: "unassigned"', 'current_candidate_identity: "assigned"');
         replaceExact(path, 'current_candidate_snapshot: "dirty-working-tree"', 'current_candidate_snapshot: "source-commit"');
-        replaceExact(path, 'current_candidate_version: null', 'current_candidate_version: "0.3.2-preview.1"');
+        replaceExact(path, 'current_candidate_version: null', `current_candidate_version: "${historicalVersion}"`);
       }
       mutateJson(registryPath, (registry) => {
         const entry = registry.entries.find((item) => item.id === 'website-content-ops');
@@ -1291,30 +1298,42 @@ ${output}`);
         entry.release_status = 'Ready';
         entry.current_candidate_identity = 'assigned';
         entry.current_candidate_snapshot = 'source-commit';
-        entry.current_candidate_version = '0.3.2-preview.1';
+        entry.current_candidate_version = historicalVersion;
       });
 
       const collision = run(root, 'scripts/resolve-release-scope.mjs', [historicalTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
       assertRejected(collision, /current_candidate_version collides with immutable historical_published_version/, 'historical/current sub-library version collision');
 
       for (const path of [manifestPath, versionPath]) {
-        replaceExact(path, 'current_candidate_version: "0.3.2-preview.1"', 'current_candidate_version: "0.3.3-preview.1"');
+        replaceExact(path, `current_candidate_version: "${historicalVersion}"`, `current_candidate_version: "${candidateVersion}"`);
       }
       mutateJson(registryPath, (registry) => {
         const entry = registry.entries.find((item) => item.id === 'website-content-ops');
         if (!entry) throw new Error('website-content-ops registry fixture entry missing');
-        entry.current_candidate_version = '0.3.3-preview.1';
+        entry.current_candidate_version = candidateVersion;
       });
 
-      const releaseTag = 'sub-library/website-content-ops/v0.3.3-preview.1';
+      const releaseTag = candidateTag;
       const result = run(root, 'scripts/resolve-release-scope.mjs', [releaseTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
-      assertAccepted(result, /RELEASE_SCOPE_PASS: sub-library website-content-ops sub-library\/website-content-ops\/v0\.3\.3-preview\.1/, 'assigned sub-library candidate release route');
+      assertAccepted(result, /RELEASE_SCOPE_PASS: sub-library website-content-ops/, 'assigned sub-library candidate release route');
       const output = readFileSync(outputPath, 'utf8');
-      if (!/^scope=sub-library\npackage_id=website-content-ops\npath=sub-libraries\/website-content-ops\nversion=0\.3\.3-preview\.1\nhistorical_published_version=0\.3\.2-preview\.1\nhistorical_published_tag=v0\.3\.2-preview\.1\ncurrent_candidate_identity=assigned\ncurrent_candidate_snapshot=source-commit\ncurrent_candidate_version=0\.3\.3-preview\.1\nrelease_tag=sub-library\/website-content-ops\/v0\.3\.3-preview\.1\n$/.test(output)) {
+      const expectedOutput = [
+        'scope=sub-library',
+        'package_id=website-content-ops',
+        'path=sub-libraries/website-content-ops',
+        `version=${candidateVersion}`,
+        `historical_published_version=${historicalVersion}`,
+        `historical_published_tag=${historicalVersionTag}`,
+        'current_candidate_identity=assigned',
+        'current_candidate_snapshot=source-commit',
+        `current_candidate_version=${candidateVersion}`,
+        `release_tag=${candidateTag}`,
+        '',
+      ].join('\n');
+      if (output !== expectedOutput) {
         throw new Error(`sub-library route emitted unexpected or multiple scope outputs:
 ${output}`);
-      }
-    },
+      }    },
   }],
   ['approval-trigger-tag-crosswire', {
     title: 'The workflow trigger tag must match the approval sidecar tag for both scopes',

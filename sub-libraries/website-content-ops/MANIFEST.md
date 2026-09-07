@@ -11,14 +11,14 @@ related: ["README.md", "COURSE-MAP.md", "WORKSPACE-TEMPLATE/README.md", "MENTAL-
 visibility: "public"
 redaction_status: "safe-to-publish"
 repository_status: "public-preview"
-preview_publication_status: "Ready"
-preview_version: "0.3.2-preview.1"
-preview_tag: "v0.3.2-preview.1"
-historical_published_version: "0.3.2-preview.1"
-historical_published_tag: "v0.3.2-preview.1"
-current_candidate_identity: "website-content-ops-0.4.0-preview.2"
-current_candidate_snapshot: "clean-committed-tree"
-current_candidate_version: "0.4.0-preview.2"
+preview_publication_status: "Published"
+preview_version: "0.4.0-preview.2"
+preview_tag: "v0.4.0-preview.2"
+historical_published_version: "0.4.0-preview.2"
+historical_published_tag: "v0.4.0-preview.2"
+current_candidate_identity: "unassigned"
+current_candidate_snapshot: "dirty-working-tree"
+current_candidate_version: null
 release_status: "Preview"
 maturity_status: "validated"
 verification_status: "evidence-partial"
@@ -51,7 +51,9 @@ exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**
 
 ## 当前交付判断
 
-当前候选已分配 `0.4.0-preview.2`（identity `website-content-ops-0.4.0-preview.2`，snapshot `clean-committed-tree`），`release_status: Preview`、`preview_publication_status: Ready`、`license_status: cleared`。它准备按 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2` 发布；这不升级 Stable qualification，`approval_status: pending` 与生产动作逐次批准边界保持不变。
+**发布回写（2026-09-07）**：候选 `0.4.0-preview.2` 已以 namespaced annotated tag `sub-library/website-content-ops/v0.4.0-preview.2` 发布，tag 指向冻结 commit `4802f7ae538a`，GitHub Release 为 prerelease。`preview_publication_status: Published`；Stable qualification 仍 BLOCK。
+
+当前候选已分配 `0.4.0-preview.2`（identity `website-content-ops-0.4.0-preview.2`，snapshot `clean-committed-tree`），`release_status: Preview`、`preview_publication_status: Published`、`license_status: cleared`。它已按 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2` 发布；这不升级 Stable qualification，`approval_status: pending` 与生产动作逐次批准边界保持不变。
 
 `v0.3.2-preview.1` 仍为唯一 immutable historical published artifact（独立公开仓 `tony-apan/website-content-ops` 的事实公开版本；tag 与身份不重用）。三张 bundled source card（AllinCMS official、PicGo image-hosts official、B2B SEO content research）已于 2026-09-03 逐卡完成 publication review，三字段均为 `approved / PASS / cleared`，因此包级 `license_status: cleared` 成立且继续成立；但这只闭合来源许可，不构成发布资格。
 

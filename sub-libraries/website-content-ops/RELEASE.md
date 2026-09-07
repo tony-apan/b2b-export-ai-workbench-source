@@ -13,7 +13,7 @@ redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status"]
 release_status: "Preview"
-preview_publication_status: "Ready"
+preview_publication_status: "Published"
 ---
 # Release Guide
 
@@ -76,4 +76,4 @@ validator 会把这些值与 approval/evidence、精确候选、Git annotated ta
 - 失败、回滚、写回和下架条件已经记录；
 - 正式候选另有 scope-bound evidence bundle、真实人工 approval sidecar、clean commit provenance、可信签名 tag、候选归档 checksum，以及候选包外的 `qualified-not-published` qualification attestation；远程 workflow 证据仍须实际产生和保存。
 
-Preview 发布清单未满足时保持 `preview_publication_status: Ready` 或回退为 `BLOCK`；Stable 证据未满足时始终保持 Stable `BLOCK`，不要用版本号或测试数量掩盖证据缺口。
+Preview 发布清单未满足时保持 `preview_publication_status: Published` 或回退为 `BLOCK`；Stable 证据未满足时始终保持 Stable `BLOCK`，不要用版本号或测试数量掩盖证据缺口。

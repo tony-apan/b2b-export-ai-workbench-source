@@ -12,7 +12,7 @@ audience: ["Claude", "Codex", "可读取本地文件的 AI agent"]
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "skill_status"]
 release_status: "Preview"
-preview_publication_status: "Ready"
+preview_publication_status: "Published"
 skill_status: "preview-adapter-not-installable"
 visibility: "public"
 redaction_status: "safe-to-publish"
