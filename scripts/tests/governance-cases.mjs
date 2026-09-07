@@ -1979,25 +1979,25 @@ ${output}`);
           label: 'cross-scope manifest source',
           mutate: (content) => content
             .replace('state_source: "MANIFEST.md"', 'state_source: "sub-libraries/website-content-ops/MANIFEST.md"')
-            .replace('state_projection: ["repository_sync_status", "release_status"]', 'state_projection: ["release_status"]')
+            .replace('state_projection: ["working_version", "repository_sync_status", "release_status"]', 'state_projection: ["release_status"]')
             .replace('release_status: "BLOCK"', 'release_status: "Preview"'),
           expected: /VERSION\.md state_source must resolve to the canonical scope MANIFEST\.md: sub-libraries\/website-content-ops\/MANIFEST\.md/,
         },
         {
           label: 'empty projection',
-          mutate: (content) => content.replace('state_projection: \["repository_sync_status", "release_status"\]', 'state_projection: []'),
+          mutate: (content) => content.replace('state_projection: ["working_version", "repository_sync_status", "release_status"]', 'state_projection: []'),
           expected: /VERSION\.md state_projection must be a non-empty inline string array/,
         },
         {
           label: 'required projection declarations removed together',
           mutate: (content) => content
             .replace('state_source: "MANIFEST.md"\n', '')
-            .replace('state_projection: ["repository_sync_status", "release_status"]\n', ''),
+            .replace('state_projection: ["working_version", "repository_sync_status", "release_status"]\n', ''),
           expected: /VERSION\.md required state projection must declare both state_source and state_projection/,
         },
         {
           label: 'required projection field set narrowed',
-          mutate: (content) => content.replace('state_projection: ["repository_sync_status", "release_status"]', 'state_projection: ["release_status"]'),
+          mutate: (content) => content.replace('state_projection: ["working_version", "repository_sync_status", "release_status"]', 'state_projection: ["release_status"]'),
           expected: /VERSION\.md required state_projection must exactly equal/,
         },
       ];

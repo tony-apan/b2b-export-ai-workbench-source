@@ -31,7 +31,7 @@ const allowedDeliveryModes = new Set(['human-playbook', 'ai-skill-draft', 'ai-sk
 const allowedSkillStatus = new Set(['draft-adapter-not-installable', 'preview-adapter-not-installable', 'validated-adapter', 'stable-adapter', 'retired']);
 const ignoredSourceDirs = new Set(['.git', '.obsidian', '.v2c', '.video_agent', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace']);
 const requiredStateProjections = new Map([
-  ['VERSION.md', ['repository_sync_status', 'release_status']],
+  ['VERSION.md', ['working_version', 'repository_sync_status', 'release_status']],
   ['RELEASE.md', ['repository_sync_status', 'release_status']],
   ['LICENSE.md', ['release_status', 'license_status']],
 ]);

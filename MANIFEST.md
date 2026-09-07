@@ -5,13 +5,14 @@ type: "manifest"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-09-02"
+last_updated: "2026-09-07"
 sources: ["Mother-library and sub-library release architecture decision 2026-07-28", "Publishing and redaction policy", "Tony public MIT decision 2026-09-02"]
 related: ["README.md", "CONTEXT.md", "AGENTS.md", "CLAUDE.md", "RELEASE.md", "VERSION.md", "CHANGELOG.md", "sub-libraries/README.md", "sub-libraries/registry.json", "scripts/README.md", "scripts/build-mother-release.mjs", "wiki/00_meta/publishing-and-redaction.md", "wiki/00_meta/release-state-machine.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 repository_status: "public-source"
 repository_sync_status: "Synced"
+working_version: "0.3.4-working"
 release_status: "BLOCK"
 maturity_status: "validated"
 verification_status: "evidence-partial"
@@ -36,7 +37,7 @@ raw_fixture_digests: ["raw/10_conversations/src-20260728-0001-knowledge-base-str
 
 本仓库是以 MIT 许可公开的 canonical monorepo 母库源码，不是客户运行区，也不是把所有子库自动批准后的产品包。母库可以携带注册表中标记为 `source-only` 的公开子库源码快照，但这只表示源码分发，不授予任何子库独立发布资格；真实客户资料、账号、凭据、运行日志和私有 raw 必须在仓库外维护。
 
-`repository_sync_status: Synced` 表示当前源码已同步到 canonical 仓 `tony-apan/b2b-export-ai-workbench-source`。`release_status: BLOCK` 表示尚未完成正式 Stable qualification（approval/evidence、signed tag、Protected Environment、远端验收），不等于不可读或不可用。
+`working_version: 0.3.4-working` 是当前母库源码工作版本，不是正式发布身份。`repository_sync_status: Synced` 表示当前源码已同步到 canonical 仓 `tony-apan/b2b-export-ai-workbench-source`。`release_status: BLOCK` 表示尚未完成正式 Stable qualification（approval/evidence、signed tag、Protected Environment、远端验收），不等于不可读或不可用。
 
 ## 母库包包含
 
