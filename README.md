@@ -6,7 +6,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-09-03"
+last_updated: "2026-09-07"
 sources: ["AGENTS.md", "wiki/00_meta/private-master-and-sub-library-model.md", "Tony public MIT decision 2026-09-02"]
 related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "MANIFEST.md", "RELEASE.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/in-repository-agency-runtime-model.md", "sub-libraries/README.md", "sub-libraries/agency-operations/README.md"]
 visibility: "public"
@@ -15,7 +15,9 @@ canonical_entry: "README.md"
 -->
 # B2B Export AI Workbench
 
-![Status](https://img.shields.io/badge/status-Public_Preview-2ea043) ![Version](https://img.shields.io/badge/version-0.4.0--preview.1-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white) ![Node](https://img.shields.io/badge/node-%E2%89%A520.9-339933?logo=node.js&logoColor=white)
+![Status](https://img.shields.io/badge/status-Working-BLOCK-important) ![Version](https://img.shields.io/badge/version-0.3.3--working-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white) ![Node](https://img.shields.io/badge/node-%E2%89%A520.9-339933?logo=node.js&logoColor=white)
+
+> 母库状态：`Working / release_status: BLOCK`（工作版本 `0.3.3-working`，MIT）。[website-content-ops 子库](sub-libraries/website-content-ops/README.md)的历史公开版是 `0.3.2-preview.1`（2026-07-30 独立公开仓 Public Preview）；0.3.2 之后的新能力均为未发布候选（`BLOCK`），无更高已发布版本。
 
 一个给外贸人用的"增长工作台"。里面装的不是软件，而是**做外贸要用到的方法、模板和工具**：怎么建网站、怎么写 B2B 文章、怎么开发信、怎么做 LinkedIn、怎么弄 SEO/GEO、怎么回询盘、怎么参加展会、怎么做短视频——全都整理成了人和 AI 都能读的步骤。
 

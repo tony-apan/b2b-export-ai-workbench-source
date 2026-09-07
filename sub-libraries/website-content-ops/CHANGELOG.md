@@ -13,9 +13,17 @@ redaction_status: "safe-to-publish"
 ---
 # Changelog
 
-## Unreleased — 2026-09-07
+## Unreleased — 下一 Preview 候选（planned 0.4.0-preview.2）
 
-0.4.0-preview.1 发布后的线上维护回填（详见 `TOOLS/interface-kit/index/issues.tsv` 与 git log）：
+0.3.2-preview.1（唯一历史公开版，2026-07-30 独立公开仓 Public Preview）之后进入本库的全部改动均为**未发布候选**：`release_status: BLOCK`、`preview_publication_status: BLOCK`、候选身份未分配；下一正式 Preview 候选计划分配 `0.4.0-preview.2`，使用 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`。本节按日期合并 2026-08-01 / 2026-08-30 / 2026-09-03 / 2026-09-07 四段工作树记录（信息保留，逐段标注日期）。
+
+### Invalid historical tag incident — 2026-09-07（ISS-141）
+
+母库中的裸 tag `v0.4.0-preview.1`（tag object `b91d62ad`，指向 commit `b8cb23d`）是 2026-09-07 确认的非规范历史引用：错误 namespace（本子库 tag 必须为 `sub-library/website-content-ops/v*` 裸形式不得使用），且与 2026-09-03 正文声称的公开仓 main `4ccab49`、独立公开仓仍处 `0.3.2-preview.1`（main `196e94b`）三点互相矛盾（一版三绑）。结论：`0.4.0-preview.1` 从未真实发布，不具备任何 release qualification，不作为正式版本条目记录。处置：事故 tag 原样保留为不可变证据（不删除、不移动、不重用、不改指向）；状态投影回退 `BLOCK`；下一正式 Preview 候选改用 `0.4.0-preview.2` + namespaced tag；发版前核验 scope / tag namespace / 目标 commit / CHANGELOG / 徽章五方一致。
+
+### 2026-09-07 工作树记录
+
+线上维护回填（详见 `TOOLS/interface-kit/index/issues.tsv` 与 git log；均属未发布候选改动）：
 
 - ISS-131 方案 b 落地（b8a3d85，2026-09-05）：update-only content passthrough——review record 增 `content_passthrough: true` + `content_passthrough_ref{ref,digest}`，transport 前对 defaultValues.content 做 fresh 树等比重验，不等即零 API write + reconcile；create 禁用透传。
 - P0-3.3b（b290b84，2026-09-06）：`article-create-providers.mjs` 纯 Node fetch + payload-token 三真实 provider，跨平台（macOS/Windows/Linux）通用，host-run-template 默认装配；Windows 下 article.create 仍按 BLOCK 分支交付。
@@ -24,23 +32,23 @@ redaction_status: "safe-to-publish"
 - ISS-134~139 回填（184e91d，2026-09-07）：v2 重建六项新断点入 SKILL.md §关键坑 16，并新增 RUNBOOK §8.3 自修复引导。
 - ISS-140（b8cb23d）：`check-update.py` 版本检测——每次开工先查线上是否有新版本。
 
-## 0.4.0-preview.1 — 2026-09-03
+### 2026-09-03 工作树记录
 
-- 三张 bundled source card 逐卡 publication clearance（approved/PASS/cleared，依据入卡）；`release_status: Preview`、`preview_publication_status: Published`（候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布）、`license_status: cleared`；当前候选 `0.4.0-preview.1`。
-- 自 0.3.2-preview.1 以来的主要能力（详见 git log 2a6ebd5 之前历史与 issues.tsv ISS-067..108）：
+- 三张 bundled source card 逐卡 publication clearance（approved/PASS/cleared，依据入卡）；包级 `license_status: cleared` 只闭合来源许可，不构成发布资格——当时正文声称的 `0.4.0-preview.1` 发布不成立（见上方 invalid historical tag incident 小节），状态已于 2026-09-07 回退 `BLOCK`。
+- 自 0.3.2-preview.1 以来的主要能力（均属未发布候选；详见 git log 2a6ebd5 之前历史与 issues.tsv ISS-067..108）：
   - interface-kit 纯接口工具包（allincms_api/content_review_gate/site_pipeline/audit 三门）+ RUNBOOK-ANYONE/NEW-SITE-ONEPASS 13 步一条龙；
   - SKILL-INSTALL 一键安装（fresh-clone 跨平台自测）；README AI 复制即用快速启动；
   - 内容审查合作式闸（producer/reviewer 分离、fresh capability、canonical readback）；
   - ISS-105 产品 media source=url、ISS-106 globals 单字段回传+CTA 弹窗+站点级 Publish、ISS-107 网格 columnCount=条目数、ISS-108 激活键名 active+§2.1 未生效诊断树；registry verify 列数守卫。
 
-## Unreleased — 2026-08-30
+### 2026-08-30 工作树记录
 
-### AllinCMS trusted runtime profile alignment (2026-09-02)
+#### AllinCMS trusted runtime profile alignment (2026-09-02)
 
 - 当前正式 trusted runtime profile 对齐真实已验证四文件 160/160：媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48；完整 Adapter 七文件回归为 250/250。
 - 原 158/158（媒体 45）保留为 historical snapshot，并由 release governance 显式拒绝，不再具备当前 qualification 资格。
 
-### 四项平台层审计禁令全仓清扫 + id-0002 退役 + 工具包治理（每批 flash+TERRA 双审）
+#### 四项平台层审计禁令全仓清扫 + id-0002 退役 + 工具包治理（每批 flash+TERRA 双审）
 
 改动对比（旧 → 新 → 原因）：
 
@@ -61,23 +69,14 @@ redaction_status: "safe-to-publish"
 - validate-sub-library 存量失败为基线既有（394→390，随修复推进下降；剩余 archived_at schema 等存量问题另行立项）。WORKSPACE-TEMPLATE 镜像含源模板 archived_at 追赶 hunk（sync 机制自愈，随本批入库）。
 - 待用户定性（OQ-BAN-0001）：三状态字段名（12 文件+验证器+测试）与历史日志 4 处原句的豁免/清除；vendor bundle 需在 Skill 化前重建。
 
-## 0.3.2-preview.1 — 2026-07-30
+### 2026-08-01 工作树记录
 
-### Public Preview
-
-- 以独立公开仓发布首个 Preview；README 面向新人，`START-HERE.md` 面向 AI agent。
-- 许可证确定为 Apache-2.0，并增加 `LICENSE`、`NOTICE`、`THIRD-PARTY-NOTICES.md`。
-- 本地结构、链接、拆包、AllinCMS Adapter 131 项测试和依赖审计通过后允许单样本试用。
-- Preview 不等于 Stable 或 production-ready；跨部署、真实新手冷启动、正式真人 approval、受保护发布 workflow 和 signed tag 仍未完成。
-
-## Unreleased — 2026-08-01
-
-### Current dirty candidate governance boundary
+#### Current dirty candidate governance boundary
 
 - 当前 dirty working-tree candidate 没有分配发布身份：`release_status: BLOCK`、`preview_publication_status: BLOCK`、`license_status: pending`、`approval_status: pending`。历史 `v0.3.2-preview.1` 的 Preview / Published / cleared 状态只属于其 2026-07-30 冻结 artifact，不属于、也不得继承给当前候选。
 - 本次 Worker B write set 只修复 B2B 内容规范/操作文档与 runtime unsupported-claims，不操作 CMS、不改 `dist/`，不 commit、push、tag 或 release；不得把该局部范围外推为整个 dirty candidate 已完成。Tony 已明确 deferred `html lang`、canonical 与 Article JSON-LD；deferred 不等于 PASS。final DOM 正文图片空 alt 与 B2B research publication clearance pending 继续作为两个独立 BLOCK。
 
-### B2B article contract adversarial hardening
+#### B2B article contract adversarial hardening
 
 - 统一 canonical template 枚举：query fact status 只允许 `missing|inferred|confirmed`；Troubleshoot/Compare intake 明确默认 `none`，仅在真实 destination、named owner、accepted receiving task 与阶段证据成立时升级。
 - 将买方接收任务的 `cta_receiving_owner` 与外部 CTA route 的 `cta_owner` 分离；Buy commercial handoff 不再复用 engineering-only endpoint，也不能把买方 Procurement owner 与供应商 Commercial Account owner 混为同一责任。
@@ -89,12 +88,12 @@ redaction_status: "safe-to-publish"
 - 全部 buyer-visible CTA 均进入 inventory，不依赖 H2；verified route 要求 endpoint-specific structured evidence，unverified route 全文不得链接或指示使用/发送，只允许 do-not-send、save-locally、approved supplier-contact process 恢复路径。四件套还必须 exact projection 主 CTA 三轴、fallback contract、`Hook → Diagnose → Decide → De-risk → Act`、`primary|soft|fallback` 与 deferred exact set。
 - 内容层新增 320px 小屏设计边界；没有真实 renderer/readability structured evidence 时只能 `not-run + missing + block`，结构 scope 可单独审查但 production readiness 必须 BLOCK。H1 明确属于 page-shell metadata，publishable body 禁止 H1。source/license、final DOM alt、CMS、release 和真实排名/询盘/转化继续独立 BLOCK/未验证；三个 deferred frontend SEO 项保持 not PASS，但不阻断本轮内容合同 scope。
 
-### AllinCMS media startup and fallback routing
+#### AllinCMS media startup and fallback routing
 
 - 把 AllinCMS 图片上传冷启动固化为“宿主内置 Browser → 登录即时前台交接 → `/sites` 的 0 / 1 / 多站点发现 → 精确媒体页 → 接口串行上传”；接口异常时先判断请求是否可能已发出，再只读对账或页面诊断，UI 仅在另行明确批准后用于 1–5 张回退。
 - 增加登录、无站点、多站点、无目标站点权限、页面 403/404/500/空白/Loading、浏览器控制面和本机依赖的统一提醒与 BLOCK 规则；修复 AI 唯一入口的媒体示例，显式创建并传入必需的 `authorizationContext`。
 
-### AllinCMS article format profile
+#### AllinCMS article format profile
 
 - 在冻结计划授权下严格串行创建 1 篇草稿、测试 13 个正文格式候选并只发布 1 次；复用既有 taxonomy 和真实媒体，没有删除、清理、跨站或修改已有文章。
 - 形成 12 verified / 1 unsupported-current-shape / 0 not-tested 矩阵；H3、五种 inline mark、链接、两类列表、引用、分隔线和表格通过后台回读、编辑器重开与前台验收。
@@ -102,14 +101,14 @@ redaction_status: "safe-to-publish"
 - 新增 `article-content-formats.mjs`，把 Slate canonical 示例和 Markdown → Slate 保守转换固定为代码；直接 HTML/Markdown 不进入文章 `content`，代码围栏、正文 H1、raw HTML、不安全链接和畸形表格请求前 fail closed。
 - 当前未发布工作树的 Adapter 回归为 158/158：媒体 45、正文图片 52、正文格式 13、文章生命周期/taxonomy 48；该结果现为 historical snapshot，当前 trusted runtime profile 已于 2026-09-02 对齐为 160/160。
 
-### AllinCMS article and taxonomy verification
+#### AllinCMS article and taxonomy verification
 
 - 在冻结计划授权下，同站点严格串行完成 2 个分类、2 个标签、3 张真实图片和 2 篇全字段文章的接口创建与发布；未删除、未清理、未跨站，随后逐篇单请求重复 publish，ID、slug、数量和 published 状态保持不变。
 - 修复浏览器/CDP 跨 realm prototype 导致的 JSON 假阴性；taxonomy 精确 `/posts` route 回读允许省略 `contentType`，但显式冲突继续 fail closed。
 - 封面回读改为比较后端实际持久化的 `name / alt / type / source / path / size / mimeType` canonical 字段；任何非空封面 payload 在请求前必须完整自有这 7 个字段，URL-only 或提交与回读同时缺字段也会 fail closed；扩展字段被省略不再误报，canonical 字段缺失/变化仍失败。
 - 历史阶段 Adapter 计数依次为 136/136、加入正文格式 profile 后 145/145、将独立正文格式回归文件纳入 trusted profile 后 156/156、补齐 2 项格式负向回归后 158/158；这些均为 historical snapshot，不是当前 trusted profile。当前固定四文件为 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期/taxonomy 48），旧 158/158 必须拒绝。媒体 caption 在该次自然运行中仍为 `null`，主题未稳定透传正文图片 alt、分类与全部标签，因此顶层结论保持 WARN，不能宣称跨部署、Stable 或 production-ready。
 
-### Human onboarding and AI execution entry
+#### Human onboarding and AI execution entry
 
 - 重写子库 README：第一屏改为面向业务人员和新手的通俗说明，明确“人说目标并批准关键动作，AI 按执行手册完成检查、制作和验证”。
 - 明确 `START-HERE.md` 主要给可读写文件、使用浏览器或脚本的 AI agent 执行；保留四步执行链，并补充能力声明、无账号分支、本地小样降级路线和 fail-closed 停止条件。
@@ -117,13 +116,22 @@ redaction_status: "safe-to-publish"
 - 将 README 中底层授权实现细节下沉到 AllinCMS adapter 文档；人类入口保留可理解的安全边界和发布状态，不再要求新手先理解 digest、Buffer 或 TOCTOU。
 - 历史 `v0.3.2-preview.1` 冻结 artifact 的 `MANIFEST.md` 曾为 `release_status: Preview`、`license_status: cleared`、`preview_publication_status: Published`；这些字段只描述 2026-07-30 的 historical Public Preview，不属于当前 dirty candidate，也不构成 Stable、production-ready 或真人批准。
 
-### Security / governance hardening
+#### Security / governance hardening
 
 - AllinCMS direct、serial、batch、single 四个媒体上传入口现在都要求显式 `authorizationContext`，精确绑定 site、operation、有序文件列表 digest、approval actor/time 与限时 expiry；底层 direct 原语自行 fail closed，`beforeRequest` 仅用于 journaling。
 - 历史安全快照阶段在原有授权回归上新增 11 项 TOCTOU / mutation-edge 负向测试：覆盖同路径换字节、symlink retarget、批次中途替换、chooser payload 篡改、29:59.999 / 30:00.000 / 30:00.001、future timestamp 和 callback 延迟过期；该 historical snapshot 的媒体测试为 45/45、adapter 全量为 131/131，后续文章与封面回读补测又将当时工作树提升到 136/136。这些不是当前 trusted profile，且该阶段未访问 CMS。
 - 历史 `sub-library-release-v1` trusted runtime profile 曾与当时机器合同同步为媒体 45、正文图片 52、文章与 taxonomy 39，共 136 项；该 historical profile 的治理负向测试明确拒绝更旧的 `120/120`、`131/131`、135/137、少通过、失败、跳过和 test plan 重排。此记录不代表当前 160/160 profile。
 - 子库 approval/artifact validator 新增 workflow 注入的实际 tag object SHA、signer fingerprint、canonical tag annotation 与 approval-binding digest 精确比对，并明确 PASS 不证明真人身份、远程保护或正式发布。
 - 该历史 `v0.3.2-preview.1` 安全加固阶段的冻结 `MANIFEST.md` 曾为 `release_status: Preview`、`approval_status: pending`；这是 historical snapshot，不能覆盖当前 candidate 的 `BLOCK / pending`，Preview 与 Stable qualification 继续分闸。
+
+## 0.3.2-preview.1 — 2026-07-30
+
+### Public Preview
+
+- 以独立公开仓发布首个 Preview；README 面向新人，`START-HERE.md` 面向 AI agent。
+- 许可证确定为 Apache-2.0，并增加 `LICENSE`、`NOTICE`、`THIRD-PARTY-NOTICES.md`。
+- 本地结构、链接、拆包、AllinCMS Adapter 131 项测试和依赖审计通过后允许单样本试用。
+- Preview 不等于 Stable 或 production-ready；跨部署、真实新手冷启动、正式真人 approval、受保护发布 workflow 和 signed tag 仍未完成。
 
 ## 0.3.2-draft — 2026-07-28
 

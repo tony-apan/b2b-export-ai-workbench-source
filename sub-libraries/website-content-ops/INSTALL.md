@@ -12,12 +12,12 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status"]
-release_status: "Preview"
-preview_publication_status: "Published"
+release_status: "BLOCK"
+preview_publication_status: "BLOCK"
 ---
 # Installation
 
-既有 `v0.3.2-preview.1` 已作为 **Public Preview** 发布，可继续按该版本范围下载试用；当前源码候选 `0.4.0-preview.1` 的三张 source card 已于 2026-09-03 逐卡 clearance（`license_status: cleared`），并已随公开仓 main `4ccab49` 发布（`preview_publication_status: Published`）。Stable qualification、跨部署稳定性和生产批量使用继续 `BLOCK`。
+既有 `v0.3.2-preview.1` 已作为 **Public Preview** 发布（2026-07-30，独立公开仓 immutable artifact），可继续按该版本范围下载试用。当前源码（0.3.2 之后的全部改动）是**未发布候选**：`release_status: BLOCK`、`preview_publication_status: BLOCK`，尚未分配候选版本；三张 source card 已于 2026-09-03 逐卡 clearance（`license_status: cleared`），这只闭合来源许可，不构成发布资格。母库裸 tag `v0.4.0-preview.1` 是 2026-09-07 确认的非规范历史引用（wrong namespace + 一版三绑），保留为事故证据（ISS-141）；下一正式 Preview 候选为 `0.4.0-preview.2`（namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`）。Stable qualification、跨部署稳定性和生产批量使用继续 `BLOCK`。
 
 ## Source-only 安装
 

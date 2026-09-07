@@ -11,15 +11,15 @@ related: ["README.md", "AGENTS.md", "START-HERE.md", "MANIFEST.md", "RUNTIME-CON
 audience: ["Claude", "Codex", "可读取本地文件的 AI agent"]
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "skill_status"]
-release_status: "Preview"
-preview_publication_status: "Published"
+release_status: "BLOCK"
+preview_publication_status: "BLOCK"
 skill_status: "preview-adapter-not-installable"
 visibility: "public"
 redaction_status: "safe-to-publish"
 ---
 # Website Content Operations AI Skill
 
-> **状态分离：历史 artifact `v0.3.2-preview.1` 已发布为 Public Preview；当前源码候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布（`preview_publication_status: Published` / `license_status: cleared`，2026-09-03），但仍非 Stable。** 历史发布身份不重用；`approval_status: pending`，Stable 正式 qualification 尚未执行。本文件仍只是子库内的预览级 AI 适配器，不是一键安装或跨平台稳定 Skill。实时状态以 `MANIFEST.md` 为准。
+> **状态分离：历史 artifact `v0.3.2-preview.1` 已于 2026-07-30 发布为 Public Preview；当前源码（0.3.2 之后的全部改动）是未发布候选——`release_status: BLOCK`、`preview_publication_status: BLOCK`、候选身份未分配（`unassigned` / version `null`）；`license_status: cleared`（2026-09-03 三张 source card 逐卡闭合）。** 母库裸 tag `v0.4.0-preview.1` 是 2026-09-07 确认的非规范历史引用（wrong namespace + 一版三绑，ISS-141），保留为事故证据、不构成发布资格；下一正式候选为 `0.4.0-preview.2`（namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`）。历史发布身份不重用；`approval_status: pending`，Stable 正式 qualification 尚未执行。本文件仍只是子库内的预览级 AI 适配器，不是一键安装或跨平台稳定 Skill。实时状态以 `MANIFEST.md` 为准。
 
 ## 什么时候使用
 

@@ -5,22 +5,21 @@ type: "manifest"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-09-03"
+last_updated: "2026-09-07"
 sources: ["Package contract compiled 2026-07-26", "Tony decisions 2026-07-27", "Tony structure upgrade decision 2026-07-28"]
 related: ["README.md", "COURSE-MAP.md", "WORKSPACE-TEMPLATE/README.md", "MENTAL-MODEL.md", "ADAPTERS/cms/allincms-overview.md", "ADAPTERS/cms/allincms/README.md", "QA-CHECKLIST.md", "VERSION.md", "CHANGELOG.md", "RELEASE.md", "INSTALL.md", "REFERENCES/README.md", "scripts/README.md", "SCHEMAS/runtime-contract.schema.json", "BRAND.md", "CONTACT.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
-repository_status: "public-preview"
-preview_publication_status: "Published"
+repository_status: "public-source"
+preview_publication_status: "BLOCK"
 preview_version: "0.3.2-preview.1"
 preview_tag: "v0.3.2-preview.1"
 historical_published_version: "0.3.2-preview.1"
 historical_published_tag: "v0.3.2-preview.1"
-current_candidate_identity: "website-content-ops-0.4.0-preview.1"
-current_candidate_snapshot: "clean-committed-tree"
-current_candidate_version: "0.4.0-preview.1"
-current_candidate_date: "2026-09-03"
-release_status: "Preview"
+current_candidate_identity: "unassigned"
+current_candidate_snapshot: "dirty-working-tree"
+current_candidate_version: null
+release_status: "BLOCK"
 maturity_status: "validated"
 verification_status: "evidence-partial"
 release_scope: "standalone-sub-library"
@@ -52,9 +51,13 @@ exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**
 
 ## 当前交付判断
 
-`v0.3.2-preview.1` 仍为 immutable historical published artifact（tag 与身份不重用）。2026-09-03 起：三张 bundled source card（AllinCMS official、PicGo image-hosts official、B2B SEO content research）已按 RELEASE.md 推荐流程第 2 步完成逐卡 publication review，三字段均为 `approved / PASS / cleared`（依据见各卡 Publication clearance 节；授权 actor Tony，human-asserted，reviewer identity `not_verified`）。因此 `release_status` 进入 `Preview`、`license_status: cleared`；发布事实：候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布（2026-09-03），`preview_publication_status` 回写为 `Published`；当前候选分配 `current_candidate_version: 0.4.0-preview.1`（identity `website-content-ops-0.4.0-preview.1`，snapshot `clean-committed-tree`），与历史 version/tag 无碰撞。
+`v0.3.2-preview.1` 仍为唯一 immutable historical published artifact（独立公开仓 `tony-apan/website-content-ops` 的事实公开版本；tag 与身份不重用）。三张 bundled source card（AllinCMS official、PicGo image-hosts official、B2B SEO content research）已于 2026-09-03 逐卡完成 publication review，三字段均为 `approved / PASS / cleared`，因此包级 `license_status: cleared` 成立且继续成立；但这只闭合来源许可，不构成发布资格。
 
-`Preview` 口径边界不变：README 明确非 Stable、先单样本、生产动作需批准；`approval_status` 保持 `pending`、`release validator` 对 `Ready/Published`（Stable 口径）的正式 qualification（signed tag、approval sidecar、外部 workflow 注入）仍未执行，Stable 与 `Published` 继续阻断。若任一来源卡复审回到 `pending/BLOCK`，本状态必须回退 `BLOCK`。
+2026-09-07 事故回退（ISS-141）：母库中曾出现裸 tag `v0.4.0-preview.1`（tag object `b91d62ad`，指向 commit `b8cb23d`），同时正文声称候选已随公开仓 main `4ccab49` 发布——三者互相矛盾（一版三绑），且裸 tag 违反本子库 tag namespace（`sub-library/website-content-ops/v*`）。独立公开仓从未存在 `0.4.0-preview.1` 正式发布（其 main 仍为 `0.3.2-preview.1` 范围）。该裸 tag 作为事故证据保留，不删除、不移动、不重用、不改指向；`0.4.0-preview.1` 不具备任何 release qualification。
+
+因此当前源码状态回退并冻结为：`current_candidate_identity: unassigned`、`current_candidate_snapshot: dirty-working-tree`、`current_candidate_version: null`、`release_status: BLOCK`、`preview_publication_status: BLOCK`。0.3.2 之后进入本库的全部改动均属未发布候选（BLOCK）。下一个正式 Preview 候选应分配 `0.4.0-preview.2`（跳过被污染的 0.4.0-preview.1），并使用 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`；发布前必须按 RELEASE.md 验证 scope、tag namespace、目标 commit、CHANGELOG 与徽章五方一致。
+
+`approval_status` 保持 `pending`；`release validator` 对 `Ready/Published`（Stable 口径）的正式 qualification（signed tag、approval sidecar、外部 workflow 注入）仍未执行，Stable 继续阻断。若任一来源卡复审回到 `pending/BLOCK`，本状态必须维持 `BLOCK`。
 
 ## 学习层
 
@@ -119,7 +122,7 @@ exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**
 
 ## 当前发布结论
 
-**当前源码候选：Public Preview 已发布 `Published`；Stable：`BLOCK`。** 既有 `v0.3.2-preview.1` 独立公开仓事实不被撤销；AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 已于 2026-09-03 逐卡闭合，候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布（2026-09-03）。Stable 正式 qualification（signed tag、approval sidecar、外部 workflow 注入）完成前，不得宣称 Stable、production-ready、课程效果或跨部署迁移能力。既有结构测试仍只证明其原有结构 scope。
+**当前源码候选：未发布，`release_status: BLOCK`、`preview_publication_status: BLOCK`；Stable：`BLOCK`。** 历史公开事实只有一条：`v0.3.2-preview.1` 已于 2026-07-30 以独立公开仓 Public Preview 发布（immutable，不重用）。三张 bundled source card 的 publication/license clearance 已于 2026-09-03 逐卡闭合，维持 `license_status: cleared`；但这不改变候选状态——0.3.2 之后本库全部改动均为未发布候选。母库裸 tag `v0.4.0-preview.1` 是 2026-09-07 确认的非规范历史引用（wrong namespace + 一版三绑），保留为不可变事故证据，不构成发布资格；下一候选为 `0.4.0-preview.2`（namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`）。Stable 正式 qualification（signed tag、approval sidecar、外部 workflow 注入）完成前，不得宣称 Stable、production-ready、课程效果或跨部署迁移能力。既有结构测试仍只证明其原有结构 scope。
 
 ## License Records
 

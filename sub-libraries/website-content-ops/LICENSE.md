@@ -1,6 +1,6 @@
 ---
 title: "Website Content Operations License"
-description: "说明 website-content-ops Public Preview 的 Apache-2.0 范围，以及当前源码候选三张 source card 逐卡 clearance 后的许可边界（license_status: cleared）。"
+description: "说明 website-content-ops 历史公开 Preview 的 Apache-2.0 范围，以及三张 source card 逐卡 clearance 后的许可边界（license_status: cleared，候选仍 BLOCK）。"
 type: "legal-notice"
 status: "Working"
 owner: "Human"
@@ -12,12 +12,12 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "license_status"]
-release_status: "Preview"
+release_status: "BLOCK"
 license_status: "cleared"
 ---
 # License
 
-既有 `v0.3.2-preview.1` 独立发布 artifact 中已获许可的原创代码、Markdown 文档、模板、配置和 synthetic fixtures 采用 **Apache License 2.0**。当前源码候选的 AllinCMS official、PicGo image-host official 与 B2B research reference 三张 source card 已于 2026-09-03 逐卡 clearance，当前候选 `license_status: cleared`、`preview_publication_status: Published`（B2B research reference 的 `method_use` 仍为 internal-research-only）；这不追溯改变既有 artifact 的许可。完整法律文本见 [LICENSE](LICENSE)。
+既有 `v0.3.2-preview.1` 独立发布 artifact 中已获许可的原创代码、Markdown 文档、模板、配置和 synthetic fixtures 采用 **Apache License 2.0**。AllinCMS official、PicGo image-host official 与 B2B research reference 三张 source card 已于 2026-09-03 逐卡 clearance，包级 `license_status: cleared`（B2B research reference 的 `method_use` 仍为 internal-research-only）；这只闭合来源许可，不构成发布资格——当前源码候选仍是 `release_status: BLOCK`、`preview_publication_status: BLOCK`（2026-09-07 ISS-141 事故回退），母库裸 tag `v0.4.0-preview.1` 为非规范历史引用，不改变许可结论。这不追溯改变既有 artifact 的许可。完整法律文本见 [LICENSE](LICENSE)。
 
 许可证不自动覆盖：
 

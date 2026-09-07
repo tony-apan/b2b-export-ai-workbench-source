@@ -5,21 +5,25 @@ type: "release-guide"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-09-03"
+last_updated: "2026-09-07"
 sources: ["Sub-library contract", "Publishing and redaction policy", "Repository structure adversarial upgrade 2026-07-28"]
 related: ["README.md", "MANIFEST.md", "VERSION.md", "CHANGELOG.md", "QA-CHECKLIST.md", "scripts/README.md"]
 visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status"]
-release_status: "Preview"
-preview_publication_status: "Published"
+release_status: "BLOCK"
+preview_publication_status: "BLOCK"
 ---
 # Release Guide
 
 ## 当前边界
 
-既有 `v0.3.2-preview.1` 已以 **Public Preview** 独立发布（immutable，不重用）。2026-09-03：三张 source card 逐卡 clearance 完成，`release_status: Preview`、`preview_publication_status: Published`（候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布），当前候选 identity `website-content-ops-0.4.0-preview.1`。`Preview` 口径允许公开仓与 prerelease，但 README 必须保持非 Stable、先单样本、生产动作需批准的说明；`approval_status: pending`，Stable 正式 qualification（`--prepare`/signed tag/approval sidecar）仍未执行，`Ready/Published`（Stable 口径）继续阻断。
+既有 `v0.3.2-preview.1` 已以 **Public Preview** 独立发布（immutable，不重用）——这是唯一历史公开事实。当前源码（0.3.2 之后的全部改动）为未发布候选：`release_status: BLOCK`、`preview_publication_status: BLOCK`，`current_candidate_identity: unassigned`、`current_candidate_version: null`；三张 source card 已于 2026-09-03 逐卡 clearance（`license_status: cleared`），仅闭合来源许可。
+
+**2026-09-07 tag 事故（ISS-141）**：母库中曾出现裸 tag `v0.4.0-preview.1`（tag object `b91d62ad`，指向 commit `b8cb23d`），违反本子库 tag namespace（`sub-library/website-content-ops/v*`），且与正文声称的公开仓 main `4ccab49`、独立公开仓仍处 `0.3.2-preview.1` 的事实三者矛盾（一版三绑）。处置：事故 tag 原样保留为不可变证据（不删除、不移动、不重用、不改指向）；`0.4.0-preview.1` 不具备任何 release qualification；状态回退 `BLOCK`。**下一个正式 Preview 候选必须分配 `0.4.0-preview.2`，使用 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`**；发布前必须五方一致核验：scope（独立子库）、tag namespace 与目标 commit、公开仓 main SHA、CHANGELOG 条目、README/徽章口径。
+
+`approval_status: pending`，Stable 正式 qualification（`--prepare`/signed tag/approval sidecar）仍未执行，`Ready/Published`（Stable 口径）继续阻断。
 
 ## Preview 发布流程
 

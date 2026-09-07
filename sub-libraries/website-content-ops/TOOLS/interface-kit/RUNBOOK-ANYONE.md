@@ -26,11 +26,19 @@ redaction_status: "safe-to-publish"
 ```bash
 mkdir -p <任务目录>/70_evidence          # 工作目录 = 该站点任务目录（所有产出/证据/审计配置都放这里，路径在文档里一律写全）
 cd <interface-kit 目录>            # 内含 allincms_api.py / site_pipeline.py / allincms_blocks.py / templates / writing / index
-python3 check-update.py --quiet || python3 check-update.py  # 版本检查（ISS-140，任何操作之前）：有新版本先提醒用户，确认后 git pull origin main
+python3 check-update.py --quiet || python3 check-update.py  # main 分支同步检查（ISS-140，任何操作之前）：远端 main 有新提交先提醒用户，确认后 git pull --ff-only origin main（UP_TO_DATE 只表示 main 同步，非"版本已是最新"）
 python3 index/registry_tools.py verify     # 索引完整 -> PASS
 python3 index/registry_tools.py find <你的任务关键词>   # 必做：上传/分类/主题/文章/审计 等
 WS_TOKEN=<token> python3 scan/scan-actions.py - /<site_key>/themes   # 部署更新后重扫 action id（42 位 hex）；新 id 回填 allincms_api.py 常量（也支持传 token 文件路径）
-python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/drift 守卫（id-0073；WARN/FAIL 先处理）
+# 真源管线 stale/drift 守卫（id-0073；WARN/FAIL 先处理）——fresh public clone 跳过：
+# 该 check 依赖仓内 dist 基线与仓外 runtime（均为内部环境产物，dist/ 不入库）；二者都不存在时不跑 check，
+# 直接走本节 registry verify / SKILL-INSTALL install 路径即可，不要因缺内部管线而 FAIL。
+WCO_ROOT="$(cd ../.. && pwd)"
+if [ -e "$WCO_ROOT/dist/latest/interface-kit/PIPELINE-MANIFEST.json" ] || [ -d "${IFK_RUNTIME_ROOT:-../../../../701_runtime/00_shared/interface-kit}" ]; then
+  python3 ../../scripts/interface-kit-pipeline.py check
+else
+  echo "fresh source clone：跳过内部 runtime 管线（无 dist/runtime），直接 registry verify / install"
+fi
 ```
 
 - 凭据：`payload-token` JWT **优先 `export WS_TOKEN=<token>` 环境变量（跨平台推荐）**；或写 token 文件（chmod 600）后传路径。获取方法（三种，专题真源 [TOKEN-AUTH.md](../../ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md)；③ 为方向指引未实测）：

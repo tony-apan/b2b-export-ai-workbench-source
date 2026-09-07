@@ -71,7 +71,7 @@ redaction_status: "safe-to-publish"
 - **动作**：
   ```bash
   cd <IFK>
-  python3 check-update.py --quiet || python3 check-update.py  # 版本检查（ISS-140，任何操作之前）：有新版本先提醒用户，确认后 git pull origin main
+  python3 check-update.py --quiet || python3 check-update.py  # main 分支同步检查（ISS-140，任何操作之前）：远端 main 有新提交先提醒用户，确认后 git pull --ff-only origin main（UP_TO_DATE 只表示 main 同步，非"版本已是最新"）
   python3 install-deps.py --verify                           # 依赖复检（新环境先 --yes）
   python3 index/registry_tools.py verify                     # 索引完整 → PASS
   python3 index/registry_tools.py find 上传 ; find 分类 ; find 主题 ; find 文章 ; find 审计
@@ -81,6 +81,7 @@ redaction_status: "safe-to-publish"
   python3 allincms_api.py - read-sites                     # 冒烟：站点列表 JSON（"-" = 从 WS_TOKEN 读 token，对齐 scan-actions.py；否则该参数为 token 字面量）
   python3 check-contract-freshness.py [--live]                # 合同新鲜度四方对照（Registry/canonical JS/host driver/Python helper；可选 --live 实扫部署；漂移先修再干活）
   ```
+  - **fresh public clone 说明**：本步骤不跑 [RUNBOOK §0](RUNBOOK-ANYONE.md) 的 `interface-kit-pipeline.py check`（它依赖仓内 dist 基线 + 仓外 runtime，均为内部环境产物；fresh clone 二者皆无，条件跳过即可）。直接完成本框 registry verify / install-deps / find / 冒烟，不要因缺内部 runtime 管线而 FAIL。
 - **验收判据**：`verify` 输出 `VERIFY PASS`；`find` 相关坑已读；action id 与 `allincms_api.py` 常量一致；`check-contract-freshness.py` 必须 PASS；`20_work/onepass-read-receipt.json` 已用 `--write-receipt` 生成并立刻 `--verify-receipt` PASS。没有 receipt 或 receipt stale = 不得进入 Plan A/Plan B。
 - **产物**：`70_evidence/00-preflight.txt`（verify/find/scan/freshness 输出快照）+ `20_work/onepass-read-receipt.json`（必读文件精确 SHA-256 回执；规则变动自动失效）。凭据用完（任务收尾/交接完成）**提醒用户退出登录或轮换改密作废本次 token**（口径对齐子库 README 一键块"换 token 后密码即弃并提醒我改密"，详见 TOKEN-AUTH.md 安全要点）。
 - **坑**：跳过 find 直接动手 = 重复已回填的坑（ISS-001/002/003/018/024/059 均为重复踩坑）；action id 用错**静默返回 `{}`**，不报错。

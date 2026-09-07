@@ -14,8 +14,8 @@ canonical_entry: "README.md"
 keywords: ["建站内容运营", "外贸网站", "AllinCMS", "CMS", "图片上传", "内容工作流", "AI 执行", "新手入门"]
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "license_status"]
-release_status: "Preview"
-preview_publication_status: "Published"
+release_status: "BLOCK"
+preview_publication_status: "BLOCK"
 license_status: "cleared"
 ---
 # AI 建站内容运营
@@ -57,17 +57,17 @@ git clone https://github.com/tony-apan/b2b-export-ai-workbench-source.git && \
 python3 b2b-export-ai-workbench-source/sub-libraries/website-content-ops/SKILL-INSTALL/install.py
 ```
 
-装好后检查更新（开工前建议跑一次，有新版本按提示 `git pull origin main`）：
+装好后做 main 分支同步检查（开工前建议跑一次；远端 main 有新提交时按提示 `git pull origin main`。`UP_TO_DATE` 只表示本地与远端 main 同步，不是"版本已是最新"）：
 
 ```bash
-python3 sub-libraries/website-content-ops/TOOLS/interface-kit/check-update.py  # 检查更新
+python3 sub-libraries/website-content-ops/TOOLS/interface-kit/check-update.py  # main 分支同步检查
 ```
 
 ## ⚠️ 三条红线（人和 AI 都必须遵守）
 
 1. **上传/覆盖/删除/发布**：AI 必须逐条列清单、等你点头，一个都不许先斩后奏；
 2. **凭据**：只进环境变量，不写文件不入日志；没有 AllinCMS 账号 → [CONTACT.md](CONTACT.md) 联系开通；
-3. **口径**：Public Preview（非 Stable）——先单样本验收，再批量；全新文章远程创建暂 BLOCK。
+3. **口径**：历史公开版 `0.3.2-preview.1` 为 Public Preview（非 Stable）；0.3.2 之后的当前源码是未发布候选（`BLOCK`）——先单样本验收，再批量；全新文章远程创建暂 BLOCK。
 
 ## 📖 进阶入口
 
@@ -81,4 +81,4 @@ python3 sub-libraries/website-content-ops/TOOLS/interface-kit/check-update.py  #
 | 文章与 SEO 打法 | [PLAYBOOKS/](PLAYBOOKS/README.md) |
 | 版本 / 状态 / 变更 | [MANIFEST.md](MANIFEST.md) · [CHANGELOG.md](CHANGELOG.md) |
 
-**当前版本**：`0.4.0-preview.1` Public Preview（2026-09-03 发布；许可 cleared，三张 source card 已逐卡审查）。Stable 正式资格（真人批准链/签名 tag/外部 workflow）仍未闭合，继续阻断。
+**当前版本口径**：历史公开版 = `0.3.2-preview.1`（2026-07-30 独立公开仓 Public Preview，许可已 cleared）；0.3.2 之后本库的全部改动是**未发布候选**（`release_status: BLOCK` / `preview_publication_status: BLOCK`），未分配候选版本。母库曾出现的裸 tag `v0.4.0-preview.1`（指向 `b8cb23d`）是 2026-09-07 确认的非规范历史引用：错误 namespace（应为 `sub-library/website-content-ops/v*`）且与正文声称的 main `4ccab49` 一版三绑；该 tag 保留为不可变事故证据（ISS-141），不构成发布资格。下一正式 Preview 候选将分配 `0.4.0-preview.2` 并使用 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`。Stable 正式资格（真人批准链/签名 tag/外部 workflow）仍未闭合，继续阻断。
