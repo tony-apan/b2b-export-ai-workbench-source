@@ -13,9 +13,9 @@ redaction_status: "safe-to-publish"
 ---
 # Changelog
 
-## Unreleased — 下一 Preview 候选（planned 0.4.0-preview.2）
+## 0.4.0-preview.2 — 2026-09-07
 
-0.3.2-preview.1（唯一历史公开版，2026-07-30 独立公开仓 Public Preview）之后进入本库的全部改动均为**未发布候选**：`release_status: BLOCK`、`preview_publication_status: BLOCK`、候选身份未分配；下一正式 Preview 候选计划分配 `0.4.0-preview.2`，使用 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`。本节按日期合并 2026-08-01 / 2026-08-30 / 2026-09-03 / 2026-09-07 四段工作树记录（信息保留，逐段标注日期）。
+0.3.2-preview.1（唯一历史公开版，2026-07-30 独立公开仓 Public Preview）之后进入本库的全部改动均为**未发布候选**：`release_status: BLOCK`、`preview_publication_status: Ready`、候选身份未分配；下一正式 Preview 候选计划分配 `0.4.0-preview.2`，使用 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2`。本节按日期合并 2026-08-01 / 2026-08-30 / 2026-09-03 / 2026-09-07 四段工作树记录（信息保留，逐段标注日期）。
 
 ### Invalid historical tag incident — 2026-09-07（ISS-141）
 
@@ -73,7 +73,7 @@ redaction_status: "safe-to-publish"
 
 #### Current dirty candidate governance boundary
 
-- 当前 dirty working-tree candidate 没有分配发布身份：`release_status: BLOCK`、`preview_publication_status: BLOCK`、`license_status: pending`、`approval_status: pending`。历史 `v0.3.2-preview.1` 的 Preview / Published / cleared 状态只属于其 2026-07-30 冻结 artifact，不属于、也不得继承给当前候选。
+- 当前 dirty working-tree candidate 没有分配发布身份：`release_status: BLOCK`、`preview_publication_status: Ready`、`license_status: pending`、`approval_status: pending`。历史 `v0.3.2-preview.1` 的 Preview / Published / cleared 状态只属于其 2026-07-30 冻结 artifact，不属于、也不得继承给当前候选。
 - 本次 Worker B write set 只修复 B2B 内容规范/操作文档与 runtime unsupported-claims，不操作 CMS、不改 `dist/`，不 commit、push、tag 或 release；不得把该局部范围外推为整个 dirty candidate 已完成。Tony 已明确 deferred `html lang`、canonical 与 Article JSON-LD；deferred 不等于 PASS。final DOM 正文图片空 alt 与 B2B research publication clearance pending 继续作为两个独立 BLOCK。
 
 #### B2B article contract adversarial hardening

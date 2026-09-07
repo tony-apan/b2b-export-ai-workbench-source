@@ -5,7 +5,7 @@ type: "sub-library"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-09-01"
+last_updated: "2026-09-07"
 sources: ["Tony conversation 2026-07-26", "Tony README and AI onboarding decision 2026-07-30"]
 related: ["START-HERE.md", "CONTACT.md", "COURSE-MAP.md", "MENTAL-MODEL.md", "AGENTS.md", "PLAYBOOK.md", "MANIFEST.md", "RUNTIME-CONTRACT.json", "RUNTIME-INTEGRATION.md", "SKILL.md", "ADAPTERS/image-upload-routing.md", "ADAPTERS/cms/allincms/AI-START-HERE.md", "ADAPTERS/cms/allincms/INTERFACE-INDEX.md", "ADAPTERS/cms/allincms/interface-registry.json"]
 visibility: "public"
@@ -14,8 +14,8 @@ canonical_entry: "README.md"
 keywords: ["建站内容运营", "外贸网站", "AllinCMS", "CMS", "图片上传", "内容工作流", "AI 执行", "新手入门"]
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "license_status"]
-release_status: "BLOCK"
-preview_publication_status: "BLOCK"
+release_status: "Preview"
+preview_publication_status: "Ready"
 license_status: "cleared"
 ---
 # AI 建站内容运营

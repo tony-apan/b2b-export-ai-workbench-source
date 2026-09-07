@@ -11,8 +11,8 @@ related: ["README.md", "AGENTS.md", "START-HERE.md", "MANIFEST.md", "RUNTIME-CON
 audience: ["Claude", "Codex", "可读取本地文件的 AI agent"]
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status", "skill_status"]
-release_status: "BLOCK"
-preview_publication_status: "BLOCK"
+release_status: "Preview"
+preview_publication_status: "Ready"
 skill_status: "preview-adapter-not-installable"
 visibility: "public"
 redaction_status: "safe-to-publish"

@@ -12,8 +12,8 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "preview_publication_status"]
-release_status: "BLOCK"
-preview_publication_status: "BLOCK"
+release_status: "Preview"
+preview_publication_status: "Ready"
 ---
 # Installation
 

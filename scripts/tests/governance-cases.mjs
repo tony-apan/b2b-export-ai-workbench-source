@@ -1254,13 +1254,26 @@ ${output}`);
       const manifestPath = join(root, 'sub-libraries/website-content-ops/MANIFEST.md');
       const versionPath = join(root, 'sub-libraries/website-content-ops/VERSION.md');
       const registryPath = join(root, 'sub-libraries/registry.json');
-      // 场景 1：仓默认（2026-09-07 ISS-141 回退后）即 unassigned/BLOCK——直接验证路由拒绝未分配身份
+      // 场景 1：无论真实仓当前是未分配态还是已分配 Preview 候选态，
+      // fixture 都先显式降为 unassigned/BLOCK，再验证路由拒绝。测试不与
+      // 仓库当前发布阶段耦合（准备发版时切状态不应让治理用例本身漂移）。
       for (const path of [manifestPath, versionPath]) {
-        const content = readFileSync(path, 'utf8');
-        if (!content.includes('current_candidate_identity: "unassigned"') || !content.includes('current_candidate_version: null')) {
-          throw new Error(`fixture baseline drifted from unassigned repo default: ${path}`);
-        }
+        let content = readFileSync(path, 'utf8');
+        content = content
+          .replace(/^release_status: ".*"$/m, 'release_status: "BLOCK"')
+          .replace(/^current_candidate_identity: ".*"$/m, 'current_candidate_identity: "unassigned"')
+          .replace(/^current_candidate_snapshot: ".*"$/m, 'current_candidate_snapshot: "dirty-working-tree"')
+          .replace(/^current_candidate_version:.*$/m, 'current_candidate_version: null');
+        writeFileSync(path, content);
       }
+      mutateJson(registryPath, (registry) => {
+        const entry = registry.entries.find((item) => item.id === 'website-content-ops');
+        if (!entry) throw new Error('website-content-ops registry fixture entry missing');
+        entry.release_status = 'BLOCK';
+        entry.current_candidate_identity = 'unassigned';
+        entry.current_candidate_snapshot = 'dirty-working-tree';
+        entry.current_candidate_version = null;
+      });
 
       const unassigned = run(root, 'scripts/resolve-release-scope.mjs', [historicalTag], { timeoutMs, env: { GITHUB_OUTPUT: outputPath } });
       assertRejected(unassigned, /current candidate identity\/version is unassigned/, 'unassigned sub-library candidate route');

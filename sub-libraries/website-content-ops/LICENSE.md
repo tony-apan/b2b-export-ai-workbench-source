@@ -12,7 +12,7 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "license_status"]
-release_status: "BLOCK"
+release_status: "Preview"
 license_status: "cleared"
 ---
 # License
