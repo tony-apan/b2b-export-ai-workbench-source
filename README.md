@@ -17,7 +17,7 @@ canonical_entry: "README.md"
 
 ![Status](https://img.shields.io/badge/status-Working-BLOCK-important) ![Version](https://img.shields.io/badge/version-0.3.3--working-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white) ![Node](https://img.shields.io/badge/node-%E2%89%A520.9-339933?logo=node.js&logoColor=white)
 
-> 母库状态：`Working / release_status: BLOCK`（工作版本 `0.3.4-working`，MIT）。[website-content-ops 子库](sub-libraries/website-content-ops/README.md)的当前 Public Preview 为 `0.4.0-preview.2`（namespaced tag 已发布）；子库仍为非 Stable，生产动作需逐次批准。
+> 母库状态：`Stable Candidate / release_status: Ready`（正式版本候选 `0.3.4`，MIT）。[website-content-ops 子库](sub-libraries/website-content-ops/README.md)的当前 Public Preview 为 `0.4.0-preview.2`（namespaced tag 已发布）；子库仍为非 Stable，生产动作需逐次批准。
 
 一个给外贸人用的"增长工作台"。里面装的不是软件，而是**做外贸要用到的方法、模板和工具**：怎么建网站、怎么写 B2B 文章、怎么开发信、怎么做 LinkedIn、怎么弄 SEO/GEO、怎么回询盘、怎么参加展会、怎么做短视频——全都整理成了人和 AI 都能读的步骤。
 
@@ -98,7 +98,7 @@ A：仓库对每块内容都标了成熟度：有真实证据的写"有证据"�
 - 真实客户资料、账号、凭据不属于授权范围——它们本来就不该进仓库。
 - 第三方名称/商标（AllinCMS、LinkedIn、Google 等）和通过外链加载的图片不随 MIT 授权。
 - 各子库可独立声明自己的许可证；以该子库的 LICENSE 为准。
-- 仓库仍在持续演进，`release_status: BLOCK` 表示还没有做过正式“稳定版”资格认定，不代表内容不可读或不可用。
+- 仓库仍在持续演进，`release_status: Ready` 表示稳定版候选已冻结、等待远端正式资格认定，不代表内容不可读或不可用。
 
 ---
 

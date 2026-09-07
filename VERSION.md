@@ -12,18 +12,18 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["working_version", "repository_sync_status", "release_status"]
-working_version: "0.3.4-working"
+working_version: "0.3.4"
 repository_sync_status: "Synced"
-release_status: "BLOCK"
+release_status: "Ready"
 ---
 # Mother Library Version
 
 - Package ID：`b2b-export-ai-workbench-mother-library`
-- Version：`0.3.4-working`
+- Version：`0.3.4`
 - Released：Source synced（2026-09-02）
 - License：MIT（见 [LICENSE](LICENSE)）
 - Compatibility：普通 Git checkout、Markdown 阅读器和可读取本地文件的 AI agent；不要求 Obsidian。
 - Repository sync status：`Synced`
-- Public release status：`BLOCK`
+- Public release status：`Ready`（正式 qualification 待远端受保护 workflow 完成）
 - Changelog：[CHANGELOG.md](CHANGELOG.md)
 - Release guide：[RELEASE.md](RELEASE.md)

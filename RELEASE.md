@@ -13,7 +13,7 @@ redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["repository_sync_status", "release_status"]
 repository_sync_status: "Synced"
-release_status: "BLOCK"
+release_status: "Ready"
 ---
 # Mother Library Release Guide
 
@@ -38,9 +38,9 @@ release_status: "BLOCK"
 5. 只推送到 canonical remote；
 6. 从远端重新 clone 并复跑基础验证。
 
-## 母库 release（正式公开导出，当前 BLOCK）
+## 母库 release（Stable 0.3.4 候选 Ready）
 
-母库内容以 MIT 授权可直接使用；`release_status: BLOCK` 只表示尚未经过正式 Stable qualification（approval/evidence、signed tag、Protected Environment、远端验收），不代表不可读或不可用。
+母库 Stable `0.3.4` 候选已进入 `Ready`：源码与本地证据已冻结，正式 Published 仍须通过 approval/evidence、signed tag、Protected Environment 和远端验收。
 
 普通构建：
 

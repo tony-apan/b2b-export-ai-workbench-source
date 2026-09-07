@@ -12,7 +12,7 @@ visibility: "public"
 redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["release_status", "license_status"]
-release_status: "BLOCK"
+release_status: "Ready"
 license_status: "cleared"
 ---
 # License
@@ -29,4 +29,4 @@ MIT 授权范围覆盖你从本仓库获取的母库原创文件，可自由使�
 - 任何子库独立声明了自己许可证的文件（以该子库的 LICENSE 为准，例如 `website-content-ops` 的 Apache-2.0 原创内容）；
 - 未被 `MANIFEST.md` include allowlist 纳入、或明确标记为私有/未授权的来源材料。
 
-第三方来源和归属说明以各子库自带声明为准（例如 `website-content-ops` 的 [NOTICE](sub-libraries/website-content-ops/NOTICE) 与 [THIRD-PARTY-NOTICES.md](sub-libraries/website-content-ops/THIRD-PARTY-NOTICES.md)）。本项目按“现状”提供；`release_status: BLOCK` 表示仓库仍处于工作演进状态，不构成稳定性、生产适用性或专业法律意见承诺。
+第三方来源和归属说明以各子库自带声明为准（例如 `website-content-ops` 的 [NOTICE](sub-libraries/website-content-ops/NOTICE) 与 [THIRD-PARTY-NOTICES.md](sub-libraries/website-content-ops/THIRD-PARTY-NOTICES.md)）。本项目按“现状”提供；`release_status: Ready` 表示 0.3.4 Stable 候选已冻结但尚未 Published；本项目仍按“现状”提供，不构成专业法律意见承诺。

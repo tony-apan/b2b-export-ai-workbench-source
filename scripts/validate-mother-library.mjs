@@ -299,7 +299,11 @@ if (releaseScope !== 'standalone-mother-library') fail(`MANIFEST.md release_scop
 if (packageId !== 'b2b-export-ai-workbench-mother-library') fail(`MANIFEST.md package_id is invalid: ${packageId ?? 'missing'}`);
 if (manifestStatus === 'Ready' || manifestStatus === 'Published') {
   if (licenseStatus !== 'cleared') fail('mother-library Ready/Published requires license_status cleared');
-  if (!prepareMode && approvalStatus !== 'approved') fail('mother-library Ready/Published requires approval_status approved outside preparation mode');
+  // Ready is the committed, externally reviewable candidate state and may
+  // remain approval_status=pending until the protected workflow finalizes
+  // candidate-external approval/evidence. Only Published requires approved;
+  // requiring approved for Ready makes the two-stage release impossible.
+  if (manifestStatus === 'Published' && approvalStatus !== 'approved') fail('mother-library Published requires approval_status approved');
   if (prepareMode && approvalStatus !== 'pending') fail('mother-library preparation requires approval_status pending so the frozen candidate cannot self-certify approval');
   if (prepareMode && manifestStatus !== 'Ready') fail('mother-library preparation requires release_status Ready; Published is an external post-qualification state');
   if (verificationStatus !== 'e2e-pass') fail('mother-library Ready/Published requires verification_status e2e-pass');

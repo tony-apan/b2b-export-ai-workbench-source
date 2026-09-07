@@ -1988,6 +1988,17 @@ ${output}`);
     run({ root, timeoutMs }) {
       const versionPath = join(root, 'VERSION.md');
       const baselineContent = readFileSync(versionPath, 'utf8');
+      // Projected values are resolved from the live documents so attacks survive
+      // release-stage transitions (BLOCK -> Ready -> Published) without fixture edits.
+      const projectedValue = (content, field) => {
+        const match = content.match(new RegExp(`^${field}: "([^"]+)"`, 'm'));
+        if (!match) throw new Error(`fixture cannot resolve projected field ${field}`);
+        return match[1];
+      };
+      const syncStatus = projectedValue(baselineContent, 'repository_sync_status');
+      const releaseStatus = projectedValue(baselineContent, 'release_status');
+      const driftSyncStatus = syncStatus === 'Ready' ? 'Blocked' : 'Ready';
+      const crossReleaseStatus = releaseStatus === 'Preview' ? 'Blocked' : 'Preview';
       // Each source-level attack is checked by the validator's mandatory state-projection
       // preflight. The successful full builder run below is the positive baseline and also
       // exercises the packaged artifact, avoiding a redundant ~25s whole-repository scan
@@ -1995,12 +2006,12 @@ ${output}`);
       const attacks = [
         {
           label: 'projected value drift',
-          mutate: (content) => content.replace('repository_sync_status: "Synced"', 'repository_sync_status: "Ready"'),
-          expected: /VERSION\.md state drift for repository_sync_status: expected "Synced" from MANIFEST\.md, got "Ready"/,
+          mutate: (content) => content.replace(`repository_sync_status: "${syncStatus}"`, `repository_sync_status: "${driftSyncStatus}"`),
+          expected: new RegExp(`VERSION\\.md state drift for repository_sync_status: expected "${syncStatus}" from MANIFEST\\.md, got "${driftSyncStatus}"`),
         },
         {
           label: 'projected field removed',
-          mutate: (content) => content.replace('release_status: "BLOCK"\n', ''),
+          mutate: (content) => content.replace(/^release_status: "[^"]*"\n/m, ''),
           expected: /VERSION\.md projects release_status, but the document does not declare it/,
         },
         {
@@ -2013,7 +2024,7 @@ ${output}`);
           mutate: (content) => content
             .replace('state_source: "MANIFEST.md"', 'state_source: "sub-libraries/website-content-ops/MANIFEST.md"')
             .replace('state_projection: ["working_version", "repository_sync_status", "release_status"]', 'state_projection: ["release_status"]')
-            .replace('release_status: "BLOCK"', 'release_status: "Preview"'),
+            .replace(`release_status: "${releaseStatus}"`, `release_status: "${crossReleaseStatus}"`),
           expected: /VERSION\.md state_source must resolve to the canonical scope MANIFEST\.md: sub-libraries\/website-content-ops\/MANIFEST\.md/,
         },
         {
@@ -2059,7 +2070,7 @@ ${output}`);
       assertAccepted(build, /RELEASE_CANDIDATE:/, 'mother artifact state-projection baseline');
       const artifactRoot = join(root, 'dist/mother/latest');
       const artifactVersionPath = join(artifactRoot, 'VERSION.md');
-      replaceExact(artifactVersionPath, 'repository_sync_status: "Synced"', 'repository_sync_status: "Ready"');
+      replaceExact(artifactVersionPath, `repository_sync_status: "${syncStatus}"`, `repository_sync_status: "${driftSyncStatus}"`);
       rewriteArtifactManifest(artifactRoot, (manifest) => {
         const record = manifest.source_provenance.files.find((item) => item.path === 'VERSION.md');
         if (!record) throw new Error('VERSION.md provenance record missing');
@@ -2067,7 +2078,7 @@ ${output}`);
         record.commit_sha256 = record.sha256;
       });
       const artifactValidation = run(root, 'scripts/validate-artifact.mjs', [artifactRoot], { timeoutMs });
-      assertRejected(artifactValidation, /VERSION\.md state drift for repository_sync_status: expected "Synced" from MANIFEST\.md, got "Ready"/, 'mother artifact state drift with recomputed integrity metadata');
+      assertRejected(artifactValidation, new RegExp(`VERSION\\.md state drift for repository_sync_status: expected "${syncStatus}" from MANIFEST\\.md, got "${driftSyncStatus}"`), 'mother artifact state drift with recomputed integrity metadata');
     },
   }],
   ['mother-index-layered-sub-library-entry', {

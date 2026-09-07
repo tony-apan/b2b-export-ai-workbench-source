@@ -13,15 +13,15 @@ redaction_status: "private-source-reviewed"
 ---
 # Mother Library Changelog
 
-## 0.3.4-working — 2026-09-07
+## 0.3.4 — 2026-09-07
 
 ### 母库与 Website Content Operations 公开预览收口
 
 - website-content-ops `0.4.0-preview.2` 以 namespaced tag `sub-library/website-content-ops/v0.4.0-preview.2` 发布；冻结候选 commit `4802f7a`，发布状态回写 commit `eb116da`。
 - 收口 ISS-105..141：API-first 建站、跨平台 providers、partial update overlay、content passthrough、stable payload/授权/runtime identity、版本检测与自修复引导。
 - 修正错误裸 tag `v0.4.0-preview.1` 的一版三绑事故（ISS-141）：保留不可变事故证据，不赋发布资格。
-- 根 README 恢复母库 scope：状态 `Working / BLOCK`，版本 `0.3.4-working`；子库版本不再冒充母库版本。
-- 本工作版本仍非正式母库发布：`release_status: BLOCK`，未创建 `mother/v...` tag。
+- 根 README 恢复母库 scope：状态 `Stable Candidate / Ready`，版本 `0.3.4`；子库版本不再冒充母库版本。
+- 本版本候选已进入 `Ready`；正式 `mother/v0.3.4` tag、qualification 与 Published 回写仍待完成。
 
 ## 0.3.3-working — 2026-08-31
 
