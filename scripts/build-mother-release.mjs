@@ -227,11 +227,17 @@ function contentDigest(root, files) {
   return hash.digest('hex');
 }
 const autoIgnoredDirs = new Set(['.git', '.obsidian', '.v2c', '.video_agent', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace']);
+// Mirrors the validate-mother-library.mjs symlink contract: customer-runtime/runtime
+// are documented runtime-area mounts, so only these names are tolerated as symlinks.
+const symlinkSkipNames = new Set(['customer-runtime', 'runtime']);
 function collectSourceFiles(source, prefix = '') {
   const result = [];
   for (const entry of readdirSync(source, { withFileTypes: true })) {
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isSymbolicLink()) fail(`symlink is not allowed in release source: ${rel}`);
+    if (entry.isSymbolicLink()) {
+      if (!symlinkSkipNames.has(entry.name)) fail(`symlink is not allowed in release source: ${rel}`);
+      continue;
+    }
     if (entry.isDirectory()) {
       if (!autoIgnoredDirs.has(entry.name)) result.push(...collectSourceFiles(join(source, entry.name), rel));
     } else result.push(rel);
@@ -269,7 +275,10 @@ function copySelected(source, target, prefix = '') {
   mkdirSync(target, { recursive: true });
   for (const entry of readdirSync(source, { withFileTypes: true })) {
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isSymbolicLink()) fail(`symlink is not allowed in release source: ${rel}`);
+    if (entry.isSymbolicLink()) {
+      if (!symlinkSkipNames.has(entry.name)) fail(`symlink is not allowed in release source: ${rel}`);
+      continue;
+    }
     if (['.git', '.obsidian', '.v2c', '.video_agent', 'node_modules', 'dist', 'secrets', '.secrets', 'private', 'runtime', 'customer-runtime', 'credentials', 'workspace'].includes(entry.name)) continue;
     if (isExcluded(rel)) continue;
     const from = join(source, entry.name);
