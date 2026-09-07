@@ -115,15 +115,15 @@ exclude: ["**/client-ids.local.txt", ".git/**", ".obsidian/**", "node_modules/**
 3. 控制器不设图片数量上限，本地已验证 12 张仍严格串行；真实远程证据目前到 10 张。媒体并发永久禁止，一次请求多图不是默认路线；
 4. PicGo + R2 / GitHub / COS / OSS 不再是 AllinCMS 上传前置，只作为外部图床和迁移能力；其真实单图参考实现尚未完成；
 5. 第二工具与相邻业务任务迁移无验证证据；
-6. Apache-2.0 许可证文本与公开联系入口已存在，但 AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 均未闭合；其中 B2B research reference 只获准用于内部方法研究。正式 Logo、Stable 人工批准、可信签名和 GitHub 服务端 qualification 也未闭合。机器可读 manifest、既有结构测试、latest-only 打包脚本和 checksum 校验不替代这些证据。
+6. Apache-2.0 许可证文本与公开联系入口已存在；AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 已闭合（2026-09-03 逐卡审查通过，三字段 `approved / PASS / cleared`）；其中 B2B research reference 的 `method_use` 仍为 internal-research-only（方法论以原创提炼使用，不复制来源正文）。正式 Logo、Stable 人工批准、可信签名和 GitHub 服务端 qualification 也未闭合。机器可读 manifest、既有结构测试、latest-only 打包脚本和 checksum 校验不替代这些证据。
 
 ## 当前发布结论
 
-**当前源码候选：Public Preview publication / release `BLOCK`；Stable：`BLOCK`。** 既有 `v0.3.2-preview.1` 独立公开仓事实不被撤销，但 AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 完成前，当前源码候选只能用于内部方法研究和 Working artifact，不得宣称新的 Preview publication、Stable、Published、production-ready、课程效果或跨部署迁移能力。既有结构测试仍只证明其原有结构 scope。
+**当前源码候选：Public Preview 已发布 `Published`；Stable：`BLOCK`。** 既有 `v0.3.2-preview.1` 独立公开仓事实不被撤销；AllinCMS official、PicGo image-host official 与 B2B SEO content research 三张 bundled source card 的 publication/license clearance 已于 2026-09-03 逐卡闭合，候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布（2026-09-03）。Stable 正式 qualification（signed tag、approval sidecar、外部 workflow 注入）完成前，不得宣称 Stable、production-ready、课程效果或跨部署迁移能力。既有结构测试仍只证明其原有结构 scope。
 
 ## License Records
 
 | artifact | license | notice | recorded | reviewer | caveat |
 |---|---|---|---|---|---|
-| TOOLS/interface-kit | Apache-2.0 | UNOFFICIAL THIRD-PARTY CLIENT for AllinCMS/LAICMS; action ids from public bundles, may change without notice | 2026-08-30 | TERRA 69cf48a1 + flash 07ba67df | 3 bundled source cards (AllinCMS official, PicGo image-host, B2B SEO research) clearance still open; status stays pending/BLOCK until closed |
-| SKILL-INSTALL/ | MIT（安装壳）/ 继承母库 source-only | 2026-08-30 合并；working-source 不做可安装宣称；vendor 退役待 dist 管线 | 2026-08-31 | TERRA 6afde8fc + flash b7baf83c | 3 张来源卡 clearance 未闭合前维持 pending/BLOCK |
+| TOOLS/interface-kit | Apache-2.0 | UNOFFICIAL THIRD-PARTY CLIENT for AllinCMS/LAICMS; action ids from public bundles, may change without notice | 2026-08-30 | TERRA 69cf48a1 + flash 07ba67df | 3 bundled source cards (AllinCMS official, PicGo image-host, B2B SEO research) clearance closed 2026-09-03 per-card review (approved/PASS/cleared) |
+| SKILL-INSTALL/ | MIT（安装壳）/ 继承母库 source-only | 2026-08-30 合并；working-source 不做可安装宣称；vendor 退役待 dist 管线 | 2026-08-31 | TERRA 6afde8fc + flash b7baf83c | 3 张来源卡 clearance 已于 2026-09-03 逐卡闭合；MIT 壳仍不做可安装宣称 |

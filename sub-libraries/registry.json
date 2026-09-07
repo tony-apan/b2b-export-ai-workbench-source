@@ -16,6 +16,7 @@
       "maturity_status": "validated",
       "verification_status": "evidence-partial",
       "release_status": "Preview",
+      "preview_publication_status": "Published",
       "license_status": "cleared",
       "release_scope": "standalone-sub-library",
       "runtime_contract": "RUNTIME-CONTRACT.json",

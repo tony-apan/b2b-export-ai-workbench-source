@@ -19,7 +19,7 @@ preview_publication_status: "Published"
 
 ## 当前边界
 
-既有 `v0.3.2-preview.1` 已以 **Public Preview** 独立发布（immutable，不重用）。2026-09-03：三张 source card 逐卡 clearance 完成，`release_status: Preview`、`preview_publication_status: Ready`，当前候选 `0.4.0-preview.1`（identity `website-content-ops-0.4.0-preview.1`）。`Preview` 口径允许公开仓与 prerelease，但 README 必须保持非 Stable、先单样本、生产动作需批准的说明；`approval_status: pending`，Stable 正式 qualification（`--prepare`/signed tag/approval sidecar）仍未执行，`Ready/Published`（Stable 口径）继续阻断。
+既有 `v0.3.2-preview.1` 已以 **Public Preview** 独立发布（immutable，不重用）。2026-09-03：三张 source card 逐卡 clearance 完成，`release_status: Preview`、`preview_publication_status: Published`（候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布），当前候选 identity `website-content-ops-0.4.0-preview.1`。`Preview` 口径允许公开仓与 prerelease，但 README 必须保持非 Stable、先单样本、生产动作需批准的说明；`approval_status: pending`，Stable 正式 qualification（`--prepare`/signed tag/approval sidecar）仍未执行，`Ready/Published`（Stable 口径）继续阻断。
 
 ## Preview 发布流程
 

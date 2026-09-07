@@ -5,7 +5,7 @@ type: "changelog"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-08-01"
+last_updated: "2026-09-07"
 sources: ["Repository structure adversarial upgrade 2026-07-28"]
 related: ["README.md", "MANIFEST.md", "VERSION.md", "RELEASE.md", "SKILL.md"]
 visibility: "public"
@@ -13,9 +13,20 @@ redaction_status: "safe-to-publish"
 ---
 # Changelog
 
+## Unreleased — 2026-09-07
+
+0.4.0-preview.1 发布后的线上维护回填（详见 `TOOLS/interface-kit/index/issues.tsv` 与 git log）：
+
+- ISS-131 方案 b 落地（b8a3d85，2026-09-05）：update-only content passthrough——review record 增 `content_passthrough: true` + `content_passthrough_ref{ref,digest}`，transport 前对 defaultValues.content 做 fresh 树等比重验，不等即零 API write + reconcile；create 禁用透传。
+- P0-3.3b（b290b84，2026-09-06）：`article-create-providers.mjs` 纯 Node fetch + payload-token 三真实 provider，跨平台（macOS/Windows/Linux）通用，host-run-template 默认装配；Windows 下 article.create 仍按 BLOCK 分支交付。
+- P0-3.4（b290b84）：partial update overlay——readCurrent 捕获 deep-frozen current record，payload=current 基线 + field_refs overlay + 类型化清空，access-timing 双读 TOCTOU 关闭。
+- SKILL-INSTALL 测试修复与检修收口（b290b84/e8bbeca）：pytest 全绿（1078 passed）、`.pytest_cache/` 加入 .gitignore 出库、review packet 校验器 `/tmp` 等价逻辑改为运行时拼装（源码不含机器本地路径字面量）。
+- ISS-134~139 回填（184e91d，2026-09-07）：v2 重建六项新断点入 SKILL.md §关键坑 16，并新增 RUNBOOK §8.3 自修复引导。
+- ISS-140（b8cb23d）：`check-update.py` 版本检测——每次开工先查线上是否有新版本。
+
 ## 0.4.0-preview.1 — 2026-09-03
 
-- 三张 bundled source card 逐卡 publication clearance（approved/PASS/cleared，依据入卡）；`release_status: Preview`、`preview_publication_status: Ready`、`license_status: cleared`；当前候选 `0.4.0-preview.1`。
+- 三张 bundled source card 逐卡 publication clearance（approved/PASS/cleared，依据入卡）；`release_status: Preview`、`preview_publication_status: Published`（候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布）、`license_status: cleared`；当前候选 `0.4.0-preview.1`。
 - 自 0.3.2-preview.1 以来的主要能力（详见 git log 2a6ebd5 之前历史与 issues.tsv ISS-067..108）：
   - interface-kit 纯接口工具包（allincms_api/content_review_gate/site_pipeline/audit 三门）+ RUNBOOK-ANYONE/NEW-SITE-ONEPASS 13 步一条龙；
   - SKILL-INSTALL 一键安装（fresh-clone 跨平台自测）；README AI 复制即用快速启动；

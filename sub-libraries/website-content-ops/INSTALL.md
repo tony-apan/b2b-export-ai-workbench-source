@@ -5,7 +5,7 @@ type: "installation-guide"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-07-31"
+last_updated: "2026-09-07"
 sources: ["MANIFEST.md", "RELEASE.md"]
 related: ["README.md", "START-HERE.md", "VERSION.md", "MANIFEST.md", "RUNTIME-CONTRACT.json", "scripts/build-release.mjs", "scripts/validate-sub-library.mjs"]
 visibility: "public"
@@ -17,7 +17,7 @@ preview_publication_status: "Published"
 ---
 # Installation
 
-既有 `v0.3.2-preview.1` 已作为 **Public Preview** 发布，可继续按该版本范围下载试用；当前源码候选因新增研究来源的 publication clearance pending 而保持 `BLOCK`，不得重新发布。Stable qualification、跨部署稳定性和生产批量使用继续 `BLOCK`。
+既有 `v0.3.2-preview.1` 已作为 **Public Preview** 发布，可继续按该版本范围下载试用；当前源码候选 `0.4.0-preview.1` 的三张 source card 已于 2026-09-03 逐卡 clearance（`license_status: cleared`），并已随公开仓 main `4ccab49` 发布（`preview_publication_status: Published`）。Stable qualification、跨部署稳定性和生产批量使用继续 `BLOCK`。
 
 ## Source-only 安装
 

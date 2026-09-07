@@ -25,14 +25,14 @@ current_candidate_version: "0.4.0-preview.1"
 - Package ID：`website-content-ops`
 - Version：`0.3.2-preview.1`
 - Version meaning：legacy compatibility 字段，仅指 immutable historical published artifact，不是当前 candidate version。
-- Current candidate identity：`website-content-ops-0.4.0-preview.1`；snapshot：`clean-committed-tree`；version：`0.4.0-preview.1`（2026-09-03 分配，未发布）。
+- Current candidate identity：`website-content-ops-0.4.0-preview.1`；snapshot：`clean-committed-tree`；version：`0.4.0-preview.1`（2026-09-03 分配，已随公开仓 main `4ccab49` 发布）。
 - Historical published version：`0.3.2-preview.1`；tag：`v0.3.2-preview.1`；Public Preview / Published（2026-07-30）。
-- Publication：`release_status: Preview`、`preview_publication_status: Ready`、`license_status: cleared`（2026-09-03；三张 source card 已逐卡 clearance）；`approval_status: pending` 不变——Stable/`Published` 正式 qualification 仍阻断，不得继承历史发布身份。
+- Publication：`release_status: Preview`、`preview_publication_status: Published`（候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布）、`license_status: cleared`（2026-09-03；三张 source card 已逐卡 clearance）；`approval_status: pending` 不变——Stable（含 Stable 口径 `Published`）正式 qualification 仍阻断，不得继承历史发布身份。
 - Changelog：[CHANGELOG.md](CHANGELOG.md)
 - Release guide：[RELEASE.md](RELEASE.md)
 - Update URL：`https://fluxpedal.example/content-lab/updates`（虚拟演示）
 - Compatibility：本地 Markdown；Obsidian 仅为参考查看器；可读取本地文件的 AI agent；图床与 CMS 通过 adapter 接入。
-- Trusted runtime profile（2026-09-02）：固定四文件 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；历史 158/158 已陈旧并必须拒绝；这是本地合同证据，不改变当前候选 `BLOCK`、Stable qualification 或跨部署边界。
+- Trusted runtime profile（2026-09-02）：固定四文件 160/160（媒体 47、正文图片 52、正文格式 13、文章生命周期与 taxonomy 48）；历史 158/158 已陈旧并必须拒绝；这是本地合同证据，不改变 Stable qualification 或跨部署边界。
 
 ## Historical release: 0.3.2-preview.1
 

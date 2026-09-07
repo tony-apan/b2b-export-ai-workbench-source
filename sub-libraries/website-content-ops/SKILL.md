@@ -19,7 +19,7 @@ redaction_status: "safe-to-publish"
 ---
 # Website Content Operations AI Skill
 
-> **状态分离：历史 artifact `v0.3.2-preview.1` 已发布为 Public Preview；当前未发布源码候选为 `BLOCK` / 非 Stable。** 历史发布事实不能继承给当前候选；新增研究来源的 publication clearance 尚未完成。本文件仍只是子库内的预览级 AI 适配器，不是一键安装或跨平台稳定 Skill。实时状态以 `MANIFEST.md` 为准。
+> **状态分离：历史 artifact `v0.3.2-preview.1` 已发布为 Public Preview；当前源码候选 `0.4.0-preview.1` 已随公开仓 main `4ccab49` 发布（`preview_publication_status: Published` / `license_status: cleared`，2026-09-03），但仍非 Stable。** 历史发布身份不重用；`approval_status: pending`，Stable 正式 qualification 尚未执行。本文件仍只是子库内的预览级 AI 适配器，不是一键安装或跨平台稳定 Skill。实时状态以 `MANIFEST.md` 为准。
 
 ## 什么时候使用
 
@@ -116,7 +116,7 @@ redaction_status: "safe-to-publish"
 
 ## 当前 AllinCMS 路由
 
-目标是 AllinCMS 时，先读 [AllinCMS AI 唯一入口](ADAPTERS/cms/allincms/AI-START-HERE.md)，并从其第 0 节直接执行：默认用宿主内置 Browser session 请求 `/sites?_rsc`，读取登录状态、`user.id`、完整网站列表和 `canCreate`；只有未登录才打开并前台展示 `/sign-in`，登录后重新 API 检查，再做精确选站、媒体页检查、接口优先和页面诊断回落。不要让用户先自行找页面，不要绕过当前 adapter 自行重抓或重写上传循环，也不要把 UI 当自动降级。历史 artifact 的 Public Preview 不放行当前未发布源码候选；当前路线仍受 `MANIFEST.md` 的 `BLOCK` 状态与独立 Stable qualification 边界约束。
+目标是 AllinCMS 时，先读 [AllinCMS AI 唯一入口](ADAPTERS/cms/allincms/AI-START-HERE.md)，并从其第 0 节直接执行：默认用宿主内置 Browser session 请求 `/sites?_rsc`，读取登录状态、`user.id`、完整网站列表和 `canCreate`；只有未登录才打开并前台展示 `/sign-in`，登录后重新 API 检查，再做精确选站、媒体页检查、接口优先和页面诊断回落。不要让用户先自行找页面，不要绕过当前 adapter 自行重抓或重写上传循环，也不要把 UI 当自动降级。历史 artifact 的 Public Preview 身份不重用于当前源码候选；当前路线仍受 `MANIFEST.md` 的 `Preview` 状态（非 Stable）与独立 Stable qualification 边界约束。
 
 ### 建站产品 / globals / 模块网格关键坑（2026-09-02 实测，ISS-105/106/107）
 
@@ -163,4 +163,4 @@ redaction_status: "safe-to-publish"
 
 ### 文章、分类、标签与正文图片变更授权
 
-所有 AllinCMS 文章、分类、标签和正文图片草稿 mutation 必须传入结构化 `authorizationContext`；裸布尔值或“上层已经确认”的口头状态无效。该对象必须精确绑定 `site_key`、operation、目标摘要、具名 `human-asserted` actor、`approved_at` 与不超过 30 分钟的 `expires_at`，并在每次远程请求前重验。actor 身份固定为 `not_verified`；本地对象不证明真人批准。发布、删除仍需独立明确人工批准；历史 artifact 仅已发布为 Public Preview，当前未发布源码候选、远程副作用授权和 Stable qualification 仍分别保持 `BLOCK`。
+所有 AllinCMS 文章、分类、标签和正文图片草稿 mutation 必须传入结构化 `authorizationContext`；裸布尔值或“上层已经确认”的口头状态无效。该对象必须精确绑定 `site_key`、operation、目标摘要、具名 `human-asserted` actor、`approved_at` 与不超过 30 分钟的 `expires_at`，并在每次远程请求前重验。actor 身份固定为 `not_verified`；本地对象不证明真人批准。发布、删除仍需独立明确人工批准；历史 artifact 仅已发布为 Public Preview，当前源码候选已按 Preview 口径 Published（2026-09-03），Stable 资格仍待正式 qualification，远程副作用授权和 Stable qualification 仍分别保持 `BLOCK`。
