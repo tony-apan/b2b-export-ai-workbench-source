@@ -4,8 +4,8 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-06"
-sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..133", "2026-09-04 双机实战（macOS+Windows 10 field build）", "2026-09-05 跨账号实证（Apply Theme UI 崩溃对照 + 读侧解析陷阱 + SEO 边界清单）"]
+last_updated: "2026-09-07"
+sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..139", "2026-09-04 双机实战（macOS+Windows 10 field build）", "2026-09-05 跨账号实证（Apply Theme UI 崩溃对照 + 读侧解析陷阱 + SEO 边界清单）", "2026-09-05 某筛网西语站 v2 重建实战（分类静默拒绝绕过 + §8.3 自修复引导）"]
 related: ["ONBOARDING-PIPELINE.md", "writing/WRITING-INDEX.md", "MODULES.md"]
 description: AllinCMS 建站工具包文档（RUNBOOK-ANYONE.md）
 visibility: "public"
@@ -85,6 +85,11 @@ python3 ../../scripts/interface-kit-pipeline.py check   # 真源管线 stale/dri
 | **registry capability_routes 声明 blocked ≠ 代理层实际不可用（ISS-129）**：某实战案例 delete_site 被标 blocked，直连实测成功 | 重要动作以真实请求小步验证为准（先读对账再执行）；破坏性动作无论声明如何都须用户明确授权 | 2026-09-04 双机实战（delete_site 实测成功） |
 | **工作台 Apply Theme UI 崩溃 ≠ 服务端故障（ISS-130）**：点 Apply Theme 报 NotFoundError: insertBefore（React DOM 渲染崩溃），Theme 无法 Active、Routes Unbound，易被误判"平台故障等修复" | 主题绑定固定走 API 三步 `apply_theme_routes` → `set_theme_active` → `set_home_page`（§3 顺序）；同部署另一新站一次成功（active=True/homePagePublished/全路由 200）——UI 层崩溃不影响 Server Action 通道 | 2026-09-05 跨账号实证（某 coffee 实战站） |
 | **SEO 可控/边界分层（ISS-133）**：可控★=description/excerpt（meta description 实测一致）/alt/slug/发布态；平台⛔=title 后缀（站点名+品牌句平台拼接，改产品名不可达≤60）/html lang 平台默认/canonical 全站缺失/JSON-LD 全站 0/分类查询页 title、desc 与列表页重复/首页多 H1 | SEO 诊断输出分"可控★/平台⛔/误报⚠"三层并给 ACTIONS 优先列；平台⛔项登记 BOUNDARY 照抄已知事项，不当站内待修项 | 2026-09-05 某 SEO 实战站实测 |
+| **个别分类 ID 导致产品 create 100% 静默拒绝（ISS-134）**：create 持续 RECONCILE=Untitled draft、media/capability 全正常且无 validationErrors 时，先怀疑分类 ID——同 payload 换已验证分类即 create 成功（3/3 实证） | 绕过=先用已验证分类 create 成功 → 再 update 回正确分类；诊断顺序见 §8.3 场景 1 | 2026-09-05 某筛网西语站 v2 重建实测 |
+| **update_page 必须显式传 path+query（ISS-136）**：updatePageAction 的 zod 必填校验要求 path+query，只传 name 缺这两项 → 返回 200 但静默无效（readback name 不变） | path/query 从 read_pages 行现取显式传；一切 update_* 以 readback 为唯一判据（200 ≠ 生效） | 2026-09-05 某筛网西语站实测 |
+| **页面 publish 会重置页面 name 回模板英文（ISS-137）**：title 前段被模板值覆盖；CDN SSR 标题取发布时刻 name | 改名排在最后一次 publish 之后（update_page）；公网要同步就得 publish 后改名再按需重发（接受循环）或接受 CDN 缓存延迟；meta description post-publish 重写可存活 | 2026-09-05 某筛网西语站实测 |
+| **轮播 slide 必须显式 price:""（ISS-138）**：不传会被回填 demo 价格（From $96/From $38），公开站出现虚构价格 | 逐 slide 显式 price 空串；product/primaryLabel/secondaryLabel 同族槽位一并显式（ISS-113 家族 + §8.2 词库扫描） | 2026-09-05 某筛网西语站 v2 重建实测 |
+| **面包屑/列表工具栏/表单字段标签=模板硬编码英文（ISS-139）**：Home/Products、Category/Tag/Search、Name/Email/Send message 在平台模板编译层生成，props 不可达不可翻译 | 非英语站登记 BOUNDARY 并开工前告知客户，不当站内待修项重复排查 | 2026-09-05 某筛网西语站实测 |
 
 ### §2.1 「改动不生效」诊断树（未激活/未发布/未启用，按序查）
 
@@ -242,6 +247,22 @@ transport 可用性与机器无关），产品/删除/taxonomy/媒体在任何�
 扫描口径：对每页 document+globals JSON 序列化后逐词 `re.search`（大小写不敏感）；命中即
 显式传值（多数可空串）或删元素（zod default 项置空无效，ISS-068）；不可 props 化的模板
 编译文案（面包屑/工具栏/表单字段标签）登记边界不硬改。
+
+### §8.3 自修复引导（AI 遇到问题时的标准诊断修复流程）
+
+> 表格式 runbook：按「现象」对号入座 → 按「诊断」顺序执行 → 执行对应「修复动作」。命令里的
+> `<slug>`/`site_id`/`theme_id` 一律 read_sites/read_themes 现取勿猜；本表命中不了再走 §11 卡住清单。
+
+| # | 现象 | 诊断（按序执行） | 修复动作 |
+|---|---|---|---|
+| 1 | 产品 create 持续 RECONCILE / 保持 Untitled draft | ① `api.read_lists(slug,'products')` 对账是否已存在（重复 create 堆草稿=ISS-059）② 查分类 ID 是否正确：同 payload 换一个已验证可用的分类 ID 试 create（ISS-134——换分类即成功则坐实）③ capability 是否过期：`refresh_product_capability` 重建（≤30 分钟窗，ISS-117/125）④ media source 是否 `url`（oss+path 被静默拒整 payload=ISS-105） | 换分类 create 成功 → `mutate_reviewed_product(target_id)` update 回正确分类（3/3 实证）；media 改 `{source:"url", url:<CDN>}`；capability 整批重建 |
+| 2 | 产品图片缺失 | ① `api.read_media_library(slug)` 查文件是否真上传（键 `{status, media}`）② 检查 payload media source 是否 `url` ③ curl 图 URL 是否 200 + 带扩展名 | 未上传 → 重新 `upload_media_with_meta`（上传→媒体库对账→SEO 元数据回写，ISS-122）；source 改 url；URL 404 → 重传后以 readback 的新 CDN url 回填 payload |
+| 3 | 页面标题英文 | ① 检查 update_page 是否显式传了 path+query（缺=返回 200 但静默无效，ISS-136）② 检查改名是否在 publish 之后（publish 会把 name 重置回模板英文，ISS-137）③ 仍不可达 → 接受 name 段英文 / 只改 meta description（post-publish 重写可存活） | update_page 从 read_pages 行现取 path+query 显式传 → readback 对账 name；改名排最后一次 publish 之后；公网要同步则 publish→改名→按需重发或接受 CDN 缓存延迟 |
+| 4 | 页面内容有英文残留 | ① grep globals props（header/footer/弹窗槽位）② grep 模块 props（对照 MODULES.md 37 块字段全集）③ 检查 ISS-001 回填——未提供的字段会被服务端用模板默认值填充 | 命中槽位显式传值（多数可空串）或删元素（zod default 项置空无效=ISS-068）；模板编译文案（面包屑/工具栏/表单字段标签=ISS-139）登记 BOUNDARY 不硬改；§8.2 词库全扫一遍 |
+| 5 | taxonomy 竞态（transaction number mismatch） | ① `read_lists` 对账是否其实已建成功 ② 竞态是间歇性的 → sleep 5→8→13s 重试**同一**请求（勿换参数）③ 改用 `create_taxonomy_safe`（内置"对账→create→回读 id+竞态退避"，ISS-123） | 手工路径等价：等 6-8s → read_lists 只读对账确认远端不存在 → 重试同一请求；成功后回读 categoryOptions/tagOptions 的 `{label, value(id)}` 取 id（ISS-118） |
+| 6 | 路由/主题激活失败 | ① 不走 UI——Apply Theme UI 崩溃（insertBefore）≠服务端故障（ISS-130），固定走 API 三步 `apply_theme_routes → set_theme_active → set_home_page` ② readback 验证 theme `active==True` + `homePagePublished==True`（键名 active，isActive 不存在=ISS-108）③ `read_pages` 检查 all pages `enabled` + routes `status=='bound'` | 按 §2.1 诊断树逐键核对修复；`set_home_page` 必须最后（setThemeActive 是唯一清 homePageId 的操作，ISS-070）；重新激活主题后必须重跑 set_home_page |
+| 7 | capability 过期/失效 | ① `api.refresh_product_capability(slug, site_id, task_root, client_id, task_id, operation='create'|'update')` 重建（推荐封装，内部观察 action id→写 70_evidence→自检）② 手动重建 evidence 时 `observed_at=now`（evidence 与 context 必须同值）③ `action_ids` 覆盖本批全部 ops（create/update 操作集分开刷） | 每批 mutation 前重建（一批超 25 分钟整批刷新）；手写模板字段缺一不可（配方见 ONEPASS 步骤 7）；evidence 文件改动后 digest 必须重算 |
+| 8 | 公网未变（疑 CDN 缓存） | ① 先分清后端已改 vs 边缘未刷：`read_page_document`/`read_lists` readback 后端 ② 后端已新 → 等平台 CDN 自然过期（sleep 后重取 curl，勿连续硬刷）③ 需要 expedite 时 `save_home(intent='publish')` 触发重渲染；站点级/头部/footer 改动用后台设计器**站点级 Publish**（ISS-106） | 后端也旧 → 写入没落地，回 §2.1 诊断树查状态键；后端新 → 等待+重取即可，验收顺序固定「后端 readback → 边缘 curl」 |
 
 ## §9 已知平台 BLOCK 与回落（交付时照抄到"已知事项"）
 

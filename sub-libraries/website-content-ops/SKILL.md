@@ -5,8 +5,8 @@ type: "skill"
 status: "Working"
 owner: "AI"
 created: "2026-07-28"
-last_updated: "2026-09-05"
-sources: ["README.md", "AGENTS.md", "START-HERE.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "TOOLS/interface-kit/index/issues.tsv ISS-131"]
+last_updated: "2026-09-07"
+sources: ["README.md", "AGENTS.md", "START-HERE.md", "PLAYBOOK.md", "QA-CHECKLIST.md", "TOOLS/interface-kit/index/issues.tsv ISS-131/134..139（2026-09-05 某筛网西语站 v2 重建实战）"]
 related: ["README.md", "AGENTS.md", "START-HERE.md", "MANIFEST.md", "RUNTIME-CONTRACT.json", "ADAPTERS/cms/allincms/README.md", "QA-CHECKLIST.md", "VERSION.md"]
 audience: ["Claude", "Codex", "可读取本地文件的 AI agent"]
 state_source: "MANIFEST.md"
@@ -137,8 +137,9 @@ redaction_status: "safe-to-publish"
 13. **capability 每批刷新（≤30 分钟过期）**：每批产品 mutation 前用 `api.refresh_product_capability(site_slug, site_id, task_root, client_id, task_id, operation='create'|'update')` 重建 context（内部观察 action id、写 70_evidence/ 证据并自检；站内无产品返回 None）；create/update 操作集分开刷，禁止复用上一批；批量中途超窗整批刷新。
 14. **品牌化 demo 残留扫描**：模板还有一层"看着不像 demo 的 demo"（模板公司名 Northstar/Commerce editorial、Ships from San Francisco、栏目名 Journal/Guides/New arrivals/Collections、instagram/wa.me 4477 社媒占位、demo 人名 Maya C.，及 ISS-113 商城槽位词）——新站落库前对每页 document+globals JSON 按词库 `re.search` 一次清零，词库全表见 RUNBOOK **§8.2**；不可 props 化的模板编译文案登记边界不硬改。
 15. **更新已有站 content 走 update-only 透传（ISS-131，选项 b 已落地）**：线上真实 content 含 align/lineHeight/url/indent/listStyleType/嵌套 children/inline 链接节点等平台键，payload_checks 白名单仅认 {p,h2,h3,blockquote}+纯文本叶——**白名单不放宽**。已落地 content 原样透传：review record 增 `content_passthrough: true` + `content_passthrough_ref{ref,digest}`（artifact 契约 `{"object_type","target_id","content"}`，ref 在 runtime scope 内、digest=文件字节 sha256），并把 content 原样转发的残余风险记为 location:"content" 的 WARN/accepted_warn finding；verify 对 content 跳过形状走查（存在性/非空与其余全部检查照旧），ctx 标 content_passthrough；`mutate_reviewed_product/mutate_reviewed_post` 在 transport 前对 `GET /{slug}/{resource}/{id}/update` 的 defaultValues.content 做 fresh 树等比重验（int/float 互容、bool 严格），不等→**零 API write** + reconcile（evidence.content_passthrough_stale），evidence 双锚点=审查 artifact digest + fresh 快照 digest。**create 禁用透传**（无权威 readback 可锚，透传 record 配 create 必 FAIL）。残余选项：容忍平台键（=放宽白名单，禁）或后台改 content。注意：**不含 content 的单字段更新 payload 会被 gate 的 content 必填硬校验拒绝**（product.content/article.content missing）——字段级更新既有站需整 payload（含原样 content）走透传，或后台改。
+16. **v2 重建新断点（2026-09-05 某筛网西语站实战，ISS-134..139）**：① **个别分类 ID 会让产品 create 100% 静默拒绝**——create 持续 RECONCILE=Untitled draft、无 validationErrors 时先换已验证分类试（同 payload 换分类即成功），绕过=换分类 create → update 回正确分类（3/3 实证）；② **timezone 遮蔽已修（ISS-135）**——upload_media_with_meta 曾因函数内 `from datetime import datetime` 遮蔽 `datetime.timezone` 使 `_ts()` 排序崩溃（20 图全 fail），已改 `timezone as _tz` 别名 import，纪律=局部 import 勿遮蔽同名模块属性；③ **update_page 必须显式传 path+query（ISS-136）**——zod 必填，缺=返回 200 但静默无效，一切 update_* 以 readback 为唯一判据；④ **页面 publish 会把 name 重置回模板英文（ISS-137）**——改名排最后一次 publish 之后；CDN SSR 标题取发布时刻 name（要同步就 publish→改名→再发或接受缓存延迟）；meta description post-publish 重写可存活；⑤ **轮播 slide 必须显式 price:""（ISS-138）**——缺省回填 demo 价格（From $96/From $38），公开站出现虚构价格；⑥ **面包屑/列表工具栏/表单字段标签（Home/Products、Category/Tag/Search、Name/Email/Send message）模板硬编码英文不可翻译（ISS-139）**——非英语站登记 BOUNDARY 告知客户。以上现象驱动的标准诊断修复流程（现象→诊断→修复动作八场景）见 RUNBOOK **§8.3 自修复引导**。
 
-以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108/120..129、131）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树 + §8.1 执行路径决策树 + §8.2 demo 残留词库）与 `NEW-SITE-ONEPASS.md` 步骤 3/5/6/7/9/10。
+以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108/120..129、131、134..139）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树 + §8.1 执行路径决策树 + §8.2 demo 残留词库 + §8.3 自修复引导）与 `NEW-SITE-ONEPASS.md` 步骤 3/5/6/7/9/10 + 末尾卡住时清单。
 
 ### 上传前必须取得精确授权
 

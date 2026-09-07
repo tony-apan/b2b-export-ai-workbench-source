@@ -399,7 +399,7 @@ class AllinCMS:
                 "media_urls 是历史累积全量不可当本次结果；若疑似串扰/缺失按 ISS-109 逐张对账后重试")
         def _ts(row):
             # 解析为绝对时刻再比较（字典序会误判 +08:00 与 Z 形式），无法解析的行排最后
-            from datetime import datetime
+            from datetime import datetime, timezone as _tz
             for key in ("createdAt", "updatedAt", "created", "updated"):
                 value = row.get(key)
                 if not (isinstance(value, str) and value):
@@ -408,7 +408,7 @@ class AllinCMS:
                     return datetime.fromisoformat(value.replace("Z", "+00:00"))
                 except ValueError:
                     continue
-            return datetime.min.replace(tzinfo=datetime.timezone.utc)
+            return datetime.min.replace(tzinfo=_tz.utc)
         row = max(rows, key=_ts)   # 同名取解析后最新一条
         media_id = row.get("id")
         if not media_id:

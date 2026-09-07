@@ -3,7 +3,7 @@ title: "AllinCMS 建站知识索引"
 type: "index"
 status: "Working"
 owner: "AI"
-last_updated: "2026-09-06"
+last_updated: "2026-09-07"
 description: AllinCMS 建站工具包文档（INDEX.md）
 created: 2026-08-31
 visibility: "public"
@@ -14,7 +14,7 @@ related: ["../README.md"]
 
 # AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）
 
-> 生成时间：2026-09-06｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
+> 生成时间：2026-09-07｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
 
 ## 1. 文档 / 脚本 / 模板（doc-registry.tsv）
 
@@ -236,6 +236,12 @@ related: ["../README.md"]
 | ISS-131 | fixed | gate-whitelist | 某 SEO 实战站线上真实 content 含 align/lineHeight/url/indent/listStyleType/嵌套 children 等平台键，payload_checks 白名单仅认 {p,h2,h3,blockquote}+纯文本叶 → 更新已有站 content 必 FAIL | gate 白名单按本工具生成的干净 Slate 建模，未覆盖平台编辑器写回的富键 content；直接放宽等于削弱安全门 | 代码未改，需独立对抗周期再动；三选项：a) 容忍平台键 b) 单字段更新+content 原样透传（字节等于 readback 才放行，evidence 标 content_passthrough）c) 诊断输出 No API write 请后台改 | 已落地选项 b（2026-09-05）：content_passthrough+artifact ref XOR 校验、update-only、fresh 树等重验、非 200/异常结构化 reconcile；float 合同升版 python-json-float-v2；白名单未放宽；CANONICALIZATION 升版使旧 v1 record fail-closed 需重签 | 更新已有站暂只能后台改 content；API 侧更新走不含 content 的单字段 payload；独立对抗周期落地选项前不得为过门放宽白名单 | ../RUNBOOK-ANYONE.md|../../SKILL.md |
 | ISS-132 | fixed | read-parsing | 读侧解析陷阱合集：①categories/tags 元素是 {id,name} 无 slug，硬编码 slug 字段误报全无分类；②读路径包裹键不统一（read_product→product.defaultValues、read_lists→data、read_sites→sites）；③list 级字段轻量无 content，诊断内容缺失必须单读；④软 404：HTTP 200+约25KB 错误壳≠正常页（约900KB），需长度阈值+壳特征；⑤sitemap 不含产品详情页（20 产品 0 条），收录诊断需单独内链确认 | 各读接口返回形态各异而调用方各自手写解包，字段名假设（slug）与错误壳判据缺失造成 PARSING/诊断层误报 | allincms_api.py 新增公开解析器 pick_names(rows)（taxonomy 行取 name，兼容 {id,name}/{label,value}，对应①）与 get_payload(obj,*keys)（按序取首个存在键，对应②）；site_pipeline audit 新增 soft404 探针（随机不存在路径 200 且长度<正常页/10 或含错误壳特征即记问题，作第 14 项附加输出不改 13 项口径，对应④） | 消费读结果一律走 pick_names/get_payload 不手猜键名；③⑤是使用纪律：内容诊断必单读编辑页，收录判断不得依赖 sitemap | ../RUNBOOK-ANYONE.md |
 | ISS-133 | boundary | seo-boundary | SEO 平台边界清单：title 后缀=站点名+品牌句由平台拼接无法缩短（改产品名不可达≤60）；html lang 平台默认；canonical 全站缺失；JSON-LD 全站 0；分类查询页 title/desc 与列表页重复；首页多 H1 | 这些项在模板/平台渲染层生成，站内无配置面；可控项只有 description/excerpt（meta description 实测一致）/alt/slug/发布态 | 诊断输出按可控★/平台⛔/误报⚠三层分层并给 ACTIONS 优先列；平台⛔项登记 BOUNDARY 照抄已知事项，不当站内待修项 | SEO 审计先分层再给动作：可控项（description/excerpt/alt/slug/发布态）优先做；平台⛔不硬改不重复排查 | ../RUNBOOK-ANYONE.md §2 |
+| ISS-134 | boundary | taxonomy | 产品 create 100% 静默拒绝并持续 RECONCILE=Untitled draft（media/capability 均正常）：根因是该站 maquinaria-minera 分类 ID | 平台侧对个别分类 ID 的 create 校验静默失败（无 validationErrors 提示）；假设已验证：同 payload 仅改用 mallas-metalicas 分类 ID → create 成功 | 绕过配方：先用已验证可用的分类 ID create 成功 → 再 update 到正确分类（3/3 产品实证发布成功） | create 持续 RECONCILE 且排除已存在/media source/capability 过期后，先假设分类 ID 是根因（换分类试）再深挖 | ../RUNBOOK-ANYONE.md|../NEW-SITE-ONEPASS.md |
+| ISS-135 | fixed | kit-defect | upload_media_with_meta 内 `from datetime import datetime` 遮蔽 `datetime.timezone`，`_ts()` 取 `datetime.min.replace(tzinfo=datetime.timezone.utc)` 崩溃 → 20 图全 fail | 函数局部 import 只绑定 datetime 类名，`datetime.timezone` 属性访问不可达（AttributeError） | 已改为 `from datetime import datetime, timezone as _tz` 并用 `_tz.utc`（allincms_api.py _ts() 排序路径） | 函数内局部 import 不与同名模块属性混用（需要 timezone 就别名 import）；批量上传前先单张冒烟走完媒体库对账排序路径 | - |
+| ISS-136 | fixed | api-contract | update_page 只传 name 不传 path/query 时返回 200 但静默无效（readback name 不变）——updatePageAction 的 zod 必填校验要求 path+query | 服务端 zod schema 将 path/query 列必填，缺省时校验不过但响应仍 200、不落库 | 调 update_page 显式传 path+query（从 read_pages 行现取），改完 readback 对账 name | 一切 update_* 的 200 响应 ≠ 生效；以 readback 为唯一判据 | ../RUNBOOK-ANYONE.md |
+| ISS-137 | boundary | platform-render | 页面 publish 会把页面 name 重置回模板英文（title 前段）；改名必须在最后一次 publish 之后，且 CDN SSR 标题取发布时刻 name | publish 流程按模板状态重写页面记录 name，CDN 渲染取发布时刻快照 | 改名排在最后一次 publish 之后（update_page 显式 path+query）；公网标题要同步就得 publish 后改名再按需重发（接受 name 再次被重置的循环）或接受 CDN 缓存延迟；meta description post-publish 重写可存活 | 页面 name 不承载品牌关键文案（会被 publish 重置）；标题类诉求优先 meta description（post-publish 改） | ../RUNBOOK-ANYONE.md |
+| ISS-138 | fixed | demo-backfill-hidden-fields | 轮播 slide 未显式传 price 时被回填 demo 价格（From $96/From $38），公开站出现虚构价格 | carousel slides 的 price 是模板 zod default 商城槽位（ISS-113 同族），缺省即回填 | 每个 slide 显式 price:""（空串覆盖；同族 product/primaryLabel/secondaryLabel 一并显式） | 轮播/hero 商城槽位逐 slide 显式传值（可空串）；落库前按 RUNBOOK §8.2 词库对 doc JSON 扫一遍 | ../MODULES.md |
+| ISS-139 | boundary | platform-render | 面包屑（Home/Products）、列表工具栏（Category/Tag/Search）、表单字段标签（Name/Email/Send message）为模块模板硬编码英文，props 不可达不可翻译 | 这些文案在平台模板编译层生成，模块 props 不暴露对应字段（ISS-128 模板编译文案层） | 站内不可修；非英语站按 BOUNDARY 登记并开工前告知客户（DELIVERY 已知事项照抄） | 非英语站验收口径排除这三处英文残留（登记边界），不当站内待修项重复排查 | ../MODULES.md |
 
 ## 3. 模块库（modules.tsv）
 

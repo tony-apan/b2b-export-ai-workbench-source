@@ -4,8 +4,8 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-06"
-sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表/执行路径决策树）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30", "2026-09-04 双机实战（macOS+Windows 10 field build）"]
+last_updated: "2026-09-07"
+sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表/执行路径决策树/§8.3 自修复引导）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30", "2026-09-04 双机实战（macOS+Windows 10 field build）", "2026-09-05 某筛网西语站 v2 重建实战（ISS-134..139）"]
 related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-customization-checklist.md", "MODULES.md", "writing/WRITING-INDEX.md"]
 description: AllinCMS 建站工具包文档（NEW-SITE-ONEPASS.md）
 visibility: "public"
@@ -151,7 +151,7 @@ redaction_status: "safe-to-publish"
 ### 步骤 6 — 分类 / 标签
 
 - **输入**：customization 的 taxonomy 节。
-- **动作**（推荐 safe 封装：内置对账 + transaction 竞态退避重试，ISS-123）：
+- **动作**（用 `create_taxonomy_safe` **替代**直接 `create_category2`/`create_tag`：内置 read_lists 对账 → create → 回读 id → transaction 竞态退避重试，ISS-123）：
   ```python
   from allincms_api import create_taxonomy_safe
   r = create_taxonomy_safe(api, slug, site_id, "category", name, cslug, content_type='products'|'posts')  # cover 显式 None
@@ -161,7 +161,7 @@ redaction_status: "safe-to-publish"
   手工等价：`api.create_category2(slug, site_id, name, slug, content_type=..., cover=None)` / `api.create_tag(...)`，但需自带对账与重试。
 - **验收判据**：产品分类与文章分类**分开建**；cover=None 未 500；记录全部 id（后续 payload 用 **id 字符串数组**）；建完重跑 `check-slug-namespace.py` 确认与产品 slug 计划无冲突。
 - **产物**：`70_evidence/taxonomy-ids.json`（name → id 映射）。
-- **坑**：cover 缺省报 validation error；payload 传 id 数组（读回是对象数组）；**transaction number mismatch 竞态是间歇性的**（qualification run 中多次）——`create_taxonomy_safe` 已内置"每轮先 read_lists 对账确认不存在 → create → 回读取 id；失败含 transaction number 时 sleep 5→8→13s 重试"；手工路径配方：等 6-8s → read_lists 只读对账（确认远端不存在）→ 重试**同一**请求，勿换参数；对账形状：categoryOptions/tagOptions 行是 `{label,value(id)}`（label=分类名，映射表按 name 存，组装 payload 时 slug→name→id 三段转换，ISS-118）。
+- **坑**：cover 缺省报 validation error；payload 传 id 数组（读回是对象数组）；**transaction number mismatch 竞态是间歇性的**（qualification run 中多次）——`create_taxonomy_safe` 已内置"每轮先 read_lists 对账确认不存在 → create → 回读取 id；失败含 transaction number 时 sleep 5→8→13s 重试"；手工路径配方：等 6-8s → read_lists 只读对账（确认远端不存在）→ 重试**同一**请求，勿换参数；对账形状：categoryOptions/tagOptions 行是 `{label,value(id)}`（label=分类名，映射表按 name 存，组装 payload 时 slug→name→id 三段转换，ISS-118）；**分类 ID 本身可能让产品 create 100% 静默拒绝（ISS-134）**——步骤 7 的 payload 全对但 create 持续 RECONCILE 时，先换一个已验证可用的分类创建 → 再 update 回正确分类（2026-09-05 某筛网西语站 3/3 产品实证）。
 
 ### 步骤 7 — 产品 create/publish（每个产品一遍）
 
@@ -206,7 +206,7 @@ redaction_status: "safe-to-publish"
   > evidence 与 context 的 observed_at 必须同值；evidence 文件改动后 digest 必须重算；一批超 25 分钟即整批刷新。
 - **验收判据**：`api.read_lists(slug,'products')` 与 COP 逐条 diff（数量/名称/slug/规格）；状态字段 `_status=='published'`（键名是 `_status`，ISS-108；create-only 草稿 `_status` 非 published 且**公网不可见**=ISS-105 另一面）；`read_product` 的 content **非空**；公网每个产品详情页 `<article>` 内至少 1 个实质 H2 + 正文事实短语 SSR，且相关产品模块真链接可点、无空态。
 - **产物**：`70_evidence/products/<slug>.json` + `<slug>-review.json`（最终 payload + 独立 reviewer READY 记录，digest 精确绑定；含 business_operation=create|update、site/target binding）。
-- **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；全量 update 必须从 current readback + brief 真源合并，**不得复用可能过期的存证 payload**，尤其 specifications/content/media（空数组会真清空后台，ISS-101）；合并后必须再归一化为**写接口形状**：media 从读回包裹/url 形状转 `source:"oss"+path`，categories/tags 从对象数组转 id 字符串数组，specifications/content 以 brief/COP 真源覆盖（不得把 read_product/read_lists 读形状原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接。
+- **坑**：`content: []` 只会建出有图/规格、无正文的空心详情页（ISS-097）；create 后 draft slug 会变时间戳，publish 时 payload 必须带正确 slug；publish/update 额外契约=siteId + media `source:"oss"/path` + taxonomy id 字符串数组（ISS-098，readback 对象数组不可原样回传）；全量 update 必须从 current readback + brief 真源合并，**不得复用可能过期的存证 payload**，尤其 specifications/content/media（空数组会真清空后台，ISS-101）；合并后必须再归一化为**写接口形状**：media 从读回包裹/url 形状转 `source:"oss"+path`，categories/tags 从对象数组转 id 字符串数组，specifications/content 以 brief/COP 真源覆盖（不得把 read_product/read_lists 读形状原样回传）；同 slug 重跑会堆积 Untitled 草稿（ISS-059）→ 先 `read_lists` 查 slug；正文内联 link 节点前台平铺无 `<a>`，产品/文章内链必须用页面模块 target（feature-grid/product showcase），不可伪造正文链接；**create 持续 RECONCILE 时先怀疑分类 ID（ISS-134）**——同 payload 换已验证可用分类 → create 成功 → `mutate_reviewed_product(target_id)` update 回正确分类（2026-09-05 某筛网西语站 3/3 实证）；**首页轮播 slide 的 price 必须显式 `""`（ISS-138）**——不传会被回填 demo 价格（From $96/From $38），公开站出现虚构价格（同族 product/primaryLabel/secondaryLabel 槽位一并显式，ISS-113 家族）。
   > **blockquote 两门矛盾（ISS-112，2026-09-03 qualification run）**：content_review_gate 要求 blockquote.children 嵌套 {type:p} 块，site_pipeline product-content 门空块判定只认 children[].text 平铺——同一 payload 无法同时过两门。**产品正文禁用 blockquote**，选型建议用 p 段（"Buyer tip: " 前缀）。
   > **跨站差异（ISS-105，2026-09-02 新建站实测）**：不是所有站都接受 `source:"oss"`。新建站产品 upsert 若 media=oss+path 会**静默拒绝整个 payload**（产品保持 Untitled）；`specifications.value` 有 200 字符上限（`validation.specifications.valueMax200`）。**写产品前先扫该站是否有 `createProductAction`**（若无只能走 update/upsert，即 `mutate_reviewed_product(target_id=draft id)`）；media 用 `{source:url, url:<CDN url>}`；长型号清单放 `content` 正文、specifications 只留短 value（≤200）；publish 后查 response 的 `validationErrors` 是否为空。API 读回媒体库能拿每张图的真实 `url`。
 
@@ -262,7 +262,7 @@ redaction_status: "safe-to-publish"
   文章详情页 CTA 真链接：post-detail 页 `page-root.children` 追加 `cta-1`（type `material-story-split`，`actionTarget={"type":"custom","href":"/contact-us?source=<site>-article"}`），并替换 related-1 demo 文案。
 - **验收判据**：7 页 readback diff≈0；globals 7 页一致；公网无空态文案（`No content is available yet` 等——单品/单文时删详情页 related 模块）。
 - **产物**：`70_evidence/pages/<page>.json`（每页最终三件套存证，共 7 份）。
-- **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/+44-7911-123456`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取；**全局弹窗元素必须带 anchorId=header cta 锚点名，null 时公开站静默丢弃整树（ISS-094，builder 默认已带）**。
+- **坑**：**createTheme(default) 会重新种入 3 demo 产品 + 3 demo 文章**（站点级，ISS-071，步骤 11 清）；空字符串字段会被 zod 打回默认值（如 WhatsApp `wa.me/+44-7911-123456`）→ 删 demo 按钮=**移除元素**（children+elements 同删），不是置空（ISS-068）；主题 id/页面 id 会变，一律 `read_themes/read_pages/read_page_document` 现取；**全局弹窗元素必须带 anchorId=header cta 锚点名，null 时公开站静默丢弃整树（ISS-094，builder 默认已带）**；**update_page 改页面记录级字段（name/description）必须显式传 path+query（ISS-136）**——updatePageAction 的 zod 必填校验缺这两项=返回 200 但静默无效，改完 readback 对账；**页面 publish 会把 name 重置回模板英文（ISS-137）**——改名排在最后一次 publish 之后，公网标题要同步就得 publish→改名→按需重发或接受 CDN 缓存延迟，meta description post-publish 重写可存活（诊断流程见 RUNBOOK §8.3 场景 3）。
   > **hero/carousel 隐藏商城槽位（ISS-113，2026-09-03 qualification run）**：hero-commerce 除显性字段外还有 productName/productDescription/productPriceLabel/campaignPills[].value/mediaMeta/actions[].label 六处；carousel slides 每项还有 price/product/primaryLabel/secondaryLabel 四处——不显式覆盖（可空串）服务端回填 demo 值（Weekender Tote/From $96/Materials and care 系），audit template 多轮才清完。serviceItems 结构为 icon+title+description；materials-1 的 actionLabel/actionTarget 也是隐藏槽（demo 值 "Read the material guide" 会被 audit template 抓）。落库前对照 ISS-113 清单**逐页逐模块**枚举 demo 词（`re.search` 打分脚本扫 doc JSON）一次性清零，不要等 audit 一轮轮揭露。
   > **globals 写入（ISS-106，2026-09-02 新建站实测）**：`save_home` 传**自建的 globals 结构**不会覆盖页面级 globals（readback 仍是旧值，因缺 children/anchorId 等被服务端回退用存储值）。正确做法：`read_page_document` 取 `ip['globals']`，**只改目标字段**（如 `header-dropdown-1.props.ctaTarget`、`footer-columns-1.props.brand`），其余原样回传 `save_home(intent=save)` → `readback` 确认 → `save_home(intent=publish)`。**导航 CTA 弹窗** = `ctaTarget: {type:"action", anchorId:"contact-form-dialog"}`（公网 `#contact-form-dialog`，参照弹窗站已验证）。涉及站点级/头部/footer 的可见改动，若页面级 publish 后公网未刷新，用后台主题设计器的 **Publish**（站点级）触发 CDN。
   > **网格列数=条目数 + 大标题规则（ISS-107，2026-09-02 实测）**：带 `columnCount` 的网格模块按列数**固定生成 N 列、条目不足不折叠**——3 列只填 2 条 proofRows → 公开站第三列只剩边框空白卡；4 列只填 2 个分类卡 → 右半幅约 540px 空白。提交前逐模块校验 `columnCount == len(items/proofRows/reviews/stats/values)`，改列数或补条目二选一。hero-commerce 大标题固定 72px 不随列宽缩放：长标题在窄列堆 6 行、连字符首词断孤儿行（"Wall-mounted"→"Wall-"独行），标题**避免连字符词开头、≤42 字符**。**模板固有行为登记不硬改**：hero 左列 content-between 中段空隙、产品卡 line-clamp 截断、奇数卡末行空位、吸顶导航 bg-background/95 半透明（滚动截图时底下内容 5% 透出，勿误判为重叠 bug）。**内联表单卡 formSlug 必填（ISS-110，2026-09-03 physolar 首页实测）**：contact-form-split 缺 formSlug 时公网只渲染表单卡外壳、同页 0 个 `<form>`；builder `contact_split()` 已带默认 `contact-inquiry`，audit form-render 已扩展为扫描所有含该模块的页面（不再只查 /contact-us）。
@@ -417,6 +417,7 @@ audit+home+清理 ← COP 数量基线 + 首页模块裁剪 + demo 元素/3+3 �
 ## 卡住时（顺序执行，同 RUNBOOK §11）
 
 1. `python3 index/registry_tools.py find <关键词>`（历史坑有现象→根因→修复链）；
-2. `python3 site_pipeline.py audit <slug> --config <cfg>`（拿事实矩阵再判断）；
-3. 看 `templates/*.json` 实测 payload 样例 + `MODULES.md` 37 块白名单；
-4. 新发现 → 修完立即回填 `issues.tsv`（fixed/boundary/pending）+ `verify`。
+2. **AI 自修复引导**：现象命中 [RUNBOOK §8.3 自修复引导表](RUNBOOK-ANYONE.md)（RECONCILE / 图片缺失 / 标题英文 / 英文残留 / taxonomy 竞态 / 激活失败 / capability 过期 / CDN 缓存 八场景）→ 按「现象→诊断→修复动作」逐行执行后再回到本清单；
+3. `python3 site_pipeline.py audit <slug> --config <cfg>`（拿事实矩阵再判断）；
+4. 看 `templates/*.json` 实测 payload 样例 + `MODULES.md` 37 块白名单；
+5. 新发现 → 修完立即回填 `issues.tsv`（fixed/boundary/pending）+ `verify`。
