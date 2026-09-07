@@ -93,6 +93,35 @@ jobs:
           RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
         run: node scripts/resolve-release-scope.mjs "$RELEASE_TRIGGER_TAG"
 
+      - name: Import trusted signer public key for runtime tag verification
+        env:
+          FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64: ${{ secrets.FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gnupg_home="$RUNNER_TEMP/runtime-tag-gnupg"
+          key_file="$RUNNER_TEMP/runtime-tag-signer-public-key.gpg"
+          umask 077
+          mkdir -p "$gnupg_home"
+          if [[ -z "$FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64" ]]; then
+            echo "BLOCK: FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64 is missing" >&2
+            exit 1
+          fi
+          if ! printf '%s' "$FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64" | base64 --decode > "$key_file"; then
+            echo "BLOCK: signer public key is not valid base64" >&2
+            exit 1
+          fi
+          if ! gpg --batch --homedir "$gnupg_home" --import "$key_file" >/dev/null 2>&1; then
+            echo "BLOCK: signer public key import failed" >&2
+            exit 1
+          fi
+          imported_fingerprint="$(gpg --batch --homedir "$gnupg_home" --with-colons --list-keys 2>/dev/null | awk -F: '$1 == "fpr" { print toupper($10); exit }')"
+          if [[ ! "$imported_fingerprint" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
+            echo "BLOCK: imported signer public key has no fingerprint" >&2
+            exit 1
+          fi
+          printf 'GNUPGHOME=%s\n' "$gnupg_home" >> "$GITHUB_ENV"
+
       - name: Verify isolated candidate tag and signer
         id: candidate_identity
         working-directory: candidate
@@ -260,6 +289,27 @@ jobs:
               ;;
           esac
 
+      - name: Stage isolated runtime check log outside the candidate
+        working-directory: governance
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_checks="$RUNNER_TEMP/runtime-checks"
+          mkdir -p "$runtime_checks"
+          if [[ "${{ steps.release.outputs.scope }}" == "sub-library" ]]; then
+            cp "$RUNNER_TEMP/website-content-ops-node-test.tap" "$runtime_checks/isolated-runtime-tests.tap"
+          else
+            printf '{"applicable":false,"reason":"mother-library-machine-contract-declares-none","status":"runtime_not_applicable"}\n' > "$runtime_checks/runtime-not-applicable.json"
+          fi
+
+      - name: Transfer isolated runtime checks to qualification job
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: runtime-checks-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/runtime-checks/
+          if-no-files-found: error
+          retention-days: 1
+
   formal-release-qualification:
     name: Qualify one approved release scope
     needs: isolated-runtime-tests
@@ -315,6 +365,12 @@ jobs:
         with:
           node-version: 20
 
+      - name: Restore isolated runtime checks outside the candidate
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: runtime-checks-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qualification-checks/runtime/
+
       - name: Resolve release scope with trusted governance code
         id: release
         working-directory: governance
@@ -322,6 +378,35 @@ jobs:
           RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}
           RELEASE_SOURCE_ROOT: ${{ github.workspace }}/candidate
         run: node scripts/resolve-release-scope.mjs "$RELEASE_TRIGGER_TAG"
+
+      - name: Import trusted signer public key for qualification tag verification
+        env:
+          FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64: ${{ secrets.FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gnupg_home="$RUNNER_TEMP/qualification-tag-gnupg"
+          key_file="$RUNNER_TEMP/qualification-tag-signer-public-key.gpg"
+          umask 077
+          mkdir -p "$gnupg_home"
+          if [[ -z "$FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64" ]]; then
+            echo "BLOCK: FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64 is missing" >&2
+            exit 1
+          fi
+          if ! printf '%s' "$FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64" | base64 --decode > "$key_file"; then
+            echo "BLOCK: signer public key is not valid base64" >&2
+            exit 1
+          fi
+          if ! gpg --batch --homedir "$gnupg_home" --import "$key_file" >/dev/null 2>&1; then
+            echo "BLOCK: signer public key import failed" >&2
+            exit 1
+          fi
+          imported_fingerprint="$(gpg --batch --homedir "$gnupg_home" --with-colons --list-keys 2>/dev/null | awk -F: '$1 == "fpr" { print toupper($10); exit }')"
+          if [[ ! "$imported_fingerprint" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
+            echo "BLOCK: imported signer public key has no fingerprint" >&2
+            exit 1
+          fi
+          printf 'GNUPGHOME=%s\n' "$gnupg_home" >> "$GITHUB_ENV"
 
       - name: Verify candidate tag object, commit, and trusted signer
         id: candidate_identity
@@ -470,18 +555,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/run-governance-tests.mjs --timeout-ms 30000
-          node scripts/validate-indexes.mjs --strict
-          node scripts/validate-links.mjs --release
-          node scripts/validate-document-ids.mjs
-          node scripts/validate-mother-library.mjs --release
-          node scripts/validate-logs.mjs --release
-          node scripts/validate-knowledge-chain.mjs --release
-          prepare_log="$RUNNER_TEMP/mother-prepare.log"
-          node scripts/build-mother-release.mjs --prepare | tee "$prepare_log"
+          checks_root="$RUNNER_TEMP/qualification-checks"
+          mkdir -p "$checks_root"
+          node scripts/run-governance-tests.mjs --timeout-ms 30000 2>&1 | tee "$checks_root/mother-governance-tests.log"
+          node scripts/validate-indexes.mjs --strict 2>&1 | tee "$checks_root/mother-indexes.log"
+          node scripts/validate-links.mjs 2>&1 | tee "$checks_root/mother-links.log"
+          node scripts/validate-document-ids.mjs 2>&1 | tee "$checks_root/mother-document-ids.log"
+          node scripts/validate-mother-library.mjs --prepare 2>&1 | tee "$checks_root/mother-prepare-structure.log"
+          node scripts/validate-logs.mjs 2>&1 | tee "$checks_root/mother-logs.log"
+          node scripts/validate-knowledge-chain.mjs 2>&1 | tee "$checks_root/mother-knowledge-chain.log"
+          prepare_log="$checks_root/mother-build-prepare.log"
+          node scripts/build-mother-release.mjs --prepare 2>&1 | tee "$prepare_log"
           candidate_path="$(sed -nE 's/^(PREPARED_UNAPPROVED_CANDIDATE|PREPARED_CANDIDATE_REUSED): //p' "$prepare_log" | tail -1)"
           [[ -n "$candidate_path" && -d "$candidate_path" ]] || { echo "BLOCK: mother prepare did not return a frozen candidate path" >&2; exit 1; }
-          node scripts/validate-artifact.mjs --prepare "$candidate_path"
+          node scripts/validate-artifact.mjs --prepare "$candidate_path" 2>&1 | tee "$checks_root/mother-artifact-prepare.log"
           printf 'candidate_path=%s\n' "$candidate_path" >> "$GITHUB_OUTPUT"
 
       - name: Enforce selected sub-library qualification gate
@@ -502,16 +589,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/run-governance-tests.mjs --timeout-ms 30000
-          node scripts/validate-indexes.mjs --strict
-          node scripts/validate-links.mjs --release
-          node scripts/validate-document-ids.mjs --scope "sub-library:${{ steps.release.outputs.package_id }}"
-          node "$PACKAGE_PATH/scripts/validate-sub-library.mjs" --release
-          prepare_log="$RUNNER_TEMP/sub-library-prepare.log"
-          node "$PACKAGE_PATH/scripts/build-release.mjs" --prepare | tee "$prepare_log"
+          checks_root="$RUNNER_TEMP/qualification-checks"
+          mkdir -p "$checks_root"
+          node scripts/run-governance-tests.mjs --timeout-ms 30000 2>&1 | tee "$checks_root/sub-library-governance-tests.log"
+          node scripts/validate-indexes.mjs --strict 2>&1 | tee "$checks_root/sub-library-indexes.log"
+          node scripts/validate-links.mjs 2>&1 | tee "$checks_root/sub-library-links.log"
+          node scripts/validate-document-ids.mjs --scope "sub-library:${{ steps.release.outputs.package_id }}" 2>&1 | tee "$checks_root/sub-library-document-ids.log"
+          node "$PACKAGE_PATH/scripts/validate-sub-library.mjs" --prepare 2>&1 | tee "$checks_root/sub-library-prepare-structure.log"
+          prepare_log="$checks_root/sub-library-build-prepare.log"
+          node "$PACKAGE_PATH/scripts/build-release.mjs" --prepare 2>&1 | tee "$prepare_log"
           candidate_path="$(sed -nE 's/^(PREPARED_UNAPPROVED_CANDIDATE|PREPARED_CANDIDATE_REUSED): //p' "$prepare_log" | tail -1)"
           [[ -n "$candidate_path" && -d "$candidate_path" ]] || { echo "BLOCK: sub-library prepare did not return a frozen candidate path" >&2; exit 1; }
-          node "$candidate_path/scripts/validate-artifact.mjs" --prepare "$candidate_path"
+          node "$candidate_path/scripts/validate-artifact.mjs" --prepare "$candidate_path" 2>&1 | tee "$checks_root/sub-library-artifact-prepare.log"
           printf 'candidate_path=%s\n' "$candidate_path" >> "$GITHUB_OUTPUT"
 
       - name: Generate trusted fixed-profile evidence from actual job outputs
@@ -593,15 +682,24 @@ jobs:
           RELEASE_ACTUAL_RUNTIME_OUTPUT_SHA256: ${{ needs.isolated-runtime-tests.outputs.runtime_output_sha256 }}
           RELEASE_ACTUAL_RUNTIME_OUTPUT_BYTES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_bytes }}
           RELEASE_ACTUAL_RUNTIME_OUTPUT_LINES: ${{ needs.isolated-runtime-tests.outputs.runtime_output_lines }}
+          RELEASE_APPROVAL_PATH: ${{ steps.approval.outputs.path }}
+          RELEASE_EVIDENCE_PATH: ${{ steps.evidence.outputs.path }}
         shell: bash
         run: |
           set -euo pipefail
+          checks_root="$RUNNER_TEMP/qualification-checks"
+          mkdir -p "$checks_root"
           if [[ "${{ steps.release.outputs.scope }}" == "mother-library" ]]; then
             candidate_path="${{ steps.mother_candidate.outputs.candidate_path }}"
           else
             candidate_path="${{ steps.sub_library_candidate.outputs.candidate_path }}"
           fi
-          node scripts/validate-release-approval.mjs "$candidate_path" "${{ steps.approval.outputs.path }}" "${{ steps.evidence.outputs.path }}"
+          node scripts/validate-release-approval.mjs "$candidate_path" "$RELEASE_APPROVAL_PATH" "$RELEASE_EVIDENCE_PATH" 2>&1 | tee "$checks_root/release-approval.log"
+          if [[ "${{ steps.release.outputs.scope }}" == "mother-library" ]]; then
+            node scripts/validate-artifact.mjs --release "$candidate_path" 2>&1 | tee "$checks_root/mother-artifact-release.log"
+          else
+            node "$candidate_path/scripts/validate-artifact.mjs" --release "$candidate_path" 2>&1 | tee "$checks_root/sub-library-artifact-release.log"
+          fi
 
       - name: Freeze the qualified artifact by content digest
         id: artifact
@@ -714,6 +812,9 @@ jobs:
             ${{ steps.artifact.outputs.path }}
             ${{ steps.artifact.outputs.checksum_path }}
             ${{ steps.attestation.outputs.path }}
+            ${{ steps.approval.outputs.path }}
+            ${{ steps.evidence.outputs.path }}
+            ${{ runner.temp }}/qualification-checks/
           if-no-files-found: error
           compression-level: 0
           retention-days: 30

@@ -459,8 +459,9 @@ for (const entry of subEntries) {
       && realpathSync(root).startsWith(join(realpathSync(tmpdir()), '701-governance-'))
       && !releaseMode
       && !prepareMode;
-    const childModeArgs = [releaseMode ? '--release' : null, prepareMode ? '--prepare' : null].filter(Boolean);
-    const result = spawnSync(process.execPath, [childValidator, ...childModeArgs], {
+    // A mother release embeds this child as a source-only snapshot. Validate the
+    // child contract and structure without inheriting or requiring its release gate.
+    const result = spawnSync(process.execPath, [childValidator], {
       cwd: subRoot,
       encoding: 'utf8',
       timeout: GOVERNANCE_COMMAND_TIMEOUT_MS,

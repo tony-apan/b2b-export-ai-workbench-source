@@ -1815,15 +1815,24 @@ ${output}`);
         'git verify-tag --raw "$tag_ref"',
         '\\[GNUPG:\\] VALIDSIG',
         'FORMAL_RELEASE_TRUSTED_TAG_SIGNERS',
+        'FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64: ${{ secrets.FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64 }}',
+        'gpg --batch --homedir "$gnupg_home" --import "$key_file"',
+        "printf 'GNUPGHOME=%s\\n' \"$gnupg_home\" >> \"$GITHUB_ENV\"",
+        'BLOCK: imported signer public key has no fingerprint',
+        'Stage isolated runtime check log outside the candidate',
+        'runtime-not-applicable.json',
+        'Transfer isolated runtime checks to qualification job',
+        'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093',
+        '${{ runner.temp }}/qualification-checks/runtime/',
         'diff -qr governance/scripts candidate/scripts',
         'diff -q governance/.github/workflows/release-library.yml candidate/.github/workflows/release-library.yml',
         'diff -q governance/sub-libraries/registry.json candidate/sub-libraries/registry.json',
         '$RUNNER_TEMP/RELEASE-APPROVAL.json',
         "if: steps.release.outputs.scope == 'mother-library'",
         "if: steps.release.outputs.scope == 'sub-library'",
-        'build-mother-release.mjs --prepare | tee "$prepare_log"',
+        'build-mother-release.mjs --prepare 2>&1 | tee "$prepare_log"',
         'node "$archive_verification_root/scripts/validate-artifact.mjs" --release "$archive_verification_root"',
-        'build-release.mjs" --prepare | tee "$prepare_log"',
+        'build-release.mjs" --prepare 2>&1 | tee "$prepare_log"',
         'validate-artifact.mjs" --prepare "$candidate_path"',
         'RELEASE_TRIGGER_TAG: ${{ inputs.release_tag }}',
         'isolated-runtime-tests:',
@@ -1894,6 +1903,7 @@ ${output}`);
       if (!artifactStep.includes('validate-release-approval.mjs" "$archive_verification_root" "$RELEASE_APPROVAL_PATH" "$RELEASE_EVIDENCE_PATH"')) throw new Error('archive re-verification does not consume both bound sidecars');
       if (/^  (push|pull_request):/m.test(formal)) throw new Error('formal release workflow must not run on push or pull_request');
       if (/release-gate|RELEASE_REQUIRE_GIT_TAG|RELEASE_APPROVAL_PATH/.test(ordinary)) throw new Error('ordinary validation workflow still contains a formal release gate');
+      if (/FORMAL_RELEASE_(?:SIGNER_PUBLIC_KEY_BASE64|TRUSTED_TAG_SIGNERS|TRUSTED_WORKFLOW_SHA)|RELEASE-(?:APPROVAL|EVIDENCE)\.json|qualification-checks/.test(ordinary)) throw new Error('ordinary validation workflow contains formal release trust, sidecar, or check-log fields');
       if (/\bgh release\b|actions\/create-release|softprops\/action-gh-release/i.test(formal)) throw new Error('qualification workflow must not publish a GitHub Release');
       const actionRefs = [...formal.matchAll(/^\s*uses:\s*([^\s#]+).*$/gm)].map((match) => match[1]);
       if (actionRefs.length < 4) throw new Error(`formal release workflow unexpectedly contains only ${actionRefs.length} action references`);
@@ -1905,6 +1915,11 @@ ${output}`);
       if (runtimeStart < 0 || qualificationStart <= runtimeStart) throw new Error('formal release workflow must define the isolated runtime-test job before qualification');
       const runtimeJob = formal.slice(runtimeStart, qualificationStart);
       const qualificationJob = formal.slice(qualificationStart);
+      for (const [jobName, job] of [['runtime', runtimeJob], ['qualification', qualificationJob]]) {
+        if ((job.match(/FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64: \$\{\{ secrets\.FORMAL_RELEASE_SIGNER_PUBLIC_KEY_BASE64 \}\}/g) ?? []).length !== 1) throw new Error(`${jobName} job must import exactly one Environment-provided signer public key`);
+        if (!job.includes('gpg --batch --homedir "$gnupg_home" --import "$key_file"') || !job.includes('BLOCK: imported signer public key has no fingerprint')) throw new Error(`${jobName} job does not fail closed while importing the signer public key`);
+        if (job.indexOf('gpg --batch --homedir "$gnupg_home" --import "$key_file"') > job.indexOf('git verify-tag --raw "$tag_ref"')) throw new Error(`${jobName} job verifies the tag before importing the signer public key`);
+      }
       if (!runtimeJob.includes('node --test --test-reporter=tap upload-media-browser.test.mjs article-image-binding.test.mjs article-content-formats.test.mjs article-operations.test.mjs')) throw new Error('isolated runtime-test job does not execute the trusted direct Node test profile');
       if (runtimeJob.includes('npm test')) throw new Error('isolated runtime-test job delegates test execution to candidate-controlled npm lifecycle');
       if (!runtimeJob.includes("printf 'candidate_commit=%s\\n'") || !runtimeJob.includes("printf 'tag_object_sha=%s\\n'")) throw new Error('isolated runtime-test job does not export the exact tested commit and tag object');
@@ -1937,16 +1952,34 @@ ${output}`);
         'scripts/finalize-release-approval.mjs',
         'RELEASE_APPROVAL_PATH: ${{ steps.approval.outputs.path }}',
         'RELEASE_EVIDENCE_PATH: ${{ steps.evidence.outputs.path }}',
-        'build-mother-release.mjs --prepare | tee "$prepare_log"',
+        'build-mother-release.mjs --prepare 2>&1 | tee "$prepare_log"',
         'node scripts/validate-artifact.mjs --prepare "$candidate_path"',
-        'build-release.mjs" --prepare | tee "$prepare_log"',
+        'build-release.mjs" --prepare 2>&1 | tee "$prepare_log"',
         'node "$candidate_path/scripts/validate-artifact.mjs" --prepare "$candidate_path"',
+        '${{ steps.approval.outputs.path }}',
+        '${{ steps.evidence.outputs.path }}',
+        '${{ runner.temp }}/qualification-checks/',
       ];
       for (const marker of required) {
         if (!formal.includes(marker)) throw new Error(`formal release evidence workflow missing required marker: ${marker}`);
       }
       if (/RELEASE_EVIDENCE_PATH|RELEASE_APPROVAL_PATH|evidence_bundle_base64|approval_sidecar_base64/.test(ordinary)) throw new Error('ordinary validation workflow must not claim or require formal approval/evidence');
       if (/^\s{6}evidence_bundle_base64:/m.test(formal)) throw new Error('dispatcher must not inject a self-asserted evidence bundle into formal qualification');
+      const finalizeAt = formal.indexOf('      - name: Finalize approval sidecar with trusted evidence digest');
+      const postFinalizeAt = formal.indexOf('      - name: Validate trusted evidence and finalized approval against the frozen candidate');
+      const freezeAt = formal.indexOf('      - name: Freeze the qualified artifact by content digest');
+      if (finalizeAt < 0 || postFinalizeAt <= finalizeAt || freezeAt <= postFinalizeAt) throw new Error('formal release workflow does not preserve prepare -> finalize -> release -> freeze order');
+      const preFinalize = formal.slice(0, finalizeAt);
+      const postFinalize = formal.slice(postFinalizeAt, freezeAt);
+      if (/validate-(?:mother-library|sub-library)\.mjs[^\n]*--release/.test(preFinalize)) throw new Error('pre-finalization source validation still requires approved release state');
+      if (!preFinalize.includes('validate-mother-library.mjs --prepare') || !preFinalize.includes('validate-sub-library.mjs" --prepare')) throw new Error('pre-finalization source validation does not use preparation mode');
+      if (!postFinalize.includes('validate-artifact.mjs --release') || !postFinalize.includes('RELEASE_APPROVAL_PATH: ${{ steps.approval.outputs.path }}') || !postFinalize.includes('RELEASE_EVIDENCE_PATH: ${{ steps.evidence.outputs.path }}')) throw new Error('post-finalization frozen candidate is not release-validated with external sidecars');
+      const upload = formal.slice(formal.indexOf('      - name: Upload the exact qualified artifact and attestation'));
+      for (const path of ['${{ steps.approval.outputs.path }}', '${{ steps.evidence.outputs.path }}', '${{ runner.temp }}/qualification-checks/']) {
+        if (!upload.includes(path)) throw new Error(`qualification artifact does not persist required external evidence path: ${path}`);
+      }
+      if (!preFinalize.includes('Stage isolated runtime check log outside the candidate') || !preFinalize.includes('Transfer isolated runtime checks to qualification job') || !preFinalize.includes('${{ runner.temp }}/qualification-checks/runtime/')) throw new Error('isolated runtime checks are not transferred into the final qualification log bundle');
+      if (!preFinalize.includes('checks_root="$RUNNER_TEMP/qualification-checks"') || preFinalize.includes('checks_root="$candidate_path')) throw new Error('qualification check logs are not rooted outside the frozen candidate');
     },
   }],
   ['mother-state-projection-drift', {
@@ -2038,7 +2071,7 @@ ${output}`);
     },
   }],
   ['mother-index-layered-sub-library-entry', {
-    title: 'Mother validator preserves layered sub-library routing and propagates formal modes to child validators',
+    title: 'Mother validator preserves layered routing and validates source-only child snapshots in structure mode',
     expected: 'reject',
     run({ root, timeoutMs }) {
       const indexPath = join(root, 'wiki/index.md');
@@ -2054,22 +2087,18 @@ ${output}`);
       for (const mode of ['--prepare', '--release']) {
         for (const childValidator of childValidators) {
           writeFileSync(childValidator, `#!/usr/bin/env node
-const expected = process.env.EXPECTED_CHILD_MODE;
 const seen = process.argv.slice(2);
-if (seen.includes(expected)) {
-  console.error('CHILD_MODE_OK:' + expected);
+if (seen.length === 0) {
+  console.error('CHILD_STRUCTURE_MODE_OK');
   process.exit(1);
 }
-console.error('CHILD_MODE_MISSING:' + expected + ':' + JSON.stringify(seen));
+console.error('CHILD_FORMAL_MODE_LEAK:' + JSON.stringify(seen));
 process.exit(1);
 `);
         }
-        const result = run(root, 'scripts/validate-mother-library.mjs', [mode], {
-          timeoutMs,
-          env: { EXPECTED_CHILD_MODE: mode },
-        });
-        assertRejected(result, new RegExp(`CHILD_MODE_OK:${mode}`), `mother ${mode} child-mode propagation`);
-        if (/CHILD_MODE_MISSING:/.test(outputOf(result))) throw new Error(`mother ${mode} failed to propagate to at least one child validator\n${shortOutput(result)}`);
+        const result = run(root, 'scripts/validate-mother-library.mjs', [mode], { timeoutMs });
+        assertRejected(result, /CHILD_STRUCTURE_MODE_OK/, `mother ${mode} source-only child structure validation`);
+        if (/CHILD_FORMAL_MODE_LEAK:/.test(outputOf(result))) throw new Error(`mother ${mode} leaked its formal mode into a source-only child validator\n${shortOutput(result)}`);
       }
 
       removeLine(indexPath, /^.*\(\.\.\/sub-libraries\/README\.md\).*\n/m);
