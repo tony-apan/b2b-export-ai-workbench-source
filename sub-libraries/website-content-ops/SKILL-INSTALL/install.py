@@ -350,6 +350,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         for root in roots:
             install_link(root, name, skill_root, force=args.force)
         print("Skill installation complete. Restart tools that discover Skills only at startup.")
+        print(f"💡 检查更新: python3 {source_root / 'TOOLS/interface-kit/check-update.py'}")
         return 0
     except InstallError as exc:
         return fail(str(exc))

@@ -57,6 +57,12 @@ git clone https://github.com/tony-apan/b2b-export-ai-workbench-source.git && \
 python3 b2b-export-ai-workbench-source/sub-libraries/website-content-ops/SKILL-INSTALL/install.py
 ```
 
+装好后检查更新（开工前建议跑一次，有新版本按提示 `git pull origin main`）：
+
+```bash
+python3 sub-libraries/website-content-ops/TOOLS/interface-kit/check-update.py  # 检查更新
+```
+
 ## ⚠️ 三条红线（人和 AI 都必须遵守）
 
 1. **上传/覆盖/删除/发布**：AI 必须逐条列清单、等你点头，一个都不许先斩后奏；

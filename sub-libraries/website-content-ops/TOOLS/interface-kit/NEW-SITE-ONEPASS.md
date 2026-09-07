@@ -71,6 +71,7 @@ redaction_status: "safe-to-publish"
 - **动作**：
   ```bash
   cd <IFK>
+  python3 check-update.py --quiet || python3 check-update.py  # 版本检查（ISS-140，任何操作之前）：有新版本先提醒用户，确认后 git pull origin main
   python3 install-deps.py --verify                           # 依赖复检（新环境先 --yes）
   python3 index/registry_tools.py verify                     # 索引完整 → PASS
   python3 index/registry_tools.py find 上传 ; find 分类 ; find 主题 ; find 文章 ; find 审计

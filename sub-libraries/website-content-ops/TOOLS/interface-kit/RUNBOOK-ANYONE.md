@@ -26,6 +26,7 @@ redaction_status: "safe-to-publish"
 ```bash
 mkdir -p <任务目录>/70_evidence          # 工作目录 = 该站点任务目录（所有产出/证据/审计配置都放这里，路径在文档里一律写全）
 cd <interface-kit 目录>            # 内含 allincms_api.py / site_pipeline.py / allincms_blocks.py / templates / writing / index
+python3 check-update.py --quiet || python3 check-update.py  # 版本检查（ISS-140，任何操作之前）：有新版本先提醒用户，确认后 git pull origin main
 python3 index/registry_tools.py verify     # 索引完整 -> PASS
 python3 index/registry_tools.py find <你的任务关键词>   # 必做：上传/分类/主题/文章/审计 等
 WS_TOKEN=<token> python3 scan/scan-actions.py - /<site_key>/themes   # 部署更新后重扫 action id（42 位 hex）；新 id 回填 allincms_api.py 常量（也支持传 token 文件路径）
