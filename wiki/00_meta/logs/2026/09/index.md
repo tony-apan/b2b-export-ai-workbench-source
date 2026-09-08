@@ -5,7 +5,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-09-01"
-last_updated: "2026-09-07"
+last_updated: "2026-09-08"
 sources: ["../../../../../AGENTS.md"]
 related: ["2026-09-01.md"]
 visibility: "public"
@@ -25,5 +25,6 @@ keywords: ["2026-09", "governance batch", "token docs alignment", "daily log"]
 | — | [2026-09-01 日志](2026-09-01.md) | token 文档对齐与手册规则、验收体系 v2 与弹窗根因修复、示例客户站全链重建交付、skill 对抗完善批与展示站虚拟联系方式决策。 | log | Working / public | 需要处理本目录对应主题时 | — |
 | — | [2026-09-02 日志](2026-09-02.md) | 产品与文章内容审查流程门、权威能力边界和原图参数纠正的对抗收口记录。 | log | Working / public | 需要处理本目录对应主题时 | — |
 | — | [2026-09-07 日志](2026-09-07.md) | 母库 0.3.4 Stable 候选 Ready 推进、builder 符号链接挂载修复、治理 fixture 动态化与正式 qualification 远端保护配置的真实边界记录。 | log | Working / public | 需要处理本目录对应主题时 | — |
+| — | [2026-09-08 日志](2026-09-08.md) | 母库 0.3.4 正式 qualification 首轮实战：技术链全通、九次 dispatch 连修七处 fail-closed 缺口、最终 BLOCK 于真人课程评审证据的完整记录。 | log | Working / public | 需要处理本目录对应主题时 | — |
 
 <!-- INDEX:END -->
