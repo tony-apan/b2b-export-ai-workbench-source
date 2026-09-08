@@ -644,6 +644,7 @@ jobs:
             --output-root "$evidence_root"
           printf 'path=%s\n' "$evidence_root/RELEASE-EVIDENCE.json" >> "$GITHUB_OUTPUT"
           printf 'root=%s\n' "$evidence_root" >> "$GITHUB_OUTPUT"
+          echo "debug builder-commit-epoch: $(git show -s --format=%ct HEAD)" 2>&1 | sed 's/^/debug manifest: /' || true
           node - "$candidate_path" <<'NODE' 2>&1 | sed 's/^/debug manifest: /' || true
           const fs=require('node:fs'),crypto=require('node:crypto');
           const m=JSON.parse(fs.readFileSync(process.argv[2]+'/MANIFEST.json','utf8'));
@@ -651,6 +652,7 @@ jobs:
             const v=JSON.stringify(m[k],null,0);
             console.log('mfld',k,crypto.createHash('sha256').update(v).digest('hex').slice(0,12),Array.isArray(m[k])?m[k].length:typeof m[k]);
           }
+          console.log('generated_at raw:', m.generated_at);
           NODE
 
       - name: Finalize approval sidecar with trusted evidence digest
