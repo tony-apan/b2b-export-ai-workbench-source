@@ -159,7 +159,7 @@ jobs:
               exit 1
             fi
             [[ "$allowed" == "$fingerprint" ]] && matched=1
-          done < <(printf '%s' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
+          done < <(printf '%s\n' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
           echo "runtime fingerprint len=${#fingerprint} bytes: $(printf '%s' "$fingerprint" | od -An -c | tr -s ' ')" >&2
           if [[ "$matched" != "1" ]]; then
             echo "BLOCK: release tag signer fingerprint is not allowlisted" >&2
@@ -457,7 +457,7 @@ jobs:
               exit 1
             fi
             [[ "$allowed" == "$fingerprint" ]] && matched=1
-          done < <(printf '%s' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
+          done < <(printf '%s\n' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
           echo "runtime fingerprint len=${#fingerprint} bytes: $(printf '%s' "$fingerprint" | od -An -c | tr -s ' ')" >&2
           if [[ "$matched" != "1" ]]; then
             echo "BLOCK: release tag signer fingerprint is not allowlisted" >&2
