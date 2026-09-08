@@ -13,7 +13,7 @@ redaction_status: "private-source-reviewed"
 ---
 # Mother Library Changelog
 
-## 0.3.4 — 2026-09-07
+## 0.3.4 — 2026-09-08（Published）
 
 ### 母库与 Website Content Operations 公开预览收口
 

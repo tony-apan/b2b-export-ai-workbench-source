@@ -14,7 +14,7 @@ state_source: "MANIFEST.md"
 state_projection: ["working_version", "repository_sync_status", "release_status"]
 working_version: "0.3.4"
 repository_sync_status: "Synced"
-release_status: "Ready"
+release_status: "Published"
 ---
 # Mother Library Version
 
@@ -24,6 +24,6 @@ release_status: "Ready"
 - License：MIT（见 [LICENSE](LICENSE)）
 - Compatibility：普通 Git checkout、Markdown 阅读器和可读取本地文件的 AI agent；不要求 Obsidian。
 - Repository sync status：`Synced`
-- Public release status：`Ready`（正式 qualification 待远端受保护 workflow 完成）
+- Public release status：`Published`（正式 qualification run 34243991597 PASS，2026-09-08）
 - Changelog：[CHANGELOG.md](CHANGELOG.md)
 - Release guide：[RELEASE.md](RELEASE.md)

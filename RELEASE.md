@@ -13,7 +13,7 @@ redaction_status: "safe-to-publish"
 state_source: "MANIFEST.md"
 state_projection: ["repository_sync_status", "release_status"]
 repository_sync_status: "Synced"
-release_status: "Ready"
+release_status: "Published"
 ---
 # Mother Library Release Guide
 
@@ -38,9 +38,9 @@ release_status: "Ready"
 5. 只推送到 canonical remote；
 6. 从远端重新 clone 并复跑基础验证。
 
-## 母库 release（Stable 0.3.4 候选 Ready）
+## 母库 release（Stable 0.3.4 已发布）
 
-母库 Stable `0.3.4` 候选已进入 `Ready`：源码与本地证据已冻结，正式 Published 仍须通过 approval/evidence、signed tag、Protected Environment 和远端验收。
+母库 Stable `0.3.4` 已于 2026-09-08 通过正式 qualification（run 34243991597）并以签名 tag `mother/v0.3.4` 发布。本版本起 knowledge-chain-validation 不在母库必检集（课程证据链解耦，见 OQ-COURSE-0001）；课程评审未来启用时按该 OQ 记录的路径加回。
 
 普通构建：
 
