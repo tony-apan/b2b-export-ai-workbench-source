@@ -82,11 +82,21 @@ function mutateJson(path, mutate) {
 }
 
 function run(root, script, args = [], options = {}) {
+  const env = { ...process.env, ...options.env };
+  // Workflow-injected release reconciliation variables must not leak into
+  // synthetic fixtures: they flip validators into trusted/actual modes that
+  // no fixture scenario can satisfy. Explicit per-case options.env wins.
+  const injected = ['RELEASE_REQUIRE_TRUSTED_EVIDENCE', 'RELEASE_REQUIRE_GIT_TAG', 'RELEASE_TRIGGER_TAG', 'RELEASE_APPROVAL_PATH', 'RELEASE_EVIDENCE_PATH'];
+  const caseEnv = options.env ?? {};
+  for (const key of Object.keys(env)) {
+    if (key in caseEnv) continue;
+    if (key.startsWith('RELEASE_ACTUAL_') || injected.includes(key)) delete env[key];
+  }
   return spawnSync(process.execPath, [join(root, script), ...args], {
     cwd: options.cwd ?? root,
     encoding: 'utf8',
     timeout: options.timeoutMs,
-    env: { ...process.env, ...options.env },
+    env,
   });
 }
 
