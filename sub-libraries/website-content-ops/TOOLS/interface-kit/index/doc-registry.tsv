@@ -3,12 +3,12 @@ DOC-001	doc	kit	工具包总览（读写方案+换机指南）	../README.md	curr
 DOC-002	doc	kit	0→1 建站上线 SOP	../ONBOARDING-PIPELINE.md	current	allincms_api.py;site_pipeline.py;allincms_blocks.py	workflow;sop;launch	资料→brief→validate→generate→执行→globals 全站→验收三步；参考 ID；坑清单；换机快速开始	承接公司/产品文档建新站前必读
 DOC-003	doc	kit	单页模块规范（Blocks Library）	../MODULES.md	current	allincms_blocks.py;site_pipeline.py	modules;schema;frontend;backfill	20 种页面模块+4 全局模块 schema/嵌套结构/前端显示映射/服务端回填坑/模板词自检表	设计器组装页面、排查模块字段时
 DOC-004	doc	kit	模板资产使用说明	../templates/README.md	current	-	templates;payload	真实读回产物作字段参照：产品/文章 payload example、页面三件套、brief-schema	照模板填新站字段时
-DOC-005	doc	kit	索引体系说明（本目录）	INDEX.md	current	index/registry_tools.py	index;registry	三张 TSV 主索引+自动生成的阅读页；查询/更新规则见文内	任何"找文档/找问题/找模块"的第一步
+DOC-005	doc	kit	索引体系说明（本目录）	index.md	current	index/registry_tools.py	index;registry	三张 TSV 主索引+自动生成的阅读页；查询/更新规则见文内	任何"找文档/找问题/找模块"的第一步
 SCRIPT-001	script	kit	AllinCMS 纯接口客户端	../allincms_api.py	current	-	api;rsc;write;read	零依赖客户端：写(站点/分类/标签/媒体/产品/文章/设计器)+读(RSC 9 路+CLI 8 命令)；action id 常量表	所有执行操作
 SCRIPT-002	script	kit	模块构建器	../allincms_blocks.py	current	-	modules;builder;json	hero/carousel/category/feature/product/material/proof/news/faq/newsletter/contact+公司页/联系页 builder+page_document 组装	生成页面 document/globals
 SCRIPT-003	script	kit	建站流水线工具	../site_pipeline.py	current	-	cli;validate;generate;check;diff	validate(含 3/4 数量门)/generate/check(模板词)/diff(readback)/gate(一键门)/contact(demo 联系方式门)/audit(13 项一体对抗审计+JSON 报告：http/count/root-home/form-render/空态/模板词/demo联系方式/FAQ答案SSR/真实CTA/单位/绝对化/Markdown/h2语义)	构建前校验、上线前自检、readback 比对
 SCRIPT-004	script	kit	action id 扫描器	../scan/scan-actions.py	current	-	action-id;deploy	从页面/工作台 chunk 扫 createServerReference 得当前部署 action id	换部署/升级后必跑
-SCRIPT-005	script	kit	索引工具（registry）	registry_tools.py	current	-	index;cli	verify(引用存在/id 唯一/枚举合法)/gen(生成 INDEX.md)/ls/find(关键词查询)/add(安全追加)	维护索引、查询文档
+SCRIPT-005	script	kit	索引工具（registry）	registry_tools.py	current	-	index;cli	verify(引用存在/id 唯一/枚举合法)/gen(生成 index.md)/ls/find(关键词查询)/add(安全追加)	维护索引、查询文档
 TPL-001	template	kit	产品 payload 参照	../templates/product-payload-example.json	current	-	payload;product	defaultValues 全字段(name/slug/description/order/media/mediaList/categories/tags/specifications/content)	构建产品 payload
 TPL-002	template	kit	文章 payload 参照	../templates/post-payload-example.json	current	-	payload;post;slate	defaultValues 全字段(title/slug/excerpt/order/coverImage/categories/tags/content Slate)	构建文章 payload
 TPL-003	template	kit	首页三件套参照	../templates/home-page-example.json	current	-	payload;page;document	pageDoc+globals+themeConfig 完整示例（11 模块真实结构）	组装首页/复刻结构
@@ -24,7 +24,7 @@ EV-006	evidence	evidence	清空前站点证据	../../70_evidence/sites-before-de
 CAN-001	doc	canonical	上线验收合同（ID-0007）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0007-site-launch-acceptance.md	current	-	launch;acceptance;boundary;forms	三层验收(A 内容/B 前端/C 平台边界)+Runtime Forms 链路+判定门槛	上线前判定、边界事实源
 CAN-002	doc	canonical	实站操作对抗审查（ID-0006）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0006-live-allincms-adversarial-review.md	current	-	adversarial;capability;duality	capability gate/Plan A-B/双审门槛/可分享 Skill 硬条件	评估操作是否可复用可分享
 CAN-003	doc	canonical	来源驱动建站 SOP（ID-0005）	../../../../../../../sub-libraries/website-content-ops/PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md	current	-	sop;source-driven;authorization	Source Extraction→事实账本→desired state→动态发现→精确 diff→授权→串行执行	按 canonical 流程执行时
-IDX-001	index	kit	索引阅读页（自动生成）	INDEX.md	current	index/registry_tools.py	index;generated	由registry_tools.py gen 生成；勿手改	快速导航
+IDX-001	index	kit	索引阅读页（自动生成）	index.md	current	index/registry_tools.py	index;generated	由registry_tools.py gen 生成；勿手改	快速导航
 IDX-002	index	kit	文档/脚本/模板 registry	doc-registry.tsv	current	index/registry_tools.py	index;tsv	主索引（本表）：每行一个可复用资产+状态+脚本+用途	查询/维护
 IDX-003	index	kit	问题/教训 registry	issues.tsv	current	index/registry_tools.py	index;tsv;lessons	问题库：现象/根因/修复/规避/文档/脚本/证据+状态(fixed/boundary/pending)	排错与经验复用
 IDX-004	index	kit	模块 registry	modules.tsv	current	index/registry_tools.py	index;tsv;modules	模块库：type/分组/构建函数/文档/前端显示/状态	选模块、查函数

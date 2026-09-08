@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """索引工具（index/registry_tools.py）—— 三张 TSV 主索引的维护与查询，零依赖跨平台。
 
-原理：TSV 是唯一数据源（机器可 grep/join/脚本消费）；INDEX.md 是本工具自动生成的阅读页（勿手改）。
+原理：TSV 是唯一数据源（机器可 grep/join/脚本消费）；index.md 是本工具自动生成的阅读页（勿手改）。
 
 用法（在 interface-kit/index/ 内或任意位置执行，自动定位）：
   python3 registry_tools.py verify          # 校验：引用存在/id 唯一/枚举合法（上线或收尾必跑）
-  python3 registry_tools.py gen             # 由 3 张 TSV 生成 INDEX.md
+  python3 registry_tools.py gen             # 由 3 张 TSV 生成 index.md
   python3 registry_tools.py ls [kind]       # 列出（doc/script/template/evidence/canonical/index...）
   python3 registry_tools.py find <关键词>    # 跨三表检索（id/name/description/tags/issues/modules）
   python3 registry_tools.py add <表>        # 交互式追加一行（自动补 id）
@@ -89,7 +89,7 @@ def verify():
     _ids = [l.strip() for l in open(_ban_src, encoding="utf-8").read().splitlines() if l.strip() and not l.startswith("#")] if os.path.exists(_ban_src) else []
     _BAN = _re.compile("(?i)(" + "|".join(_ids) + ")") if _ids else None
     _scan = []
-    for _pat in ["index/*.tsv", "index/INDEX.md", "*.md", "*.py", "templates/*.md", "templates/*.json", "writing/*.md", "scan/*.py"]:
+    for _pat in ["index/*.tsv", "index/index.md", "*.md", "*.py", "templates/*.md", "templates/*.json", "writing/*.md", "scan/*.py"]:
         _scan += _glob.glob(os.path.join(HERE, "..", _pat))
     _hits = []
     for _f in sorted(set(_scan)):
@@ -108,12 +108,12 @@ def verify():
 def gen():
     import datetime
     managed = ["title", "type", "status", "owner", "last_updated"]
-    # ISS-096：保留 INDEX.md 现存 frontmatter 中非托管字段（description/created/
+    # ISS-096：保留 index.md 现存 frontmatter 中非托管字段（description/created/
     # visibility 等），gen 只重写托管键——此前固定 5 键重写会剥掉治理批补的字段。
     # 续行（缩进/列表项/空行）跟随其归属键：属托管键则连键带续行整体丢弃，
     # 属保留键则一并保留；不认识的顶层形态 fail-closed 拒绝再生（ISS-096 对抗审查 P2）。
     preserved = []
-    _idx = os.path.join(HERE, "INDEX.md")
+    _idx = os.path.join(HERE, "index.md")
     if os.path.exists(_idx):
         with open(_idx, encoding="utf-8") as _f:
             _lines = _f.read().splitlines()
@@ -131,12 +131,12 @@ def gen():
                         preserved.append(_ln); continue
                     if _ln.startswith((" ", "\t")) or _s.startswith("- "):
                         if not _seen_key:
-                            print(f"FAIL gen: INDEX.md frontmatter 顶层续行无归属键，拒绝再生：{_ln[:60]}")
+                            print(f"FAIL gen: index.md frontmatter 顶层续行无归属键，拒绝再生：{_ln[:60]}")
                             return 1
                         if not _cur_managed: preserved.append(_ln)
                         continue
                     if ":" not in _ln:
-                        print(f"FAIL gen: INDEX.md frontmatter 含不识别形态，拒绝再生（防静默丢字段）：{_ln[:60]}")
+                        print(f"FAIL gen: index.md frontmatter 含不识别形态，拒绝再生（防静默丢字段）：{_ln[:60]}")
                         return 1
                     _k = _ln.split(":", 1)[0].strip()
                     _seen_key = True
@@ -144,7 +144,7 @@ def gen():
                     if not _cur_managed:
                         preserved.append(_ln)
             except ValueError:
-                print("FAIL gen: INDEX.md frontmatter 有起始 --- 无闭合 ---，拒绝再生（防静默覆盖损坏文件）")
+                print("FAIL gen: index.md frontmatter 有起始 --- 无闭合 ---，拒绝再生（防静默覆盖损坏文件）")
                 return 1
     L = ["---",
          "title: \"AllinCMS 建站知识索引\"",
@@ -176,7 +176,7 @@ def gen():
           "- 新问题排除后 → issues.tsv 加行（状态 fixed/boundary/pending）",
           "- 新模块摸清后 → modules.tsv 加行",
           "- TSV 字段含 tab 的文本（如多行）先替换为空格；description 精炼一行"]
-    out = os.path.join(HERE, "INDEX.md")
+    out = os.path.join(HERE, "index.md")
     with open(out, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
     print(f"generated {out} ({len(L)} lines)")

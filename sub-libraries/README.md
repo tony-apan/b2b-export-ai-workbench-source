@@ -32,7 +32,7 @@ sub-libraries/<library>/SKILL.md
   → 仅在适合 AI 执行时存在的条件性适配器
 ```
 
-同一级不要再并列创建 `INDEX.md`、`index.md` 或第二个总注册表。每个子库只保留一个 canonical `README.md` 入口。
+同一级不要再并列创建 `index.md`、`index.md` 或第二个总注册表。每个子库只保留一个 canonical `README.md` 入口。
 
 ## 当前子库
 

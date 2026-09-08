@@ -24,7 +24,7 @@ related: ["README.md"]
 
 ## 输入（只给这些，不给对话）
 - `TASK.json`（状态）+ `HANDOFF.md`（时间线）
-- `interface-kit/index/*.tsv`（doc-registry/issues/modules）+ INDEX.md
+- `interface-kit/index/*.tsv`（doc-registry/issues/modules）+ index.md
 - `interface-kit/index/registry_tools.py`（工具自检）
 - `interface-kit/RUNBOOK-ANYONE.md`（零上下文总入口——审查它本身是否可执行）
 - 关键 evidence 指针（DELIVERY/DUAL-REVIEW/IMPROVEMENT-PLAN 的路径与头 30 行）

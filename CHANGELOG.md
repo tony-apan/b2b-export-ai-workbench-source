@@ -58,7 +58,7 @@ redaction_status: "private-source-reviewed"
 ### 第三轮对抗审查修复（flash×2 + TERRA，14 处）
 
 **PII/凭据清零**：
-- 真实账号邮箱 → `reviewer@example.com`（issues.tsv/INDEX.md；原值见私有会话记录，不入公开文档）
+- 真实账号邮箱 → `reviewer@example.com`（issues.tsv/index.md；原值见私有会话记录，不入公开文档）
 - 真实格式中国手机号 → `138-0000-0000`（原值同上，去敏记录本身不得携带被去敏值——2026-08-31 终检修正）
 - `wa.me/447762109411` → `wa.me/+44-7911-123456`（5 个文档全清）
 
@@ -74,7 +74,7 @@ redaction_status: "private-source-reviewed"
 - RUNBOOK §1 vs §8 审计配置文件名统一为 `site-audit-config.template.json`
 - checklist:503 formSlug 旧"无害"口径 → 断裂必修（ISS-076）
 - checklist example/ 引用 8 处 → `<task_dir>` 通用描述
-- README:27 THERMOS 死链 → 改指 MODULES.md / api/API-INDEX.md
+- README:27 THERMOS 死链 → 改指 MODULES.md / api/API-index.md
 
 **安全硬化**：
 - <tmp>/ws-token.txt 补 `chmod 600` 建议（或 WS_TOKEN 环境变量优先）

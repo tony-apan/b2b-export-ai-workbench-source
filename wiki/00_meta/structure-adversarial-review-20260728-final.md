@@ -326,7 +326,7 @@ website-content-ops 正式外部发布：BLOCK
 
 ### 本轮实际完成的修复
 
-1. **README-only canonical 规则落地**：知识目录继续使用 `index.md`；子库、脚本、adapter、模板、运行区和发布目录使用 `README.md` 时，必须在元数据中写 `canonical_entry: "README.md"`。不再允许同级出现第二个 `INDEX.md`、`index.md` 或平行注册表。
+1. **README-only canonical 规则落地**：知识目录继续使用 `index.md`；子库、脚本、adapter、模板、运行区和发布目录使用 `README.md` 时，必须在元数据中写 `canonical_entry: "README.md"`。不再允许同级出现第二个 `index.md`、`index.md` 或平行注册表。
 2. **编号页闸门收紧**：母库与子库 durable root 内的 `id-####-slug.md` 必须有匹配的 `doc_id: "ID-####"`；缺失、格式错误或重复会直接 `BLOCK`。母库与子库编号 scope 隔离，legacy 页面只报告迁移债务，不批量重命名。
 3. **子库独立发布进一步解耦**：`website-content-ops` 的 `durable_roots`、内部模板、独立 ID 校验器和候选包 validator 均在子库内；候选包不依赖母库脚本路径，来源摘要放在子库自己的 `REFERENCES/`。
 4. **制品级安全复验加固**：母库和子库 `validate-artifact.mjs` 在 checksum 之外再次检查本地绝对路径、明显凭据赋值模式和禁止的二进制扩展；CI 在构建母库和每个子库后执行 artifact boundary validator，而不是只校验源码。

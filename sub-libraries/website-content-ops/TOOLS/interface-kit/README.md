@@ -24,8 +24,8 @@ cd index && python3 registry_tools.py find <关键词>   # 找文档/脚本/模�
 - `index/doc-registry.tsv`：全部文档/脚本/模板/证据 + 路径 + 状态 + 用途
 - `index/issues.tsv`：已踩问题索引（现象/根因/修复/规避，行数以 `ls issues` 为准；fixed/boundary/pending）
 - `index/modules.tsv`：单页模块 + 构建函数 + 前端显示（行数以 `ls modules` 为准）
-- `INDEX.md`：由 `registry_tools.py gen` 自动生成的阅读页（勿手改）
-- 维护：新增资产/问题/模块后 `verify` + `gen`（详见 index/INDEX.md 维护规则）
+- `index.md`：由 `registry_tools.py gen` 自动生成的阅读页（勿手改）
+- 维护：新增资产/问题/模块后 `verify` + `gen`（详见 index/index.md 维护规则）
 
 ## 安装与依赖（新环境第 0 步）
 1. 依赖全景：**runtime = 零第三方依赖（Python stdlib）**；docs-parse（解析用户 PDF/DOCX/PPTX/XLSX）= 选装 4 包；canonical 校验 = 选装 Node ≥18；截图 = 本机 Chrome
