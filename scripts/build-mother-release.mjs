@@ -126,6 +126,11 @@ function gitText(args) {
 const sourceCommit = gitText(['rev-parse', 'HEAD']);
 if (!sourceCommit) fail('release candidate build requires Git metadata; build from a Git checkout so source_commit is traceable');
 const sourceDirty = Boolean(gitText(['status', '--porcelain', '--untracked-files=all']));
+// Default generated_at to the source commit time: approval sidecars pre-bind
+// manifest_sha256, so the same HEAD must rebuild to byte-identical manifests
+// across machines. SOURCE_DATE_EPOCH keeps the reproducible-build override.
+const sourceCommitEpoch = Number(gitText(['show', '-s', '--format=%ct', sourceCommit]));
+if (!Number.isInteger(sourceCommitEpoch) || sourceCommitEpoch <= 0) fail('cannot resolve source commit time for deterministic generated_at');
 function commitTreeEntries(commit) {
   const result = gitResult(['ls-tree', '-r', '-z', '--full-tree', commit]);
   if (result.status !== 0) fail(`could not read source commit tree ${commit}`);
@@ -419,7 +424,7 @@ const manifest = {
   content_digest: contentDigest(stagingRoot, files),
   includes: includePatterns,
   excludes: excludePatterns,
-  generated_at: process.env.SOURCE_DATE_EPOCH ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString() : new Date().toISOString(),
+  generated_at: process.env.SOURCE_DATE_EPOCH ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString() : new Date(sourceCommitEpoch * 1000).toISOString(),
   files,
 };
 writeFileSync(join(stagingRoot, 'MANIFEST.json'), JSON.stringify(manifest, null, 2) + '\n');
