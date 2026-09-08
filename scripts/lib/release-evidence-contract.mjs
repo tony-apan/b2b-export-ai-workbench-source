@@ -20,7 +20,6 @@ const motherChecks = [
   ['link-validation', 'node scripts/validate-links.mjs --release'],
   ['document-id-validation', 'node scripts/validate-document-ids.mjs'],
   ['log-validation', 'node scripts/validate-logs.mjs --release'],
-  ['knowledge-chain-validation', 'node scripts/validate-knowledge-chain.mjs --release'],
   ['mother-structure-validation', 'node scripts/validate-mother-library.mjs --release'],
   ['runtime-applicability', 'node scripts/generate-release-evidence.mjs --internal-check mother-runtime-applicability'],
   ['artifact-validation', 'node $CANDIDATE_ROOT/scripts/validate-artifact.mjs --prepare $CANDIDATE_ROOT'],

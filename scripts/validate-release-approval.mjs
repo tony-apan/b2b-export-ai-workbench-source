@@ -117,7 +117,6 @@ const REQUIRED_EVIDENCE_CHECKS = {
     'link-validation',
     'document-id-validation',
     'log-validation',
-    'knowledge-chain-validation',
     'mother-structure-validation',
     'artifact-validation',
     'commit-provenance',
@@ -219,7 +218,7 @@ function validateEvidenceChecks(checks, profile, manifest, sourceCommit, content
       continue;
     }
     if (validationKeys.every((key) => allowed.includes(key))) {
-      const expectedMode = id === 'index-validation' ? 'strict' : id === 'link-validation' || id === 'log-validation' || id === 'knowledge-chain-validation' || id.endsWith('structure-validation') ? 'release' : 'default';
+      const expectedMode = id === 'index-validation' ? 'strict' : id === 'link-validation' || id === 'log-validation' || id.endsWith('structure-validation') ? 'release' : 'default';
       if (result.mode !== expectedMode) fail(`approval evidence check ${id} result.mode must be ${expectedMode}`);
       integerAtLeast(result.checked_items, `evidence check ${id}.result.checked_items`, 1);
       if (result.error_count !== 0) fail(`approval evidence check ${id} result.error_count must be 0`);

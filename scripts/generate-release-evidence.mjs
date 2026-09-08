@@ -163,7 +163,6 @@ result = runNode('link-validation', join(sourceRoot, 'scripts/validate-links.mjs
 if (scope === 'mother-library') {
   result = runNode('document-id-validation', join(sourceRoot, 'scripts/validate-document-ids.mjs')); add('document-id-validation', { ...result, mode: 'default' });
   result = runNode('log-validation', join(sourceRoot, 'scripts/validate-logs.mjs'), ['--release']); add('log-validation', { ...result, mode: 'release' });
-  result = runNode('knowledge-chain-validation', join(sourceRoot, 'scripts/validate-knowledge-chain.mjs'), ['--release']); add('knowledge-chain-validation', { ...result, mode: 'release' });
   result = runNode('mother-structure-validation', join(sourceRoot, 'scripts/validate-mother-library.mjs'), ['--release']); add('mother-structure-validation', { ...result, mode: 'release' });
   const runtime = verifyMotherRuntime(sourceRoot, candidateRoot, manifest);
   const runtimeOutput = Buffer.from(`${JSON.stringify(runtime)}\n`, 'utf8');

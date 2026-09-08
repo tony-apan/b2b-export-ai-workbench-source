@@ -73,7 +73,7 @@ keywords: ["open questions", "blocked", "deferred", "owner", "evidence", "next a
 
 | question_id | 状态 | 问题 | owner | 阻断 scope | 证据 | 下一步 |
 |---|---|---|---|---|---|---|
-| `OQ-COURSE-0001` | blocked | 第二场景由谁评分、最低通过线和独立评分次数是多少？ | Tony/course owner | 课程 release + 母库 Stable qualification（mother-release-v1 profile 含 knowledge-chain-validation） | 2026-09-08 正式 qualification 实证：技术链（签名 tag、隔离 runtime 160 测试、治理 55 用例、governance gate、artifact 打包）全通，最终 BLOCK 在知识链要求真人签名课程评审（course-review-approval/v2 sidecar + GPG detached 签名 + COURSE_REVIEW_TRUSTED_SIGNERS 指纹 + reviewer_identity=externally_verified）；id-0004 的 structure/exercise verification 仍 pending | Tony 决断：(a) 完成一次真实课程评审（定义 rubric→真人评分→生成 sidecar→用发布 GPG 密钥签名→指纹入 env），或 (b) 授权治理合同变更，把 knowledge-chain-validation 从母库 Stable 必检项中拆分/降级。未决前不伪造证据、不重放 tag。 |
+| `OQ-COURSE-0001` | deferred | 第二场景由谁评分、最低通过线和独立评分次数是多少？ | Tony/course owner | 课程 release（母库 Stable 已解耦） | 2026-09-08 qualification 实证技术链全通后，Tony 决断"课程暂时不做评审"；治理合同变更已实施：knowledge-chain-validation 从 mother-release-v1 必检集拆出（contract lib/evidence generator/approval validator/治理 fixture 四处同步，55/55 绿），validate-knowledge-chain.mjs 工具与结构模式保留，课程证据链待未来启用 | 未来启用课程评审时：定义 rubric→真人评分→course-review-approval/v2 sidecar→发布 GPG 密钥签名→COURSE_REVIEW_TRUSTED_SIGNERS→把该检查加回 mother profile。 |
 | `OQ-COURSE-0002` | open | 哪些失败模式触发复训、改 playbook 或暂停发布？ | Course owner | 课程运营 | 尚无真实学员样本 | 首批私有教学后按失败模式回写。 |
 | `OQ-COURSE-0003` | deferred | 是否统一公开 fixture_id，并绑定 raw/source/verification/writeback？ | Governance owner | fixture 检索一致性 | 当前 synthetic 链已结构闭合 | 在新增第二 fixture 前决定，避免批量迁移。 |
 | `OQ-COURSE-0004` | blocked | 真实私有样本如何只公开来源类型、脱敏摘要和证据摘要而不泄露原文？ | Tony/privacy owner | 真实课程证据公开 | 发布去敏规则 | 先在私有运行区定义脱敏与授权记录。 |

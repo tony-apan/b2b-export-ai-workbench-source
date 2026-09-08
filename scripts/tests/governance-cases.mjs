@@ -208,7 +208,6 @@ function fixedEvidenceChecks(manifest, profile, tagName) {
   if (profile === 'mother-release-v1') {
     checks.push(
       validation('log-validation', 'release'),
-      validation('knowledge-chain-validation', 'release'),
       validation('mother-structure-validation', 'release'),
     );
   } else {
