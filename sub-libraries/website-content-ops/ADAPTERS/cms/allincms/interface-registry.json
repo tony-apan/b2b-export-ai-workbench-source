@@ -2,7 +2,7 @@
  "registry_version": 2,
  "adapter": {
   "name": "allincms",
-  "package_version": "0.3.2-preview.1",
+  "package_version": "0.4.0-preview.2",
   "release_scope": "preview-blocked",
   "canonical_entry": "README.md"
  },

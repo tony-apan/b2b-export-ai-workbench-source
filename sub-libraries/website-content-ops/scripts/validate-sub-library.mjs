@@ -819,6 +819,17 @@ function validateAdapterPackage() {
   }
   const lifecycle = ['preinstall', 'install', 'postinstall', 'prepack', 'prepare', 'postpack'];
   for (const name of lifecycle) if (Object.hasOwn(packageJson.scripts || {}, name)) fail(`AllinCMS package must not define lifecycle script ${name}`);
+  // Install-time self-check (validate-interface-registry.mjs) hard-requires
+  // registry.adapter.package_version === package.json.version; a release
+  // write-back that misses it breaks every fresh skill install.
+  const registryPath = join(adapterRoot, 'interface-registry.json');
+  if (existsSync(registryPath)) {
+    let registry;
+    try { registry = JSON.parse(read(registryPath)); } catch (error) { fail(`AllinCMS interface-registry.json is invalid JSON: ${error.message}`); return; }
+    if (registry.adapter?.package_version !== packageJson.version) {
+      fail(`AllinCMS interface-registry adapter.package_version ${registry.adapter?.package_version ?? 'missing'} does not match package.json ${packageJson.version}`);
+    }
+  }
   if (!Array.isArray(packageJson.files) || packageJson.files.length === 0 || packageJson.files.some((item) => typeof item !== 'string' || !item.trim())) {
     fail('AllinCMS package files allowlist must be a non-empty string array');
   }
