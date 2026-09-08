@@ -644,6 +644,7 @@ jobs:
             --output-root "$evidence_root"
           printf 'path=%s\n' "$evidence_root/RELEASE-EVIDENCE.json" >> "$GITHUB_OUTPUT"
           printf 'root=%s\n' "$evidence_root" >> "$GITHUB_OUTPUT"
+          node -e "const e=require('$evidence_root/RELEASE-EVIDENCE.json'.replace(/^\//,'/')); console.log('debug evidence candidate:', JSON.stringify(e.candidate), 'profile:', e.profile, 'source:', JSON.stringify(e.source));" 2>&1 | sed 's/^/debug evidence: /' || true
 
       - name: Finalize approval sidecar with trusted evidence digest
         id: approval
