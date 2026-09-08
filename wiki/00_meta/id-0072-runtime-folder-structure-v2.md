@@ -1,6 +1,6 @@
 ---
 title: "运行时文件夹结构 v2（四层物理分离）"
-description: "母库 runtime 四层物理分离结构与 interface-kit 真源管线约定"
+description: "定义母库 runtime 四层物理分离结构与 interface-kit 真源管线规范；范围仅覆盖 tracked/runtime/dist 分工边界，不涉及客户运行区数据。"
 type: "meta"
 status: "Working"
 owner: "AI"

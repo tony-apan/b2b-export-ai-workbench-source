@@ -1,6 +1,6 @@
 ---
 title: "任务卡：interface-kit 真源管线（迁移绑定条款）"
-description: "把 runtime 权威的 interface-kit 纳入母库 tracked + dist 同步管线，消除长期悬空。"
+description: "说明 runtime 权威的 interface-kit 纳入母库 tracked + dist 同步管线的规则；边界是仅覆盖工具真源同步，不替代运行区本地状态。"
 type: "meta"
 status: "Working"
 owner: "AI"

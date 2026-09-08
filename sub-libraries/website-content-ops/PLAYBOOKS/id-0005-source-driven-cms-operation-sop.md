@@ -1,7 +1,7 @@
 ---
 doc_id: "ID-0005"
 title: "Source-Driven CMS Create and Update SOP"
-description: "把用户提供的文档、网站、表格、图片和 brief 转成可追溯 desired state，经动态 CMS 能力发现、精确 diff、授权、串行接口执行和真实回读后，新建或更新网站、文章与产品。"
+description: "定义把用户提供的文档、网站、表格、图片和 brief 转成可追溯 desired state 的操作规范；经动态 CMS 能力发现、精确 diff、授权、串行接口执行和真实回读后新建或更新网站、文章与产品，范围仅限已授权站点。"
 type: "playbook"
 status: "Working"
 owner: "AI"

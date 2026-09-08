@@ -1,7 +1,7 @@
 ---
 source_doc_id: "ID-0005"
 title: "Source-Driven CMS Create and Update SOP"
-description: "把用户提供的文档、网站、表格、图片和 brief 转成可追溯 desired state，经动态 CMS 能力发现、精确 diff、授权、串行接口执行和真实回读后，新建或更新网站、文章与产品。"
+description: "定义把用户提供的文档、网站、表格、图片和 brief 转成可追溯 desired state 的操作规范；经动态 CMS 能力发现、精确 diff、授权、串行接口执行和真实回读后新建或更新网站、文章与产品，范围仅限已授权站点。"
 type: "playbook"
 status: "Working"
 owner: "AI"
@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "用户提供资料并要求新建或更新网站、文章、产品、分类、标签或媒体，且需要通过 CMS 接口执行时。"
 keywords: ["source driven", "CMS operation plan", "create update upsert", "desired state", "API first", "reconciliation"]
 generated_from: "../../PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md"
-generated_source_sha256: "ef5121559c5bed48e171cb715eafb600bdc12d90f8f2578ba68fbbb5a5cddec3"
+generated_source_sha256: "345dbe1d6ae4e9dec26bf95cb8771b3e44b637c164756c9dc253a8afa62c260f"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime projection from PLAYBOOKS/id-0005-source-driven-cms-operation-sop.md; canonical edits belong in the core package. -->

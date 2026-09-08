@@ -1,6 +1,6 @@
 ---
 title: "Live AllinCMS Operation Adversarial Review"
-description: "针对真实 AllinCMS 站点、媒体、文章、产品、主题、路由和首页操作的对抗审查合同：证据轴、能力闸、不可变计划、双审门槛和可分享 Skill 硬性条件。"
+description: "规定针对真实 AllinCMS 站点、媒体、文章、产品、主题、路由和首页操作的对抗审查合同：证据轴、能力闸、不可变计划、双审门槛和可分享 Skill 硬性条件；边界是只约束已授权真实站点操作。"
 type: "playbook"
 status: "Working"
 owner: "AI"
