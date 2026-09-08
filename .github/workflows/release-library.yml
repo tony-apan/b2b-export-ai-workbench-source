@@ -153,12 +153,14 @@ jobs:
           matched=0
           while IFS= read -r allowed; do
             [[ -z "$allowed" ]] && continue
+            echo "runtime allowlist entry len=${#allowed} bytes: $(printf '%s' "$allowed" | od -An -c | tr -s ' ')" >&2
             if [[ ! "$allowed" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
               echo "BLOCK: trusted signer allowlist contains an invalid fingerprint" >&2
               exit 1
             fi
             [[ "$allowed" == "$fingerprint" ]] && matched=1
           done < <(printf '%s' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
+          echo "runtime fingerprint len=${#fingerprint} bytes: $(printf '%s' "$fingerprint" | od -An -c | tr -s ' ')" >&2
           if [[ "$matched" != "1" ]]; then
             echo "BLOCK: release tag signer fingerprint is not allowlisted" >&2
             echo "runtime extracted fingerprint: $fingerprint" >&2
@@ -449,12 +451,14 @@ jobs:
           matched=0
           while IFS= read -r allowed; do
             [[ -z "$allowed" ]] && continue
+            echo "runtime allowlist entry len=${#allowed} bytes: $(printf '%s' "$allowed" | od -An -c | tr -s ' ')" >&2
             if [[ ! "$allowed" =~ ^[A-F0-9]{40}([A-F0-9]{24})?$ ]]; then
               echo "BLOCK: trusted signer allowlist contains an invalid fingerprint" >&2
               exit 1
             fi
             [[ "$allowed" == "$fingerprint" ]] && matched=1
           done < <(printf '%s' "$TRUSTED_TAG_SIGNERS" | tr ',;[:space:]' '\n' | tr '[:lower:]' '[:upper:]')
+          echo "runtime fingerprint len=${#fingerprint} bytes: $(printf '%s' "$fingerprint" | od -An -c | tr -s ' ')" >&2
           if [[ "$matched" != "1" ]]; then
             echo "BLOCK: release tag signer fingerprint is not allowlisted" >&2
             echo "runtime extracted fingerprint: $fingerprint" >&2
