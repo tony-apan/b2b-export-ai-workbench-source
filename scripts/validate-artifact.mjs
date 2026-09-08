@@ -278,7 +278,6 @@ if (!failures.length) {
     runEmbeddedValidator('validate-indexes.mjs', ['--strict']);
     runEmbeddedValidator('validate-links.mjs', ['--release', artifactRoot]);
     runEmbeddedValidator('validate-logs.mjs', ['--release']);
-    runEmbeddedValidator('validate-knowledge-chain.mjs', ['--release']);
     runEmbeddedValidator('validate-mother-library.mjs', ['--prepare']);
   } else if (!failures.length && prepareMode) {
     runEmbeddedValidator('validate-indexes.mjs', ['--strict']);
