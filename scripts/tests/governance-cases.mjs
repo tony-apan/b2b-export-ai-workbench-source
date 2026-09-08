@@ -85,8 +85,10 @@ function run(root, script, args = [], options = {}) {
   const env = { ...process.env, ...options.env };
   // Workflow-injected release reconciliation variables must not leak into
   // synthetic fixtures: they flip validators into trusted/actual modes that
-  // no fixture scenario can satisfy. Explicit per-case options.env wins.
-  const injected = ['RELEASE_REQUIRE_TRUSTED_EVIDENCE', 'RELEASE_REQUIRE_GIT_TAG', 'RELEASE_TRIGGER_TAG', 'RELEASE_APPROVAL_PATH', 'RELEASE_EVIDENCE_PATH'];
+  // no fixture scenario can satisfy (RELEASE_SOURCE_ROOT additionally
+  // redirects every resolver/validator at the real candidate instead of the
+  // fixture tree). Explicit per-case options.env still wins.
+  const injected = ['RELEASE_REQUIRE_TRUSTED_EVIDENCE', 'RELEASE_REQUIRE_GIT_TAG', 'RELEASE_TRIGGER_TAG', 'RELEASE_APPROVAL_PATH', 'RELEASE_EVIDENCE_PATH', 'RELEASE_SOURCE_ROOT'];
   const caseEnv = options.env ?? {};
   for (const key of Object.keys(env)) {
     if (key in caseEnv) continue;
@@ -1044,6 +1046,13 @@ export const governanceCases = new Map([
       mustGit(['init', '-q'], 'initialize provenance fixture Git repository');
       mustGit(['config', 'user.name', 'Governance Fixture'], 'configure fixture Git user');
       mustGit(['config', 'user.email', 'fixture@example.invalid'], 'configure fixture Git email');
+      // Checkout-side eol conversion (e.g. *.cmd eol=crlf on a fresh runner
+      // checkout) must not make the fixture commit normalize bytes away from
+      // the working tree; provenance compares raw working-tree hashes. The
+      // file itself stays (it is a manifest include pattern) with neutral
+      // content so no conversion rule applies inside the fixture.
+      mustGit(['config', 'core.autocrlf', 'false'], 'disable autocrlf in provenance fixture');
+      writeFileSync(join(root, '.gitattributes'), '# governance fixture: eol normalization intentionally disabled\n');
       mustGit(['add', '-f', '.'], 'stage provenance fixture baseline');
       mustGit(['commit', '-qm', 'fixture baseline'], 'commit provenance fixture baseline');
 
@@ -2065,10 +2074,15 @@ ${output}`);
       }
 
       const git = (args) => spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+      // Same eol-normalization guard as the provenance fixture: the artifact
+      // builder hashes raw working-tree bytes, so fixture blobs must not be
+      // normalized by checkout-side gitattributes either.
+      writeFileSync(join(root, '.gitattributes'), '# governance fixture: eol normalization intentionally disabled\n');
       for (const [args, label] of [
         [['init', '-q'], 'initialize state-projection artifact fixture'],
         [['config', 'user.name', 'Governance Fixture'], 'configure fixture Git user'],
         [['config', 'user.email', 'fixture@example.invalid'], 'configure fixture Git email'],
+        [['config', 'core.autocrlf', 'false'], 'disable autocrlf in state-projection fixture'],
         [['add', '-f', '.'], 'stage state-projection fixture'],
         [['commit', '-qm', 'state projection artifact baseline'], 'commit state-projection fixture'],
       ]) {
