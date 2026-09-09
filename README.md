@@ -116,7 +116,25 @@ A：仓库对每块内容都标了成熟度：有真实证据的写"有证据"�
 
 ## 📬 联系我
 
-| 入群交流 | 建站咨询 |
-|---|---|
-| <img src="https://cos.files.maozhishi.com/data/web/web-files/wx/tony-apan.png" width="50%" alt="入群联系二维码"> | <img src="https://cos.files.maozhishi.com/data/web/web-files/img/xrmmc.png" width="50%" alt="建站联系二维码"> |
-| 扫码入群 | 扫码咨询建站 |
+<div align="center">
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="https://cos.files.maozhishi.com/data/web/web-files/wx/tony-apan.png" width="264" alt="入群联系二维码">
+<br><br>
+<b>入群交流</b>
+<br>
+<sub>扫码进外贸 AI 交流群</sub>
+</td>
+<td align="center" width="50%">
+<img src="https://cos.files.maozhishi.com/data/web/web-files/img/xrmmc.png" width="240" alt="建站咨询二维码">
+<br><br>
+<b>建站咨询</b>
+<br>
+<sub>扫码聊你的网站需求</sub>
+</td>
+</tr>
+</table>
+
+</div>
