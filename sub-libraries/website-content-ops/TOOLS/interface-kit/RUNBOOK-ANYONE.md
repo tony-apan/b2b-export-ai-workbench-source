@@ -170,6 +170,16 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 - `upload_media(slug, site_id, file_path, title, alt, caption)`：multipart `_1_files` 传输（interface-kit 已封装），返回后立即 `update_media` 回写 title/alt/caption。
 - 上传完 `read_media_library` 核对 10 字段（name/alt/url/path/size/mimeType）。
 
+### 要不要先转 WebP？（2026-09-09 实测，ISS-143）
+
+**可以，而且推荐**——平台原样接受 WebP，实测无副作用：
+
+- 上传 `xxx.webp` → `mimeType: image/webp`、扩展名与 `name` 均保留（不重命名）；
+- 远端 `HTTP 200 / content_type=image/webp`，Pillow 解码尺寸格式与本地一致；
+- 但**服务端会重编码**：远端字节与本地不同（实测 2672B，SHA-256 变了）。所以**存证必须用远端下载的字节**，不能拿本地文件 hash 冒充。
+
+实践建议：转 WebP（quality 80–85）、单图 ≤500KB，用 `image-check.py` 校验；PNG 大图尤其应转（>300KB 会被提示）。
+
 ### 封面选择器找不到刚上传的图？（2026-09-09 实测，ISS-142）
 
 先别怀疑上传失败——三个常见误解都已被实测推翻：
