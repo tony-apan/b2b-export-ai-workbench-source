@@ -40,6 +40,8 @@ AllinCMS(token=JWT)
 | 设计器三件套 | GET /{slug}/themes/{themeId}/{pageId}/design?_rsc | read_page_document |
 | 产品/文章编辑态 | GET /{slug}/products\|posts/{id}/update?_rsc | read_product/read_post |
 | 媒体库/站点信息 | GET /{slug}/media·site-info?_rsc | read_media_library/read_site_info |
+| 站点信息写入 | POST /{slug}/site-info action=updateSiteInfoAction | `read_site_info_form` + `update_site_info(..., authorization_confirmed=True)`；全量语义，只覆盖显式字段（ISS-146） |
+| 列表排序（窄） | POST /{slug}/{posts,products} action=update*OrderAction | `update_order(slug, sid, resource, target_id, order)`；不触碰 content/规格（ISS-146） |
 | 媒体删除（高危） | POST /{slug}/media action=deleteMediaAction | `delete_media(..., authorization_confirmed=True)`；registry 仍标 blocked，仅精确授权+回读验证下使用（ISS-145） |
 
 ## 三、action id 表（完整见 api-ref.tsv）

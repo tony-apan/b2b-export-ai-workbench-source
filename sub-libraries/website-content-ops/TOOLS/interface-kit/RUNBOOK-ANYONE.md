@@ -170,6 +170,12 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 - `upload_media(slug, site_id, file_path, title, alt, caption)`：multipart `_1_files` 传输（interface-kit 已封装），返回后立即 `update_media` 回写 title/alt/caption。
 - 上传完 `read_media_library` 核对 10 字段（name/alt/url/path/size/mimeType）。
 
+### 站点信息与排序（ISS-146）
+
+- **站点信息（name/description/notificationEmail）**：`read_site_info_form(slug)` 读全字段表单态 → `update_site_info(slug, sid, description="...", authorization_confirmed=True)`。平台是**四字段全量替换**，方法内部先读当前值、只覆盖显式传入的字段（favicon 不支持改，原样回传），写后回读逐字段比对——直接构造 payload 会重演 ISS-101 清空事故。
+- **列表排序**：`update_order(slug, sid, "posts"|"products", target_id, order)`，窄 payload `{id,siteId,order}`，不触碰 content/规格；写后回读 order 一致。比走全量 update 安全，但不替代 review/capability 门。
+- **未封装能力（评估后不补）**：站点级规格模板三件套（create/update/deleteSpecification——与产品规格是不同对象）、duplicateProduct（绕过审查门）、logout（账号级 token 波及并发）、uploadSiteMedia（与 upload_media 同形状）、prepareRuntimePreview（有 readback+公网 gate 替代）。
+
 ### 删除媒体记录（高危，ISS-145）
 
 `deleteMediaAction` 存在且纯 API 可用（2026-09-09 实测），但 **registry 仍将 `media:delete` 标为 blocked**——通用路由 fail-closed，只在「用户对精确 media ID 明确授权」时用显式原语：

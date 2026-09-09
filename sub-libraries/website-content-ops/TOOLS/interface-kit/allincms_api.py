@@ -60,6 +60,9 @@ UPSERT_PRODUCT  = "7f0d6abcdcec492a7e8587539e8d3f12e96a3d19ca"
 CREATE_POST     = "7fdfe82861882e4f6ac3cfbf022bac07e0520fdae1"
 DELETE_POST     = "7f0be1853412ed6d5493ae2e4c1988bd78b88ca81e"
 DELETE_MEDIA    = "7fc9336acfbacbbe3db21083c8dcfebcd402b22149"   # 2026-09-09 从 /{slug}/media 页 chunk 扫描确认（ISS-145）
+UPDATE_SITE_INFO = "7f3f330f0f5e41727a0390c0cb2a7291b064a415de"   # 2026-09-09 从 site-info 页 chunk 扫描确认（ISS-146）
+UPDATE_POST_ORDER    = "7f66e537a46fa88f454595791dfbcd2110fb9c95f6"   # 列表行内联排序（ISS-146）
+UPDATE_PRODUCT_ORDER = "7f53fb5c54e376a6ea2284fc4c219bde129962a918"   # 列表行内联排序（ISS-146）
 UPSERT_POST     = "7f205ad61951b1b4703378159b95d930e7e3f00b42"
 COMMIT_DESIGN   = "7ff107025e28118dfb6d8f0da06b3ae64fb0ed74b3"
 
@@ -339,6 +342,78 @@ class AllinCMS:
         """读取站点列表（需 RSC 或 delete 动作响应；此处用删除接口的空 id 探测返回）
         返回：站点列表；可靠取得方式见 README：读 /sites 页面 RSC 需浏览器一次性导出。"""
         raise NotImplementedError("站点列表读取需 RSC（见 README read_access）；写操作不依赖。")
+    def update_order(self, site_slug, site_id, resource, target_id, order):
+        """改单条文章/产品的展示排序（窄 payload {id,siteId,order}，ISS-146）。
+
+        比走全量 update 安全：不触碰 content/规格/分类，无 ISS-101 覆盖风险；
+        但**不替代** review/capability 门——只改排序这一非业务字段。
+        resource: 'posts' | 'products'。写后回读 order 必须一致，否则报错。
+        """
+        if resource not in ("posts", "products"):
+            raise RuntimeError(f"update_order resource 必须是 posts/products，得到 {resource!r}")
+        if not isinstance(order, int) or isinstance(order, bool):
+            raise RuntimeError(f"update_order order 必须是整数，得到 {order!r}")
+        action = UPDATE_POST_ORDER if resource == "posts" else UPDATE_PRODUCT_ORDER
+        s, t = self._req(f"/{site_slug}/{resource}", action,
+                         [{"id": target_id, "siteId": site_id, "order": order}])
+        read = self.read_post(site_slug, target_id) if resource == "posts" else self.read_product(site_slug, target_id)
+        rec = read.get("post") if resource == "posts" else read.get("product")
+        actual = (rec or {}).get("order")
+        if actual != order:
+            raise RuntimeError(f"update_order 回读不一致：期望 {order}，实际 {actual!r}")
+        return {"updated": True, "resource": resource, "target_id": target_id, "order": order, "http_status": s}
+
+    def read_site_info_form(self, site_slug):
+        """读站点信息**表单态**（GET /{slug}/site-info 的 SiteInfoClient.defaultValues）：
+        {siteId, name, slug, description, favicon, notificationEmail}。
+        与 read_site_info（只给 site/sites/user 概览）互补——写前必须先读这里拿 current 全字段（ISS-101 铁律）。"""
+        s, t = self.get_page(f"/{site_slug}/site-info")
+        rec = rsc_records(t)
+        box = find_json(rec, "defaultValues")
+        return {"status": s, "form": (box or {}).get("defaultValues", {})}
+
+    def update_site_info(self, site_slug, site_id, *, name=None, description=None,
+                         notification_email=None, authorization_confirmed=False, verify=True):
+        """⚠️ 全量覆盖语义：更新站点信息（ISS-146）。
+
+        平台 updateSiteInfoAction 的 payload 是四字段整体替换（name/description/favicon/
+        notificationEmail），且 name、notificationEmail 必填。因此本方法**先读当前表单态**，
+        只覆盖显式传入的字段，其余原样回传——避免 ISS-101 型「未传字段被清空」事故。
+        favicon 当前不支持修改（读原值回传；传 None 会被平台视为清空）。
+
+        授权闸：authorization_confirmed=True 必须显式传入（站点元数据影响全站品牌与表单通知）。
+        返回 {updated: bool, before, after, http_status}；verify=True 时回读并逐字段比对。
+        """
+        if authorization_confirmed is not True:
+            raise RuntimeError('update_site_info 需要显式 authorization_confirmed=True（先取得用户授权）')
+        current = self.read_site_info_form(site_slug).get('form') or {}
+        if not current.get('siteId'):
+            raise RuntimeError('update_site_info 无法读取当前站点信息表单态（defaultValues.siteId 缺失）')
+        if current.get('siteId') != site_id:
+            raise RuntimeError(f"update_site_info 站点不匹配：表单 siteId={current.get('siteId')} vs 传入 {site_id}")
+        before = {k: current.get(k) for k in ('name', 'description', 'favicon', 'notificationEmail')}
+        payload = {
+            "siteId": site_id,
+            "name": name if name is not None else current.get('name'),
+            "description": description if description is not None else current.get('description'),
+            "favicon": current.get('favicon'),
+            "notificationEmail": notification_email if notification_email is not None else current.get('notificationEmail'),
+        }
+        if not payload["name"]:
+            raise RuntimeError('update_site_info name 不能为空（平台必填）')
+        if not payload["notificationEmail"]:
+            raise RuntimeError('update_site_info notificationEmail 不能为空（平台必填；当前站点未设置时需显式传入）')
+        s, t = self._req(f"/{site_slug}/site-info", UPDATE_SITE_INFO, [payload])
+        after = None
+        if verify:
+            after_form = self.read_site_info_form(site_slug).get('form') or {}
+            after = {k: after_form.get(k) for k in ('name', 'description', 'favicon', 'notificationEmail')}
+            for key, want in (('name', payload['name']), ('description', payload['description']),
+                              ('notificationEmail', payload['notificationEmail'])):
+                if after.get(key) != want:
+                    raise RuntimeError(f"update_site_info 回读不一致 {key}: 期望 {want!r} 实际 {after.get(key)!r}")
+        return {"updated": True, "before": before, "after": after, "http_status": s}
+
     def create_site(self, name, description):
         s, t = self._req("/sites", CREATE_SITE_A, [{"name": name, "description": description}])
         res = self._flight(t)
