@@ -59,6 +59,7 @@ DELETE_PRODUCT  = "7ff4cdbd4b0334295d3cc7aba4767889363b4bcb45"
 UPSERT_PRODUCT  = "7f0d6abcdcec492a7e8587539e8d3f12e96a3d19ca"
 CREATE_POST     = "7fdfe82861882e4f6ac3cfbf022bac07e0520fdae1"
 DELETE_POST     = "7f0be1853412ed6d5493ae2e4c1988bd78b88ca81e"
+DELETE_MEDIA    = "7fc9336acfbacbbe3db21083c8dcfebcd402b22149"   # 2026-09-09 从 /{slug}/media 页 chunk 扫描确认（ISS-145）
 UPSERT_POST     = "7f205ad61951b1b4703378159b95d930e7e3f00b42"
 COMMIT_DESIGN   = "7ff107025e28118dfb6d8f0da06b3ae64fb0ed74b3"
 
@@ -792,6 +793,46 @@ class AllinCMS:
         """⚠️ 破坏性/不可逆：删除文章记录。先 read_post/read_lists 核对目标；必须取得用户明确授权后再调。"""
         s, t = self._req(f"/{site_slug}/posts", DELETE_POST, [{"id": post_id, "siteId": site_id}])
         return self._flight(t)
+    def delete_media(self, site_slug, site_id, media_id, expected_name=None,
+                     authorization_confirmed=False, verify=True):
+        """⚠️ 破坏性/不可逆：删除单条媒体库记录（ISS-145）。
+
+        与 delete_post/delete_product 同构的 server action：body=[{id, siteId}]，
+        action 从 /{slug}/media 页 chunk 扫描确认（deleteMediaAction）。
+        2026-09-09 真实账号实测：HTTP 200 → 回读媒体库记录消失（40→39）。
+
+        授权闸（fail-closed，防误删）：
+          - authorization_confirmed=True 必须显式传入（调用方先取得用户对**精确 media ID** 的授权）；
+          - expected_name 提供时，先按 name 在媒体库定位并核对 ID 完全一致，不一致即拒绝；
+          - verify=True 时删除后回读媒体库，记录仍在则报错（不静默成功）。
+        返回 {deleted: bool, media_id, name, http_status}。CDN 物理对象删除不保证（历史证据边界）。
+        """
+        if authorization_confirmed is not True:
+            raise RuntimeError('delete_media 需要显式 authorization_confirmed=True（先取得对精确 media ID 的用户授权）')
+        mid = str(media_id or '').strip()
+        if not re.fullmatch(r'[0-9a-f]{24}', mid):
+            raise RuntimeError(f'delete_media 需要 24 位 hex media_id，得到 {media_id!r}')
+        name = None
+        if expected_name:
+            lib = self.read_media_library(site_slug).get('media') or []
+            rows = [r for r in lib if isinstance(r, dict) and r.get('name') == expected_name]
+            if len(rows) != 1:
+                raise RuntimeError(f'delete_media 期望唯一 name={expected_name!r} 的记录，实际 {len(rows)} 条')
+            if rows[0].get('id') != mid:
+                raise RuntimeError(f'delete_media name={expected_name!r} 的 id={rows[0].get("id")} 与传入 {mid} 不一致')
+            name = expected_name
+        else:
+            lib = self.read_media_library(site_slug).get('media') or []
+            hit = [r for r in lib if isinstance(r, dict) and r.get('id') == mid]
+            if len(hit) != 1:
+                raise RuntimeError(f'delete_media 媒体库中不存在唯一 id={mid} 的记录（找到 {len(hit)} 条）')
+            name = hit[0].get('name')
+        s, t = self._req(f"/{site_slug}/media", DELETE_MEDIA, [{"id": mid, "siteId": site_id}])
+        if verify:
+            after = self.read_media_library(site_slug).get('media') or []
+            if any(isinstance(r, dict) and r.get('id') == mid for r in after):
+                raise RuntimeError(f'delete_media HTTP {s} 但回读媒体库仍存在 id={mid}（删除未生效）')
+        return {"deleted": True, "media_id": mid, "name": name, "http_status": s}
     # ---------- 主题（2026-08-30 从 workspace 客户端 bundle 提取 42 位 action id）----------
     def read_themes(self, site_slug):
         """GET /{slug}/themes → 主题记录列表（id/name/preset/active/homePageId/homePagePublished/pageCount/designPageId）。

@@ -24,7 +24,7 @@ related: ["../README.md"]
 AllinCMS(token=JWT)
 ├── 写（POST + next-action header；Cookie payload-token / Origin+Referer workspace / x-deployment-id）
 │   ├── 站点 create_site/delete_site │ 分类 create_category2 │ 标签 create_tag
-│   ├── 媒体 upload_media/update_media │ 产品 reviewed create/update │ 文章 reviewed update（create BLOCK）
+│   ├── 媒体 upload_media/update_media/delete_media(显式授权) │ 产品 reviewed create/update │ 文章 reviewed update（create BLOCK）
 │   └── 设计器 save_home(slug, theme_id, page_id, sid, doc, globals, cfg, intent)
 ├── 读（GET path?_rsc + RSC:1 → 组件 props 即数据）
 │   read_sites / read_lists / read_pages / read_page_document / read_product / read_post / read_media_library / read_site_info
@@ -40,6 +40,7 @@ AllinCMS(token=JWT)
 | 设计器三件套 | GET /{slug}/themes/{themeId}/{pageId}/design?_rsc | read_page_document |
 | 产品/文章编辑态 | GET /{slug}/products\|posts/{id}/update?_rsc | read_product/read_post |
 | 媒体库/站点信息 | GET /{slug}/media·site-info?_rsc | read_media_library/read_site_info |
+| 媒体删除（高危） | POST /{slug}/media action=deleteMediaAction | `delete_media(..., authorization_confirmed=True)`；registry 仍标 blocked，仅精确授权+回读验证下使用（ISS-145） |
 
 ## 三、action id 表（完整见 api-ref.tsv）
 SIGNIN 7f04a5d5… ｜ CREATE_SITE 7fedc609… ｜ DELETE_SITE 7f2dd4d4… ｜ CREATE_CATEGORY 7f6253b1…

@@ -141,6 +141,8 @@ redaction_status: "safe-to-publish"
 
 17. **封面选择器“找不到刚上传的图”不是 bug（2026-09-09 真实账号实测，ISS-142）**：① 上传**不重命名**——`name` 保留原名（`cover01.png`），只有 `path`/`url` 被改写成短哈希（`ebnwzfdnxr/4x9vlp.png`），按 path/url 搜名字永远搜不到；② 上传后**立即入池且置顶**（40→41 项，picker[0] 即新图，按上传时间倒序）；③ **封面候选池 = 媒体库，不是两套视图**——文章页 RSC 的 `mediaLibraryItems` 与 `/media` 页、设计器 design 页为同一集合（实测 41/41 相同），差异只在分页窗口（`/media` 页 limit=24/totalPages=2，未翻页只见子集）。排查顺序：媒体库按 name 确认 → 候选池最前面找/翻页 → 绑定封面用完整媒体对象（`source:oss`+`path`）而非 URL。详见 RUNBOOK §6 封面小节。**上传前用 `image-to-webp.py` 把 PNG/JPG 转 WebP**（ISS-143/144：平台原样接受 webp；实测 176KB JPG→30KB、7MB→458KB；后端 cwebp/Pillow/sharp 自动探测，超限自动降质+缩宽，幂等跳过已达标 webp）。
 
+18. **媒体删除接口存在，别下「平台没有」的结论（2026-09-09 实测，ISS-145）**：`deleteMediaAction = 7fc9336acfbacbbe3db21083c8dcfebcd402b22149`（从 `/{slug}/media` 页 chunk 的 `createServerReference` 正则扫出），body `[{id,siteId}]` 与 delete_post/delete_product 同构，HTTP 200 后回读记录消失。`allincms_api.py` 已加 `delete_media(..., authorization_confirmed=True)`（三道 fail-closed：无授权 / name-id 不匹配 / 目标不存在）。**registry 的 `media:delete` 仍保持 blocked**（治理决定 + 测试逐字锁定，不擅自变更）；通用路由拒绝删除，只在精确授权下用该原语，删除后必须回读。
+
 以上均已写入 `TOOLS/interface-kit/index/issues.tsv`（ISS-105/106/107/108/120..129、131、134..139、142..144）、`MODULES.md`（网格规则块）、`RUNBOOK-ANYONE.md`（§2 事实表 + §2.1 诊断树 + §8.1 执行路径决策树 + §8.2 demo 残留词库 + §8.3 自修复引导）与 `NEW-SITE-ONEPASS.md` 步骤 3/5/6/7/9/10 + 末尾卡住时清单。
 
 ### 上传前必须取得精确授权

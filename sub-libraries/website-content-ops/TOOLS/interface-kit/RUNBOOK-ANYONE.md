@@ -170,6 +170,18 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 - `upload_media(slug, site_id, file_path, title, alt, caption)`：multipart `_1_files` 传输（interface-kit 已封装），返回后立即 `update_media` 回写 title/alt/caption。
 - 上传完 `read_media_library` 核对 10 字段（name/alt/url/path/size/mimeType）。
 
+### 删除媒体记录（高危，ISS-145）
+
+`deleteMediaAction` 存在且纯 API 可用（2026-09-09 实测），但 **registry 仍将 `media:delete` 标为 blocked**——通用路由 fail-closed，只在「用户对精确 media ID 明确授权」时用显式原语：
+
+```python
+api.delete_media(site_slug, site_id, media_id,
+                 expected_name="photo.png",      # 按名核对 ID 唯一一致，防误删
+                 authorization_confirmed=True)   # 必须显式授权
+```
+
+三道 fail-closed 闸：无授权 / name-id 不匹配 / 目标不存在 → 全部拒绝；删除后回读媒体库确认记录消失（HTTP 200 不算成功）。CDN 物理对象删除不保证。
+
 ### 要不要先转 WebP？（2026-09-09 实测，ISS-143）
 
 **可以，而且推荐**——平台原样接受 WebP，实测无副作用：
