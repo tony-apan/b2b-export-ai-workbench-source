@@ -170,6 +170,20 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 - `upload_media(slug, site_id, file_path, title, alt, caption)`：multipart `_1_files` 传输（interface-kit 已封装），返回后立即 `update_media` 回写 title/alt/caption。
 - 上传完 `read_media_library` 核对 10 字段（name/alt/url/path/size/mimeType）。
 
+### 封面选择器找不到刚上传的图？（2026-09-09 实测，ISS-142）
+
+先别怀疑上传失败——三个常见误解都已被实测推翻：
+
+- **上传不重命名**：`name` 保留原名（如 `cover01.png`），只有 `path`/`url` 被平台改写为短哈希（`ebnwzfdnxr/4x9vlp.png`）。**按 path/url 搜文件名永远搜不到**，要按 `name` 找。
+- **上传后立即入池且置顶**：上传前 40 项 → 上传后 41 项，候选池第 0 位就是新图（按上传时间倒序）。
+- **封面候选池 = 媒体库，不是两套数据**：文章页 RSC 的 `mediaLibraryItems` 与 `/media` 页、设计器 `design` 页是同一份集合（实测 41/41 完全相同）。差异只在**分页窗口**：媒体库页 `limit=24, totalPages=2`，界面未滚动/未翻页时只显示子集。
+
+正确操作顺序：
+
+1. 媒体库按 **name** 确认图存在（不看 path）；
+2. 候选池按时间倒序找，新图在**最前面**；没看到就先翻页/滚动加载完；
+3. 直接绑定封面时用记录里的完整对象（`source: oss` + `path`），不要只传 URL——见 [article-operations.md](../../ADAPTERS/cms/allincms/article-operations.md)。
+
 ## §7 文章写作（第 7 步：子 agent k3 写）
 
 ```text
