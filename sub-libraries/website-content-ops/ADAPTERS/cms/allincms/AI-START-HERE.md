@@ -270,6 +270,7 @@ const readiness = await adapter.checkAllinCmsMediaRuntime({
 
 只有 `readiness.status === "ready"` 才进入上传。
 
+- **纯接口/Python 路径没有隐式格式转换**（只有浏览器 adapter 路径才有 sharp 归一化）：PNG/JPG 上传前必须本地跑 `image-to-webp.py`（ISS-143/144，q82/≤500KB，超限自动降质+缩宽）；
 - 小于等于 1 MB 的 WebP 不依赖 `sharp`；
 - PNG、JPG 和较大的 WebP 需要本目录 `package.json` 声明的 `sharp`；
 - `sharp` 缺失时明确阻断相关文件，不得偷偷切换 UI；

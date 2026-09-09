@@ -103,7 +103,10 @@ api.create_category2(slug, site_id, "产品分类 A", "product-a", content_type=
 api.create_tag(slug, site_id, "标签名", "tag-slug")
 ```
 
-### 2.4 媒体（先上传，URL 用于产品/文章/首页）
+### 2.4 媒体（先转换 + 上传，URL 用于产品/文章/首页）
+
+> **先转 WebP 再传（ISS-143/144）**：`python3 image-to-webp.py --max-kb 500 <素材目录>` → 用产出目录上传。纯 API/Python 路径**没有**隐式格式转换（浏览器 adapter 路径才有 sharp），不转就是原格式上传、体积白白大几倍。
+
 ```python
 r = api.upload_media(slug, site_id, "photo.jpg", title="...", alt="...")
 # r["media_urls"] 为 assets URL；注意：URL 必须带扩展名（.jpg/.webp），否则运行时 404！

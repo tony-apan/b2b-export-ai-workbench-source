@@ -139,7 +139,13 @@ redaction_status: "safe-to-publish"
 ### 步骤 5 — 媒体上传 + alt 回写
 
 - **输入**：素材文件（客户图/CC 图）+ customization 的 media 节。
-- **动作**（推荐一步两段式封装，ISS-122）：
+- **动作 5a（先转换，ISS-143/144）**：**PNG/JPG 一律先本地转 WebP 再上传**——平台原样接受 WebP，实测 JPG 176KB→30KB（-83%）、7MB→458KB（-94%），直接决定页面加载速度：
+  ```bash
+  python3 image-to-webp.py --max-kb 500 <素材目录>   # 产出 <目录>/webp/，已是达标 webp 自动跳过
+  python3 image-check.py <目录>/webp/               # 分辨率/体积/格式硬门
+  ```
+  后端自动探测 cwebp → Pillow → sharp（都缺时给出安装指引）；超 500KB 自动降质（q−8 至下限 40）再缩宽（2400→1280）。**转后比原图大就保留原格式**（纯色/线条类 PNG 常见），工具会提示。
+- **动作 5b**（推荐一步两段式封装，ISS-122）：
   ```python
   r = api.upload_media_with_meta(slug, site_id, file_path, title, alt, caption)  # 上传→媒体库按 name 对账→update_media 回写
   # r = {id, url, path, title, alt}；内部已处理 media_urls 累积陷阱与最新记录匹配
@@ -147,7 +153,7 @@ redaction_status: "safe-to-publish"
   ```
   手工两步等价写法：`upload_media(...)` → `update_media(slug, media_id, site_id, title, alt, caption)`（upload 的 title/alt 位置参数不生效）。
 - **验收判据**：`read_media_library` 核对 10 字段（name/alt/url/path/size/mimeType…）；**URL 带扩展名**；license 记入证据。
-- **产物**：`70_evidence/media-manifest.md`（文件名 → URL/alt/license）；URL 回填 brief.json 的 media ref。
+- **产物**：`70_evidence/media-manifest.md`（文件名 → URL/alt/license/**输出格式与压缩后体积**）；URL 回填 brief.json 的 media ref。
 - **坑**：**`upload_media` 的 title/alt/caption 位置参数不生效**（multipart 只传文件+siteId）——上传后记录是文件名 stem，**必须回写** SEO 元数据（`upload_media_with_meta` 已内置）并复核（2026-09-03 qualification run：22 张 alt 全为 stem，回写后 22/22 生效）；**`media_urls` 是历史累积全量勿当本次结果**（ISS-019/122）；URL 不带扩展名 → 运行时 404；同页不重复用同一张图（分类卡/hero 错开）；批量上传后以 read_media_library 为真源建 ref→{url,media_id} 映射表，产品 payload 的 media 用 `{source:"url", url:<CDN>}`（新站 ISS-105）；串行快传可能出现记录错位/缺失（ISS-109）——逐张对账后再进下一张。
 
 ### 步骤 6 — 分类 / 标签

@@ -4,6 +4,8 @@
 #   [runtime]      建站工具包运行 = 零第三方依赖（Python stdlib：json/os/re/ssl/urllib/csv/struct）
 #                  所有脚本(allincms_api/blocks、site_pipeline、registry_tools、image-check、
 #                  competitor-watch、doc-capability-check)均 stdlib only
+#   [webp]         image-to-webp.py 本地图片转 WebP —— 需以下任一后端（自动探测，缺则给安装指引）
+#                  cwebp（brew install webp，推荐）/ Pillow（pip install Pillow）/ sharp（adapter npm i）
 #   [docs-parse]   解析用户资料（PDF/DOCX/PPTX/XLSX）需要 —— 选装，按平台给对应方案
 #   [canonical]    canonical 子库校验（validate-links / validate-sub-library）需要 Node.js —— 选装
 #

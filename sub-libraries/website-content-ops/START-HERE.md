@@ -121,7 +121,7 @@ AI 执行：
 1. 默认用宿主内置 Browser 的当前 session 请求 /sites?_rsc；只有接口确认未登录时才打开 /sign-in、保持前台并立即引导；
 2. 登录后重新 API 检查 user.id、分页完整网站列表和 canCreate，再由用户确认准确 site_key；
 3. 打开精确 /{site_key}/media，检查页面健康后运行 checkAllinCmsMediaRuntime()；
-4. 告诉用户 WebP 是否可直接传，以及 PNG/JPG 是否缺 sharp；
+4. 告诉用户 WebP 可直接传（平台原样接受，ISS-143）；**PNG/JPG 先本地转 WebP 再传**（`image-to-webp.py`，纯接口路径无隐式转换），并说明 PNG/JPG 在浏览器路径是否缺 sharp；
 5. 准备客户私有 image-index.json 路径，并向用户列出精确 site_key、操作和有序文件列表；
 6. 用户批准后创建 authorizationContext，再默认调用 uploadAllinCmsMediaSerial()；接口异常先只读对账或页面诊断，不自动 UI 回退。
 

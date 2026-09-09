@@ -28,7 +28,7 @@ redaction_status: "safe-to-publish"
 ```text
 1. 用户登录并打开准确的 https://workspace.laicms.com/{site_key}/media
 2. AI 逐张读图，结合公司 / 产品 / 页面知识生成候选 title、alt、caption 和结构化 metadata
-3. AI 运行只读环境预检
+3. AI 运行只读环境预检 **+ 本地转 WebP**（`image-to-webp.py`，ISS-143/144；纯接口路径无隐式转换）
 4. AI 调用 uploadAllinCmsMediaSerial()，永久禁止并发
 5. 每张：写 prepared → 单张接口上传 → 自动刷新 → 验证卡片、media ID、URL、匿名访问和解码
 6. 原子写入本地私有 image-index.json

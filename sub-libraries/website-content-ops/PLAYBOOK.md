@@ -124,7 +124,7 @@ flowchart TD
 ## 阶段 6：参考实现——图片
 
 1. 根据 `TEMPLATES/image-manifest.md` 确认图片身份、来源、使用权、产品归属和用途；
-2. 统一文件名、尺寸、格式和 alt；
+2. 统一文件名、尺寸、格式和 alt；**格式统一为 WebP（`image-to-webp.py`，≤500KB，转后变大则保留原格式）**；
 3. 先用 [图片上传统一路由](ADAPTERS/image-upload-routing.md) 判断目标是 AllinCMS 媒体库还是外部图床；
 4. 目标为 AllinCMS 时，运行环境预检并调用 `uploadAllinCmsMediaSerial()`；不先配置 PicGo；
 5. 每张完成接口上传、自动刷新、media ID / URL / 匿名访问 / 解码验证和原子索引后，才进入下一张；

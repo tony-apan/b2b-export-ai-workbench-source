@@ -44,6 +44,8 @@ cd index && python3 registry_tools.py find <关键词>   # 找文档/脚本/模�
 - `MODULES.md` —— 单页模块（Blocks Library）schema 与嵌套规范
 - `API-DISCOVERY.md` —— **平台更新后 AI 摸索接口的标准流程**（重扫/反编译/对比/发现/适配/验证）
 - `allincms_blocks.py` —— 单页模块构建器（hero/carousel/catalog/faq/contact…）
+- `image-to-webp.py` —— 上传前本地转 WebP（cwebp→Pillow→sharp 自动探测，q82/≤500KB，超限降质缩宽，ISS-143/144）
+- `image-check.py` —— 图片硬性门（分辨率/体积/格式/alt/同尺寸重复，零依赖）
 - 接口要点全集见 `MODULES.md`（块 schema）与 `api/API-INDEX.md`（接口索引）
 
 ## 一条龙机器闸（新站必跑）

@@ -24,6 +24,7 @@ related: ["README.md"]
 | docs-parse | pypdf / python-docx / python-pptx / openpyxl（或系统 poppler） | 解析用户 PDF/Word/PPT/Excel → Markdown | 资料解析跳级/降级（txt/md/html 仍可用） |
 | canonical | Node.js ≥18 | 子库校验（validate-links/validate-sub-library） | 无法运行 canonical 校验（可选） |
 | visual | Chrome（headless） | 截图复核（ID-0007 B2） | 无截图（可用 curl 替代验证） |
+| webp | cwebp / Pillow / sharp（任一即可） | `image-to-webp.py` 本地转 WebP（上传前置，ISS-143/144） | 无法本地转 WebP；仍可上传原格式（体积大、加载慢） |
 
 **注意：建站核心零第三方依赖**——所有功能（写/读/模块/索引/监控/图片门）只要 Python 3 即可。
 

@@ -18,6 +18,7 @@ related: ["../README.md"]
 
 ## A. 硬性门（不过 = 不发布）
 - [ ] 分辨率：主图/Hero ≥1200px 宽；内容卡 ≥800px；放大后无明显锯齿
+- [ ] **已跑 `image-to-webp.py`（PNG/JPG → WebP，ISS-143/144）；转后变大的保留原格式**
 - [ ] 文件：jpg/webp；≤500KB/图（超则压缩）；无水印/无截图裁切痕迹
 - [ ] 格式与 alt：alt 描述"内容+场景"（非关键词堆砌）；扩展名带 .jpg/.webp
 - [ ] 许可：来源+author+license 已登记 image-manifest（CC/PD/自有）；无版权不明图
