@@ -177,9 +177,21 @@ def gen():
           "- 新模块摸清后 → modules.tsv 加行",
           "- TSV 字段含 tab 的文本（如多行）先替换为空格；description 精炼一行"]
     out = os.path.join(HERE, "index.md")
+    # m5（ISS-144 对抗审查）：保留 sync-indexes.mjs 维护的 INDEX:BEGIN/END 生成块，
+    # 否则 gen 会剥掉它并触发母库 index 校验 BLOCK。
+    block = ""
+    if os.path.exists(out):
+        with open(out, encoding="utf-8") as _f:
+            _txt = _f.read()
+        _b = _txt.find("<!-- INDEX:BEGIN")
+        _e = _txt.find("<!-- INDEX:END -->")
+        if _b >= 0 and _e > _b:
+            block = _txt[_b:_e + len("<!-- INDEX:END -->")]
     with open(out, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
-    print(f"generated {out} ({len(L)} lines)")
+        if block:
+            f.write("\n" + block + "\n")
+    print(f"generated {out} ({len(L)} lines)" + (" + preserved INDEX block" if block else ""))
 
 def ls(kind=None):
     for table in FILES:
