@@ -6,7 +6,7 @@ type: "meta"
 status: "Working"
 owner: "AI"
 created: "2026-06-28"
-last_updated: "2026-09-07"
+last_updated: "2026-09-09"
 sources: ["AGENTS.md", "wiki/00_meta/private-master-and-sub-library-model.md", "Tony public MIT decision 2026-09-02"]
 related: ["CONTEXT.md", "wiki/index.md", "AGENTS.md", "CLAUDE.md", "MANIFEST.md", "RELEASE.md", "wiki/00_meta/current-focus.md", "wiki/00_meta/in-repository-agency-runtime-model.md", "sub-libraries/README.md", "sub-libraries/agency-operations/README.md"]
 visibility: "public"
@@ -15,9 +15,9 @@ canonical_entry: "README.md"
 -->
 # B2B Export AI Workbench
 
-![Status](https://img.shields.io/badge/status-Working-BLOCK-important) ![Version](https://img.shields.io/badge/version-0.3.3--working-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white) ![Node](https://img.shields.io/badge/node-%E2%89%A520.9-339933?logo=node.js&logoColor=white)
+![Status](https://img.shields.io/badge/status-Published-brightgreen) ![Version](https://img.shields.io/badge/version-0.3.4-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white) ![Node](https://img.shields.io/badge/node-%E2%89%A520.9-339933?logo=node.js&logoColor=white)
 
-> 母库状态：`Stable Candidate / release_status: Ready`（正式版本候选 `0.3.4`，MIT）。[website-content-ops 子库](sub-libraries/website-content-ops/README.md)的当前 Public Preview 为 `0.4.0-preview.2`（namespaced tag 已发布）；子库仍为非 Stable，生产动作需逐次批准。
+> 母库状态：`Stable / release_status: Published`（正式版本 `0.3.4`，MIT，签名 tag `mother/v0.3.4`）。[website-content-ops 子库](sub-libraries/website-content-ops/README.md)的当前 Public Preview 为 `0.4.0-preview.2`（namespaced tag 已发布）；子库仍为非 Stable，生产动作需逐次批准。
 
 一个给外贸人用的"增长工作台"。里面装的不是软件，而是**做外贸要用到的方法、模板和工具**：怎么建网站、怎么写 B2B 文章、怎么开发信、怎么做 LinkedIn、怎么弄 SEO/GEO、怎么回询盘、怎么参加展会、怎么做短视频——全都整理成了人和 AI 都能读的步骤。
 
@@ -98,7 +98,7 @@ A：仓库对每块内容都标了成熟度：有真实证据的写"有证据"�
 - 真实客户资料、账号、凭据不属于授权范围——它们本来就不该进仓库。
 - 第三方名称/商标（AllinCMS、LinkedIn、Google 等）和通过外链加载的图片不随 MIT 授权。
 - 各子库可独立声明自己的许可证；以该子库的 LICENSE 为准。
-- 仓库仍在持续演进，`release_status: Ready` 表示稳定版候选已冻结、等待远端正式资格认定，不代表内容不可读或不可用。
+- 仓库仍在持续演进，`release_status: Published` 表示 `0.3.4` 已通过正式 qualification 并发布，不代表未来版本或子库自动继承该资格。
 
 ---
 
@@ -111,3 +111,12 @@ A：仓库对每块内容都标了成熟度：有真实证据的写"有证据"�
 - 本地全量校验（推送前必跑）：`bash scripts/pre-push-check.sh`，7 步全绿才推。
 
 **边界**：即使仓库公开，真实客户数据、凭据和经营数据仍只进独立私有运行区，不进提交；一个模块的结构/测试通过不代表另一个模块或生产环境成立。
+
+---
+
+## 📬 联系我
+
+| 入群交流 | 建站咨询 |
+|---|---|
+| <img src="https://cos.files.maozhishi.com/data/web/web-files/wx/tony-apan.png" width="50%" alt="入群联系二维码"> | <img src="https://cos.files.maozhishi.com/data/web/web-files/img/xrmmc.png" width="50%" alt="建站联系二维码"> |
+| 扫码入群 | 扫码咨询建站 |
