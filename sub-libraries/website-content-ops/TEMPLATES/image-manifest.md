@@ -6,7 +6,7 @@ template_usage: "manual-copy"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-29"
+last_updated: "2026-09-09"
 sources: ["Tony decision 2026-07-27", "../ADAPTERS/cms/allincms/media-metadata-and-ai-vision-sop.md"]
 related: ["../ADAPTERS/README.md", "../ADAPTERS/cms/allincms/media-metadata-and-ai-vision-sop.md", "../ADAPTERS/cms/allincms/article-image-binding-contract.json", "../ADAPTERS/cms/allincms/image-index-e2e-verification.redacted.md", "publish-record.md"]
 visibility: "public"
@@ -18,9 +18,9 @@ keywords: ["image manifest", "image rights", "alt text", "asset binding", "dimen
 
 ## 资产身份与语义
 
-| Asset ID | Source file | Source SHA-256 | Source MD5 | Product / article | Role | Rights | Description | Alt zh | Alt en | Caption | Size / format |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  | hero / gallery / detail / diagram / social | owned / licensed / virtual / unknown |  |  |  |  |  |
+| Asset ID | Source file | Source SHA-256 | Source MD5 | Product / article | Role | Rights | Description | Alt zh | Alt en | Caption | Size / format | **WebP output (size / ≤500KB)** |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  | hero / gallery / detail / diagram / social | owned / licensed / virtual / unknown |  |  |  |  |  |  |
 
 `source_sha256` 是源资产主键。MD5 只作兼容字段，不作为唯一身份。
 

@@ -5,7 +5,7 @@ type: "tooling"
 status: "Working"
 owner: "AI"
 created: "2026-07-27"
-last_updated: "2026-08-12"
+last_updated: "2026-09-09"
 sources: ["../allincms-overview.md", "observed-contract.redacted.json", "direct-serial-10-verification.redacted.md", "direct-serial-11-article-verification.redacted.md", "image-index-e2e-verification.redacted.md", "direct-delete-verification.redacted.md", "Observed signed-in media upload and delete runs 2026-07-27"]
 related: ["AI-START-HERE.md", "content-run-controller.mjs", "live-run-evidence.schema.json", "INTERFACE-INDEX.md", "interface-registry.json", "interface-registry.schema.json", "workspace-preflight.md", "workspace-preflight.mjs", "workspace-preflight-contract.json", "media-metadata-and-ai-vision-sop.md", "../allincms-overview.md", "article-operations.md", "article-operations.mjs", "article-operations-contract.json", "article-operations.test.mjs", "upload-media-browser.mjs", "verify-media.mjs", "media-operations-contract.redacted.json", "observed-contract.redacted.json", "direct-delete-verification.redacted.md"]
 confidence: "high"
@@ -97,7 +97,8 @@ UI 与外部图床都不是接口失败后的自动降级。API-first 登录判�
 
 ```text
 本地 PNG / JPG / WebP
-→ Node 内存中规范化为 WebP
+→ Node 内存中规范化为 WebP（仅浏览器 adapter 路径；纯 API/Python 路径无隐式转换，
+   上传前必须先跑 TOOLS/interface-kit/image-to-webp.py，ISS-143/144）
 → 动态读取当前 deployment、uploadMedia action 和 Next router tree
 → 当前登录页面同源 fetch
 → 刷新读取媒体记录

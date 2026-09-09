@@ -4,6 +4,26 @@
 输出每张图的指标 + 不达标项（B 类审美项需人工截图复核）。"""
 import os, sys, struct
 
+def _webp_size(data):
+    """解析 WebP 尺寸：VP8X / VP8 / VP8L 三种 chunk 头（B3：此前 webp 一律判 unknown）。"""
+    fmt = data[12:16]
+    if fmt == b"VP8X":
+        w = int.from_bytes(data[24:27], "little") + 1
+        h = int.from_bytes(data[27:30], "little") + 1
+        return w, h
+    if fmt == b"VP8 ":
+        # VP8 关键帧头：起始码后第 6-9 字节为 14 位宽高
+        w = int.from_bytes(data[26:28], "little") & 0x3FFF
+        h = int.from_bytes(data[28:30], "little") & 0x3FFF
+        return w, h
+    if fmt == b"VP8L":
+        bits = int.from_bytes(data[21:25], "little")
+        w = (bits & 0x3FFF) + 1
+        h = ((bits >> 14) & 0x3FFF) + 1
+        return w, h
+    return None, None
+
+
 def probe(path):
     """裸读 PNG/JPEG 头部取尺寸（零依赖，标准段扫描）。"""
     with open(path, "rb") as f:
@@ -11,6 +31,8 @@ def probe(path):
     if data[:8] == b"\x89PNG\r\n\x1a\n":
         w, h = struct.unpack(">II", data[16:24])
         return w, h, "png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return (*_webp_size(data), "webp")
     if data[:2] == b"\xff\xd8":
         i, n = 2, len(data)
         while i < n - 9:
@@ -34,19 +56,22 @@ def check(path):
     if not w: issues.append(f"不可识别格式（应为 jpg/png/webp）")
     else:
         if min(w, h) < 640: issues.append(f"分辨率过低 {w}x{h}（主图需 ≥1200，卡图 ≥800）")
-        if size > 512 * 1024: issues.append(f"文件过大 {size//1024}KB（≤500KB）")
-        if fmt == "png" and size > 300 * 1024: issues.append(f"PNG 较大（建议转 jpg/webp）")
+    if size > 500 * 1024: issues.append(f"文件过大 {size//1024}KB（≤500KB）")
+    if fmt == "png" and size > 300 * 1024: issues.append(f"PNG 较大（建议转 jpg/webp）")
     return {"file": os.path.basename(path), "w": w, "h": h, "fmt": fmt, "kb": size // 1024, "issues": issues}
 
 def main():
     paths = []
     for a in sys.argv[1:]:
         if os.path.isdir(a):
-            paths += [os.path.join(a, f) for f in sorted(os.listdir(a)) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))]
+            for root, dirs, names in os.walk(a):
+                dirs[:] = [d for d in dirs if d not in ("webp", "__pycache__")]
+                paths += [os.path.join(root, f) for f in sorted(names)
+                          if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))]
         else:
             paths.append(a)
     if not paths:
-        print(__doc__); return
+        print(__doc__); return 2
     dup = {}; bad = 0
     for p in paths:
         r = check(p)
@@ -59,6 +84,7 @@ def main():
     for k, v in same.items():
         print(f"! 同尺寸图片 {k} 出现 {len(v)} 次（可能同图复用：{v[:4]}）")
     print(f"\n{len(paths)} images, hard-gate issues: {bad}" + (f", duplicate-size groups: {len(same)}" if same else ""))
+    return 1 if (bad or same) else 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

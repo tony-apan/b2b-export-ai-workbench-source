@@ -19,6 +19,7 @@
 """
 import os
 import shutil
+import struct
 import subprocess
 import sys
 
@@ -53,18 +54,42 @@ def _backend():
 
 
 def convert_cwebp(src, dst, quality, width=None):
+    # M7：EXIF 方向必须与 Pillow/sharp 一致——若源带方向标记且 Pillow 可用，
+    # 先旋正到临时 PNG 再交给 cwebp；否则回退保留原 EXIF（至少不丢信息）。
+    src_for_cwebp = src
+    try:
+        from PIL import Image, ImageOps
+        with Image.open(src) as im:
+            if im.getexif().get(274):
+                rotated = ImageOps.exif_transpose(im)
+                if rotated is not None:
+                    tmp_src = f"{src}.exifrot.png"
+                    rotated.convert("RGB").save(tmp_src, "PNG")
+                    src_for_cwebp = tmp_src
+    except Exception:
+        pass
     cmd = [_which("cwebp"), "-q", str(quality), "-m", "4", "-quiet"]
+    if src_for_cwebp == src:
+        cmd += ["-metadata", "all"]
     if width:
         cmd += ["-resize", str(width), "0"]
-    cmd += [src, "-o", dst]
-    r = subprocess.run(cmd, capture_output=True, text=True)
-    if r.returncode != 0:
-        raise RuntimeError((r.stderr or r.stdout or "cwebp failed").strip()[:200])
+    cmd += [src_for_cwebp, "-o", dst]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        if r.returncode != 0:
+            raise RuntimeError((r.stderr or r.stdout or "cwebp failed").strip()[:200])
+    finally:
+        if src_for_cwebp != src and os.path.exists(src_for_cwebp):
+            os.remove(src_for_cwebp)
 
 
 def convert_pillow(src, dst, quality, width=None):
-    from PIL import Image
+    from PIL import Image, ImageOps
     with Image.open(src) as im:
+        if getattr(im, "is_animated", False) and getattr(im, "n_frames", 1) > 1:
+            raise RuntimeError(f"动画 WebP 不受支持（{im.n_frames} 帧），会被压成单帧；请保留原文件")
+        # exif_transpose：按 EXIF 方向旋正，与 sharp 的 .rotate() 行为对齐（M7）
+        im = ImageOps.exif_transpose(im) or im
         im = im.convert("RGBA" if im.mode in ("RGBA", "LA", "P") else "RGB")
         if width and im.width > width:
             im = im.resize((width, max(1, round(im.height * width / im.width))), Image.LANCZOS)
@@ -88,13 +113,62 @@ def convert_sharp(src, dst, quality, width=None):
 CONVERTERS = {"cwebp": convert_cwebp, "pillow": convert_pillow, "sharp": convert_sharp}
 
 
+def _image_width(src, backend):
+    """取源图宽度（M3：零依赖头部解析优先，Pillow 兜底——任一后端可用即可缩宽）。
+
+    cwebp 没有 -get 子命令（实测 Unknown option），故按文件头解析 PNG/JPEG/WebP。
+    """
+    try:
+        with open(src, "rb") as f:
+            data = f.read(65536)
+        if data[:8] == b"\x89PNG\r\n\x1a\n":
+            return struct.unpack(">I", data[16:20])[0]
+        if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+            fmt = data[12:16]
+            if fmt == b"VP8X":
+                return int.from_bytes(data[24:27], "little") + 1
+            if fmt == b"VP8 ":
+                return int.from_bytes(data[26:28], "little") & 0x3FFF
+            if fmt == b"VP8L":
+                bits = int.from_bytes(data[21:25], "little")
+                return (bits & 0x3FFF) + 1
+        if data[:2] == b"\xff\xd8":
+            i, n = 2, len(data)
+            while i < n - 9:
+                if data[i] != 0xFF:
+                    i += 1
+                    continue
+                marker = data[i + 1]
+                if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD7:
+                    i += 2
+                    continue
+                if i + 4 > n:
+                    break
+                seglen = struct.unpack(">H", data[i + 2:i + 4])[0]
+                if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+                    h, w = struct.unpack(">HH", data[i + 5:i + 9])
+                    return w
+                i += 2 + seglen
+    except Exception:
+        pass
+    try:
+        from PIL import Image as _Img
+        with _Img.open(src) as im:
+            return im.width
+    except Exception:
+        return None
+
+
 def collect(paths):
+    """递归收集（M1：嵌套素材目录不能静默漏转）。已存在 webp/ 输出目录会被跳过，避免自我递归。"""
     out = []
     for p in paths:
         if os.path.isdir(p):
-            for name in sorted(os.listdir(p)):
-                if name.lower().endswith(INPUT_EXTS):
-                    out.append(os.path.join(p, name))
+            for root, dirs, names in os.walk(p):
+                dirs[:] = [d for d in dirs if d not in ("webp", "__pycache__")]
+                for name in sorted(names):
+                    if name.lower().endswith(INPUT_EXTS):
+                        out.append(os.path.join(root, name))
         elif os.path.isfile(p):
             out.append(p)
     return out
@@ -113,10 +187,18 @@ def main():
     i = 0
     while i < len(args):
         a = args[i]
-        if a == "--quality":
-            quality = int(args[i + 1]); i += 2; continue
-        if a == "--max-kb":
-            max_kb = int(args[i + 1]); i += 2; continue
+        if a in ("--quality", "--max-kb"):
+            if i + 1 >= len(args):
+                print(f"参数错误：{a} 缺少数值"); print(__doc__); return 2
+            try:
+                val = int(args[i + 1])
+            except ValueError:
+                print(f"参数错误：{a} 需要整数，得到 {args[i + 1]!r}"); return 2
+            if a == "--quality":
+                quality = val
+            else:
+                max_kb = val
+            i += 2; continue
         if a == "--in-place":
             in_place = True; i += 1; continue
         paths.append(a); i += 1
@@ -136,47 +218,76 @@ def main():
 
     print(f"BACKEND: {backend} | QUALITY: {quality} | MAX: {max_kb}KB | FILES: {len(files)}")
     failures = 0
-    seen = {}
+    used_dst = set()
     for src in files:
-        stem = os.path.splitext(os.path.basename(src))[0]
-        out_dir = os.path.dirname(src) if in_place else os.path.join(os.path.dirname(src), "webp")
-        os.makedirs(out_dir, exist_ok=True)
-        # 同名不同扩展名（photo.png + photo.jpg）会互相覆盖：后者追加源扩展名区分
-        key = os.path.join(out_dir, stem)
-        if key in seen:
-            stem = f"{stem}-{os.path.splitext(os.path.basename(src))[1].lstrip('.')}"
-        seen[key] = True
-        dst = os.path.join(out_dir, stem + ".webp")
-        before = os.path.getsize(src)
-        if src.lower().endswith(".webp") and before <= max_kb * 1024:
-            if os.path.abspath(src) != os.path.abspath(dst):
-                shutil.copy2(src, dst)
-            print(f"  SKIP  {os.path.basename(src)}  已是 webp 且 {before // 1024}KB ≤ {max_kb}KB")
-            continue
-        q = quality
+        # M8：单条坏输入不能中断整批——所有路径/IO 操作都在 per-file try 内
         try:
-            CONVERTERS[backend](src, dst, q)
-            # 超限先降质（每次 -8，下限 40），仍超再缩宽（最多 3 档，对齐 sharp 双轴策略）
-            while os.path.getsize(dst) > max_kb * 1024 and q > 40:
-                q -= 8
-                CONVERTERS[backend](src, dst, q)
-            if os.path.getsize(dst) > max_kb * 1024:
-                from PIL import Image as _Img
-                with _Img.open(src) as _im:
-                    w0 = _im.width
-                for w in (2400, 2000, 1600, 1280):
-                    if w >= w0:
-                        continue
-                    CONVERTERS[backend](src, dst, q, width=w)
-                    if os.path.getsize(dst) <= max_kb * 1024:
-                        break
-            after = os.path.getsize(dst)
+            stem = os.path.splitext(os.path.basename(src))[0]
+            src_dir = os.path.dirname(src) or "."
+            out_dir = src_dir if in_place else os.path.join(src_dir, "webp")
+            os.makedirs(out_dir, exist_ok=True)
+            before = os.path.getsize(src)
+
+            # 已是达标 webp：直接跳过（M10：不参与消歧，避免 --in-place 二次运行多出副本）
+            if src.lower().endswith(".webp") and before <= max_kb * 1024:
+                print(f"  SKIP  {os.path.basename(src)}  已是 webp 且 {before // 1024}KB ≤ {max_kb}KB")
+                continue
+
+            # M10：--in-place 幂等——同目录已有同名 .webp（上一轮产物）时跳过，
+            # 否则消歧逻辑会生成 photo-2.webp 这类副本。
+            if in_place:
+                sibling = os.path.join(src_dir, stem + ".webp")
+                if os.path.exists(sibling) and os.path.abspath(sibling) != os.path.abspath(src):
+                    print(f"  SKIP  {os.path.basename(src)}  同目录已有 {os.path.basename(sibling)}（幂等跳过）")
+                    continue
+
+            # B1/B2：目标路径分配——循环递增后缀，直到磁盘与本次运行都未占用
+            dst = os.path.join(out_dir, stem + ".webp")
+            n = 2
+            while (os.path.abspath(dst) != os.path.abspath(src)
+                   and (dst in used_dst or os.path.exists(dst))):
+                dst = os.path.join(out_dir, f"{stem}-{n}.webp")
+                n += 1
+            if in_place and os.path.abspath(dst) == os.path.abspath(src):
+                print(f"  FAIL  {os.path.basename(src)}  --in-place 不能覆盖源文件本身；请去掉 --in-place 或换目录")
+                failures += 1
+                continue
+            used_dst.add(dst)
+
+            # M4：写临时文件，成功且达标后原子替换，失败不留半成品
+            tmp = dst + ".tmp"
+            q = quality
+            try:
+                CONVERTERS[backend](src, tmp, q)
+                while os.path.getsize(tmp) > max_kb * 1024 and q - 8 >= 40:
+                    q -= 8
+                    CONVERTERS[backend](src, tmp, q)
+                if os.path.getsize(tmp) > max_kb * 1024:
+                    w0 = _image_width(src, backend)
+                    if w0:
+                        for w in (2400, 2000, 1600, 1280,
+                                  int(w0 * 0.8), int(w0 * 0.6), 800):
+                            if not w or w >= w0:
+                                continue
+                            CONVERTERS[backend](src, tmp, q, width=w)
+                            if os.path.getsize(tmp) <= max_kb * 1024:
+                                break
+                after = os.path.getsize(tmp)
+                if after > before:
+                    # M9：转后变大——删掉输出，保留原格式（不再产出更大的 webp）
+                    os.remove(tmp)
+                    print(f"  SKIP  {os.path.basename(src)}  转 WebP 反而变大（{before // 1024}KB → "
+                          f"{after // 1024}KB），保留原格式")
+                    continue
+                os.replace(tmp, dst)
+            except Exception:
+                if os.path.exists(tmp):
+                    os.remove(tmp)
+                raise
             saved = (1 - after / before) * 100 if before else 0
             flag = "" if after <= max_kb * 1024 else f"  ⚠ 仍超 {max_kb}KB（已降到 q={q}）"
-            if after > before:
-                flag += "  ⚠ 比原图大，建议保留原格式"
             print(f"  OK    {os.path.basename(src)}  {before // 1024}KB → {after // 1024}KB"
-                  f"  (-{saved:.0f}%, q={q}){flag}")
+                  f"  ({saved:+.0f}%, q={q}){flag}")
         except Exception as e:
             failures += 1
             print(f"  FAIL  {os.path.basename(src)}  {type(e).__name__}: {e}")

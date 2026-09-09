@@ -5,7 +5,7 @@ type: "checklist"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-08-03"
+last_updated: "2026-09-09"
 sources: ["MENTAL-MODEL.md", "PLAYBOOK.md", "AGENTS.md", "MANIFEST.md"]
 related: ["WRITEBACK.md", "MANIFEST.md", "PLAYBOOKS/id-0001-b2b-seo-article-standard.md", "PLAYBOOKS/id-0004-b2b-article-stage-patterns.md", "TEMPLATES/article-draft.md", "TEMPLATES/article-quality-review.md", "TEMPLATES/publish-record.md", "TEMPLATES/transfer-exercise-record.md"]
 visibility: "public"
@@ -111,6 +111,7 @@ redaction_status: "safe-to-publish"
 - [ ] 已完成稳定对象 / 字段到平台对象 / 字段 / 操作的映射。
 - [ ] 已记录认证类型、最小权限、批量限制、幂等、回滚和验证。
 - [ ] 图片身份、用途、alt、版权和 URL 有记录；CMS/Slate alt 与最终 DOM `img[alt]` 已逐图比对，不能只看后台字段。
+- [ ] 上传前已转 WebP（`image-to-webp.py`）且单图 ≤500KB；`image-check.py` 无非零退出（ISS-143/144）。
 - [ ] 没有凭据、测试文字、未处理占位符或本地绝对路径。
 - [ ] 安装、批量、发布、覆盖、删除或全局修改已单独获批。
 

@@ -4,7 +4,7 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-07"
+last_updated: "2026-09-09"
 sources: ["RUNBOOK-ANYONE.md（10 步总流程/实测事实表/平台回落表/执行路径决策树/§8.3 自修复引导）", "ONBOARDING-PIPELINE.md（细节 SOP）", "templates/client-input-checklist.md", "templates/site-content-checklist.md", "templates/CONTENT-MINIMUM.md", "templates/brief-schema.json", "templates/site-audit-config.template.json", "templates/post-payload-example.json", "templates/product-payload-example.json", "templates/delivery-manifest.md", "writing/WRITING-INDEX.md", "MODULES.md（37 块注册表）", "Example 全流程实战 2026-08-29/30", "2026-09-04 双机实战（macOS+Windows 10 field build）", "2026-09-05 某筛网西语站 v2 重建实战（ISS-134..139）"]
 related: ["RUNBOOK-ANYONE.md", "ONBOARDING-PIPELINE.md", "templates/new-site-customization-checklist.md", "MODULES.md", "writing/WRITING-INDEX.md"]
 description: AllinCMS 建站工具包文档（NEW-SITE-ONEPASS.md）
@@ -141,10 +141,10 @@ redaction_status: "safe-to-publish"
 - **输入**：素材文件（客户图/CC 图）+ customization 的 media 节。
 - **动作 5a（先转换，ISS-143/144）**：**PNG/JPG 一律先本地转 WebP 再上传**——平台原样接受 WebP，实测 JPG 176KB→30KB（-83%）、7MB→458KB（-94%），直接决定页面加载速度：
   ```bash
-  python3 image-to-webp.py --max-kb 500 <素材目录>   # 产出 <目录>/webp/，已是达标 webp 自动跳过
-  python3 image-check.py <目录>/webp/               # 分辨率/体积/格式硬门
+  python3 "$IFK/image-to-webp.py" --max-kb 500 <素材目录>   # 产出 <目录>/webp/，已是达标 webp 自动跳过
+  python3 "$IFK/image-check.py" <目录>/webp/                # 分辨率/体积/格式硬门（非零退出=有不合格）
   ```
-  后端自动探测 cwebp → Pillow → sharp（都缺时给出安装指引）；超 500KB 自动降质（q−8 至下限 40）再缩宽（2400→1280）。**转后比原图大就保留原格式**（纯色/线条类 PNG 常见），工具会提示。
+  后端自动探测 cwebp → Pillow → sharp（都缺时给出安装指引）；超 500KB 自动降质（q−8，下限 40）再缩宽（2400→1280→按源宽 80%/60%→800）。**转后比原图大时工具自动 SKIP 且不产出文件**（保留原格式，纯色/线条类 PNG 常见）。
 - **动作 5b**（推荐一步两段式封装，ISS-122）：
   ```python
   r = api.upload_media_with_meta(slug, site_id, file_path, title, alt, caption)  # 上传→媒体库按 name 对账→update_media 回写

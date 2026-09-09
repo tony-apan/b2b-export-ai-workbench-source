@@ -113,6 +113,7 @@ related: ["../README.md"]
 | SCRIPT-017 | script | 一条龙完成闸私有任务对抗自测 | `../onepass-completion-gate-selftest.py` | current | 对私有已完成任务的临时副本注入 review digest、audit count、receipt 攻击，全部必须 BLOCK；无私有任务环境变量时明确 SKIP |
 | SCRIPT-018 | script | slug 同 namespace 预检 | `../check-slug-namespace.py` | current | 建站/写产品前预检：read_lists products+posts 的 categoryOptions/tagOptions(label+value)+产品 slug 列表拉平同 namespace，产品 slug 与分类/tag slug 重复即冲突清单+exit 1（publish validation.slug.duplicate 预防） |
 | SCRIPT-019 | script | 本地图片转 WebP | `../image-to-webp.py` | current | 上传前把 PNG/JPG 本地转 WebP（cwebp→Pillow→sharp 自动探测，默认 q82/≤500KB，超限自动降质再缩宽，幂等跳过已达标 webp，同名不同扩展名防覆盖，转后变大提示保留原格式） |
+| SCRIPT-020 | script | 本地转 WebP 离线对抗自测 | `../image-to-webp-selftest.py` | current | image-to-webp.py 的 9 项契约自测：B1 in-place 不覆盖已有 webp、B2 同名不覆盖、M1 递归、M4 无 .tmp、M8 坏输入不断批、M9 变大 SKIP、M10 in-place 幂等、m2 参数错误返回 2、--help 语义 |
 
 ## 2. 问题 / 教训（issues.tsv）
 

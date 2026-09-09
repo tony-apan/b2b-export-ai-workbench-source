@@ -6,7 +6,7 @@ template_usage: "manual-copy"
 status: "Working"
 owner: "AI"
 created: "2026-07-26"
-last_updated: "2026-07-29"
+last_updated: "2026-09-09"
 sources: ["Tony decision 2026-07-27", "../30_tasks/index.md"]
 related: ["../30_tasks/index.md", "publish-record.md"]
 visibility: "public"
@@ -14,7 +14,7 @@ redaction_status: "safe-to-publish"
 when_to_read: "需要登记网站图片来源、用途、尺寸、权利状态和发布绑定关系时。"
 keywords: ["image manifest", "image rights", "alt text", "asset binding", "dimensions"]
 generated_from: "../../TEMPLATES/image-manifest.md"
-generated_source_sha256: "c078ffe20ed42be64163a89edff5f052d1f9d32aecf230c1793678629f8741bb"
+generated_source_sha256: "6d37b2c107933a4235b84e91f89b722c968af73e4df0eb02a599addf764ddf3d"
 generated_by: "scripts/sync-workspace-template.mjs"
 ---
 <!-- Generated runtime copy from TEMPLATES/image-manifest.md; do not hand-edit this copy in the source package. -->
@@ -22,9 +22,9 @@ generated_by: "scripts/sync-workspace-template.mjs"
 
 ## 资产身份与语义
 
-| Asset ID | Source file | Source SHA-256 | Source MD5 | Product / article | Role | Rights | Description | Alt zh | Alt en | Caption | Size / format |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  | hero / gallery / detail / diagram / social | owned / licensed / virtual / unknown |  |  |  |  |  |
+| Asset ID | Source file | Source SHA-256 | Source MD5 | Product / article | Role | Rights | Description | Alt zh | Alt en | Caption | Size / format | **WebP output (size / ≤500KB)** |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  | hero / gallery / detail / diagram / social | owned / licensed / virtual / unknown |  |  |  |  |  |  |
 
 `source_sha256` 是源资产主键。MD5 只作兼容字段，不作为唯一身份。
 

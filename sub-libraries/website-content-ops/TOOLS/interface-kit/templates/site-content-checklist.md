@@ -3,7 +3,7 @@ title: "建站必备内容清单（AI 提前梳理，逐项映射真实内容）
 type: "doc"
 status: "Working"
 owner: "AI"
-last_updated: "2026-08-31"
+last_updated: "2026-09-09"
 description: AllinCMS 建站工具包文档（site-content-checklist.md）
 created: 2026-08-31
 visibility: "public"
@@ -83,7 +83,7 @@ features(3) / products showcase / materials / proof(3 评价) / news / faq(3) / 
 |---|---|
 | 产品图每产品 1-2 张 | 客户自有最优；CC 素材记录 author+license（manifest） |
 | 公司页图 1-2 张 | 同上 |
-| 图片要求 | URL 带扩展名；alt 必填；避免同页重复用同一张图（分类卡/hero 错开） |
+| 图片要求 | URL 带扩展名；alt 必填；避免同页重复用同一张图（分类卡/hero 错开）；**上传前转 WebP 且 ≤500KB**（`image-to-webp.py`，ISS-143/144） |
 
 ## I. 上线前替换清单（demo 值 → 真实值）
 1. 邮箱（**影响表单提交链路**）2. 电话 3. 地址 4. WhatsApp/社媒 URL 5. footer demo 标注 6. 产品/文章正文 synthetic 声明 7. 地图坐标

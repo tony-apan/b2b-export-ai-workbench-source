@@ -4,7 +4,7 @@ type: "runbook"
 status: "Working"
 owner: "AI"
 created: "2026-08-30"
-last_updated: "2026-09-07"
+last_updated: "2026-09-09"
 sources: ["Example 全流程实战 2026-08-29/30（7 产品+3 文章+10 媒体+7 页主题）", "ONBOARDING-PIPELINE.md", "OUTSIDER-REVIEW.md §3", "issues.tsv ISS-001..139", "2026-09-04 双机实战（macOS+Windows 10 field build）", "2026-09-05 跨账号实证（Apply Theme UI 崩溃对照 + 读侧解析陷阱 + SEO 边界清单）", "2026-09-05 某筛网西语站 v2 重建实战（分类静默拒绝绕过 + §8.3 自修复引导）"]
 related: ["ONBOARDING-PIPELINE.md", "writing/WRITING-INDEX.md", "MODULES.md"]
 description: AllinCMS 建站工具包文档（RUNBOOK-ANYONE.md）
@@ -191,7 +191,7 @@ python3 image-to-webp.py --quality 85 --max-kb 500 <dir>
 python3 image-to-webp.py --in-place <dir>
 ```
 
-后端自动探测：`cwebp`（推荐，零 Python 依赖）→ Pillow → sharp。实测 176KB JPG → 30KB（-83%）、7163KB → 458KB（-94%）；已是 WebP 且达标时跳过（幂等）。同名不同扩展名（photo.png + photo.jpg）自动加后缀区分，避免互相覆盖；转换后反而变大时提示保留原格式。
+后端自动探测：`cwebp`（推荐）→ Pillow → sharp（sharp 仅在 adapter 目录内可解析，见 ISS-144）。实测 176KB JPG → 30KB（-83%）、7163KB → 458KB（-94%）；已是 WebP 且达标时跳过（幂等）；`--in-place` 二次运行也不产生副本。同名不同扩展名（photo.png + photo.jpg）自动加后缀区分，避免互相覆盖；转换后反而变大时提示保留原格式。
 
 ### 封面选择器找不到刚上传的图？（2026-09-09 实测，ISS-142）
 
