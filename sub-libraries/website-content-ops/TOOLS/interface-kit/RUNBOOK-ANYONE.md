@@ -180,6 +180,19 @@ api.set_home_page(slug, site_id, theme_id, home_page_id)   # 根路径 / 开始�
 
 实践建议：转 WebP（quality 80–85）、单图 ≤500KB，用 `image-check.py` 校验；PNG 大图尤其应转（>300KB 会被提示）。
 
+**本地转换用 `image-to-webp.py`（ISS-144，2026-09-09 新增）**：
+
+```bash
+# 批量转换到 <dir>/webp/（默认 quality 82、≤500KB）
+python3 image-to-webp.py <file-or-dir>...
+# 指定质量 / 体积门（超限自动降质→缩宽，对齐 sharp 双轴策略）
+python3 image-to-webp.py --quality 85 --max-kb 500 <dir>
+# 输出到源目录同名 .webp
+python3 image-to-webp.py --in-place <dir>
+```
+
+后端自动探测：`cwebp`（推荐，零 Python 依赖）→ Pillow → sharp。实测 176KB JPG → 30KB（-83%）、7163KB → 458KB（-94%）；已是 WebP 且达标时跳过（幂等）。同名不同扩展名（photo.png + photo.jpg）自动加后缀区分，避免互相覆盖；转换后反而变大时提示保留原格式。
+
 ### 封面选择器找不到刚上传的图？（2026-09-09 实测，ISS-142）
 
 先别怀疑上传失败——三个常见误解都已被实测推翻：
