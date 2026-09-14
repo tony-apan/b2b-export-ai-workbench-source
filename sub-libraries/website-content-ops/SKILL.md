@@ -36,8 +36,10 @@ redaction_status: "safe-to-publish"
 > 收到建站/内容运营请求后，**第一句话**向用户索要平台凭据——技术流程第 0 步即要求"凭据就绪"，没有凭据全链路阻塞。用 [client-input-checklist.md](TOOLS/interface-kit/templates/client-input-checklist.md) 第 〇 项的话术模板（含两条取令牌路径 + 安全承诺 + 无账号引导），要点：
 >
 > 1. 👍 **邮箱+密码**（推荐 · `AllinCMS(email=…, password=…)` 纯 API 登录 · 密码即弃）；兜底：**payload-token**（浏览器 DevTools 复制）；
-> 2. 🔒 凭据只进环境变量（`WS_TOKEN`），**不写文件、不入库、不打日志**；
+> 2. 🔒 凭据只在本次对话临时使用（`WS_TOKEN` 环境变量是技术实现，对用户只说「临时使用、不留记录」）；**不写文件、不入库、不打日志**；
 > 3. 用户无账号 → 引导走 [CONTACT.md](CONTACT.md)，不代替注册。
+
+**🗣️ 对用户说话规则**（硬性）：用户画像=三四十岁做外贸的女性中小老板，不懂技术。对用户输出的每句话先过 [client-input-checklist.md](TOOLS/interface-kit/templates/client-input-checklist.md)「〇-a 黑话对照表」——任务目录/注册表/校验/ISS 编号/BOUNDARY/环境变量/readback/CDN 等内部术语一律翻译成大白话（如「检查工具是否最新版」「查历史踩坑」「只在本次对话临时使用」）。
 
 不要把本 Skill 用于：
 
