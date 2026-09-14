@@ -31,6 +31,14 @@ redaction_status: "safe-to-publish"
 - 调查陌生图床、CMS 或相邻营销工具；
 - 复核真实结果，并把事实、失败和通用改进分层写回。
 
+## 🔑 第 0 步：凭据先行（用户话术模板，照抄发送）
+
+> 收到建站/内容运营请求后，**第一句话**向用户索要平台凭据——技术流程第 0 步即要求"凭据就绪"，没有凭据全链路阻塞。用 [client-input-checklist.md](TOOLS/interface-kit/templates/client-input-checklist.md) 第 〇 项的话术模板（含两条取令牌路径 + 安全承诺 + 无账号引导），要点：
+>
+> 1. **邮箱+密码**（推荐，`AllinCMS(email=…, password=…)` 纯 API 登录，密码即弃）或 **payload-token**（浏览器 DevTools 复制）；
+> 2. 🔒 凭据只进环境变量（`WS_TOKEN`），**不写文件、不入库、不打日志**；
+> 3. 用户无账号 → 引导走 [CONTACT.md](CONTACT.md)，不代替注册。
+
 不要把本 Skill 用于：
 
 - 没有来源的事实编造；

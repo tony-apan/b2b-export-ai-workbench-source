@@ -108,6 +108,28 @@ AI 执行：
 
 只有当前样本通过并获得用户对下一批精确对象的批准后，才能扩大批次或迁移到第二工具。不能把一次样本通过外推为跨站点、跨部署稳定。
 
+## 0. 🔑 第一件事：拿到平台凭据（给 AI 的用户话术模板）
+
+> AI 收到建站需求后的**第一句话**就是向用户索要平台凭据——没有凭据全链路阻塞。照抄下面的模板发给用户：
+
+```text
+🔑 开工前请提供建站平台的登录凭据（二选一）：
+
+① 直接把「邮箱 + 密码」发给我（推荐，最快）
+   我会登录一次自动提取访问令牌，密码用完即弃，不会存进任何文件或仓库。
+
+② 或者你自己在浏览器登录后台后，把访问令牌发给我：
+   登录 https://workspace.laicms.com → 按 F12 打开开发者工具
+   → Application（应用）→ Cookies → 找到 payload-token → 复制它的值发我。
+
+🔒 安全承诺：凭据只进入本次会话的环境变量，不写入文件、不入库、不打日志。
+   完成后建议你在后台改一次密码作废本次令牌。
+
+❓ 还没有账号？告诉我，走开通流程（见 CONTACT.md）。
+```
+
+用户给出后按 [client-input-checklist.md](TOOLS/interface-kit/templates/client-input-checklist.md) 第 〇 项与 [TOKEN-AUTH.md](ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md) 处理；凭据只进环境变量（`WS_TOKEN` / `AllinCMS(email=…, password=…)`），不写文件不入日志。没有账号时不代替用户注册，引导走 [CONTACT.md](CONTACT.md)。
+
 ## 第一条 AI 指令
 
 ```text
