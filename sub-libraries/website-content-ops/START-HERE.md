@@ -115,7 +115,7 @@ AI 执行：
 ```text
 🔑 开工前请提供建站平台的登录凭据（二选一）：
 
-① 直接把「邮箱 + 密码」发给我（推荐，最快）
+👍 ① 直接把「邮箱 + 密码」发给我（推荐 · 最快 · 全自动）
    我会登录一次自动提取访问令牌，密码用完即弃，不会存进任何文件或仓库。
 
 ② 或者你自己在浏览器登录后台后，把访问令牌发给我：
@@ -129,6 +129,8 @@ AI 执行：
 ```
 
 用户给出后按 [client-input-checklist.md](TOOLS/interface-kit/templates/client-input-checklist.md) 第 〇 项与 [TOKEN-AUTH.md](ADAPTERS/cms/allincms/docs/TOKEN-AUTH.md) 处理；凭据只进环境变量（`WS_TOKEN` / `AllinCMS(email=…, password=…)`），不写文件不入日志。没有账号时不代替用户注册，引导走 [CONTACT.md](CONTACT.md)。
+
+**后续全链交互**（选站确认/进度汇报/阻塞求助/交付验收/收尾提醒）也**照抄模板**，见同文件「〇-b、📣 建站全链用户交互话术」——不要临场发挥。
 
 ## 第一条 AI 指令
 
