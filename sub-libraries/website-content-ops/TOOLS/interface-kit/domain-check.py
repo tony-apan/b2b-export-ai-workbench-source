@@ -5,6 +5,7 @@
     python3 domain-check.py <site_slug>                 # 巡检该站全部域名
     python3 domain-check.py <site_slug> --domain 17ark.com   # 只查某个域名
     python3 domain-check.py <site_slug> --json          # 机器可读输出
+    python3 domain-check.py <site_slug> --check-domain 新域名.com   # 绑前体检（新手引导）
 
 巡检 4 项（对应 SOP 的域名自检清单）：
     ① 有没有添加域名？          读平台 domains[]
@@ -367,6 +368,156 @@ def probe_tls(host, port=443, timeout=12, attempts=2):
         if out["handshake"]:
             out["served"] = _served_cert_names(host, port)   # 无握手时不可能有证书
     return out
+
+
+def probe_whois(domain, timeout=25):
+    """域名注册检测（whois）——回答「这个域名存不存在、谁的、什么时候到期」。
+
+    实测要点（2026-09-15）：
+      - `whois` **退出码恒为 0**，不能靠退出码判断，必须解析内容；
+      - 已注册：输出含 `Domain Name:` 字段（可能 1–2 次，如注册局 + 注册商）；
+      - 未注册：无该字段，且含 `No match` / `NOT FOUND` / `No Data Found`；
+      - 部分 TLD（.dev/.app 等）whois 可能返回空 → 归为 `unknown`，不得断言不存在。
+
+    返回 {status: registered|available|unknown, registrar, created, expires,
+          days_to_expiry, nameservers, raw_hint}
+    """
+    out = {"status": "unknown", "registrar": None, "created": None, "expires": None,
+           "days_to_expiry": None, "nameservers": [], "raw_hint": ""}
+    dom = norm_host(domain)
+    if not dom or "." not in dom:
+        out["raw_hint"] = "域名格式不完整"
+        return out
+    raw = ""
+    try:
+        r = subprocess.run(["whois", dom], capture_output=True, text=True, timeout=timeout)
+        raw = (r.stdout or "") + (r.stderr or "")
+    except FileNotFoundError:
+        out["raw_hint"] = "本机无 whois 命令（macOS/Linux 自带；Windows 需装）"
+        return out
+    except subprocess.TimeoutExpired:
+        out["raw_hint"] = "whois 查询超时"
+        return out
+
+    low = raw.lower()
+    has_name = bool(re.search(r"^\s*domain name:\s*\S", raw, re.I | re.M))
+    unavailable = re.search(r"no match|not found|no data found|is available|no entries found", low)
+
+    if has_name:
+        out["status"] = "registered"
+    elif unavailable:
+        out["status"] = "available"
+    else:
+        out["raw_hint"] = "whois 未返回可判定的注册信息（该 TLD 可能不支持或查询被限流）"
+        return out
+
+    def grab(pattern):
+        m = re.search(pattern, raw, re.I | re.M)
+        return m.group(1).strip() if m else None
+
+    out["registrar"] = grab(r"^\s*Registrar:\s*(.+)$")
+    out["created"] = grab(r"^\s*Creation Date:\s*(.+)$")
+    out["expires"] = grab(r"^\s*(?:Registry Expiry Date|Expiry Date|Registry Expiration Date|Expiration Date):\s*(.+)$")
+    out["nameservers"] = [x.upper() for x in re.findall(r"^\s*Name Server:\s*(\S+)", raw, re.I | re.M)][:4]
+    if out["expires"]:
+        # whois 日期多为 ISO8601（2027-09-11T05:45:09Z）
+        m = re.match(r"(\d{4}-\d{2}-\d{2})", out["expires"])
+        if m:
+            try:
+                exp = datetime.datetime.strptime(m.group(1), "%Y-%m-%d").replace(
+                    tzinfo=datetime.timezone.utc)
+                out["days_to_expiry"] = int((exp - datetime.datetime.now(datetime.timezone.utc)).days)
+            except Exception:
+                pass
+    return out
+
+
+def check_candidate_domain(api, site_slug, domain, add, emit, quiet=False):
+    """绑定**之前**的域名体检（新手引导用）——回答"这个域名能不能用、该怎么走"。
+
+    覆盖场景（每个都给出下一步动作）：
+      ① 域名还没注册     → 引导购买（Cloudflare / 阿里云）
+      ② 已注册但快到期   → 提醒续费（到期后网站会挂）
+      ③ 已注册、是别人的 → ⚠️ 必须确认所有权，不能替客户绑他人域名
+      ④ 已在本站绑定     → 直接给 DNS 配置指引
+      ⑤ 已在别的站点绑定 → 提示冲突
+      ⑥ DNS 服务商已识别 → 给该服务商的直达链接 + 分步指引
+
+    返回 {domain, registrable, whois, bound_status, provider, next_action}
+    """
+    result = {"domain": domain, "registrable": None, "whois": None,
+              "bound_status": "not_bound", "provider": None, "next_action": ""}
+    dom = norm_host(domain)
+    emit(f"—— 域名体检：{dom} ——")
+
+    # ① 注册检测
+    w = probe_whois(dom)
+    result["whois"] = w
+    if w["status"] == "available":
+        add("warn", f"{dom}：**这个域名还没被注册**——需要先购买才能绑定")
+        emit(f"① 注册检测：❌ 未注册（可购买）")
+        emit("   💡 购买引导：")
+        emit("      👍 cloudflare.com（约 10 美元/年，无需实名，需 PayPal 或外币卡）")
+        emit("      2️⃣ aliyun.com（约 85 元/年，需实名，支付宝可付）")
+        emit("      做外贸的域名不需要备案")
+        result["next_action"] = "buy_domain"
+        return result
+    if w["status"] == "unknown":
+        add("warn", f"{dom}：无法确认注册状态（{w['raw_hint'][:50]}）——请人工核实域名拼写与真实性")
+        emit(f"① 注册检测：❓ 无法判定（{w['raw_hint'][:50]}）")
+        result["next_action"] = "verify_manually"
+        return result
+
+    # ② 已注册
+    reg, exp = w.get("registrar"), w.get("days_to_expiry")
+    emit(f"① 注册检测：✅ 已注册｜注册商：{reg or '未知'}"
+         + (f"｜剩余 {exp} 天到期" if exp is not None else ""))
+    if exp is not None and exp < 30:
+        add("warn", f"{dom}：域名将在 {exp} 天后到期（{w.get('expires')}）——**到期后网站会无法访问**，"
+                    f"请提醒客户及时续费")
+    if not reg:
+        add("info", f"{dom}：注册商信息不可见（可能启用了隐私保护）——仍需向客户确认域名归属")
+
+    # ③ 是否已在本站绑定
+    info = api.read_domains(site_slug)
+    bound = {norm_host(d.get("domain")) for d in (info.get("domains") or [])}
+    if dom in bound:
+        emit(f"② 平台绑定：已绑定到本站")
+        result["bound_status"] = "bound_here"
+    else:
+        emit(f"② 平台绑定：未绑定（可添加；当前 {len(bound)}/3 个槽位已用）")
+        if len(bound) >= 3:
+            add("error", f"{site_slug}：平台域名槽位已满（3/3）——需先解绑一个才能加 {dom}")
+            result["next_action"] = "slot_full"
+            return result
+
+    # ④ DNS 服务商 + 现有解析
+    ns = []
+    try:
+        ns = run_dig(["NS", dom])
+    except (DnsTimeout, DnsUnavailable, DnsQueryError) as e:
+        add("warn", f"{dom}：NS 查询失败（{str(e)[:40]}）")
+    if ns:
+        provider, risk = identify_provider(ns)
+        result["provider"] = provider
+        emit(f"③ DNS 服务商：{provider}")
+        if provider.startswith("阿里云"):
+            add("info", f"{dom}：阿里云解析——直达链接（打开即进解析设置）："
+                        f"https://dnsnext.console.aliyun.com/authoritative/domains/{dom}")
+        elif risk == "warn-flatten":
+            add("warn", f"{dom}：DNS 在 Cloudflare——根域（@）CNAME 会被展平，"
+                        f"建议 www 为主域名 + 根域 301（详见 DOMAIN-SETUP §4）")
+    else:
+        emit("③ DNS 服务商：❓ 查不到 NS（域名可能刚注册未接入 DNS）")
+
+    # ⑤ 下一步动作
+    if result["bound_status"] == "bound_here":
+        result["next_action"] = "configure_dns"
+        emit("👉 下一步：按上方服务商指引配置 CNAME，完成后跑巡检验证")
+    else:
+        result["next_action"] = "confirm_then_add"
+        emit("👉 下一步：先向客户确认「这个域名是您自己购买的吗？」，确认后运行 add_domain 绑定")
+    return result
 
 
 def check_host_ssl(label, rec, apex_cf, add, emit, cname_target="", runtime_domain=""):
@@ -843,6 +994,8 @@ def main():
     ap = argparse.ArgumentParser(description="域名巡检（平台 + DNS 双向对账）")
     ap.add_argument("site_slug", help="站点 slug")
     ap.add_argument("--domain", help="只检查指定域名（必须已绑定）")
+    ap.add_argument("--check-domain", metavar="DOMAIN",
+                    help="绑前体检指定域名（注册状态/DNS 商/槽位/下一步动作）——新手引导用")
     ap.add_argument("--json", action="store_true", help="只输出 JSON（可直接落盘为 domain-report.json）")
     ap.add_argument("--out", help="把 JSON 写入指定文件")
     args = ap.parse_args()
@@ -862,6 +1015,31 @@ def main():
     quiet = bool(args.json or args.out)
     try:
         api = AllinCMS(token=token) if token else AllinCMS(email=email, password=password)
+        # --check-domain：绑定**之前**的体检（不要求域名已绑定）
+        if args.check_domain:
+            findings = []
+            cand = check_candidate_domain(
+                api, args.site_slug, args.check_domain,
+                lambda lvl, t: findings.append({"level": lvl, "text": t}),
+                (lambda *a: None) if quiet else print,
+            )
+            payload = {"site_slug": args.site_slug, "candidate": cand, "findings": findings,
+                       "coverage": {"tls_checked": 0, "tls_skipped": 0, "tls_skipped_hosts": []}}
+            if args.json or args.out:
+                txt = json.dumps(payload, ensure_ascii=False, indent=2)
+                if args.out:
+                    with open(args.out, "w", encoding="utf-8") as f:
+                        f.write(txt + "\n")
+                    print(f"已写入 {args.out}", file=sys.stderr)
+                if args.json:
+                    print(txt)
+            else:
+                print("=" * 56)
+                for f in findings:
+                    icon = {"error": "❌", "warn": "⚠️", "info": "ℹ️"}.get(f["level"], "·")
+                    print(f"{icon} {f['text']}")
+                print(f"\n👉 建议动作：{cand['next_action']}")
+            return 1 if any(f["level"] == "error" for f in findings) else 0
         res = check_site(api, args.site_slug, args.domain, quiet=quiet)
     except RuntimeError as e:          # 站点不存在等业务错误 → 退出 2
         print(f"BLOCK: {e}")

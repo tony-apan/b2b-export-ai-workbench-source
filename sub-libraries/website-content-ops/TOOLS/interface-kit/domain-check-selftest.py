@@ -164,6 +164,38 @@ def main():
               not any(l == "error" for l, _ in findings),
               str([l for l, _ in findings]))
 
+        # ---- probe_whois：注册检测（不依赖外网的部分 + 真实域名）----
+        rw = dc.probe_whois("17ark.com")
+        check("probe_whois 已注册域名 → status=registered",
+              rw["status"] == "registered", rw["status"])
+        check("probe_whois 提取注册商", bool(rw.get("registrar")), str(rw.get("registrar")))
+        check("probe_whois 计算到期天数", rw.get("days_to_expiry") is not None,
+              str(rw.get("days_to_expiry")))
+        rw2 = dc.probe_whois("thisdomaindoesnotexist99887.com")
+        check("probe_whois 未注册域名 → status=available",
+              rw2["status"] == "available", rw2["status"])
+        check("probe_whois 非法输入 → unknown（不断言不存在）",
+              dc.probe_whois("not_a_domain")["status"] == "unknown")
+
+        # ---- check_candidate_domain：绑前体检分支 ----
+        class _FakeApi:
+            @staticmethod
+            def read_domains(slug):
+                return {"site_id": "x", "runtime_site_domain": "t.example.com",
+                        "domains": [{"domain": "occupied-1.com"}, {"domain": "occupied-2.com"},
+                                    {"domain": "occupied-3.com"}]}
+
+        fs = []
+        c1 = dc.check_candidate_domain(_FakeApi, "s", "thisdomaindoesnotexist99887.com",
+                                       lambda l, t: fs.append((l, t)), lambda *a: None)
+        check("绑前体检：未注册 → 引导购买", c1["next_action"] == "buy_domain", c1["next_action"])
+        fs2 = []
+        c2 = dc.check_candidate_domain(_FakeApi, "s", "17ark.com",
+                                       lambda l, t: fs2.append((l, t)), lambda *a: None)
+        check("绑前体检：槽位满 → 报错并给出 slot_full",
+              c2["next_action"] == "slot_full" and any(l == "error" for l, _ in fs2),
+              c2["next_action"])
+
         # ---- 网络受限提示 ----
         r5 = dc.probe_tls("127.0.0.1", port=dead_port, timeout=3, attempts=1)
         check("连接失败提示含网络环境线索",
