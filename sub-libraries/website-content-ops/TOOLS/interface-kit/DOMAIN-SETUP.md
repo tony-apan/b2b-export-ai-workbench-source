@@ -39,7 +39,6 @@ keywords: ["域名", "domain", "CNAME", "DNS", "Cloudflare", "阿里云", "EdgeO
 ## 二、实战演示 A：Cloudflare（真实案例，含故障修复）
 
 > 案例域名 `17ark.com`（生产域名，47 条 DNS 记录）。2026-09-15 实测。
-> **邮件记录实况**（dig 复核）：有 SPF（两条，见 ISS-148）与 DMARC；**根域无 MX**（属发信域，不是收信域）；常见 DKIM selector 未命中（未穷举）。
 
 ### 2.1 初始状态：网站打不开
 
@@ -66,9 +65,7 @@ dig +short dwqfi7cupxmr.cloudfront.net
 
 **根因**：域名还指着平台**迁移前**的旧 CDN 地址（CloudFront），该地址已停用。
 
-<!-- 📸 截图位 1：Cloudflare DNS 记录列表（修复前） -->
 <!-- 要点：显示 17ark.com 与 www.17ark.com 两条 CNAME 都指向 dwqfi7cupxmr.cloudfront.net，代理状态列显示「仅 DNS」 -->
-<!-- 补充后替换本行为：![修复前的 DNS 记录](https://<图床>/domain/cf-dns-before.png) -->
 
 ### 2.2 修复步骤
 
@@ -101,7 +98,9 @@ www.17ark.com  → cnameStatus=active  certificateStatus=active  HTTPS 200 ✅
 17ark.com      → cnameStatus=moved   certificateStatus=failed  ❌（见第四节）
 ```
 
-<!-- 📸 截图位 3：平台域名列表（修复后）—— www 的 DNS/别名/SSL 三项全绿 -->
+![平台域名列表：www 三项全绿](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-04-platform-www-green.png)
+
+> 平台「域名」页：仅 `www.17ark.com`，Alias / DNS / SSL 三项均为绿色，CNAME 目标显示为站点专属域名。
 <!-- 📸 截图位 4：浏览器访问 https://www.17ark.com 正常显示网站 + 地址栏锁标志 -->
 
 ---
@@ -202,7 +201,13 @@ dig +short TXT 17ark.com    # 有 SPF/DKIM 也说明在用
 
 **结论**：橙云**单独开不能解决问题**——必须配合重定向规则（让根域流量在 CF 边缘就 301 到 www，根本不下发到 EdgeOne）。
 
-<!-- 📸 截图位 6：Cloudflare 记录列表，重点圈出两条记录代理状态不同（www 灰云 / 根域橙云） -->
+### 4.2-b 代理状态对照（真实截图）
+
+| 根域：A 记录 + ☁️ **已代理（橙云）** | www：CNAME + 🌫️ **仅 DNS（灰云）** |
+|---|---|
+| ![根域 A 记录 192.0.2.1 已开橙云](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-01-cf-apex-orange-cloud.png) | ![www CNAME 指向平台目标且为仅 DNS](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-02-cf-www-cname-grey.png) |
+
+> 这两张对照就是本节的核心：**同一个域名下，两条记录的代理状态必须相反**——根域橙云（301 规则生效前提），www 灰云（平台能验证 CNAME）。
 
 ### 4.3 根域正确配置（301 方案，推荐）
 
@@ -221,10 +226,13 @@ Step 3  验证：curl -sI http://17ark.com
         应返回 301 + Location: https://www.17ark.com/
 ```
 
-<!-- 📸 截图位 7：Cloudflare Redirect Rules 配置界面 -->
+![Cloudflare 重定向规则（301 至 www）](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-03-cf-redirect-rule.png)
+
+> 上图：Rules → 重定向规则，1 个活跃规则，匹配「主机名等于 17ark.com」，动作「301 重定向到 concat("https://www.17ark.com", http.request.uri.path)」——路径与参数会被完整保留。
 
 **平台侧配套**（避免告警困惑）：
 - 把 `www` 设为**主域名**：`api.set_primary_domain(slug, sid, "www.17ark.com", authorization_confirmed=True)`
+  - ✅ **本案例已核查**：`read_domains()` 返回 `www.17ark.com` 的 `isPrimary=True`、`enabled=True`、`cnameStatus=active`、`certificateStatus=active`（2026-09-15 实测）
 - 根域可从平台**解绑**（已由 CF 全权处理）——否则平台会一直显示根域验证失败
 
 ### 4.3-b 实测完成记录（2026-09-15，方案 A 全流程跑通）
@@ -383,7 +391,6 @@ WS_EMAIL=... WS_PASSWORD=... python3 domain-check.py <site_slug> \
 | **子域名需求** | 如 `blog.example.com`：直接加为独立域名（占 1 个名额）；CF 展平问题适用于任何 apex |
 | **域名过期** | 工具暂不检查到期时间；建议交付时提醒客户留意续费 |
 | **⚠️ 301 规则的失效模式** | 规则被误删/配额超限时，根域会回源到占位地址 `192.0.2.1`（不可达）→ **522**。巡检已内置实测断言（`domain-check.py` 会 curl apex 验证 301 落点）；发现失败即报 error |
-| **临时域名可被索引** | 平台临时域名（`xxxx.web.allincms.com`）仍公开可访问、`robots.txt` 为 `Allow: /`、无 noindex，且与 www 共用同一 sitemap → 存在重复主机名信号。是否需平台侧 noindex 属平台能力边界（待确认） |
 | **DNS 传播时间** | 通常 1–10 分钟；工具用权威 NS 可立即看到真实值（绕过本地缓存） |
 | **国内访问** | 做外贸无需备案；`1.1.1.1`/DoH 在国内不可达但 `dig` 正常；操作 CF 后台建议开代理 |
 
@@ -403,15 +410,15 @@ WS_EMAIL=... WS_PASSWORD=... python3 domain-check.py <site_slug> \
 
 本文截图位需外部图床托管（仓库 MANIFEST **排除所有图片格式**，截图不能进 Git）。
 
-| # | 截图内容 | 状态 |
-|---|---|---|
-| 1 | CF DNS 记录列表（修复前，指向旧地址） | ⏳ 待补充 |
-| 2 | CF「添加记录」表单（CNAME / www / 仅 DNS） | ⏳ 待补充 |
-| 3 | 平台域名列表（修复后，www 三项全绿） | ⏳ 待补充 |
-| 4 | 浏览器访问 www 成功 + 锁标志 | ⏳ 待补充 |
-| 5 | 阿里云解析设置（两条 CNAME） | ⏳ 待补充 |
-| 6 | CF 记录列表（两条代理状态不同：www 灰云 / 根域橙云） | ⏳ 待补充 |
-| 7 | CF Redirect Rules 配置界面 | ⏳ 待补充 |
+| # | 截图内容 | 状态 | 位置 |
+|---|---|---|---|
+| 1 | CF 根域 A 记录 + 橙云 | ✅ 已嵌入 | §4.2-b |
+| 2 | CF www CNAME + 灰云 | ✅ 已嵌入 | §4.2-b |
+| 3 | CF Redirect Rules 配置界面 | ✅ 已嵌入 | §4.3 |
+| 4 | 平台域名列表（www 三项全绿） | ✅ 已嵌入 | §2.3 |
+| 5 | CF「添加记录」表单 | ⏳ 待补充 | §2.2 Step 2 |
+| 6 | 浏览器访问 www 成功 + 锁标志 | ⏳ 待补充 | §2.3 |
+| 7 | 阿里云解析设置 | ⏳ 待补充 | §3 |
 
 **上传约定**：截图 → 外部图床（如 `cos.files.maozhishi.com`）→ 把 URL 填进对应截图位的图片行。
 **去敏要求**：公开文档中的截图需遮蔽账号名等敏感信息（或确认域名本身可公开）。
