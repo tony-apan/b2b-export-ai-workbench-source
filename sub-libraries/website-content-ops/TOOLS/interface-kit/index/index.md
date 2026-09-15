@@ -3,7 +3,7 @@ title: "AllinCMS 建站知识索引"
 type: "index"
 status: "Working"
 owner: "AI"
-last_updated: "2026-09-09"
+last_updated: "2026-09-15"
 description: AllinCMS 建站工具包文档（index.md）
 created: 2026-08-31
 visibility: "public"
@@ -14,7 +14,7 @@ related: ["../README.md"]
 
 # AllinCMS 建站知识索引（自动生成，勿手改；数据源=同目录 *.tsv）
 
-> 生成时间：2026-09-09｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
+> 生成时间：2026-09-15｜查询：`python3 registry_tools.py find <词>`｜更新后跑 `verify` + `gen`
 
 ## 1. 文档 / 脚本 / 模板（doc-registry.tsv）
 
@@ -103,6 +103,7 @@ related: ["../README.md"]
 | SCRIPT-018 | script | slug 同 namespace 预检 | `../check-slug-namespace.py` | current | 建站/写产品前预检：read_lists products+posts 的 categoryOptions/tagOptions(label+value)+产品 slug 列表拉平同 namespace，产品 slug 与分类/tag slug 重复即冲突清单+exit 1（publish validation.slug.duplicate 预防） |
 | SCRIPT-019 | script | 本地图片转 WebP | `../image-to-webp.py` | current | 上传前把 PNG/JPG 本地转 WebP（cwebp→Pillow→sharp 自动探测，默认 q82/≤500KB，超限自动降质再缩宽，幂等跳过已达标 webp，同名不同扩展名防覆盖，转后变大提示保留原格式） |
 | SCRIPT-020 | script | 本地转 WebP 离线对抗自测 | `../image-to-webp-selftest.py` | current | image-to-webp.py 的 9 项契约自测：B1 in-place 不覆盖已有 webp、B2 同名不覆盖、M1 递归、M4 无 .tmp、M8 坏输入不断批、M9 变大 SKIP、M10 in-place 幂等、m2 参数错误返回 2、--help 语义 |
+| SCRIPT-021 | script | 域名巡检（平台+DNS双向对账） | `../domain-check.py` | current | 巡检 4 项：已添加域名 / @与www 是否都绑定 / NS 服务商识别 / CNAME 实际解析==平台 runtime_site_domain。含 Cloudflare 根域展平风险预警、NS→服务商映射、dig 超时与缺失的显式区分、--json/--out 产物直出 |
 
 ## 2. 问题 / 教训（issues.tsv）
 
@@ -249,6 +250,9 @@ related: ["../README.md"]
 | ISS-142 | boundary | media-cover-picker | 用户报告“文章封面选择器里找不到刚上传的 cover01，只显示 8 张图”：怀疑媒体库与封面选择器是两套视图、上传图未进候选池、服务端重命名导致按名找不到 | 2026-09-09 真实账号实测推翻全部三个假设：①上传不重命名——name 保留原名（cover01.png），仅 path/url 被改写为短哈希（ebnwzfdnxr/4x9vlp.png）；②上传后立即入池且排首位（上传前后 40→41，picker[0]=cover01.png）；③文章列表页 RSC 的 mediaLibraryItems 与媒体库页 /media 同一份数据（集合完全相同，同为 41 项），设计器 design 页也是同一池。真实差异在分页窗口：媒体库页 limit=24/totalPages=2，若用户只看首页或界面滚动加载未触发，就会只见到子集 | 无需修复平台侧；文档补充封面候选池机制：按 name 匹配、新图置顶、picker 与媒体库同源同分页。按名搜索/滚动加载是常见困惑点，RUNBOOK 增文章封面小节给出正确操作顺序（媒体库确认 name → 候选池按时间倒序找 → 或直接用 mediaLibraryItems 记录里的对象绑定 coverImage） | 封面找不到时先核对 name 而非 path/url（path 是短哈希不可搜）；候选池按上传时间倒序，新图在首位；不要假设选择器与媒体库是两套数据；分页未加载完不等于图不存在 | ../../../ADAPTERS/cms/allincms/article-operations.md|../RUNBOOK-ANYONE.md |
 | ISS-143 | boundary | media-webp | 「图片可以先转成 WebP 再传吗」——需确认 WebP 是否被接受、是否被重编码、体积与格式是否保持 | 2026-09-09 真实账号实测（site ebnwzfdnxr）：WebP 原样接受（mimeType=image/webp、扩展名 .webp 保留、name 保留原名）；远端 HTTP 200 / content_type=image/webp、Pillow 解码 800x600 WEBP 与本地一致；但远端字节与本地不同（sha256 0daae2ac… → b8b626ca…，2672B），说明服务端会重编码/规范化——与 2026-07-27 image-index e2e 记录一致（当时也是尺寸格式一致、字节与 SHA-256 不同） | 无需修复；WebP 是推荐格式（策略已是 WebP 优先，见 site-acceptance-v2 5.5 与 image-adversarial-checklist）。注意两点：① 不可用本地文件 SHA-256 当作远端存证，必须以远端下载字节为准；② 上传后从响应/媒体库取完整 url（带扩展名），ISS-004 明确无扩展名会 404 | 图片准备阶段优先转 WebP（quality 80-85，单图 ≤500KB）；体积校验用 image-check.py；上传后按远端字节做存证，不拿本地 hash 冒充；URL 必须带扩展名 | ../image-check.py|../templates/site-acceptance-v2.md|../templates/image-adversarial-checklist.md |
 | ISS-144 | fixed | media-webp | 「其他格式图片先本地转 WebP 再传」缺少独立工具：转换逻辑只耦合在浏览器上传路径（upload-media-browser.mjs normalizeForDirectUpload），纯 API/Python 路径无对应能力；实际转换靠手工 cwebp/Pillow | 纯接口路径无本地转换工具，用户/AI 需自行摸索 cwebp 或 Pillow；且缺批量、体积门、同名覆盖处理 | 新增 TOOLS/interface-kit/image-to-webp.py（零依赖优先：cwebp → Pillow → sharp 自动探测；默认 q82/≤500KB；超限自动降质 q-8 至下限 40 后再缩宽 2400/2000/1600/1280；已是达标 webp 幂等跳过；同名不同扩展名自动加后缀；转后变大提示保留原格式）。实测：176KB JPG→30KB(-83%)、7163KB→458KB(-94%)、PNG 27KB→34KB 触发保留提示、幂等 SKIP 通过。接入 RUNBOOK §6 + SKILL 坑位 17 | 上传前统一跑 image-to-webp.py，产出 webp/ 目录再走 upload_media；不要依赖上传路径隐式转换（浏览器路径才有 sharp） | ../image-to-webp.py|../RUNBOOK-ANYONE.md |
+| ISS-145 | fixed | media-delete | 误判「平台没有媒体删除接口」：实测发现 deleteMediaAction 存在且纯 API 可用（action id 7fc9336acfbacbbe3db21083c8dcfebcd402b22149，从 /{slug}/media 页 chunk 扫描确认），body=[{id,siteId}] 与 delete_post/delete_product 同构；HTTP 200 后回读记录消失（实测 40→39→40） | 此前只在 allincms_api.py 常量区找 delete 未果就下结论，未扫页面 chunk（scan-actions 套路未执行）；registry 把 allincms.media.delete 标 blocked（治理决定）被误读成「接口不存在」 | allincms_api.py 新增 delete_media(site_slug, site_id, media_id, expected_name=None, authorization_confirmed=False, verify=True)：授权闸（必须显式 True）+ 按 name 核对 ID 唯一一致 + 删除后回读记录消失；三条 fail-closed 路径实测拒绝（无授权/name-id 不匹配/不存在 id）。**registry 的 media:delete 仍保持 blocked**（通用路由 fail-closed，测试逐字锁定，不擅自变更治理） | 「没有接口」结论前必须先扫 chunk（createServerReference 正则）确认；删除类动作保留 registry blocked，只在精确授权下用显式原语；删除后必须回读，HTTP 200 不算成功 | ../../../ADAPTERS/cms/allincms/interface-registry.json|../api/API-INDEX.md |
+| ISS-146 | fixed | capability-coverage | 系统性能力缺口排查：扫描 33 个平台 server action，发现 10 个未封装；逐项评估后确认 1 个真实写缺口（updateSiteInfoAction）+ 2 个窄原语价值项（updatePostOrder/updateProductOrder），其余 7 个明确不补 | 此前只有「遇到问题才补」的被动模式，无「平台能力 vs 客户端覆盖」的定期对拍；误判「平台没有」已发生一次（ISS-145 媒体删除） | 已补 3 个：① update_site_info（读当前表单态→只覆盖显式字段→回读比对，ISS-101 保护；实测只改 description 时 name/notificationEmail 原样保留）；② read_site_info_form（读全字段表单态）；③ update_order（窄 payload {id,siteId,order}，实测写入+恢复）。明确不补 7 个：create/update/deleteSpecification（站点级规格模板，非产品规格，产品规格已封装）、duplicateProduct（绕过 review/capability，强化 ISS-059 草稿堆积）、logout（账号级 token 会波及并发任务）、uploadSiteMedia（与已封装 upload_media 同 wire 形状）、prepareRuntimePreview（有 readback+公网 gate 替代） | 每轮建站后跑一次「平台 action 扫描 vs allincms_api 常量」对拍；说「平台没有 X」前必须先扫 chunk（ISS-145 教训）；新封装高危动作必须带授权闸+回读验证 | ../api/API-INDEX.md|../../../ADAPTERS/cms/allincms/interface-registry.json |
+| ISS-147 | fixed | domain | 域名全链能力缺失：无法读/加/删/验证域名、无巡检工具；且对 Cloudflare 根域 CNAME 机制判断错误（曾误标 moved=目标已迁移） | 平台域名数据在 /{slug}/domains 页 RSC（defaultDomains + actions 映射），此前只在 /sites 里找域名且未解引用 server reference；对平台状态枚举释义凭印象而非源码 | 从 RSC 解引用取得 5 个 action（add/refresh/setPrimary/setEnabled/delete）并实测 refresh；allincms_api 加 6 方法（normalize_domain/read_domains/add/refresh/set_primary/set_enabled/delete，含授权闸+站点一致性校验+回读验证）；新增 domain-check.py 巡检（4 项双向对账，--json/--out 产物）；ONEPASS 步骤 13 + RUNBOOK §6.5 + SKILL 19 + checklist 〇-c 客户话术（购买/绑定/按NS商指引/三档证书状态） | 平台数据优先从目标页 RSC 读取并解引用 actions 映射（勿只看 /sites）；状态枚举释义必须回源码函数体核对；CNAME 比对用规范化精确相等而非子串；dig 超时/缺失不得当作'无记录'；Cloudflare 根域走 https://developers.cloudflare.com/dns/cname-flattening/set-up-cname-flattening/ 原文核对 | ../../../ADAPTERS/cms/allincms/interface-registry.json|../NEW-SITE-ONEPASS.md|../RUNBOOK-ANYONE.md |
 
 ## 3. 模块库（modules.tsv）
 

@@ -330,6 +330,32 @@ redaction_status: "safe-to-publish"
 - **产物**：`<slug>-audit-config.json`、`audit-report.json`、`acceptance-v2.md`、`DELIVERY-<slug>-<date>.md`、`HANDOFF.md`（详见 §4）。
 - **坑**：没有 `--config` 的 audit 会用 Demo 基线误判新站（ISS-063）；**faq_answers 断言短语必须逐字取自公网 FAQ 卡渲染文本**（校准方向=断言对齐现实，不是改内容迎合断言）；posts=0 时 faq-answer/cta/h2-semantic 三项文章断言无法通过（config 无开关）——DELIVERY 已知事项注记 N/A 及原因；`product_content` 是 **dict**（slug→{required_h2:int, fact_phrases:[]}）；公网 CDN 缓存 publish 后 5–10s 生效，验收以列表页数据源 + counter 为准；audit 连续 FAIL 时逐词 grep 公网 HTML 定位残留模块（template 词是渐进揭露的，一轮全清完再跑）。
 
+### 步骤 13 — 域名绑定（建站完成后提醒客户，ISS-147）
+
+> **时机**：网站已上线、用平台临时域名能访问之后。**不是开工前置**——先把站做好给客户看，客户满意了再谈域名。
+
+- **输入**：`site_slug` + 客户自述的域名（若有）。
+- **动作**：
+  ```bash
+  # ① 巡检现状（平台侧 + DNS 双向对账；不需要代理）
+  WS_EMAIL=... WS_PASSWORD=... python3 "$IFK/domain-check.py" <site_slug> --out 70_evidence/domain-report.json
+  # ② 若客户已给域名 → 先 whois 确认存在且是本人所有 → 再绑定
+  #    python 内：api.add_domain(slug, site_id, "example.com", authorization_confirmed=True)
+  # ③ 客户改完 DNS → 刷新平台状态（读取新状态回读）
+  #    python 内：api.refresh_domain(slug, site_id, "example.com")
+  ```
+- **验收判据**：`domain-check.py` 无 ❌（四项全过）——① 已添加域名 ② @ 与 www 都已绑定 ③ NS 服务商已识别 ④ CNAME 实际解析 == 平台要求目标。
+  - **证书判据（MAJOR-8 修正）**：平台**没有**证书申请 action（`/{slug}/domains` 的 actions 只有 add/refresh/setPrimary/setEnabled/delete，已逐个解引用核对），证书由平台在 DNS 校验通过后自行签发。所以判据为 `cnameStatus: active` **且** `certificateStatus ∈ {active, requested, none}`；`failed` 需在交付说明里注明「等待平台签发」（**不得**向客户宣称证书已生效）。
+- **产物**：`70_evidence/domain-report.json`（`domain-check.py --out` 直出）+ **`DELIVERY-DOMAIN-<slug>-<date>.md`**（域名交付说明，独立于步骤 12 的网站 DELIVERY）。
+  > 归属澄清（MAJOR-11）：步骤 12 的 DELIVERY 是**网站交付**（不含域名，可能此时客户还没域名）；步骤 13 产出**域名交付**件。二者独立，不要求步骤 13 回改步骤 12 的文件。
+- **坑**（实测：action 发现 2026-09-09 / 平台侧绑定与巡检 2026-09-15）：
+  - **Cloudflare 根域 CNAME 强制展平且无法关闭**（官方文档明示：apex 记录 CNAME flattening 对所有套餐默认生效，`Flatten` 开关在 apex 记录上不可用）。所以 **CF 用户无法用根域 CNAME 通过 EdgeOne 验证** → 给 CF 用户的标准方案是 **www 为主域名 + 根域 301 跳转到 www**；或建议把 DNS 迁到阿里云（根域 CNAME 可保留原记录）。
+  - **阿里云/DNSPod 根域 CNAME 可正常保留**（实测样本 laifaxin.com：NS=vip1.alidns.com，根域 CNAME → xxx.eo.dnse2.com 可见未展平）。
+  - **巡检不需要代理**：`dig` 走 UDP 53，国内 DNS 同样能查到 Cloudflare 记录；但 Cloudflare **后台**（dash.cloudflare.com）国内直连会触发机器人防护，操作时建议开代理。
+  - CNAME 目标用**站点运行时域名**（`read_domains` 的 `runtime_site_domain`，形如 `xxxx.web.allincms.com`），**不要**用接口里的 `cnameValue: "*.web.allincms.com"` 通配符值——UI 给客户的就是站点专属域名。
+  - 域名输入先规范化：去空格 → 转小写 → 去 `https://` → 去路径（`api.normalize_domain`）。
+  - `cnameStatus: moved` = 目标已迁移（DNS 还指着旧地址），不是"已删除"。
+
 ---
 
 ## §3 验收汇总

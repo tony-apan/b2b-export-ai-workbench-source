@@ -61,6 +61,13 @@ CREATE_POST     = "7fdfe82861882e4f6ac3cfbf022bac07e0520fdae1"
 DELETE_POST     = "7f0be1853412ed6d5493ae2e4c1988bd78b88ca81e"
 DELETE_MEDIA    = "7fc9336acfbacbbe3db21083c8dcfebcd402b22149"   # 2026-09-09 从 /{slug}/media 页 chunk 扫描确认（ISS-145）
 UPDATE_SITE_INFO = "7f3f330f0f5e41727a0390c0cb2a7291b064a415de"   # 2026-09-09 从 site-info 页 chunk 扫描确认（ISS-146）
+# 域名管理 5 个 action（2026-09-09 从 /{slug}/domains 页 RSC 的 actions 映射解引用确认，ISS-147）
+# RSC: "actions":{"add":"$h2b","refresh":"$h2c","setPrimary":"$h2d","setEnabled":"$h2e","delete":"$h2f"}
+DOMAIN_ADD          = "7fb8b20fdbfb801081501085c00c1e0ebb47ac461a"
+DOMAIN_REFRESH      = "7f13546f269b6958eab30555ee4956004bde692be1"
+DOMAIN_SET_PRIMARY  = "7fdce9ff4319adc939b322334acdd47f6360f502b0"
+DOMAIN_SET_ENABLED  = "7f83788b9054ea3a6d24103be3ce50bcb6d131b803"
+DOMAIN_DELETE       = "7fb6d155237975aa605846d954a715fe408b116a74"
 UPDATE_POST_ORDER    = "7f66e537a46fa88f454595791dfbcd2110fb9c95f6"   # 列表行内联排序（ISS-146）
 UPDATE_PRODUCT_ORDER = "7f53fb5c54e376a6ea2284fc4c219bde129962a918"   # 列表行内联排序（ISS-146）
 UPSERT_POST     = "7f205ad61951b1b4703378159b95d930e7e3f00b42"
@@ -362,6 +369,130 @@ class AllinCMS:
         if actual != order:
             raise RuntimeError(f"update_order 回读不一致：期望 {order}，实际 {actual!r}")
         return {"updated": True, "resource": resource, "target_id": target_id, "order": order, "http_status": s}
+
+    # ---------- 域名管理（2026-09-09 实测，ISS-147） ----------
+    @staticmethod
+    def normalize_domain(domain):
+        """平台 zod 规则：trim → lower → 去 https:// 前缀 → 去路径。
+        正则：^(?!-)([a-z0-9-]{1,63}(?<!-)\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"""
+        d = str(domain or "").strip().lower()
+        d = re.sub(r"^https?://", "", d)
+        d = d.split("/")[0]
+        if not re.match(r"^(?!-)([a-z0-9-]{1,63}(?<!-)\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$", d):
+            raise RuntimeError(f"域名格式不合法：{domain!r}（应为 example.com 形式，不含协议与路径）")
+        return d
+
+    def read_domains(self, site_slug):
+        """读站点域名与运行时目标（GET /{slug}/domains 页 RSC，ISS-147）。
+
+        比 /sites 更权威：直接给出 runtimeSiteDomain（= 平台要求客户 CNAME 指向的目标，
+        UI 显示的就是它）与 canAddDomain（是否还能加域名）。
+        返回 {status, site_id, runtime_site_domain, can_add_domain, domains:[...]}。
+        """
+        s, t = self.get_page(f"/{site_slug}/domains")
+        rec = rsc_records(t)
+        box = find_json(rec, "defaultDomains", "runtimeSiteDomain") or find_json(rec, "defaultDomains")
+        if box is None:
+            # 登录态失效或页面异常时，RSC 里不会有 defaultDomains（此时 /sites 也会是空）
+            raise RuntimeError(
+                f"read_domains 读不到 {site_slug} 的域名数据——"
+                "可能是登录态失效（请重新取 token）或 site_slug 拼写错误")
+        return {
+            "status": s,
+            "site_id": box.get("siteId"),
+            "runtime_site_domain": box.get("runtimeSiteDomain"),
+            "can_add_domain": box.get("canAddDomain"),
+            "domains": box.get("defaultDomains") or [],
+            "actions": box.get("actions") or {},
+        }
+
+    def _assert_site_pair(self, site_slug, site_id):
+        """MAJOR-6：写方法入口统一校验 site_slug ↔ site_id 一致（防跨站误写）。"""
+        info = self.read_domains(site_slug)
+        if info.get("site_id") != site_id:
+            raise RuntimeError(
+                f"site_slug 与 site_id 不匹配：{site_slug} 的实际 siteId={info.get('site_id')}，"
+                f"传入 {site_id}——拒绝执行（防跨站误写）")
+
+    def add_domain(self, site_slug, site_id, domain, authorization_confirmed=False, verify=True):
+        """绑定自定义域名（平台会同步并申请免费 SSL 证书）。
+
+        前置（AI 必须先做，不在本方法内强制）：用户明确授权 + whois 确认域名存在且为本人所有。
+        写后回读：域名出现在列表中才返回成功（HTTP 200 不算成功）。
+        """
+        if authorization_confirmed is not True:
+            raise RuntimeError("add_domain 需要显式 authorization_confirmed=True（先取得用户对该精确域名的授权）")
+        self._assert_site_pair(site_slug, site_id)
+        dom = self.normalize_domain(domain)
+        s, t = self._req(f"/{site_slug}/domains", DOMAIN_ADD, [{"siteId": site_id, "domain": dom}])
+        if verify:
+            got = [d.get("domain") for d in self.read_domains(site_slug)["domains"]]
+            if dom not in got:
+                raise RuntimeError(f"add_domain HTTP {s} 但回读未出现 {dom}（未生效；当前：{got}）")
+        return {"added": True, "domain": dom, "http_status": s}
+
+    def refresh_domain(self, site_slug, site_id, domain):
+        """刷新单个域名状态（DNS/别名/证书三项重新同步）。只读性质，无需授权闸。"""
+        self._assert_site_pair(site_slug, site_id)
+        dom = self.normalize_domain(domain)
+        s, t = self._req(f"/{site_slug}/domains", DOMAIN_REFRESH, [{"siteId": site_id, "domain": dom}])
+        after = [x for x in self.read_domains(site_slug)["domains"] if x.get("domain") == dom]
+        return {"refreshed": True, "domain": dom, "http_status": s, "state": after[0] if after else None}
+
+    def set_primary_domain(self, site_slug, site_id, domain, authorization_confirmed=False, verify=True):
+        """设为主域名（影响 canonical/默认跳转，属业务决策）。需显式授权。"""
+        if authorization_confirmed is not True:
+            raise RuntimeError("set_primary_domain 需要显式 authorization_confirmed=True")
+        self._assert_site_pair(site_slug, site_id)
+        dom = self.normalize_domain(domain)
+        s, t = self._req(f"/{site_slug}/domains", DOMAIN_SET_PRIMARY, [{"siteId": site_id, "domain": dom}])
+        if verify:
+            after = [x for x in self.read_domains(site_slug)["domains"]
+                     if x.get("domain") == dom and x.get("isPrimary")]
+            if not after:
+                raise RuntimeError(f"set_primary_domain HTTP {s} 但回读 {dom} 未成为主域名")
+        return {"primary_set": True, "domain": dom, "http_status": s}
+
+    def set_domain_enabled(self, site_slug, site_id, domain, enabled, authorization_confirmed=False, verify=True):
+        """启用/停用域名（停用后该域名不再对外服务）。需显式授权。"""
+        if authorization_confirmed is not True:
+            raise RuntimeError("set_domain_enabled 需要显式 authorization_confirmed=True")
+        if not isinstance(enabled, bool):
+            raise RuntimeError(f"set_domain_enabled enabled 必须是布尔值，得到 {enabled!r}")
+        self._assert_site_pair(site_slug, site_id)
+        dom = self.normalize_domain(domain)
+        s, t = self._req(f"/{site_slug}/domains", DOMAIN_SET_ENABLED,
+                         [{"siteId": site_id, "domain": dom, "enabled": enabled}])
+        if verify:
+            after = [x for x in self.read_domains(site_slug)["domains"] if x.get("domain") == dom]
+            if not after or bool(after[0].get("enabled")) != enabled:
+                got = after[0].get("enabled") if after else None
+                raise RuntimeError(f"set_domain_enabled HTTP {s} 但回读 enabled={got!r} 与期望 {enabled} 不一致")
+        return {"enabled": enabled, "domain": dom, "http_status": s}
+
+    def delete_domain(self, site_slug, site_id, domain, authorization_confirmed=False,
+                      confirm_token=None, verify=True):
+        """⚠️ 破坏性：解绑域名（可能导致网站无法通过该域名访问；证书与别名配置一并移除）。
+
+        双重授权闸：authorization_confirmed=True **且** confirm_token 必须逐字等于域名本身
+        （防误删：调用方必须显式回填同一个域名，模拟"输入域名以确认"）。
+        CDN 侧物理清理不保证；删除后回读确认记录消失。
+        """
+        if authorization_confirmed is not True:
+            raise RuntimeError("delete_domain 需要显式 authorization_confirmed=True（先取得用户对精确域名的删除授权）")
+        self._assert_site_pair(site_slug, site_id)
+        dom = self.normalize_domain(domain)
+        if confirm_token != dom:
+            raise RuntimeError(f"delete_domain 需要 confirm_token 逐字等于域名 {dom!r}（防误删）")
+        s, t = self._req(f"/{site_slug}/domains", DOMAIN_DELETE, [{"siteId": site_id, "domain": dom}])
+        if verify:
+            after = self.read_domains(site_slug)
+            if after.get("site_id") != site_id:
+                raise RuntimeError("delete_domain 回读站点与写入站点不一致，无法确认删除结果")
+            left = [d.get("domain") for d in (after.get("domains") or [])]
+            if dom in left:
+                raise RuntimeError(f"delete_domain HTTP {s} 但回读仍存在 {dom}（删除未生效）")
+        return {"deleted": True, "domain": dom, "http_status": s}
 
     def read_site_info_form(self, site_slug):
         """读站点信息**表单态**（GET /{slug}/site-info 的 SiteInfoClient.defaultValues）：
