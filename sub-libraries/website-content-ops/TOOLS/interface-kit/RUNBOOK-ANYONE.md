@@ -229,7 +229,7 @@ python3 image-to-webp.py --in-place <dir>
 
 > 完整配置指南（含 CF 根域展平实测与三种解法、分服务商步骤、常见问题）见 **[DOMAIN-SETUP.md](DOMAIN-SETUP.md)**。
 
-- **巡检**：`python3 domain-check.py <site_slug>`（平台侧 + 本地 dig 双向对账；不需要代理）；四项：已添加域名 / @ 与 www 都绑定 / NS 服务商 / CNAME 实际指向 == 平台目标。
+- **巡检（五项）**：`python3 domain-check.py <site_slug>`（含**双层 SSL 检测**：本地 `probe_tls` 实测握手+证书校验+**服务端实际证书**，`probe_http` 验证线上可达（**落点须同站**、内容不含错误壳）；再与平台状态三方交叉校验——平台滞后只给 ⚠️，本地失败且平台 active 才报 ❌ 矛盾。**SSL 检测独立于 DNS 分支**：即使 dig 不可用仍执行，未检测的主机会让退出码非 0）
 - **绑定**：`api.add_domain(slug, site_id, "example.com", authorization_confirmed=True)`；改完 DNS 后 `api.refresh_domain(...)` 同步平台状态。删除/改主域/停用均带授权闸（`delete_domain` 另需 `confirm_token` 逐字等于域名）。
 - **NS 识别与根域风险**（决定给客户的话术）：
   | NS 特征 | 服务商 | 根域 CNAME | 证据强度 |

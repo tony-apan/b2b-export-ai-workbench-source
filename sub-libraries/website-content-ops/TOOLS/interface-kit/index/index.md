@@ -105,6 +105,7 @@ related: ["../README.md"]
 | SCRIPT-020 | script | 本地转 WebP 离线对抗自测 | `../image-to-webp-selftest.py` | current | image-to-webp.py 的 9 项契约自测：B1 in-place 不覆盖已有 webp、B2 同名不覆盖、M1 递归、M4 无 .tmp、M8 坏输入不断批、M9 变大 SKIP、M10 in-place 幂等、m2 参数错误返回 2、--help 语义 |
 | SCRIPT-021 | script | 域名巡检（平台+DNS双向对账） | `../domain-check.py` | current | 巡检 4 项：已添加域名 / @与www 是否都绑定 / NS 服务商识别 / CNAME 实际解析==平台 runtime_site_domain。含 Cloudflare 根域展平风险预警、NS→服务商映射、dig 超时与缺失的显式区分、--json/--out 产物直出 |
 | DOC-DOMAIN-SETUP-001 | doc | 域名绑定配置指南 | `../DOMAIN-SETUP.md` | current | 域名绑定全流程技术参考：整体原理、**根域名在 Cloudflare 被强制展平不可用的实测证据与三种解法**、CF/阿里云分步操作、接口调用、巡检、状态值对照、常见问题、客户沟通要点 |
+| SCRIPT-022 | script | 域名巡检离线自测 | `../domain-check-selftest.py` | current | domain-check.py 的 13 项离线自测：本地自签 TLS 服务器覆盖证书校验/失败分类/服务端证书提取/非法主机名兜底/未绑定主机不误判等，不依赖外网 |
 
 ## 2. 问题 / 教训（issues.tsv）
 

@@ -144,7 +144,7 @@ def is_cf_proxy_ip(ip):
     return False
 
 
-def probe_http(host, timeout=20, attempts=2):
+def probe_http(host, timeout=20, attempts=2, runtime_domain=""):
     """线上可达性检测：公网访问该主机，跟随跳转后的最终状态码与落点。
 
     与 probe_tls 互补——TLS 只证明"握手/证书"，本函数证明"网站真的能打开"。
@@ -154,7 +154,7 @@ def probe_http(host, timeout=20, attempts=2):
     """
     last = None
     for n in range(max(1, attempts)):
-        last = _probe_http_once(host, timeout)
+        last = _probe_http_once(host, timeout, runtime_domain)
         last["attempts"] = n + 1
         # 只有真正成功才提前返回；失败（含 4xx/5xx/连接失败）一律重试——
         # 实测遇过偶发 000，也见过状态码瞬时异常，单次结果不足以判定。
@@ -165,12 +165,24 @@ def probe_http(host, timeout=20, attempts=2):
     return last
 
 
-def _probe_http_once(host, timeout=20):
-    out = {"ok": False, "status": None, "final_url": "", "redirects": None, "error": ""}
+def _probe_http_once(host, timeout=20, runtime_domain=""):
+    """单次线上可达探测。
+
+    B-2 修正（原实现只认 HTTP 200，两处假绿）：
+      ① 不校验落点 —— 域名被改指到第三方站（返回 200）也会判通过；
+      ② 不看内容 —— 本仓已知故障「首页变 Next.js 运行时错误壳但仍 200」
+         （site_pipeline.py 有 root-home 机检专治此症）。
+    现在：落点必须在同一注册域内（含 runtime_domain），且内容不得含错误标记、长度需合理。
+    """
+    out = {"ok": False, "status": None, "final_url": "", "redirects": None,
+           "error": "", "offsite": "", "waf_blocked": False, "content_bad": ""}
     try:
         r = subprocess.run(
-            ["curl", "-s", "-o", "/dev/null", "-L", "--max-time", str(timeout),
-             "-w", "%{http_code}|%{url_effective}|%{num_redirects}",
+            ["curl", "-s", "-A",
+             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+             "(KHTML, like Gecko) Chrome/126 Safari/537.36",
+             "-L", "--max-time", str(timeout),
+             "-w", "\n__CURLMETA__%{http_code}|%{url_effective}|%{num_redirects}|%{size_download}",
              f"https://{host}/"],
             capture_output=True, text=True, timeout=timeout + 5,
         )
@@ -178,25 +190,56 @@ def _probe_http_once(host, timeout=20):
         out["error"] = "curl 不可用"
         return out
     except subprocess.TimeoutExpired:
-        out["error"] = "请求超时"
+        out["error"] = "请求超时（可能受本机网络环境影响）"
         return out
-    parts = (r.stdout or "").strip().split("|")
-    if len(parts) != 3:
+    body, _, meta = (r.stdout or "").rpartition("__CURLMETA__")
+    parts = meta.strip().split("|")
+    if len(parts) < 4:                      # m-2：用 rpartition 取 meta，避免 URL 含 | 时错位
         out["error"] = "响应异常"
         return out
     try:
         out["status"] = int(parts[0])
+        out["redirects"] = int(parts[2])
+        size = int(parts[3])
     except ValueError:
         out["error"] = f"状态码异常：{parts[0][:20]}"
         return out
     out["final_url"] = parts[1]
-    try:
-        out["redirects"] = int(parts[2])
-    except ValueError:
-        pass
-    out["ok"] = out["status"] == 200
-    if not out["ok"]:
+
+    if out["status"] in (401, 403, 429, 503):
+        # 被 WAF/风控拦截：不可判定，不能算站点故障
+        out["waf_blocked"] = True
+        out["error"] = f"HTTP {out['status']}（疑似拦截，不可判定）"
+        return out
+    if out["status"] != 200:
         out["error"] = f"HTTP {out['status']}"
+        return out
+
+    # 落点必须在同站（本域 / www.本域 / 站点运行时域名）
+    try:
+        from urllib.parse import urlparse
+        landed = (urlparse(out["final_url"]).hostname or "").lower()
+    except Exception:
+        landed = ""
+    allowed = {norm_host(host), "www." + norm_host(host)}
+    if runtime_domain:
+        allowed.add(norm_host(runtime_domain))
+    if landed and landed not in allowed:
+        out["offsite"] = landed
+        out["error"] = f"落点跳到非本站域名（{landed}）"
+        return out
+
+    # 内容体检：错误壳 + 长度（对齐 site_pipeline 的 root-home 判据）
+    if "__next_error__" in body or "NEXT_HTTP_ERROR_FALLBACK" in body:
+        out["content_bad"] = "页面含运行时错误标记"
+        out["error"] = out["content_bad"]
+        return out
+    if size < 1000:
+        out["content_bad"] = f"页面过短（{size} 字节）"
+        out["error"] = out["content_bad"]
+        return out
+
+    out["ok"] = True
     return out
 
 
@@ -217,9 +260,11 @@ def _cert_days_left(not_after):
 def _served_cert_names(host, port=443, timeout=8):
     """取服务端**实际提供**的证书里的域名字串（诊断用）。
 
-    验证失败时（如 CDN/平台默认证书、域名不匹配）用它回答「对方到底给了我哪张证书」——
-    实测价值很高：能直接看出是云商默认证书还是漏签发。
+    M-3 修正：原实现用正则扫 DER 可打印字节，实测 20 个主机里 13 个混入垃圾
+    token（如 `?rg}U7.`），且 `rstrip("0")` 会吃掉合法尾部 0（`192.168.1.10` → `192.168.1.1`）。
+    改用 stdlib 的 DER→PEM + 证书解码（零依赖、结果结构化），只取真实 SAN/CN。
     """
+    import tempfile
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -229,15 +274,31 @@ def _served_cert_names(host, port=443, timeout=8):
                 der = ss.getpeercert(binary_form=True)
     except Exception:
         return []
+    if not der:
+        return []
     names, seen = [], set()
-    for raw in re.findall(rb"[ -~]{4,}", der or b""):
-        text = raw.decode("ascii", "ignore").rstrip("0")
-        if ("." in text and " " not in text and "/" not in text
-                and 4 <= len(text) <= 80 and not text.startswith("http")):
-            if text not in seen:
-                seen.add(text)
-                names.append(text)
-    return names[:4]
+    def _push(v):
+        if v and v not in seen:
+            seen.add(v); names.append(v)
+    try:
+        pem = ssl.DER_cert_to_PEM_cert(der)
+        with tempfile.NamedTemporaryFile("w", suffix=".pem", delete=False) as f:
+            f.write(pem)
+            path = f.name
+        try:
+            info = ssl._ssl._test_decode_cert(path)
+        finally:
+            os.unlink(path)
+        for kind, val in info.get("subjectAltName", ()):   # $("DNS", "example.com")
+            if kind in ("DNS", "IP Address"):
+                _push(val)
+        for rdn in info.get("subject", ()):
+            for k, v in rdn:
+                if k == "commonName":
+                    _push(v)
+    except Exception:
+        return []
+    return names[:5]
 
 
 def probe_tls(host, port=443, timeout=12, attempts=2):
@@ -285,16 +346,96 @@ def probe_tls(host, port=443, timeout=12, attempts=2):
     except ssl.SSLError as e:
         out["reason"] = "TLS 握手失败：" + str(e)[:70]
     except (socket.timeout, TimeoutError):
-        out["reason"] = "连接超时（443 无响应）"
+        # 本轮实测踩到：本机在受限网络下 google.com/github.com 直连超时，
+        # 而 Python socket 不走系统 HTTP 代理 → 需提示可能是网络环境问题，别误判成站点故障。
+        out["reason"] = "连接超时（443 无响应；若本机需代理才能上网，此项可能受网络环境影响）"
     except (ConnectionRefusedError, OSError) as e:
-        out["reason"] = "连接失败：" + type(e).__name__
+        out["reason"] = f"连接失败：{type(e).__name__}（若本机网络受限，可能非站点问题）"
+    except Exception as e:
+        # M-6：非法主机名（超长 label / idna 编码失败等）曾直接掀掉整轮巡检，
+        # 被伪装成"环境错误 2"。这里兜底为"检测异常"，只影响单个主机。
+        out["reason"] = f"检测异常：{type(e).__name__}"
     if not out["verified"]:
-        # 连接类失败重试一次（网络抖动不应被报成证书问题）
-        if out["reason"].startswith(("连接超时", "连接失败")) and attempts > 1:
+        # M-2：重试判据用"是否已完成证书校验"而非文案匹配——
+        # 握手期故障（服务端 FIN/RST）分类不稳定，同一致因可能落进"TLS 握手失败"。
+        # cert 类失败（域名不匹配/过期/链不完整）是确定性结论，不重试。
+        cert_level = out["handshake"] and any(
+            k in out["reason"] for k in ("证书", "自签名", "证书链"))
+        if not cert_level and attempts > 1:
             time.sleep(1)
             return probe_tls(host, port, timeout, attempts - 1)
-        out["served"] = _served_cert_names(host, port)
+        if out["handshake"]:
+            out["served"] = _served_cert_names(host, port)   # 无握手时不可能有证书
     return out
+
+
+def check_host_ssl(label, rec, apex_cf, add, emit, cname_target="", runtime_domain=""):
+    """B-1 修正：SSL 探测**独立于 DNS 分支**——它只需要主机名。
+
+    原实现把 ⑤ 埋 DNS 分支里，导致三种情况（无 dig / DNS 超时 / 无解析记录）
+    会整段跳过 SSL 检测，而退出码仍为 0 ——「无 ❌ 即通过」的门形同虚设。
+    现在无论 DNS 状态如何都执行，并回报是否真正检查过。
+    返回 (checked: bool, tls|None, http|None)
+    """
+    tls = probe_tls(label)
+    if tls.get("attempts") and not tls["verified"] and tls["reason"].startswith(("连接超时", "连接失败")):
+        # 连不上：可能是站点问题，也可能是本机网络环境（Python socket 不走系统代理）
+        add("warn", f"{label}：SSL 检测未能完成——{tls['reason']}")
+        emit(f"⑤ {label}：SSL ⚠️ 无法判定——{tls['reason']}")
+        return False, tls, None
+
+    http = probe_http(label, runtime_domain=runtime_domain) if tls["verified"] or tls["handshake"] else None
+    p_cert = (rec or {}).get("certificateStatus")
+
+    if tls["verified"]:
+        dl = tls.get("days_left")
+        dl_txt = f"剩余 {dl} 天" if dl is not None else "剩余天数未知"
+        if http is not None:
+            mark = "✅" if http["ok"] else ("❌" if http.get("status") else "⚠️")
+            hop = f"（{http['redirects']} 次跳转 → {http['final_url']}）" if http.get("redirects") else ""
+            emit(f"⑤ {label}：SSL/CERT ✅ | 线上访问 {mark} HTTP {http['status'] or '-'}{hop}"
+                 f"｜CN={tls.get('cn')}｜{dl_txt}")
+        else:
+            emit(f"⑤ {label}：SSL/CERT ✅｜CN={tls.get('cn')}｜{dl_txt}")
+        if dl is not None and dl <= 30:
+            add("warn", f"{label}：SSL 证书仅剩 {dl} 天（到期 {tls.get('not_after')}）——平台通常自动续期")
+        if http is not None and not http["ok"]:
+            if http.get("waf_blocked"):
+                add("warn", f"{label}：线上返回 {http['status']}（疑似 WAF/风控拦截，不可判定）")
+            else:
+                add("error", f"{label}：证书正常但**线上访问失败**——{http.get('error') or http.get('status')}"
+                             f"；落点 {http.get('final_url') or '未知'}")
+        if http is not None and http.get("offsite"):
+            add("error", f"{label}：**落点跳到了非本站域名**（{http['offsite']}）——域名可能被改指到别处")
+        if p_cert == "active" and http is not None and not http["ok"]:
+            add("error", f"{label}：**平台显示证书 active 但本地线上访问失败**——两侧矛盾，需排查")
+        elif p_cert in ("none", "requested", "failed", "expired") and not apex_cf:
+            add("warn", f"{label}：本地 SSL 已正常，但平台证书状态为 {p_cert}"
+                        f"——平台状态可能滞后，refresh_domain 后复查")
+    else:
+        reason = tls.get("reason") or "未知原因"
+        served = tls.get("served") or []
+        extra = f"；服务端实际提供：{', '.join(served)}" if served else ""
+        if tls["handshake"]:
+            emit(f"⑤ {label}：SSL ❌ {reason}{extra}"
+                 f"｜线上访问 HTTP {(http or {}).get('status') or '失败'}")
+        else:
+            emit(f"⑤ {label}：SSL ❌ {reason}{extra}")
+        if p_cert in ("none", "requested"):
+            add("warn", f"{label}：SSL 尚未就绪（{reason}）——平台证书状态 {p_cert}，签发完成后复查{extra}")
+        else:
+            detail = "握手失败" if not tls["handshake"] else f"校验未通过（{reason}）"
+            if rec is None:
+                # M-1：未绑定到平台的主机是"候选"，不是交付要求——不得据它判失败
+                add("info", f"{label}：SSL 探测未通过（{detail}），但该主机**未绑定到平台**，"
+                            f"不属交付要求；仅供参考{extra}")
+            elif p_cert in ("none", "requested"):
+                add("warn", f"{label}：SSL 尚未就绪（{detail}）——平台证书状态 {p_cert}，签发完成后复查{extra}")
+            else:
+                add("error", f"{label}：SSL 不可用——{detail}{extra}")
+                if p_cert == "active":
+                    add("error", f"{label}：**平台显示证书 active 但本地 {detail}**——两侧矛盾，需排查")
+    return True, tls, http
 
 
 def norm_host(v):
@@ -385,7 +526,8 @@ def dns_state(domain, auth_ns=None):
 
 def check_site(api, site_slug, only_domain=None, quiet=False):
     """巡检一个站点。quiet=True 时不打印人读文本（供 --json 使用）。"""
-    result = {"site_slug": site_slug, "findings": [], "domains": [], "ok": True, "env_error": False}
+    result = {"site_slug": site_slug, "findings": [], "domains": [], "ok": True, "env_error": False,
+              "coverage": {"tls_checked": 0, "tls_skipped": 0, "tls_skipped_hosts": []}}
 
     def emit(*a):
         if not quiet:
@@ -434,7 +576,13 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
         dig_ok = False
         result["env_error"] = True     # M7：环境缺失 → 退出 2，不与"有须修项"同码
         add("warn", "本机没有 dig，无法做 DNS 侧核验（Windows 请装 BIND tools 或改用 nslookup）；"
-                    "本次只输出平台侧状态（属环境限制，非域名问题）")
+                    "本次只输出平台侧状态与 SSL 检测（属环境限制，非域名问题）")
+    except (DnsQueryError, DnsTimeout) as e:
+        # dig 存在但不可用/超时（DNS 服务异常、被拦截等）→ 同样降级为"无 DNS 侧核验"，
+        # 不阻断 SSL 检测（B-1：SSL 只需主机名，不应被 DNS 问题连坐）
+        dig_ok = False
+        result["env_error"] = True
+        add("warn", f"本机 dig 不可用（{str(e)[:50]}）——跳过 DNS 侧核验，仍执行 SSL 检测")
     except DnsTimeout:
         pass  # 单次超时不代表不可用
 
@@ -574,7 +722,13 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
             rec = pair.get(host_key)
             per_host_apex_cf = False          # B1：每轮显式初始化，防"无记录分支"未赋值即被引用
             if not dig_ok:
+                # B-1：DNS 不可用**不阻断** SSL 检测（它只需主机名）；仍执行并记账
                 entry["hosts"][host_key] = {"platform": rec, "dns": None}
+                checked, tls, _ = check_host_ssl(label, rec, apex_via_cf, add, emit,
+                                                 cname_target=cname_target, runtime_domain=cname_target)
+                result["coverage"]["tls_checked" if checked else "tls_skipped"] += 1
+                if not checked:
+                    result["coverage"]["tls_skipped_hosts"].append({"host": label, "why": "本机无 dig"})
                 continue
             try:
                 state = dns_state(label, auth_ns)
@@ -594,6 +748,12 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 emit(f"④ {label}：⚠️  {msg}")
                 add("warn", f"{label}：{msg}")
                 entry["hosts"][host_key] = {"platform": rec, "dns": state}
+                # B-1：DNS 查询失败也不阻断 SSL 检测
+                checked, tls, _ = check_host_ssl(label, rec, apex_via_cf, add, emit,
+                                                 cname_target=cname_target, runtime_domain=cname_target)
+                result["coverage"]["tls_checked" if checked else "tls_skipped"] += 1
+                if not checked:
+                    result["coverage"]["tls_skipped_hosts"].append({"host": label, "why": f"DNS 查询失败：{msg[:40]}"})
                 continue
 
             actual = (state["cname"] or state["a"] or ["<无记录>"])[0]
@@ -611,7 +771,13 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
             if not state["resolved"]:
                 entry["issues"].append(f"{label} 本地无解析记录")
                 add("error", f"{label}：本地查不到任何解析记录（DNS 未配置）")
-                continue                       # B1：本主机判定结束，后续逻辑不再适用
+                # B-1：无解析记录也仍执行 SSL 检测（可能已有其他解析指向别处，证书状态同样有诊断价值）
+                checked, tls, _ = check_host_ssl(label, rec, apex_via_cf, add, emit,
+                                                 cname_target=cname_target, runtime_domain=cname_target)
+                result["coverage"]["tls_checked" if checked else "tls_skipped"] += 1
+                if not checked:
+                    result["coverage"]["tls_skipped_hosts"].append({"host": label, "why": "本地无解析记录"})
+                continue
             else:
                 # BLOCKER-3：规范化后"精确相等"，不再用子串匹配（防 evil-<target> 误判为通过）
                 hit = any(norm_host(x) == cname_target for x in state["cname"])
@@ -629,6 +795,11 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                     entry["hosts"].setdefault(host_key, {})["apex_via_cf"] = True
                     add("info", f"{label}：根域走 Cloudflare 代理且**实测确认** 301 跳转到 www"
                                 f"——平台无需验证根域，属预期终态")
+                elif not hit and host_key == "@" and any(is_cf_proxy_ip(x) for x in state["a"]):
+                    # apex 指向 CF 代理 IP 但 301 实测未通过：可能是新配规则、瞬时抖动，
+                    # 也可能规则确实缺失 → warn（不报 error，避免抖动被误判成"指向错误"）
+                    add("warn", f"{label}：根域指向 Cloudflare 代理，但未能实测确认 301 跳转到 www"
+                                f"（{apex_redirect_detail}）——若规则已配请稍后复查，否则需补 301 规则")
                 elif not hit:
                     entry["issues"].append(f"{label} 指向不是 {cname_target}")
                     add("error", f"{label}：当前指向 {actual}，应指向 {cname_target}")
@@ -647,48 +818,13 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 else:
                     add("error" if st == "invalid" else "warn",
                         f"{label}：平台状态 {st}（{CNAME_STATUS_CN.get(st, st)}）")
-            # ⑤ SSL/TLS 双层检测：**先本地实测握手与证书**，再与平台侧状态交叉校验。
-            # 本地是唯一真相来源——平台显示 active 也可能实际握手失败（证书吊销/域名改指）。
-            tls = probe_tls(label)
+            # ⑤ SSL/TLS 双层检测（B-1：独立于 DNS 分支，任何路径都执行）
+            checked, tls, _ = check_host_ssl(label, rec, apex_via_cf, add, emit,
+                                             cname_target=cname_target, runtime_domain=cname_target)
             entry["hosts"][host_key]["tls"] = tls
-            p_cert = (rec or {}).get("certificateStatus")
-            if tls["verified"]:
-                dl = tls.get("days_left")
-                # 线上可达性（TLS 只证明握手，这里证明网站真的能打开）
-                http = probe_http(label)
-                entry["hosts"][host_key]["http"] = http
-                mark = "✅" if http["ok"] else ("❌" if http["status"] else "⚠️")
-                hop = f"（{http['redirects']} 次跳转 → {http['final_url']}）" if http.get("redirects") else ""
-                emit(f"⑤ {label}：SSL/CERT ✅ | 线上访问 {mark} HTTP {http['status'] or '-'}{hop}"
-                     f"｜CN={tls.get('cn')}｜剩余 {dl} 天")
-                if dl is not None and dl <= 30:
-                    add("warn", f"{label}：SSL 证书仅剩 {dl} 天（到期 {tls.get('not_after')}）"
-                                f"——平台通常自动续期，临近时复查")
-                if not http["ok"]:
-                    add("error", f"{label}：证书正常但**线上访问失败**（{http.get('error')}）"
-                                 f"——落点 {http.get('final_url') or '未知'}")
-                if p_cert in ("none", "requested", "failed"):
-                    add("warn", f"{label}：本地 SSL 已正常，但平台证书状态仍为 {p_cert}"
-                                f"——平台状态可能滞后，refresh_domain 后复查")
-            else:
-                reason = tls.get("reason") or "未知原因"
-                served = tls.get("served") or []
-                extra = f"；服务端实际提供：{', '.join(served)}" if served else ""
-                http = probe_http(label)
-                entry["hosts"][host_key]["http"] = http
-                if tls["handshake"]:
-                    emit(f"⑤ {label}：SSL ❌ {reason}{extra}｜线上访问 HTTP {http['status'] or '失败'}")
-                else:
-                    emit(f"⑤ {label}：SSL ❌ {reason}；线上访问 HTTP {http['status'] or '失败'}")
-                if p_cert in ("none", "requested"):
-                    # 平台正在签发 → 属过渡态，不是需要客户动手的问题
-                    add("warn", f"{label}：SSL 尚未就绪（{reason}）——平台证书状态 {p_cert}，"
-                                f"签发完成后复查{extra}")
-                else:
-                    add("error", f"{label}：SSL 不可用——{reason}{extra}")
-                    if p_cert == "active":
-                        add("error", f"{label}：**平台显示证书 active 但本地握手失败**——两侧矛盾，"
-                                    f"需排查（证书被吊销 / 域名指向了别的服务）")
+            result["coverage"]["tls_checked" if checked else "tls_skipped"] += 1
+            if not checked:
+                result["coverage"]["tls_skipped_hosts"].append({"host": label, "why": "探测未能完成"})
 
         result["domains"].append(entry)
         emit()
@@ -751,12 +887,22 @@ def main():
             print(f"⚠️  {f['text']}")
         for f in infos:
             print(f"ℹ️  {f['text']}")
-        print(f"\n小结：{len(errs)} 个须修 / {len(warns)} 个提醒")
+        cov = res.get("coverage") or {}
+        print(f"\n小结：{len(errs)} 个须修 / {len(warns)} 个提醒"
+              f"｜SSL 已检测 {cov.get('tls_checked', 0)} 个主机"
+              + (f"，跳过 {cov.get('tls_skipped')} 个" if cov.get("tls_skipped") else ""))
+        for sk in (cov.get("tls_skipped_hosts") or []):
+            print(f"  ℹ️  {sk['host']}：SSL 未检测（{sk['why']}）")
 
-    # 退出码：2=环境缺失（无 dig）/ 1=有须修项 / 0=正常（无域名属合法中间态）
+    # 退出码：2=环境缺失（无 dig）/ 1=有须修项或有主机未完成 SSL 检测 / 0=正常
+    # B-1：若存在"SSL 未检测"的主机，整体不得判 0——否则"无 ❌ 即通过"的门会静默放行
     if res.get("env_error"):
         return 2
-    return 1 if any(f["level"] == "error" for f in res["findings"]) else 0
+    if any(f["level"] == "error" for f in res["findings"]):
+        return 1
+    if (res.get("coverage") or {}).get("tls_skipped"):
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
