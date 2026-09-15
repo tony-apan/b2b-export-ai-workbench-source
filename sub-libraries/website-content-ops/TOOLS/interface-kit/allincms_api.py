@@ -45,6 +45,12 @@ def _read_token():
     return ""
 
 
+def norm_domain_eq(a, b):
+    """域名比较（trim + lower + 去尾点）。"""
+    f = lambda v: (v or "").strip().lower().rstrip(".")
+    return f(a) == f(b)
+
+
 ORIGIN   = "https://workspace.laicms.com"
 DEPLOY   = "83eddf696484d494d59ae961cb4ded1d61d14b56"
 SIGNIN_A = "7f04a5d5c7ef3131a5a72bb56a236ef60fe8498749"   # sign-in action (登录)
@@ -493,6 +499,54 @@ class AllinCMS:
             if dom in left:
                 raise RuntimeError(f"delete_domain HTTP {s} 但回读仍存在 {dom}（删除未生效）")
         return {"deleted": True, "domain": dom, "http_status": s}
+
+    def rebind_domain(self, site_slug, site_id, domain, authorization_confirmed=False,
+                      local_tls_ok=None):
+        """🔁 证书卡住的恢复动作：解绑后重新绑定，**重新触发平台证书申请**（ISS-147）。
+
+        适用场景（**严格**）：DNS 解析正确 + **本地 SSL 也确实失败** + 平台 `certificateStatus`
+        卡在 failed 且 `certificateCommonName=None`（平台侧申请未触发）。
+        此时 delete + add 会把状态推进到 `requested`（实测：failed → requested）。
+
+        ⚠️ **代价（实测 2026-09-15）**：重绑会**重置 EdgeOne 侧配置**
+        （`edgeOneAliasStatus: active→pending`、`verified: True→False`），
+        该域名在 EdgeOne 重配完成前**不可访问**（实测 >4 分钟仍在 pending）。
+        所以 **`local_tls_ok=True` 时本方法会拒绝执行**——本地正常说明服务没问题，
+        平台状态只是滞后，重绑纯属自伤。
+
+        ⚠️ 风险与边界：
+          - delete_domain 是破坏性操作（本方法自带授权闸）；
+          - 解绑窗口内该域名可能短暂不可用（实测改指与证书不受影响，但不要对**主域名**做）；
+          - **不要**用它处理「本地 SSL 也失败」的情况——那是 DNS 或站点问题，重绑没用；
+          - 若本地证书已由平台正常签发（cname active + 本地 HTTPS 200），
+            优先只做 refresh_domain，不要重绑。
+        返回 {rebound, domain, before, after}。
+        """
+        if authorization_confirmed is not True:
+            raise RuntimeError("rebind_domain 需要显式 authorization_confirmed=True"
+                               "（解绑属破坏性操作，先取得用户授权）")
+        dom = self.normalize_domain(domain)
+        before = [d for d in self.read_domains(site_slug).get("domains", [])
+                  if norm_domain_eq(d.get("domain"), dom)]
+        was_primary = bool(before and before[0].get("isPrimary"))
+        if was_primary:
+            raise RuntimeError(f"rebind_domain 拒绝操作主域名 {dom}——解绑会导致站点主入口短暂不可用；"
+                               f"如确需处理，请先 set_primary_domain 切到另一个域名")
+        # ⚠️ 实测教训（2026-09-15）：重绑会**重置 EdgeOne 侧配置**（edgeOneAliasStatus
+        # active→pending、verified True→False），域名在重配完成前**不可访问**（实测 >4 分钟）。
+        # 因此本地 TLS 若已正常，说明服务本身没问题（平台状态只是滞后），重绑只会造成中断。
+        if local_tls_ok:
+            raise RuntimeError(
+                f"rebind_domain 拒绝执行：{dom} 的**本地 TLS 已正常**（服务可用，平台状态仅滞后）——"
+                f"重绑会重置 EdgeOne 配置并导致域名中断。请先 refresh_domain 复查平台状态；"
+                f"仅当本地 SSL 也确实失败时才重绑")
+        self.delete_domain(site_slug, site_id, dom, authorization_confirmed=True, confirm_token=dom)
+        self.add_domain(site_slug, site_id, dom, authorization_confirmed=True)
+        after = [d for d in self.read_domains(site_slug).get("domains", [])
+                 if norm_domain_eq(d.get("domain"), dom)]
+        return {"rebound": True, "domain": dom,
+                "before": before[0] if before else None,
+                "after": after[0] if after else None}
 
     def read_site_info_form(self, site_slug):
         """读站点信息**表单态**（GET /{slug}/site-info 的 SiteInfoClient.defaultValues）：

@@ -407,6 +407,53 @@ api.delete_domain(slug, site_id, "x.example.com",
 
 ⚠️ **已知限制**：`probe_tls` 用 Python socket，**不走系统 HTTP 代理**；若本机需代理才能上网，该主机可能只报"连接超时"（提示里已注明可能受网络环境影响）。
 
+## 五-c、证书卡住时的恢复：解绑重绑（有中断代价，慎用）
+
+> 实测 2026-09-15。当 DNS 解析完全正确、但平台 `certificateStatus` **长期卡在 `failed`**
+> 且 `certificateCommonName=None`（平台侧证书申请未触发/卡死）时，**delete + add 会重新触发申请**。
+
+### 效果（实测）
+
+```
+重绑前： cname=active  ssl=failed  cert=None
+重绑后： cname=None    ssl=requested   ← 状态被推进，重新走签发流程
+约 3 分钟：cname=active ssl=active  cert=goods-suppliers.com  ✅
+```
+
+### ⚠️ 代价：域名会短暂不可访问（实测数据）
+
+重绑会**重置 EdgeOne 侧配置**（`edgeOneAliasStatus: active→pending`、`verified: True→False`），
+在重配完成前该域名**访问不通**：
+
+| 时间 | aliasStatus | verified | HTTPS |
+|---|---|---|---|
+| +0s（重绑） | pending | False | ❌ 000 |
+| +58s | pending | False | ❌ 000 |
+| **+103s** | pending | False | **✅ 200**（约 100 秒恢复访问） |
+| **+216s** | **active** | **True** | ✅ 200（约 3.6 分钟完全恢复） |
+
+### 使用前提（三条缺一不可）
+
+| 条件 | 说明 |
+|---|---|
+| ① DNS 解析**完全正确** | 平台 `cnameStatus: active`（否则重绑也白搭） |
+| ② **本地 SSL 也确实失败** | ⚠️ 最关键——若本地 TLS 正常（HTTPS 200），说明服务没问题、平台只是滞后，**重绑纯属自伤**（会把可用的站打断） |
+| ③ 不是**主域名** | 主域名重绑 = 站点主入口中断，工具会直接拒绝 |
+
+### 工具用法
+
+```python
+# 前置：先确认本地也失败（domain-check.py 的 ⑤ 行显示 ❌）
+api.rebind_domain(slug, site_id, "example.com",
+                  authorization_confirmed=True,
+                  local_tls_ok=False)   # 必须显式声明本地确实不正常
+```
+
+`rebind_domain` 的三道门：**授权闸** + **主域名拒绝** + **`local_tls_ok=True` 时拒绝**。
+
+> 💡 **正确顺序**：先 `refresh_domain` 复查（多数平台滞后会自愈）；只有长期卡住（>1 小时）
+> 且本地也确认失败时，才考虑重绑；重绑前告知用户"该域名将中断约 1–4 分钟"。
+
 ## 六、巡检与排查
 
 ```bash

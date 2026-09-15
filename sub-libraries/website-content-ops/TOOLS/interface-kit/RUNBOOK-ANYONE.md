@@ -242,6 +242,7 @@ python3 image-to-webp.py --in-place <dir>
 
   > 只有 Cloudflare 有「机制文档 + 实测」双重证据；其余按个案/未验证表述，别对客户下断言。
 - **CNAME 目标**用 `read_domains()` 的 `runtime_site_domain`（站点专属域名），不是 `cnameValue` 的通配符值。
+- **证书长期卡 `failed` 的恢复 = 解绑重绑**：`api.rebind_domain(slug, sid, domain, authorization_confirmed=True, local_tls_ok=False)` 能重新触发签发（实测 failed→requested→active，约 3 分钟）。**代价**：重置 EdgeOne 配置致该域名**中断约 100 秒**（3.6 分钟全恢复）。**前提是本地 SSL 也确实失败**——本地正常说明只是平台滞后，先 `refresh_domain`；工具会拒绝本地正常时的重绑。**禁止对主域名用**（站点主入口会断）。
 - **客户没域名** → 给购买引导（见 [templates/client-input-checklist.md](templates/client-input-checklist.md) 域名节）；**客户有域名但不会配 DNS** → 按其 NS 服务商给具体路径指引，用户操作后**用 `domain-check.py` 复验**（不依赖截图）。
 
 ## §7 文章写作（第 7 步：子 agent k3 写）

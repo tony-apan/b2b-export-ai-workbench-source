@@ -410,8 +410,12 @@ def check_host_ssl(label, rec, apex_cf, add, emit, cname_target="", runtime_doma
         if p_cert == "active" and http is not None and not http["ok"]:
             add("error", f"{label}：**平台显示证书 active 但本地线上访问失败**——两侧矛盾，需排查")
         elif p_cert in ("none", "requested", "failed", "expired") and not apex_cf:
+            sig = (f"（平台状态 {p_cert}" +
+                   ("；删除后重新绑定会把状态推进到 requested，可重新触发签发"
+                    "——`api.rebind_domain(..., authorization_confirmed=True)`，需用户授权）"
+                    if p_cert in ("failed", "expired", "none") else "）"))
             add("warn", f"{label}：本地 SSL 已正常，但平台证书状态为 {p_cert}"
-                        f"——平台状态可能滞后，refresh_domain 后复查")
+                        f"——先 refresh_domain 复查；长期卡住可考虑重绑恢复{sig}")
     else:
         reason = tls.get("reason") or "未知原因"
         served = tls.get("served") or []
@@ -435,6 +439,10 @@ def check_host_ssl(label, rec, apex_cf, add, emit, cname_target="", runtime_doma
                 add("error", f"{label}：SSL 不可用——{detail}{extra}")
                 if p_cert == "active":
                     add("error", f"{label}：**平台显示证书 active 但本地 {detail}**——两侧矛盾，需排查")
+                elif p_cert in ("failed", "none"):
+                    add("warn", f"{label}：DNS 解析正常但证书未签发——若持续卡住（超过约 1 小时），"
+                                f"可尝试解绑后重新绑定以重新触发平台申请："
+                                f"`api.rebind_domain(..., authorization_confirmed=True)`（需用户授权）")
     return True, tls, http
 
 

@@ -354,6 +354,7 @@ redaction_status: "safe-to-publish"
   - **Cloudflare 根域 CNAME 强制展平且无法关闭**（官方文档明示：apex 记录 CNAME flattening 对所有套餐默认生效，`Flatten` 开关在 apex 记录上不可用）。所以 **CF 用户无法用根域 CNAME 通过 EdgeOne 验证** → 给 CF 用户的标准方案是 **www 为主域名 + 根域 301 跳转到 www**；或建议把 DNS 迁到阿里云（根域 CNAME 可保留原记录）。
   - **阿里云/DNSPod 根域 CNAME 可正常保留**（实测样本 laifaxin.com：NS=vip1.alidns.com，根域 CNAME → xxx.eo.dnse2.com 可见未展平）。
   - **巡检不需要代理**：`dig` 走 UDP 53，国内 DNS 同样能查到 Cloudflare 记录；但 Cloudflare **后台**（dash.cloudflare.com）国内直连会触发机器人防护，操作时建议开代理。
+  - **证书长期卡 `failed` 的恢复 = 解绑重绑，但有中断代价**（实测 2026-09-15）：平台 `ssl=failed` 且 `certificateCommonName=None` 时，delete+add 会**重新触发证书申请**（failed→requested→active，约 3 分钟）。**代价**：重绑会重置 EdgeOne 配置（`edgeOneAliasStatus: active→pending`、`verified: True→False`），该域名**约 100 秒不可访问**、约 3.6 分钟完全恢复。**三条前提缺一不可**：① 平台 `cnameStatus: active` ② **本地 SSL 也确实失败**（本地正常=平台状态滞后，重绑纯属自伤） ③ 非主域名。工具：`api.rebind_domain(slug, sid, domain, authorization_confirmed=True, local_tls_ok=False)`，含三道门（授权闸 / 主域名拒绝 / 本地正常时拒绝）。详见 [DOMAIN-SETUP.md](DOMAIN-SETUP.md) §5-c。
   - CNAME 目标用**站点运行时域名**（`read_domains` 的 `runtime_site_domain`，形如 `xxxx.web.allincms.com`），**不要**用接口里的 `cnameValue: "*.web.allincms.com"` 通配符值——UI 给客户的就是站点专属域名。
   - 域名输入先规范化：去空格 → 转小写 → 去 `https://` → 去路径（`api.normalize_domain`）。
   - `cnameStatus: moved` = 目标已迁移（DNS 还指着旧地址），不是"已删除"。
