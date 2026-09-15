@@ -82,8 +82,10 @@ api.add_domain(slug, site_id, "www.17ark.com", authorization_confirmed=True)
 | 1 | CNAME | `www` | `0gn3iso4o6.web.allincms.com` | 🌫️ **仅 DNS（灰云）** |
 | 2 | CNAME | `@`（根域） | `0gn3iso4o6.web.allincms.com` | 🌫️ 仅 DNS（**根域需额外处理，见第四节**） |
 
-<!-- 📸 截图位 2：Cloudflare「添加记录」表单 -->
-<!-- 要点：类型=CNAME / 名称=www / 目标=<站点运行时域名> / 代理状态=仅 DNS -->
+![Cloudflare 添加记录表单](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-05-cf-add-record-form.png)
+
+> ⚠️ **表单默认为 `A` 类型**（如上图）——加 www 时必须先**把类型切成 `CNAME`**，否则会填成 A 记录，平台按 CNAME 验证会失败（对应 §6 速查表「www 用 A 记录」一行）。
+> 完整填写：类型 `CNAME` / 名称 `www` / 目标 `<站点运行时域名>` / 代理状态 **仅 DNS（灰云）**。
 
 **Step 3 — 刷新平台状态**：
 
@@ -105,52 +107,75 @@ www.17ark.com  → cnameStatus=active  certificateStatus=active  HTTPS 200 ✅
 
 ---
 
-## 三、实战演示 B：阿里云
+## 三、实战演示 B：阿里云（2026-09-15 真实操作）
 
-> 阿里云（含万网）**没有根域名展平问题**——根域 CNAME 会原样保留，`@` 和 `www` 都能通过平台验证。
-> 实证对照（`laifaxin.com`，NS=`vip1.alidns.com`）：
+> 案例域名 `goods-suppliers.com`（阿里云 DNS `dns29/dns30.hichina.com`，**在用阿里云企业邮箱**）。
+> **结论：阿里云根域（@）可以加 CNAME，且与 MX 共存无冲突** —— 与 Cloudflare 的强制展平形成鲜明对比。
 
-```
-根域 @ : CNAME → laifaxin.com.eo.dnse2.com.     ✅ 保留可见
-www   : CNAME → www.laifaxin.com.eo.dnse2.com.  ✅
-HTTPS : 根域 302 跳转 / www 200
-```
+### 3.1 直达链接（推荐给用户的入口）
 
-### 操作步骤
+阿里云支持**带域名的直达 URL**，打开即进入该域名的解析设置页（未登录会先跳登录、登录后自动回到该页）：
 
 ```
-1. 阿里云控制台 → 云解析 DNS → 找到域名 → 点「解析设置」
-2. 点「添加记录」，逐条添加：
-
-   记录 1（www）:
-     记录类型 = CNAME
-     主机记录 = www
-     记录值   = <站点运行时域名>
-     TTL      = 10 分钟（默认）
-
-   记录 2（根域）:
-     记录类型 = CNAME
-     主机记录 = @
-     记录值   = <站点运行时域名>
-
-3. 保存 → 回平台点刷新
+https://dnsnext.console.aliyun.com/authoritative/domains/<域名>
 ```
 
-<!-- 📸 截图位 5：阿里云「解析设置」页面（两条 CNAME 记录明细） -->
+**实测确认**（2026-09-15）：访问 `.../authoritative/domains/goods-suppliers.com` → 未登录时跳 `account.aliyun.com/login/login.htm?oauth_callback=<该页URL含域名>` → **登录后精确回到该域名的解析设置页**。
 
-### ⚠️ 阿里云根域 CNAME 的前置检查（重要）
+给用户的话术：
 
-**根域加 CNAME 会与邮箱记录冲突**（DNS 协议：同一主机名上 CNAME 不能与其他记录共存）。
+```text
+🔧 你的域名在阿里云，请点这个链接直接进解析设置（没登录会先让你登录）：
+   https://dnsnext.console.aliyun.com/authoritative/domains/[客户域名]
 
-加之前必须确认该域名**没有在使用根域邮箱**：
-
-```bash
-dig +short MX 17ark.com     # 有输出 = 根域邮箱在用
-dig +short TXT 17ark.com    # 有 SPF/DKIM 也说明在用
+进去后按这 4 步加两条记录：
+   ① 点「添加记录」
+   ② 记录类型选 CNAME（默认可能是 A，记得改）
+   ③ 主机记录填 www，记录值填 [站点运行时域名]
+   ④ 点「确定」→ 弹出「解析变更确认」再点「确定」
+然后重复一遍，把主机记录改成 @（表示根域名）
 ```
 
-- **没有邮箱** → 直接加根域 CNAME ✅
-- **有邮箱** → 不要用 **CNAME** 方案动根域（CNAME 与 MX 冲突）；改用子域名收发，**或走第四节的 301 方案**（A 记录 + 橙云代理 **不影响 MX**——MX 记录不经 CF 代理）
+### 3.2 操作步骤（附实测截图）
+
+**① 添加记录**——点「添加记录」，类型选 `CNAME`，主机记录填 `www` 或 `@`，记录值填站点运行时域名：
+
+![阿里云添加记录（选 CNAME / 主机记录 @ / 粘贴站点域名）](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-06-aliyun-add-record.png)
+
+**② 确认变更**——阿里云会弹出「解析变更确认」对话框，核对无误后点「确定」：
+
+![阿里云解析变更确认对话框](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-07-aliyun-confirm.png)
+
+**③ 两条记录添加成功**——`www` 与 `@` 两条 CNAME 都在列表里，状态「启用」：
+
+![阿里云解析设置：www 与 @ 两条 CNAME 记录](https://cos.files.maozhishi.com/data/web/web-files/img/domain-setup-08-aliyun-both-records.png)
+
+> 上图可见：**CNAME（@ 与 www）与 MX（mxhichina）、TXT（SPF）在同一主机名上共存**，阿里云控制台允许此配置。
+
+### 3.3 ⚠️ MX 与 CNAME 共存的实测结论（重要纠正）
+
+**DNS 协议（RFC 1034/2181）规定 CNAME 不能与其他记录共存**，但阿里云的实际行为是：
+
+| 视角 | 结果 |
+|---|---|
+| 阿里云控制台 | ✅ **允许添加**，不报冲突 |
+| 权威 NS 查询 MX | ✅ 正常返回 `mxn/mxw.mxhichina.com` |
+| 公共解析器（8.8.8.8 / 223.5.5.5 / 1.1.1.1）查 MX | ✅ **全部正常返回 MX** |
+| 平台侧验证 | ✅ `cnameStatus=active`（CNAME 验证通过） |
+
+**实测判断**：阿里云对根域的 CNAME 做了特殊处理（类展平/多记录并存），使**邮件与网站可以并存**。
+
+⚠️ **但这是平台特有行为，不是 DNS 标准保证**——不同服务商、不同解析器可能表现不一。**建议**：
+- 用阿里云 DNS 的域名，`@` 和 `www` 都加 CNAME 是可行的；
+- 但仍建议**优先按客户邮箱需求判断**：若邮箱重要，先确认邮件收发正常再上线网站；
+- 不要据此认为"任何服务商的根域 CNAME + MX 都没问题"。
+
+### 3.4 两个记录都加 vs 只加 www
+
+| 方案 | 操作 | 适用 |
+|---|---|---|
+| **两条都加**（推荐） | `@` 与 `www` 都加 CNAME | 客户输不带 www 也能打开（阿里云支持） |
+| 只加 www | 平台只绑 www | 邮箱配置极敏感、不愿冒险时 |
 
 ---
 
@@ -416,7 +441,7 @@ WS_EMAIL=... WS_PASSWORD=... python3 domain-check.py <site_slug> \
 | 2 | CF www CNAME + 灰云 | ✅ 已嵌入 | §4.2-b |
 | 3 | CF Redirect Rules 配置界面 | ✅ 已嵌入 | §4.3 |
 | 4 | 平台域名列表（www 三项全绿） | ✅ 已嵌入 | §2.3 |
-| 5 | CF「添加记录」表单 | ⏳ 待补充 | §2.2 Step 2 |
+| 5 | CF「添加记录」表单 | ✅ 已嵌入 | §2.2 Step 2 |
 | 6 | 浏览器访问 www 成功 + 锁标志 | ⏳ 待补充 | §2.3 |
 | 7 | 阿里云解析设置 | ⏳ 待补充 | §3 |
 

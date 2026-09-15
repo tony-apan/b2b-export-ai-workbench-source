@@ -32,6 +32,7 @@ sys.path.insert(0, HERE)
 
 NS_PROVIDERS = [
     (r"\.ns\.cloudflare\.com$", "Cloudflare", "warn-flatten"),
+    # 阿里云实测（2026-09-15 goods-suppliers.com）：根域 CNAME 可加且与 MX 共存，平台验证通过
     (r"\.alidns\.com$", "阿里云解析", "ok"),
     (r"\.hichina\.com$", "阿里云解析（万网）", "ok"),
     (r"\.dnspod\.(net|com)$", "腾讯 DNSPod", "ok"),
@@ -376,6 +377,11 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 elif risk == "unknown":
                     add("warn", f"{base}：未识别的 DNS 服务商（{ns_list[0]}），"
                                 f"全部 NS：{', '.join(ns_list)}——请人工确认是否支持根域 CNAME")
+                elif provider.startswith("阿里云"):
+                    # 阿里云支持带域名的直达链接（实测：未登录先跳登录，登录后回到该域名解析页）
+                    add("info", f"{base}：阿里云解析——给用户的直达链接："
+                                f"https://dnsnext.console.aliyun.com/authoritative/domains/{base}"
+                                f"（打开即进解析设置；@ 与 www 都可加 CNAME，实测与 MX 共存无冲突）")
             else:
                 emit("③ DNS 服务商：❓ 查不到 NS 记录（域名可能未注册或 DNS 未接入）")
                 add("warn", f"{base}：查不到 NS 记录，请确认域名已注册且 DNS 已接入")

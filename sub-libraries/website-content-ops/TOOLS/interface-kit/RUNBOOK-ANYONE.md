@@ -235,8 +235,9 @@ python3 image-to-webp.py --in-place <dir>
   | NS 特征 | 服务商 | 根域 CNAME | 证据强度 |
   |---|---|---|---|
   | `*.ns.cloudflare.com` | Cloudflare | ❌ 强制展平 → 走「www 为主 + 根域 301」 | 官方文档 + 实测 |
-  | `*.alidns.com` / `*.hichina.com` | 阿里云 | ⚠️ 个案可保留 | 1 例（非规范 RRset） |
+  | `*.alidns.com` / `*.hichina.com` | 阿里云 | ✅ **可加且与 MX 共存**（实测 2026-09-15） | 平台验证 cname=active |
   | `*.dnspod.net` / `*.dnsv*.com` | 腾讯 | ❓ 未验证 | 无样本 |
+  | （阿里云直达链接） | — | `https://dnsnext.console.aliyun.com/authoritative/domains/<域名>` 打开即进解析设置页 | 实测有效 |
   | `*.googledomains.com` / `*.awsdns-*` | Google / AWS | ❓ 未验证（AWS 官方称协议不允许） | 无样本 |
 
   > 只有 Cloudflare 有「机制文档 + 实测」双重证据；其余按个案/未验证表述，别对客户下断言。
