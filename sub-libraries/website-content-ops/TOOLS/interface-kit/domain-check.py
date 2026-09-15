@@ -98,6 +98,42 @@ def identify_provider(ns_list):
     return ("未知服务商", "unknown")
 
 
+# Cloudflare 代理 IP 段（官方 https://www.cloudflare.com/ips-v4，2026-09-15 抓取）
+# 用途：apex 走「301 跳转到 www」方案时，根域会指向 CF 代理 IP —— 这是**合法终态**，不是"指向错误"。
+CF_PROXY_CIDRS = [
+    "173.245.48.0/20", "103.21.244.0/22", "103.22.200.0/22", "103.31.4.0/22",
+    "141.101.64.0/18", "108.162.192.0/18", "190.93.240.0/20", "188.114.96.0/20",
+    "197.234.240.0/22", "198.41.128.0/17", "162.158.0.0/15", "104.16.0.0/13",
+    "104.24.0.0/14", "172.64.0.0/13", "131.0.72.0/22",
+]
+
+
+def _ip_to_int(ip):
+    parts = ip.split(".")
+    if len(parts) != 4:
+        return None
+    try:
+        return sum(int(p) << (8 * (3 - i)) for i, p in enumerate(parts))
+    except ValueError:
+        return None
+
+
+def is_cf_proxy_ip(ip):
+    """判断 IP 是否属于 Cloudflare 代理段（apex 301 方案下的合法终态）。"""
+    n = _ip_to_int((ip or "").strip())
+    if n is None:
+        return False
+    for cidr in CF_PROXY_CIDRS:
+        base, bits = cidr.split("/")
+        b = _ip_to_int(base)
+        if b is None:
+            continue
+        mask = (0xFFFFFFFF << (32 - int(bits))) & 0xFFFFFFFF
+        if (n & mask) == (b & mask):
+            return True
+    return False
+
+
 def norm_host(v):
     """主机名规范化：trim + lower + 去尾点（对齐平台 ed() 的比对口径）。"""
     return (v or "").strip().lower().rstrip(".")
@@ -204,10 +240,24 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
         emit(f"—— 域名：{base} ——")
 
         has_at, has_www = "@" in pair, "www" in pair
+
+        # 先探测 apex 是否走 CF 301 方案（决定后续告警口径）
+        apex_cf_scheme = False
+        if dig_ok:
+            try:
+                probe = dns_state(base, None)  # 根域常被展平，用本地/默认查询即可
+                apex_cf_scheme = any(is_cf_proxy_ip(x) for x in probe.get("a", []))
+            except (DnsTimeout, DnsUnavailable):
+                pass
+
         emit(f"② 平台已绑定：{'@ ' if has_at else ''}{'www ' if has_www else ''}".rstrip())
         if not has_at:
-            entry["issues"].append("平台未绑定根域名（@）")
-            add("warn", f"{base}：平台未绑定根域名（@）")
+            if apex_cf_scheme:
+                add("info", f"{base}：根域未绑到平台——**符合 301 方案**（根域由 Cloudflare 全权处理，"
+                            f"平台无需验证它）")
+            else:
+                entry["issues"].append("平台未绑定根域名（@）")
+                add("warn", f"{base}：平台未绑定根域名（@）")
         if not has_www:
             entry["issues"].append("平台未绑定 www 子域")
             add("warn", f"{base}：平台未绑定 www（多数客户习惯输 www）")
@@ -226,7 +276,10 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 provider, risk = identify_provider(ns_list)
                 emit(f"③ DNS 服务商：{provider}（NS: {', '.join(ns_list[:3])}）")
                 entry["provider"] = provider
-                if risk == "warn-flatten":
+                if risk == "warn-flatten" and apex_cf_scheme:
+                    add("info", f"{base}：DNS 在 Cloudflare——根域已按 301 方案处理"
+                                f"（指向 CF 代理 IP，流量在边缘跳转到 www），符合预期")
+                elif risk == "warn-flatten":
                     add("warn", f"{base}：DNS 在 Cloudflare——**根域（@）CNAME 会被自动展平**"
                                 f"（官方文档：apex 记录默认展平且 Flatten 开关不可用），"
                                 f"EdgeOne 无法验证根域。建议：① www 为主域名 + 根域 301 跳转到 www"
@@ -287,11 +340,24 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 # MAJOR-10：展平场景——A 记录与目标的 A 集合求交
                 if not hit and tgt_ips:
                     hit = bool(tgt_ips & {norm_host(x) for x in state["a"]})
-                if not hit:
+                # apex 301 方案：根域指向 CF 代理 IP 属**合法终态**（流量在 CF 边缘 301 到 www，
+                # 根本不到 EdgeOne，所以平台不需要验证根域）。识别后不再报"指向错误"。
+                apex_via_cf = (host_key == "@"
+                               and any(is_cf_proxy_ip(x) for x in state["a"]))
+                if apex_via_cf:
+                    entry["hosts"].setdefault(host_key, {})["apex_via_cf"] = True
+                    add("info", f"{label}：根域走 Cloudflare 代理（301 跳转到 www 方案）——"
+                                f"平台无需验证根域，属预期终态")
+                elif not hit:
                     entry["issues"].append(f"{label} 指向不是 {cname_target}")
                     add("error", f"{label}：当前指向 {actual}，应指向 {cname_target}")
 
-            if rec and rec.get("cnameStatus") and rec["cnameStatus"] != "active":
+            if apex_via_cf:
+                # 301 方案下平台不该绑根域；若仍绑着会残留 moved/failed 告警 → 建议解绑
+                if rec:
+                    add("info", f"{label}：该根域仍绑在平台上——301 方案下建议解绑"
+                                f"（api.delete_domain），否则平台会一直显示验证失败告警")
+            elif rec and rec.get("cnameStatus") and rec["cnameStatus"] != "active":
                 st = rec["cnameStatus"]
                 if st == "moved":
                     add("warn", f"{label}：平台状态 moved（等待生效）——平台仍在同步，"
@@ -299,7 +365,7 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 else:
                     add("error" if st == "invalid" else "warn",
                         f"{label}：平台状态 {st}（{CNAME_STATUS_CN.get(st, st)}）")
-            if rec and rec.get("certificateStatus") == "failed":
+            if rec and rec.get("certificateStatus") == "failed" and not apex_via_cf:
                 # MAJOR-8：平台无证书申请 action（actions 只有 add/refresh/setPrimary/setEnabled/delete），
                 # 证书由平台在 DNS 校验通过后自动签发——不要引导用户/客户去找不存在的"申请接口"。
                 add("warn", f"{label}：SSL 证书未签发——修正 DNS 后用 refresh_domain 同步；"

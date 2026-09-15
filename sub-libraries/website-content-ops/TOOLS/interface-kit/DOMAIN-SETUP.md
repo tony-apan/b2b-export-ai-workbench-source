@@ -225,6 +225,57 @@ Step 3  验证：curl -sI http://17ark.com
 - 把 `www` 设为**主域名**：`api.set_primary_domain(slug, sid, "www.17ark.com", authorization_confirmed=True)`
 - 根域可从平台**解绑**（已由 CF 全权处理）——否则平台会一直显示根域验证失败
 
+### 4.3-b 实测完成记录（2026-09-15，方案 A 全流程跑通）
+
+**操作**（用带 `Single Redirect: 编辑` 权限的 API Token 直接完成）：
+
+```
+① 创建 Single Redirect 规则（apex → www，301）
+   PUT /zones/{zone_id}/rulesets/phases/http_request_dynamic_redirect/entrypoint
+   {
+     "rules": [{
+       "action": "redirect",
+       "action_parameters": {"from_value": {
+         "status_code": 301,
+         "target_url": {"expression": "concat(\"https://www.17ark.com\", http.request.uri.path)"},
+         "preserve_query_string": true}},
+       "expression": "(http.host eq \"17ark.com\")",
+       "description": "Apex to www (301)"
+     }]
+   }
+
+② 根域记录改 A 192.0.2.1 + 橙云（proxied=true）
+   PATCH /zones/{zone_id}/dns_records/{record_id}
+
+③ 平台侧配套
+   set_primary_domain(slug, sid, "www.17ark.com", authorization_confirmed=True)
+   delete_domain(slug, sid, "17ark.com", authorization_confirmed=True, confirm_token="17ark.com")
+```
+
+**验证结果**（全部实测）：
+
+| 测试 | 结果 |
+|---|---|
+| `curl -L http://17ark.com` | 最终 **200**，跳转 1 次，落点 `https://www.17ark.com/` ✅ |
+| `curl -I https://17ark.com` | **301** + `location: https://www.17ark.com/` + `server: cloudflare` ✅ |
+| 带路径参数 `http://17ark.com/about?x=1` | → `https://www.17ark.com/about?x=1`（路径与参数完整保留）✅ |
+| `https://www.17ark.com` | **200**，证书有效，页面正常 ✅ |
+| 平台域名列表 | 只剩 `www.17ark.com`：`primary=true` `cname=active` `ssl=active` ✅ |
+| `domain-check.py` | **0 须修 / 0 提醒**（全绿）✅ |
+
+**最终架构**：
+
+```
+客户输入 17ark.com ──→ Cloudflare 边缘 301 ──→ https://www.17ark.com
+                       （橙云 A 192.0.2.1）              │
+                                                         ↓
+                                              灰云 CNAME → EdgeOne（平台验证 + 证书）
+```
+
+**根域流量根本不到 EdgeOne**，所以平台不需要（也不应该）验证根域——这就是方案 A 能成立的根本原因。
+
+**工具增强**：`domain-check.py` 已内置 Cloudflare 官方 IP 段识别——当根域指向 CF 代理 IP 时，判定为「301 方案预期终态」而非"指向错误"，并把相关告警降级为提示（避免误报）。
+
 ### 4.4 三种解法对比
 
 | 方案 | 操作 | 优点 | 代价 |
