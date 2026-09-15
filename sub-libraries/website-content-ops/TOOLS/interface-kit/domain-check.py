@@ -68,6 +68,10 @@ class DnsTimeout(Exception):
     """单次查询超时（网络抖动，不代表解析错误）。"""
 
 
+class DnsQueryError(Exception):
+    """dig 非零退出码（如非法域名/服务端拒绝）——与「查询成功但无记录」必须区分。"""
+
+
 def run_dig(args, timeout=12):
     """执行 dig。返回结果列表；dig 缺失抛 DnsUnavailable，超时抛 DnsTimeout。
     （把超时/缺失与"查询到空结果"区分开——后者才是真的没配置解析。）"""
@@ -78,7 +82,8 @@ def run_dig(args, timeout=12):
     except subprocess.TimeoutExpired:
         raise DnsTimeout(f"dig {' '.join(args)} 超时")
     if r.returncode != 0:
-        return []
+        # M8：非零退出码 ≠ 无记录（NXDOMAIN 的 dig 退出码是 0 + 空输出）。
+        raise DnsQueryError((r.stderr or r.stdout or f"dig exit {r.returncode}").strip()[:160])
     return [x.strip().rstrip(".").lower() for x in (r.stdout or "").splitlines() if x.strip()]
 
 
@@ -139,6 +144,49 @@ def norm_host(v):
     return (v or "").strip().lower().rstrip(".")
 
 
+def probe_apex_redirect(apex, expected_www, timeout=15):
+    """B2：实测 apex 是否真的 301/308 跳到 expected_www。
+
+    不能只看「apex 指向 CF 代理 IP」就认定 301 方案已生效——那只是必要条件。
+    返回 (ok, detail)；ok=True 表示实测确认跳转存在且目标正确。
+    """
+    try:
+        r = subprocess.run(
+            ["curl", "-sI", "-o", "/dev/null", "-D", "-", "--max-time", str(timeout),
+             f"http://{apex}/"],
+            capture_output=True, text=True, timeout=timeout + 5,
+        )
+    except FileNotFoundError:
+        return None, "curl 不可用，无法验证 301（跳过判定）"
+    except subprocess.TimeoutExpired:
+        return None, "curl 超时，无法验证 301（跳过判定）"
+    headers = (r.stdout or "") + (r.stderr or "")
+    status = None
+    location = ""
+    for line in headers.splitlines():
+        low = line.strip().lower()
+        if low.startswith("http/"):
+            parts = line.split()
+            if len(parts) >= 2:
+                try:
+                    status = int(parts[1])
+                except ValueError:
+                    pass
+        elif low.startswith("location:"):
+            location = line.split(":", 1)[1].strip()
+    if status not in (301, 308):
+        return False, f"实测 apex HTTP 返回 {status}，未跳转（期望 301/308）"
+    if not location:
+        return False, "返回 301 但缺少 Location 头"
+    loc_host = ""
+    m = re.match(r"^https?://([^/:]+)", location)
+    if m:
+        loc_host = norm_host(m.group(1))
+    if loc_host != norm_host(expected_www):
+        return False, f"跳转目标 {loc_host or location!r} 不是已绑定的 {expected_www}"
+    return True, f"实测 {status} → {location}"
+
+
 def authoritative_ns(base):
     """查注册域的权威 NS（用于避开本地递归缓存——改了 DNS 后本地缓存可能滞后数分钟）。"""
     try:
@@ -163,13 +211,16 @@ def dns_state(domain, auth_ns=None):
     except DnsTimeout as e:
         out["error"] = f"timeout: {e}"
         return out
+    except DnsQueryError as e:
+        out["error"] = f"query-error: {e}"
+        return out
     out["resolved"] = bool(out["cname"] or out["a"])
     return out
 
 
 def check_site(api, site_slug, only_domain=None, quiet=False):
     """巡检一个站点。quiet=True 时不打印人读文本（供 --json 使用）。"""
-    result = {"site_slug": site_slug, "findings": [], "domains": [], "ok": True}
+    result = {"site_slug": site_slug, "findings": [], "domains": [], "ok": True, "env_error": False}
 
     def emit(*a):
         if not quiet:
@@ -216,49 +267,85 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
         run_dig(["NS", "example.com"], timeout=8)
     except DnsUnavailable:
         dig_ok = False
-        add("error", "本机没有 dig，无法做 DNS 侧核验（Windows 请装 BIND tools 或改用 nslookup）；"
-                     "本次只输出平台侧状态")
+        result["env_error"] = True     # M7：环境缺失 → 退出 2，不与"有须修项"同码
+        add("warn", "本机没有 dig，无法做 DNS 侧核验（Windows 请装 BIND tools 或改用 nslookup）；"
+                    "本次只输出平台侧状态（属环境限制，非域名问题）")
     except DnsTimeout:
         pass  # 单次超时不代表不可用
 
-    # MAJOR-9：按注册域分组（apex 判定基于"最后两段"，非仅去 www 前缀）
+    # B3：注册域切分需支持多段公共后缀（.co.uk/.com.cn/.com.au…）。
+    # 精简 PSL：覆盖外贸常见地区后缀；未命中时回退"最后两段"。
+    MULTI_SUFFIX = {
+        "co.uk", "org.uk", "me.uk", "ltd.uk", "plc.uk", "ac.uk", "gov.uk",
+        "com.cn", "net.cn", "org.cn", "gov.cn", "edu.cn",
+        "com.au", "net.au", "org.au", "edu.au", "gov.au",
+        "co.jp", "or.jp", "ne.jp", "ac.jp", "go.jp",
+        "co.nz", "net.nz", "org.nz",
+        "com.br", "com.tw", "com.hk", "com.sg", "com.my", "com.mx",
+        "com.ar", "com.tr", "com.vn", "com.ph", "com.pk", "com.sa",
+        "co.za", "co.in", "co.kr", "co.id", "co.th", "co.il",
+        "com.ua", "com.pl", "com.ru", "com.es", "com.it",
+    }
+
     def registrable(host):
         parts = host.split(".")
-        return ".".join(parts[-2:]) if len(parts) >= 2 else host
+        if len(parts) < 2:
+            return host
+        last2 = ".".join(parts[-2:])
+        if last2 in MULTI_SUFFIX and len(parts) >= 3:
+            return ".".join(parts[-3:])
+        return last2
 
+    # 分组：同注册域的 @ 与 www 成一组（both 都要检查）；
+    # 其他子域（blog.x.com）单独成组，只检查它自己，不再合成 www.<子域>。
     groups = {}
     for d in domains:
         dom = norm_host(d.get("domain"))
         reg = registrable(dom)
-        # apex = 域名本身等于注册域；www.x 和 x 归到同一 base
-        is_apex = dom == reg
-        base = reg if is_apex or dom.startswith("www." + reg) else dom
-        groups.setdefault(base, {})["@" if is_apex else "www"] = d
+        if dom == reg or dom == "www." + reg:
+            groups.setdefault(reg, {})["@" if dom == reg else "www"] = d
+        else:
+            groups.setdefault(dom, {})["self"] = d
 
     for base, pair in groups.items():
-        entry = {"domain": base, "hosts": {}, "provider": None, "issues": []}
+        entry = {"domain": base, "hosts": {}, "provider": None, "issues": [], "issues_list": []}
         emit(f"—— 域名：{base} ——")
 
+        is_subdomain_group = "self" in pair and "@" not in pair and "www" not in pair
         has_at, has_www = "@" in pair, "www" in pair
+        if is_subdomain_group:
+            emit(f"② 平台已绑定：{base}（子域名，按独立主机校验）")
 
-        # 先探测 apex 是否走 CF 301 方案（决定后续告警口径）
-        apex_cf_scheme = False
-        if dig_ok:
+        # 先探测 apex 是否走 CF 301 方案。
+        # B2：仅"指向 CF 代理 IP"是必要条件，**必须再实测 301 跳转**才认定方案生效，
+        # 否则任何 apex 挂在 CF 后面的站点都会被误判为"预期终态"，从而漏报真实故障。
+        apex_cf_hint = False
+        apex_via_cf = False
+        apex_redirect_detail = ""
+        if dig_ok and not is_subdomain_group and has_www:
             try:
-                probe = dns_state(base, None)  # 根域常被展平，用本地/默认查询即可
-                apex_cf_scheme = any(is_cf_proxy_ip(x) for x in probe.get("a", []))
-            except (DnsTimeout, DnsUnavailable):
+                probe = dns_state(base, None)
+                apex_cf_hint = any(is_cf_proxy_ip(x) for x in probe.get("a", []))
+            except (DnsTimeout, DnsUnavailable, DnsQueryError):
                 pass
+            if apex_cf_hint:
+                ok, detail = probe_apex_redirect(base, "www." + base)
+                apex_via_cf = bool(ok)
+                apex_redirect_detail = detail
+                if ok is None:
+                    add("warn", f"{base}：根域指向 Cloudflare 代理，但{detail}"
+                                f"——无法确认 301 方案是否生效，请人工核对")
 
-        emit(f"② 平台已绑定：{'@ ' if has_at else ''}{'www ' if has_www else ''}".rstrip())
-        if not has_at:
-            if apex_cf_scheme:
+        if not is_subdomain_group:
+            emit(f"② 平台已绑定：{'@ ' if has_at else ''}{'www ' if has_www else ''}".rstrip())
+        if not is_subdomain_group and not has_at:
+            if apex_via_cf:
                 add("info", f"{base}：根域未绑到平台——**符合 301 方案**（根域由 Cloudflare 全权处理，"
                             f"平台无需验证它）")
             else:
                 entry["issues"].append("平台未绑定根域名（@）")
                 add("warn", f"{base}：平台未绑定根域名（@）")
-        if not has_www:
+        if not is_subdomain_group and not has_www:
             entry["issues"].append("平台未绑定 www 子域")
             add("warn", f"{base}：平台未绑定 www（多数客户习惯输 www）")
 
@@ -267,8 +354,8 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
         if dig_ok:
             try:
                 ns_list = run_dig(["NS", base])
-            except DnsTimeout:
-                add("warn", f"{base}：NS 查询超时，未能判定 DNS 服务商")
+            except (DnsTimeout, DnsQueryError) as e:
+                add("warn", f"{base}：NS 查询失败（{str(e)[:40]}），未能判定 DNS 服务商")
                 ns_list = []
             if ns_list:
                 auth_ns = ns_list[0]  # 直接问权威，避开本地递归缓存
@@ -276,9 +363,9 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 provider, risk = identify_provider(ns_list)
                 emit(f"③ DNS 服务商：{provider}（NS: {', '.join(ns_list[:3])}）")
                 entry["provider"] = provider
-                if risk == "warn-flatten" and apex_cf_scheme:
+                if risk == "warn-flatten" and apex_via_cf:
                     add("info", f"{base}：DNS 在 Cloudflare——根域已按 301 方案处理"
-                                f"（指向 CF 代理 IP，流量在边缘跳转到 www），符合预期")
+                                f"（实测确认：{apex_redirect_detail}），符合预期")
                 elif risk == "warn-flatten":
                     add("warn", f"{base}：DNS 在 Cloudflare——**根域（@）CNAME 会被自动展平**"
                                 f"（官方文档：apex 记录默认展平且 Flatten 开关不可用），"
@@ -298,22 +385,35 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
         if dig_ok and cname_target:
             try:
                 tgt_ips = set(run_dig(["A", cname_target]))
-            except (DnsTimeout, DnsUnavailable):
+            except (DnsTimeout, DnsUnavailable, DnsQueryError):
                 tgt_ips = set()
 
-        for host_key, label in (("@", base), ("www", f"www.{base}")):
+        # B3：子域组只校验它自己，不合成 www.<subdomain>
+        if is_subdomain_group:
+            host_iter = (("self", base),)
+        else:
+            host_iter = (("@", base), ("www", f"www.{base}"))
+        for host_key, label in host_iter:
             rec = pair.get(host_key)
+            per_host_apex_cf = False          # B1：每轮显式初始化，防"无记录分支"未赋值即被引用
             if not dig_ok:
                 entry["hosts"][host_key] = {"platform": rec, "dns": None}
                 continue
             try:
                 state = dns_state(label, auth_ns)
-            except (DnsTimeout, DnsUnavailable) as e:
+            except (DnsTimeout, DnsUnavailable, DnsQueryError) as e:
                 state = {"cname": [], "a": [], "resolved": False, "error": str(e)}
 
             if state.get("error"):
-                msg = ("DNS 查询超时，未能判定（网络抖动，非解析错误）"
-                       if str(state["error"]).startswith("timeout") else str(state["error"]))
+                err = str(state["error"])
+                if err.startswith("timeout"):
+                    msg = "DNS 查询超时，未能判定（网络抖动，非解析错误）"
+                elif err.startswith("query-error"):
+                    msg = f"DNS 查询失败（{err.split(':',1)[1].strip()[:60]}）——非『未配置』"
+                elif err.startswith("dig-unavailable"):
+                    msg = "本机无 dig，无法核验"
+                else:
+                    msg = err
                 emit(f"④ {label}：⚠️  {msg}")
                 add("warn", f"{label}：{msg}")
                 entry["hosts"][host_key] = {"platform": rec, "dns": state}
@@ -334,29 +434,34 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
             if not state["resolved"]:
                 entry["issues"].append(f"{label} 本地无解析记录")
                 add("error", f"{label}：本地查不到任何解析记录（DNS 未配置）")
+                continue                       # B1：本主机判定结束，后续逻辑不再适用
             else:
                 # BLOCKER-3：规范化后"精确相等"，不再用子串匹配（防 evil-<target> 误判为通过）
                 hit = any(norm_host(x) == cname_target for x in state["cname"])
-                # MAJOR-10：展平场景——A 记录与目标的 A 集合求交
-                if not hit and tgt_ips:
+                # M9：A 记录交集回退**仅用于 apex**（展平机制）；www 必须命中 CNAME 本身，
+                # 否则平台看不到 CNAME 无法验证（DOMAIN-SETUP「验证是看 CNAME 记录本身」）。
+                if not hit and tgt_ips and host_key == "@":
                     hit = bool(tgt_ips & {norm_host(x) for x in state["a"]})
-                # apex 301 方案：根域指向 CF 代理 IP 属**合法终态**（流量在 CF 边缘 301 到 www，
-                # 根本不到 EdgeOne，所以平台不需要验证根域）。识别后不再报"指向错误"。
-                apex_via_cf = (host_key == "@"
-                               and any(is_cf_proxy_ip(x) for x in state["a"]))
-                if apex_via_cf:
+                if not hit and host_key == "www" and state["a"] and not state["cname"]:
+                    add("warn", f"{label}：该主机只有 A 记录（无 CNAME）——平台按 CNAME 验证，"
+                                f"可能无法通过；建议改回 CNAME 指向 {cname_target}")
+                # apex 301 方案（B2：外层已**实测**确认 301 跳转存在，非仅靠 IP 启发式）。
+                # 仅当 host_key=="@" 且外层实测通过时，才把"指向 CF 代理 IP"视为合法终态。
+                per_host_apex_cf = (host_key == "@" and apex_via_cf)
+                if per_host_apex_cf:
                     entry["hosts"].setdefault(host_key, {})["apex_via_cf"] = True
-                    add("info", f"{label}：根域走 Cloudflare 代理（301 跳转到 www 方案）——"
-                                f"平台无需验证根域，属预期终态")
+                    add("info", f"{label}：根域走 Cloudflare 代理且**实测确认** 301 跳转到 www"
+                                f"——平台无需验证根域，属预期终态")
                 elif not hit:
                     entry["issues"].append(f"{label} 指向不是 {cname_target}")
                     add("error", f"{label}：当前指向 {actual}，应指向 {cname_target}")
 
-            if apex_via_cf:
-                # 301 方案下平台不该绑根域；若仍绑着会残留 moved/failed 告警 → 建议解绑
+            if per_host_apex_cf:
+                # B2：不再直接建议 delete_domain（破坏性动作需人工授权）；只提示现状与选项
                 if rec:
-                    add("info", f"{label}：该根域仍绑在平台上——301 方案下建议解绑"
-                                f"（api.delete_domain），否则平台会一直显示验证失败告警")
+                    add("info", f"{label}：该根域仍绑在平台上——301 方案下平台无法验证它，"
+                                f"会持续显示失败告警。是否解绑由人工决定（解绑属破坏性操作，"
+                                f"需按 RUNBOOK 授权流程执行）")
             elif rec and rec.get("cnameStatus") and rec["cnameStatus"] != "active":
                 st = rec["cnameStatus"]
                 if st == "moved":
@@ -365,7 +470,7 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 else:
                     add("error" if st == "invalid" else "warn",
                         f"{label}：平台状态 {st}（{CNAME_STATUS_CN.get(st, st)}）")
-            if rec and rec.get("certificateStatus") == "failed" and not apex_via_cf:
+            if rec and rec.get("certificateStatus") == "failed" and not per_host_apex_cf:
                 # MAJOR-8：平台无证书申请 action（actions 只有 add/refresh/setPrimary/setEnabled/delete），
                 # 证书由平台在 DNS 校验通过后自动签发——不要引导用户/客户去找不存在的"申请接口"。
                 add("warn", f"{label}：SSL 证书未签发——修正 DNS 后用 refresh_domain 同步；"
@@ -396,20 +501,27 @@ def main():
         print("BLOCK: 找不到 allincms_api.py（本脚本需与它同目录）")
         return 2
 
-    api = AllinCMS(token=token) if token else AllinCMS(email=email, password=password)
     quiet = bool(args.json or args.out)
     try:
+        api = AllinCMS(token=token) if token else AllinCMS(email=email, password=password)
         res = check_site(api, args.site_slug, args.domain, quiet=quiet)
-    except RuntimeError as e:          # M1：站点不存在等业务错误 → 退出 2
+    except RuntimeError as e:          # 站点不存在等业务错误 → 退出 2
         print(f"BLOCK: {e}")
+        return 2
+    except Exception as e:             # M7：网络异常/未预期崩溃 → 退出 2（不与"有须修项"同码）
+        print(f"BLOCK: 巡检执行异常（{type(e).__name__}: {e}）")
         return 2
 
     if args.json or args.out:
         payload = json.dumps(res, ensure_ascii=False, indent=2)
         if args.out:
-            with open(args.out, "w", encoding="utf-8") as f:
-                f.write(payload + "\n")
-            print(f"已写入 {args.out}")   # 这条走 stdout，但--json 已不混入
+            try:
+                with open(args.out, "w", encoding="utf-8") as f:
+                    f.write(payload + "\n")
+            except OSError as e:                    # M7：写盘失败归环境错误（2）
+                print(f"BLOCK: 无法写入 {args.out}: {e}", file=sys.stderr)
+                return 2
+            print(f"已写入 {args.out}", file=sys.stderr)   # M10：提示走 stderr，保持 stdout 纯净
         if args.json:
             print(payload)
     else:
@@ -427,7 +539,9 @@ def main():
             print(f"ℹ️  {f['text']}")
         print(f"\n小结：{len(errs)} 个须修 / {len(warns)} 个提醒")
 
-    # MAJOR-4：退出码只按 error 判定（无域名属合法中间态 → 0）
+    # 退出码：2=环境缺失（无 dig）/ 1=有须修项 / 0=正常（无域名属合法中间态）
+    if res.get("env_error"):
+        return 2
     return 1 if any(f["level"] == "error" for f in res["findings"]) else 0
 
 

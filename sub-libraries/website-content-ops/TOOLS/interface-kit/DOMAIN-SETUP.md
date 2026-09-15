@@ -38,11 +38,13 @@ keywords: ["域名", "domain", "CNAME", "DNS", "Cloudflare", "阿里云", "EdgeO
 
 ## 二、实战演示 A：Cloudflare（真实案例，含故障修复）
 
-> 案例域名 `17ark.com`（生产域名，47 条 DNS 记录，含邮箱 MX/SPF/DKIM）。2026-09-15 实测。
+> 案例域名 `17ark.com`（生产域名，47 条 DNS 记录）。2026-09-15 实测。
+> **邮件记录实况**（dig 复核）：有 SPF（两条，见 ISS-148）与 DMARC；**根域无 MX**（属发信域，不是收信域）；常见 DKIM selector 未命中（未穷举）。
 
 ### 2.1 初始状态：网站打不开
 
 **症状**：`17ark.com` 和 `www.17ark.com` 都无法访问（HTTPS 报错）。
+> 注：本章记录**修复过程**（历史状态）；当前终态见 §4.3-b。
 
 **诊断过程**：
 
@@ -149,7 +151,7 @@ dig +short TXT 17ark.com    # 有 SPF/DKIM 也说明在用
 ```
 
 - **没有邮箱** → 直接加根域 CNAME ✅
-- **有邮箱** → 不要动根域（会断邮件），改用子域名收发，或走第四节的 301 方案
+- **有邮箱** → 不要用 **CNAME** 方案动根域（CNAME 与 MX 冲突）；改用子域名收发，**或走第四节的 301 方案**（A 记录 + 橙云代理 **不影响 MX**——MX 记录不经 CF 代理）
 
 ---
 
@@ -171,14 +173,14 @@ dig +short TXT 17ark.com    # 有 SPF/DKIM 也说明在用
 |---|---|---|
 | CF 配置 | CNAME → 站点域名 | CNAME → 站点域名 |
 | **权威 NS 查 CNAME** | `0gn3iso4o6.web.allincms.com.` ✅ | **空**（被展平） |
-| **权威 NS 查 A** | — | `43.159.106.167`（EdgeOne IP） |
+| **权威 NS 查 A** | — | `43.159.106.167`（EdgeOne IP，**301 方案实施前的中间态**） |
 | 平台 `cnameStatus` | **active** ✅ | **moved** ❌ |
 | 平台证书 | **active** ✅ | failed（"自动验证无法通过"） |
 | HTTPS 访问 | **200** ✅ | **000**（无证书） |
 
 **为什么平台验证失败**：平台要看到 CNAME 记录**本身**来判断指向；展平后只剩 A 记录，平台查不到 CNAME → 验证永不通过 → 证书签不出来。
 
-> 补充实测：EdgeOne **认这个 Host**（用 `--resolve` 强制指向 EdgeOne IP 时，`17ark.com` 返回 301/302，而乱码域名返回 418）——说明**路由层没问题，卡住的只是证书签发**。
+> ⚠️ **一次观测，非稳定结论**：apex 仍绑在平台上时，用 `--resolve` 强制指向 EdgeOne IP 曾观测到 301/302；根域解绑后同一手法返回 **418**（与乱码域名相同）。故「EdgeOne 认这个 Host」**依赖平台侧绑定状态**，不构成可复现的机制结论——不要据此判断路由层无问题。
 
 ### 4.2 🔴 代理状态陷阱：两条记录要求**恰好相反**
 
@@ -213,7 +215,7 @@ Step 2  Rules → Redirect Rules → Create rule
         When：Hostname equals 17ark.com
         Then：Dynamic redirect → 301
               Expression: concat("https://www.17ark.com", http.request.uri.path)
-        （免费版也可用 Page Rules：Forwarding URL + 301 + https://www.17ark.com/$1）
+        （免费版若用 Page Rules：Forwarding URL + 301 + https://www.17ark.com/$1 —— ⚠️ CF 已将 Page Rules 标为 **deprecated**，优先用 Single Redirects）
 
 Step 3  验证：curl -sI http://17ark.com
         应返回 301 + Location: https://www.17ark.com/
@@ -314,9 +316,26 @@ api.delete_domain(slug, site_id, "x.example.com",
 **域名规范化**（`normalize_domain`，与平台 zod 规则逐字一致）：去空格 → 转小写 → 去 `https://` → 去路径。
 **约束**：单站最多 **3 个**域名；`delete_domain` 需 `confirm_token` 逐字等于域名（防误删）。
 
-> 💡 如果用户提供 Cloudflare API Token，AI 可**直接操作 DNS**（不必让用户手动点）：
-> 需要 `Zone → DNS → Edit` 权限（限定到具体域名）。**但 Redirect Rules / Page Rules 需要额外权限**
-> （本次实测的 token 两者都返回未授权），所以 301 那步通常仍需用户手动配或补授权。
+> ### 🔐 AI 操作客户 DNS 的边界（硬规则，三处文档统一口径）
+>
+> **默认：AI 不接触客户的 DNS 后台**（不登录、不改记录），只给指引 + 用 `dig` 复验。
+>
+> **例外（用户显式提供 scoped API Token 时）**——必须同时满足：
+> 1. **逐条展示 diff 并取得用户授权**后才执行（不得静默批量改）；
+> 2. 权限**限定到该域名**（Zone Resources = Include → Specific zone）；
+> 3. **只允许新增/修改本方案涉及的 A / CNAME 记录**；
+> 4. **禁止触碰 MX / TXT（SPF/DMARC/DKIM）/ NS / CAA**——这些是邮件与委派记录，改错会直接中断服务；
+> 5. 改完把变更记录写入任务证据（不写 token 本身）。
+>
+> **所需权限**（2026-09-15 实测）：
+> | 用途 | 权限 |
+> |---|---|
+> | 改 DNS 记录 | `DNS: 编辑` |
+> | 创建根域 301 | `单一重定向: 编辑`（`Single Redirect Edit`） |
+> | 备用 | `页面规则: 编辑`（Page Rules 已被 CF 标为 deprecated，优先用 Single Redirects） |
+> | 辅助读取 | `Config Rules: 编辑` + `Zone Custom Assets: 读取` |
+>
+> 未提供 token 时，把本节第 4.3 的步骤发给客户自行操作，AI 用 `dig` / `curl` 复验。
 
 ---
 
@@ -345,7 +364,7 @@ WS_EMAIL=... WS_PASSWORD=... python3 domain-check.py <site_slug> \
 | 域名打不开（超时） | CNAME 指向已失效的旧地址 | `dig CNAME <域名>` 看指向；改成 `runtime_site_domain` |
 | 平台长期 `moved` | ① DNS 未生效 ② 根域被展平 | 权威 NS 复核；根域 → 走第四节方案 |
 | SSL failed + "自动验证无法通过" | CNAME 未通过验证 | 先修 DNS，再 `refresh_domain` |
-| 网站能开但样式错乱/字体异常 | 加了代理层（CF 橙云） | www 记录改回**仅 DNS** |
+| 网站能开但样式错乱/字体异常 | 推断：加了代理层（CF 橙云）会改写/拦截资源（**本项目未实测到此因果**） | www 记录改回**仅 DNS** |
 | 客户说"加了还是不行" | 本地缓存 / 加错主机名（@ vs www） | 用巡检工具（权威 NS 查询）核对 |
 | 改了 DNS 但巡检说没配 | 本地 DNS 缓存滞后 | 已修复：工具改用权威 NS |
 
@@ -356,13 +375,15 @@ WS_EMAIL=... WS_PASSWORD=... python3 domain-check.py <site_slug> \
 | 项 | 说明 |
 |---|---|
 | **域名数量上限** | 单站最多 **3 个**（平台常量 `MAX_SITE_DOMAINS`）。够用：`@` + `www` + 1 个子域 |
-| **主域名含义** | `isPrimary` 的那个决定 canonical 与默认跳转；换主域名属业务决策，需用户确认 |
+| **主域名含义** | `isPrimary` 决定 **sitemap 落点与默认跳转**（实测 sitemap 用主域名）；⚠️ 未观测到 `<link rel="canonical">`（全站 0 命中），**不要对客户宣称 canonical 已生效**。换主域名属业务决策，需用户确认 |
 | **证书签发** | 平台在 **CNAME 验证通过后自动签发**，AI **没有**申请接口；未签好前**不得**对客户宣称"证书已生效" |
 | **证书续期** | 平台自动处理，无需客户操作 |
 | **邮箱冲突** | 根域加 CNAME 会与 MX/SPF 冲突（见 3.1 前置检查）——有邮箱的域名不要动根域 |
 | **换域名** | 原语齐备（`add` 新 + `set_primary` + `delete` 旧），但**没有现成 SOP**：需考虑旧域名 301 保留 SEO、canonical 更新、证书重签顺序 |
 | **子域名需求** | 如 `blog.example.com`：直接加为独立域名（占 1 个名额）；CF 展平问题适用于任何 apex |
 | **域名过期** | 工具暂不检查到期时间；建议交付时提醒客户留意续费 |
+| **⚠️ 301 规则的失效模式** | 规则被误删/配额超限时，根域会回源到占位地址 `192.0.2.1`（不可达）→ **522**。巡检已内置实测断言（`domain-check.py` 会 curl apex 验证 301 落点）；发现失败即报 error |
+| **临时域名可被索引** | 平台临时域名（`xxxx.web.allincms.com`）仍公开可访问、`robots.txt` 为 `Allow: /`、无 noindex，且与 www 共用同一 sitemap → 存在重复主机名信号。是否需平台侧 noindex 属平台能力边界（待确认） |
 | **DNS 传播时间** | 通常 1–10 分钟；工具用权威 NS 可立即看到真实值（绕过本地缓存） |
 | **国内访问** | 做外贸无需备案；`1.1.1.1`/DoH 在国内不可达但 `dig` 正常；操作 CF 后台建议开代理 |
 
@@ -372,7 +393,7 @@ WS_EMAIL=... WS_PASSWORD=... python3 domain-check.py <site_slug> \
 
 - **时机**：网站做好、客户满意**之后**再谈域名（先交付价值，别在开工时就谈配置）
 - **话术**：照抄 [client-input-checklist.md](templates/client-input-checklist.md) 〇-c——购买引导 / 绑定确认 / 按 NS 商给 DNS 步骤 / 三档证书状态反馈
-- **安全边界**：AI **不登录客户的 DNS 后台**。只做两件事：① 给逐步指引（客户能照着点）② 用 `dig` 复验结果（比让客户截图更可靠、更快）
+- **安全边界**：默认 AI **不接触客户 DNS 后台**；只有用户显式提供 scoped token 时才可代改（且严格按 §5 的硬规则：逐条 diff 授权、限 A/CNAME、禁碰 MX/TXT/NS）。无论如何，AI 都要用 `dig` / `curl` **独立复验**结果（比让客户截图更可靠）
 - **诚实红线**：证书没签好就说"平台在等 DNS 校验通过"，**不得**说"已生效"
 - **不替客户决策**：选哪个注册商、要不要迁 DNS、换不换域名 —— 都给建议 + 让客户拍板
 

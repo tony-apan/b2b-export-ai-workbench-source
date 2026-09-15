@@ -346,7 +346,8 @@ redaction_status: "safe-to-publish"
   ```
 - **验收判据**：`domain-check.py` 无 ❌（四项全过）——① 已添加域名 ② @ 与 www 都已绑定 ③ NS 服务商已识别 ④ CNAME 实际解析 == 平台要求目标。
   - **证书判据（MAJOR-8 修正）**：平台**没有**证书申请 action（`/{slug}/domains` 的 actions 只有 add/refresh/setPrimary/setEnabled/delete，已逐个解引用核对），证书由平台在 DNS 校验通过后自行签发。所以判据为 `cnameStatus: active` **且** `certificateStatus ∈ {active, requested, none}`；`failed` 需在交付说明里注明「等待平台签发」（**不得**向客户宣称证书已生效）。
-- **产物**：`70_evidence/domain-report.json`（`domain-check.py --out` 直出）+ **`DELIVERY-DOMAIN-<slug>-<date>.md`**（域名交付说明，独立于步骤 12 的网站 DELIVERY）。
+- **产物**：`70_evidence/domain-report.json`（`domain-check.py --out` 直出）+ **`DOMAIN-DELIVERY-<slug>-<date>.md`**（域名交付说明）。
+  ⚠️ **命名不要用 `DELIVERY-` 前缀**：`onepass-completion-gate.py` 用 `glob('DELIVERY-*.md')` 判网站交付件存在性，`DELIVERY-DOMAIN-*.md` 会被误当成网站 DELIVERY 顶掉那道门（M6）。
   > 归属澄清（MAJOR-11）：步骤 12 的 DELIVERY 是**网站交付**（不含域名，可能此时客户还没域名）；步骤 13 产出**域名交付**件。二者独立，不要求步骤 13 回改步骤 12 的文件。
 - **坑**（实测：action 发现 2026-09-09 / 平台侧绑定与巡检 2026-09-15）：
   - **Cloudflare 根域 CNAME 强制展平且无法关闭**（官方文档明示：apex 记录 CNAME flattening 对所有套餐默认生效，`Flatten` 开关在 apex 记录上不可用）。所以 **CF 用户无法用根域 CNAME 通过 EdgeOne 验证** → 给 CF 用户的标准方案是 **www 为主域名 + 根域 301 跳转到 www**；或建议把 DNS 迁到阿里云（根域 CNAME 可保留原记录）。

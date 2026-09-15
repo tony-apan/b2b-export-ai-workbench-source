@@ -232,12 +232,14 @@ python3 image-to-webp.py --in-place <dir>
 - **巡检**：`python3 domain-check.py <site_slug>`（平台侧 + 本地 dig 双向对账；不需要代理）；四项：已添加域名 / @ 与 www 都绑定 / NS 服务商 / CNAME 实际指向 == 平台目标。
 - **绑定**：`api.add_domain(slug, site_id, "example.com", authorization_confirmed=True)`；改完 DNS 后 `api.refresh_domain(...)` 同步平台状态。删除/改主域/停用均带授权闸（`delete_domain` 另需 `confirm_token` 逐字等于域名）。
 - **NS 识别与根域风险**（决定给客户的话术）：
-  | NS 特征 | 服务商 | 根域 CNAME |
-  |---|---|---|
-  | `*.ns.cloudflare.com` | Cloudflare | ❌ **强制展平且无法关闭** → 走「www 为主 + 根域 301」 |
-  | `*.alidns.com` / `*.hichina.com` | 阿里云 | ✅ 可保留 |
-  | `*.dnspod.net` / `*.dnsv*.com` | 腾讯 | ✅ 可保留 |
-  | `*.googledomains.com` / `*.awsdns-*` | Google / AWS | ✅ 可保留 |
+  | NS 特征 | 服务商 | 根域 CNAME | 证据强度 |
+  |---|---|---|---|
+  | `*.ns.cloudflare.com` | Cloudflare | ❌ 强制展平 → 走「www 为主 + 根域 301」 | 官方文档 + 实测 |
+  | `*.alidns.com` / `*.hichina.com` | 阿里云 | ⚠️ 个案可保留 | 1 例（非规范 RRset） |
+  | `*.dnspod.net` / `*.dnsv*.com` | 腾讯 | ❓ 未验证 | 无样本 |
+  | `*.googledomains.com` / `*.awsdns-*` | Google / AWS | ❓ 未验证（AWS 官方称协议不允许） | 无样本 |
+
+  > 只有 Cloudflare 有「机制文档 + 实测」双重证据；其余按个案/未验证表述，别对客户下断言。
 - **CNAME 目标**用 `read_domains()` 的 `runtime_site_domain`（站点专属域名），不是 `cnameValue` 的通配符值。
 - **客户没域名** → 给购买引导（见 [templates/client-input-checklist.md](templates/client-input-checklist.md) 域名节）；**客户有域名但不会配 DNS** → 按其 NS 服务商给具体路径指引，用户操作后**用 `domain-check.py` 复验**（不依赖截图）。
 
