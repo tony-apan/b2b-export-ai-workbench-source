@@ -227,6 +227,8 @@ python3 image-to-webp.py --in-place <dir>
 
 ## §6.5 域名（建站后，ISS-147）
 
+> 完整配置指南（含 CF 根域展平实测与三种解法、分服务商步骤、常见问题）见 **[DOMAIN-SETUP.md](DOMAIN-SETUP.md)**。
+
 - **巡检**：`python3 domain-check.py <site_slug>`（平台侧 + 本地 dig 双向对账；不需要代理）；四项：已添加域名 / @ 与 www 都绑定 / NS 服务商 / CNAME 实际指向 == 平台目标。
 - **绑定**：`api.add_domain(slug, site_id, "example.com", authorization_confirmed=True)`；改完 DNS 后 `api.refresh_domain(...)` 同步平台状态。删除/改主域/停用均带授权闸（`delete_domain` 另需 `confirm_token` 逐字等于域名）。
 - **NS 识别与根域风险**（决定给客户的话术）：

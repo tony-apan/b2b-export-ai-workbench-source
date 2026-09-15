@@ -104,6 +104,7 @@ related: ["../README.md"]
 | SCRIPT-019 | script | 本地图片转 WebP | `../image-to-webp.py` | current | 上传前把 PNG/JPG 本地转 WebP（cwebp→Pillow→sharp 自动探测，默认 q82/≤500KB，超限自动降质再缩宽，幂等跳过已达标 webp，同名不同扩展名防覆盖，转后变大提示保留原格式） |
 | SCRIPT-020 | script | 本地转 WebP 离线对抗自测 | `../image-to-webp-selftest.py` | current | image-to-webp.py 的 9 项契约自测：B1 in-place 不覆盖已有 webp、B2 同名不覆盖、M1 递归、M4 无 .tmp、M8 坏输入不断批、M9 变大 SKIP、M10 in-place 幂等、m2 参数错误返回 2、--help 语义 |
 | SCRIPT-021 | script | 域名巡检（平台+DNS双向对账） | `../domain-check.py` | current | 巡检 4 项：已添加域名 / @与www 是否都绑定 / NS 服务商识别 / CNAME 实际解析==平台 runtime_site_domain。含 Cloudflare 根域展平风险预警、NS→服务商映射、dig 超时与缺失的显式区分、--json/--out 产物直出 |
+| DOC-DOMAIN-SETUP-001 | doc | 域名绑定配置指南 | `../DOMAIN-SETUP.md` | current | 域名绑定全流程技术参考：整体原理、**根域名在 Cloudflare 被强制展平不可用的实测证据与三种解法**、CF/阿里云分步操作、接口调用、巡检、状态值对照、常见问题、客户沟通要点 |
 
 ## 2. 问题 / 教训（issues.tsv）
 

@@ -103,12 +103,24 @@ def norm_host(v):
     return (v or "").strip().lower().rstrip(".")
 
 
-def dns_state(domain):
-    """查询一个主机名的 CNAME 与最终 A 记录。超时/不可用通过 error 字段区分，不编造"无记录"。"""
-    out = {"cname": [], "a": [], "resolved": False, "error": None}
+def authoritative_ns(base):
+    """查注册域的权威 NS（用于避开本地递归缓存——改了 DNS 后本地缓存可能滞后数分钟）。"""
     try:
-        out["cname"] = run_dig(["CNAME", domain])
-        out["a"] = run_dig(["A", domain])
+        return run_dig(["NS", base])
+    except (DnsUnavailable, DnsTimeout):
+        return []
+
+
+def dns_state(domain, auth_ns=None):
+    """查询主机名的 CNAME 与 A 记录。auth_ns 给定时直接问权威 NS（绕过本地缓存）。
+
+    超时/不可用通过 error 字段区分，不编造"无记录"。
+    """
+    out = {"cname": [], "a": [], "resolved": False, "error": None, "via": "auth" if auth_ns else "local"}
+    target = [f"@{auth_ns}"] if auth_ns else []
+    try:
+        out["cname"] = run_dig(["CNAME", domain] + target)
+        out["a"] = run_dig(["A", domain] + target)
     except DnsUnavailable as e:
         out["error"] = f"dig-unavailable: {e}"
         return out
@@ -200,14 +212,16 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
             entry["issues"].append("平台未绑定 www 子域")
             add("warn", f"{base}：平台未绑定 www（多数客户习惯输 www）")
 
-        # ③ NS 服务商（只查注册域，不查子域）
-        provider, risk, ns_list = "未知", "unknown", []
+        # ③ NS 服务商（只查注册域，不查子域）；顺带拿到权威 NS 用于绕缓存
+        provider, risk, ns_list, auth_ns = "未知", "unknown", [], None
         if dig_ok:
             try:
                 ns_list = run_dig(["NS", base])
             except DnsTimeout:
                 add("warn", f"{base}：NS 查询超时，未能判定 DNS 服务商")
                 ns_list = []
+            if ns_list:
+                auth_ns = ns_list[0]  # 直接问权威，避开本地递归缓存
             if ns_list:
                 provider, risk = identify_provider(ns_list)
                 emit(f"③ DNS 服务商：{provider}（NS: {', '.join(ns_list[:3])}）")
@@ -238,7 +252,7 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 entry["hosts"][host_key] = {"platform": rec, "dns": None}
                 continue
             try:
-                state = dns_state(label)
+                state = dns_state(label, auth_ns)
             except (DnsTimeout, DnsUnavailable) as e:
                 state = {"cname": [], "a": [], "resolved": False, "error": str(e)}
 
@@ -251,7 +265,8 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 continue
 
             actual = (state["cname"] or state["a"] or ["<无记录>"])[0]
-            line = f"④ {label}：本地解析 → {actual}"
+            src = "权威NS" if state.get("via") == "auth" else "本地缓存"
+            line = f"④ {label}：{src}解析 → {actual}"
             if rec:
                 p_cname = rec.get("cnameStatus")
                 line += f"｜平台 cname={p_cname}（{CNAME_STATUS_CN.get(p_cname, p_cname)}）"
