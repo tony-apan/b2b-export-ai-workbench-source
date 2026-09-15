@@ -344,8 +344,9 @@ redaction_status: "safe-to-publish"
   # ③ 客户改完 DNS → 刷新平台状态（读取新状态回读）
   #    python 内：api.refresh_domain(slug, site_id, "example.com")
   ```
-- **验收判据**：`domain-check.py` 无 ❌（四项全过）——① 已添加域名 ② @ 与 www 都已绑定 ③ NS 服务商已识别 ④ CNAME 实际解析 == 平台要求目标。
-  - **证书判据（MAJOR-8 修正）**：平台**没有**证书申请 action（`/{slug}/domains` 的 actions 只有 add/refresh/setPrimary/setEnabled/delete，已逐个解引用核对），证书由平台在 DNS 校验通过后自行签发。所以判据为 `cnameStatus: active` **且** `certificateStatus ∈ {active, requested, none}`；`failed` 需在交付说明里注明「等待平台签发」（**不得**向客户宣称证书已生效）。
+- **验收判据**：`domain-check.py` 无 ❌ —— ① 已添加域名 ② @ 与 www 都已绑定 ③ NS 服务商已识别 ④ CNAME 实际解析 == 平台要求目标 ⑤ **SSL 双层检测通过**（本地 TLS `verified=True` + 线上 HTTPS 200）。
+  - **SSL 判据以本地实测为准**：工具用 `probe_tls`（stdlib socket+ssl）实测握手与证书校验（域名匹配/有效期/签发链），并用 `probe_http` 验证线上可达；**本地通过即为可用**。平台 `certificateStatus` 可能滞后（实测 failed 但本地 HTTPS 200），此时只给提醒、不让客户动手。
+  - **平台无证书申请 action**（`/{slug}/domains` 的 actions 只有 add/refresh/setPrimary/setEnabled/delete），证书由平台在 DNS 校验后自行签发；不得引导客户去找不存在的申请入口。
 - **产物**：`70_evidence/domain-report.json`（`domain-check.py --out` 直出）+ **`DOMAIN-DELIVERY-<slug>-<date>.md`**（域名交付说明）。
   ⚠️ **命名不要用 `DELIVERY-` 前缀**：`onepass-completion-gate.py` 用 `glob('DELIVERY-*.md')` 判网站交付件存在性，`DELIVERY-DOMAIN-*.md` 会被误当成网站 DELIVERY 顶掉那道门（M6）。
   > 归属澄清（MAJOR-11）：步骤 12 的 DELIVERY 是**网站交付**（不含域名，可能此时客户还没域名）；步骤 13 产出**域名交付**件。二者独立，不要求步骤 13 回改步骤 12 的文件。
