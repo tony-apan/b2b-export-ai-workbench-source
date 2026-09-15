@@ -229,7 +229,9 @@ def check_site(api, site_slug, only_domain=None, quiet=False):
                 if risk == "warn-flatten":
                     add("warn", f"{base}：DNS 在 Cloudflare——**根域（@）CNAME 会被自动展平**"
                                 f"（官方文档：apex 记录默认展平且 Flatten 开关不可用），"
-                                f"EdgeOne 无法验证根域。建议：① www 为主域名 + 根域 301 跳转到 www；"
+                                f"EdgeOne 无法验证根域。建议：① www 为主域名 + 根域 301 跳转到 www"
+                                f"（注意：CF 的 301 规则**要求根域走橙云代理**，而 www 必须保持**灰云**"
+                                f"才能通过平台验证——两条记录代理状态相反）；"
                                 f"或 ② 把 DNS 迁到阿里云（根域 CNAME 可保留原记录）")
                 elif risk == "unknown":
                     add("warn", f"{base}：未识别的 DNS 服务商（{ns_list[0]}），"

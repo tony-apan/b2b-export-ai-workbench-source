@@ -70,8 +70,25 @@ dig 权威NS: CNAME 0gn3iso4o6.web.allincms.com.  ← 完整可见
 | **B. 只保证 www** | 平台只绑 www；根域不管 | 客户只从 www 进（多数场景够用） |
 | **C. DNS 迁阿里云** | NS 改到阿里云，根域 CNAME 可保留原记录，@ 与 www 都能验证 | 愿意改 NS |
 
-> 方案 A 的 301 配置：CF 控制台 → Rules → Redirect Rules → 创建规则；或 Page Rules（免费版 3 条额度）。
-> **要求根域名走 CF 代理（橙云）**，否则规则不生效。
+> ### ⚠️ 方案 A 的关键：两条记录的代理状态**要求相反**（实测踩过）
+>
+> | 记录 | 代理状态 | 为什么 |
+> |---|---|---|
+> | `www` | **灰云（DNS only）** | 平台要看到 CNAME 记录本身才能验证并签发证书 |
+> | 根域 `@` | **橙云（Proxied）** | CF 官方：*"Single Redirects **require** that the incoming traffic ... is **proxied** by Cloudflare"*；灰云时 301 规则**完全不生效** |
+>
+> 给根域开橙云后：CF 用自己的证书提供 HTTPS（**不需要**平台给根域签证书），Redirect Rule 直接在边缘返回 301 到 www——根域流量根本到不了 EdgeOne，所以平台验不验根域**都无所谓**。
+>
+> **配置步骤**（CF 控制台，免费版可用 Page Rules）：
+> 1. DNS → 根域那条记录 → 点云朵图标变成**橙色**（Proxied）
+> 2. （可选但更干净）把根域记录改成 **A 记录**指向 `192.0.2.1`（RFC 5737 保留测试地址，永不真实访问）+ 橙云——避免 CF 回源到 EdgeOne
+> 3. Rules → Redirect Rules → Create rule：
+>    - When incoming requests match：`Hostname equals 17ark.com`
+>    - Then：**Dynamic redirect** → Expression: `concat("https://www.17ark.com", http.request.uri.path)`，Status: **301**
+>    - （或用 Page Rules 的 Forwarding URL：`https://www.17ark.com/$1`，301）
+> 4. 验证：`curl -sI http://17ark.com` 应返回 `301` + `location: https://www.17ark.com/`
+>
+> **平台侧配套**：把 `www` 设为**主域名**（`set_primary_domain`），根域可从平台解绑（它已由 CF 全权处理）——否则平台会一直显示根域验证失败的告警，让客户困惑。
 
 ### 对比：阿里云根域 CNAME 可正常保留
 
@@ -93,7 +110,7 @@ www   : CNAME → www.laifaxin.com.eo.dnse2.com.
    Type          = CNAME
    Name          = www（⚠️ 根域不要填这里，见第二节）
    Target        = <runtime_site_domain>
-   Proxy status  = DNS only（灰云，重要！橙云会另加一层代理）
+   Proxy status  = DNS only（灰云，重要！仅限 www——根域见方案 A 的相反要求）
    TTL           = Auto
 4. Save
 5. 若需要根域：用 Redirect Rule 做 301 到 www（见方案 A）
